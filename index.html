@@ -23,7 +23,7 @@ body{font-family:"Cairo",sans-serif;background:var(--bg);color:var(--text);min-h
 @media(max-width:700px){.sidebar{pointer-events:none;will-change:transform}.sidebar.mob{pointer-events:auto}}
 
 /* ===== MODERN SIDEBAR ===== */
-.sidebar{width:var(--sidebar-w);background:var(--bg2);border-left:1px solid var(--border);position:fixed;top:0;right:0;bottom:0;z-index:100;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--border2) transparent;-webkit-overflow-scrolling:touch}
+.sidebar{width:var(--sidebar-w);background:var(--bg2);border-left:1px solid var(--border);position:fixed;top:0;right:0;bottom:0;z-index:1200;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--border2) transparent;-webkit-overflow-scrolling:touch}
 .sidebar::-webkit-scrollbar{width:3px}
 .sidebar::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
 .sidebar-header{position:relative;overflow:hidden;padding:0}
@@ -208,7 +208,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 .doc-item{display:flex;align-items:center;justify-content:space-between;background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-size:11px;margin-bottom:5px}
 /* FIX #55: print CSS consolidated below near invoice styles */
 @media(max-width:700px){#bal-print-area{grid-template-columns:1fr!important}:root{--sidebar-w:0}.sidebar{transform:translate3d(105%,0,0);transition:transform .3s cubic-bezier(.4,0,.2,1)}.sidebar.mob{transform:translate3d(0,0,0);width:280px;box-shadow:-12px 0 40px rgba(0,0,0,.5)}.main{margin-right:0!important}.fgrid,.two-col,.three-col{grid-template-columns:1fr}}
-.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1199}
 .sidebar-overlay.show{display:block;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
 
 /* stat-card */
