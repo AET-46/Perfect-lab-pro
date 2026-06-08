@@ -18,7 +18,7 @@ body{font-family:"Cairo",sans-serif;background:var(--bg);color:var(--text);min-h
 ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
 /* FIX-LAYOUT: main must offset by sidebar width on desktop */
 .app{display:flex;min-height:100vh;min-height:-webkit-fill-available;}
-.main{margin-right:var(--sidebar-w);display:flex;flex-direction:column;height:100vh;height:-webkit-fill-available;overflow:hidden;flex:1;min-width:0;}
+.main{margin-right:var(--sidebar-w);display:flex;flex-direction:column;height:100vh;height:-webkit-fill-available;overflow:hidden;flex:1;min-width:0;max-width:calc(100vw - var(--sidebar-w));}
 /* FIX: sidebar pointer-events on mobile — CSS handles it, no JS needed */
 @media(max-width:700px){.sidebar{pointer-events:none;will-change:transform}.sidebar.mob{pointer-events:auto}}
 
@@ -152,7 +152,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 .stat .val{font-weight:900;font-size:22px;line-height:1}
 .stat .sub{font-size:10px;color:var(--text2);margin-top:4px}
 .stat .ico{position:absolute;top:10px;left:12px;font-size:22px;opacity:.1}
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .2s}
+.overlay{position:fixed;top:0;left:0;bottom:0;right:var(--sidebar-w);background:rgba(0,0,0,.82);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .2s}
 .overlay.open{opacity:1;pointer-events:all}
 .modal{background:var(--bg2);border:1px solid var(--border2);border-radius:13px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.5);transform:translateY(18px) scale(.97);transition:transform .2s}
 .overlay.open .modal{transform:none}
@@ -207,7 +207,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 .av-ph{width:32px;height:32px;border-radius:50%;background:var(--bg4);border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:14px;vertical-align:middle}
 .doc-item{display:flex;align-items:center;justify-content:space-between;background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-size:11px;margin-bottom:5px}
 /* FIX #55: print CSS consolidated below near invoice styles */
-@media(max-width:700px){#bal-print-area{grid-template-columns:1fr!important}:root{--sidebar-w:0}.sidebar{transform:translate3d(105%,0,0);transition:transform .3s cubic-bezier(.4,0,.2,1)}.sidebar.mob{transform:translate3d(0,0,0);width:280px;box-shadow:-12px 0 40px rgba(0,0,0,.5);z-index:1200}.main{margin-right:0!important}.fgrid,.two-col,.three-col{grid-template-columns:1fr}}
+@media(max-width:700px){#bal-print-area{grid-template-columns:1fr!important}:root{--sidebar-w:0}.overlay{right:0!important}.sidebar{transform:translate3d(105%,0,0);transition:transform .3s cubic-bezier(.4,0,.2,1)}.sidebar.mob{transform:translate3d(0,0,0);width:280px;box-shadow:-12px 0 40px rgba(0,0,0,.5);z-index:1200}.main{margin-right:0!important}.fgrid,.two-col,.three-col{grid-template-columns:1fr}}
 .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1199}
 .sidebar-overlay.show{display:block;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
 
@@ -12073,15 +12073,30 @@ function applySession(sess){
   if(sess.role && sess.role!=='admin'){
     // ── صلاحيات الصفحات (القائمة الجانبية) ──
     const legacyPerms=DB.get('perms')||{};
-    const allowed=legacyPerms[sess.role]||[];
+    const advPerms=DB.get('perms_advanced')||{};
+    const advRolePerms=advPerms[sess.role]||[];
+    const legacyAllowed=legacyPerms[sess.role]||[];
+
+    // لو عنده صلاحيات في النظام الجديد استخدمها، وإلا أظهر كل حاجة
+    const hasAdvPerms = advRolePerms.length > 0;
+
     document.querySelectorAll('[data-page]').forEach(e=>{
       const pg=e.dataset.page;
-      const show=allowed.includes(pg)||(pg==='dashboard');
+      let show = true;
+      if(hasAdvPerms){
+        // استخدم النظام الجديد — اظهر الصفحة لو عنده أي صلاحية فيها
+        const pagePrefix = pg + '.';
+        show = (pg==='dashboard') || advRolePerms.some(p=>p===pg||p.startsWith(pagePrefix));
+      } else if(legacyAllowed.length > 0){
+        // استخدم النظام القديم
+        show = legacyAllowed.includes(pg)||(pg==='dashboard');
+      }
+      // لو مفيش صلاحيات محددة خالص — أظهر كل حاجة (افتراضي آمن)
       e.style.display=show?'':'none';
     });
 
     // ── إخفاء masterdata بناءً على الصلاحيات ──
-    if(!can('masterdata.view')&&!['admin','supervisor'].includes(sess.role)){
+    if(hasAdvPerms && !can('masterdata.view')&&!['admin','supervisor'].includes(sess.role)){
       document.querySelectorAll('[data-page="masterdata"]').forEach(e=>e.style.display='none');
     }
     // ── إخفاء prospects بناءً على الصلاحيات ──
