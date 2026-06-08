@@ -4379,10 +4379,19 @@ function goPage(pg){
     },balance:renderBalance,
     prospects:renderProspects};
   if(renders[pg]){try{renders[pg]();}catch(e){console.warn('render error page='+pg,e);}}
-  // Scroll AFTER render
+  // Scroll AFTER render — reset all possible scroll containers
   requestAnimationFrame(()=>{
+    // الـ content div
     const contentEl=document.querySelector('.content');
     if(contentEl)contentEl.scrollTop=0;
+    // الصفحة النشطة نفسها
+    const activePg=document.getElementById('pg-'+pg);
+    if(activePg)activePg.scrollTop=0;
+    // الـ main container
+    const mainEl=document.querySelector('.main');
+    if(mainEl)mainEl.scrollTop=0;
+    // window نفسه
+    window.scrollTo(0,0);
   });
 }
 
