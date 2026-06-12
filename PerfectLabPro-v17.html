@@ -2690,19 +2690,69 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
             </div>
           </div>
           <div class="nset-card">
-            <h5>🔔 وقت التنبيه اليومي</h5>
-            <div style="font-size:11px;color:var(--text3);margin-bottom:10px">يظهر تنبيه في المتصفح عند فتح التطبيق في الوقت المحدد أو بعده</div>
-            <div class="fgrid" style="grid-template-columns:1fr">
-              <div class="fg">
-                <label>⏰ وقت التنبيه اليومي</label>
-                <input type="time" id="nset-alert-time" value="09:00">
+            <h5>🔔 أوقات التنبيه اليومي</h5>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:10px">يمكنك ضبط حتى 4 أوقات تنبيه يومية — التنبيه يظهر عند فتح التطبيق في الوقت المحدد أو بعده</div>
+            <div id="alert-times-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px"></div>
+            <button class="btn btn-ghost btn-sm" onclick="addAlertTime()" style="width:100%;justify-content:center;margin-bottom:12px">➕ إضافة وقت تنبيه</button>
+
+            <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:10px">
+              <div style="font-size:12px;font-weight:700;margin-bottom:8px;color:var(--gold2)">🔊 صوت التنبيه</div>
+              <div class="fgrid" style="grid-template-columns:1fr 1fr;gap:8px">
+                <div class="fg">
+                  <label>نوع الصوت</label>
+                  <select id="nset-alert-sound" onchange="saveNsSettings();previewAlertSound()">
+                    <option value="beep">تنبيه بسيط (beep)</option>
+                    <option value="bell">جرس (bell)</option>
+                    <option value="chime">نغمة (chime)</option>
+                    <option value="urgent">عاجل (urgent)</option>
+                    <option value="none">بدون صوت</option>
+                  </select>
+                </div>
+                <div class="fg">
+                  <label>مستوى الصوت</label>
+                  <input type="range" id="nset-alert-volume" min="0" max="100" value="70" oninput="saveNsSettings()" style="width:100%;margin-top:6px">
+                </div>
               </div>
-              <div class="fg">
-                <div class="toggle-row"><label>تفعيل تنبيه الحالات المتأخرة</label><label class="sw"><input type="checkbox" id="nset-alert-late" checked><span class="sl"></span></label></div>
-                <div class="toggle-row" style="margin-top:6px"><label>تفعيل تنبيه الديون المتأخرة</label><label class="sw"><input type="checkbox" id="nset-alert-debt" checked><span class="sl"></span></label></div>
-                <div class="toggle-row" style="margin-top:6px"><label>تفعيل تنبيه انخفاض المخزون</label><label class="sw"><input type="checkbox" id="nset-alert-inv" checked><span class="sl"></span></label></div>
+              <button class="btn btn-ghost btn-sm" onclick="previewAlertSound()" style="margin-top:6px">▶️ معاينة الصوت</button>
+            </div>
+
+            <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:10px">
+              <div style="font-size:12px;font-weight:700;margin-bottom:8px;color:var(--gold2)">🎨 مظهر التنبيه</div>
+              <div class="fg" style="margin-bottom:8px">
+                <label>لون التنبيه</label>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px" id="alert-color-picker">
+                  <div onclick="setAlertColor('red')" data-color="red" style="width:28px;height:28px;border-radius:50%;background:#ef4444;cursor:pointer;border:3px solid transparent" title="أحمر"></div>
+                  <div onclick="setAlertColor('orange')" data-color="orange" style="width:28px;height:28px;border-radius:50%;background:#f97316;cursor:pointer;border:3px solid transparent" title="برتقالي"></div>
+                  <div onclick="setAlertColor('gold')" data-color="gold" style="width:28px;height:28px;border-radius:50%;background:#e8c96a;cursor:pointer;border:3px solid transparent" title="ذهبي"></div>
+                  <div onclick="setAlertColor('blue')" data-color="blue" style="width:28px;height:28px;border-radius:50%;background:#3b82f6;cursor:pointer;border:3px solid transparent" title="أزرق"></div>
+                  <div onclick="setAlertColor('green')" data-color="green" style="width:28px;height:28px;border-radius:50%;background:#22c55e;cursor:pointer;border:3px solid transparent" title="أخضر"></div>
+                </div>
+                <input type="hidden" id="nset-alert-color" value="red">
               </div>
-              <button class="btn btn-ghost btn-sm" onclick="testAlertNow()" style="width:100%;justify-content:center;margin-top:4px">🔔 اختبار التنبيه الآن</button>
+              <div class="fg" style="margin-bottom:8px">
+                <label>مدة عرض التنبيه</label>
+                <select id="nset-alert-duration" onchange="saveNsSettings()">
+                  <option value="10">10 ثوانٍ</option>
+                  <option value="15" selected>15 ثانية</option>
+                  <option value="30">30 ثانية</option>
+                  <option value="60">دقيقة كاملة</option>
+                  <option value="0">حتى الإغلاق اليدوي</option>
+                </select>
+              </div>
+              <div class="toggle-row"><label>🫨 اهتزاز الشاشة عند التنبيه</label><label class="sw"><input type="checkbox" id="nset-alert-shake" checked onchange="saveNsSettings()"><span class="sl"></span></label></div>
+              <div class="toggle-row" style="margin-top:6px"><label>🔁 تكرار التنبيه كل 5 دقائق لو لم يُغلق</label><label class="sw"><input type="checkbox" id="nset-alert-repeat" onchange="saveNsSettings()"><span class="sl"></span></label></div>
+            </div>
+
+            <div style="border-top:1px solid var(--border);padding-top:12px">
+              <div style="font-size:12px;font-weight:700;margin-bottom:8px;color:var(--gold2)">📋 أنواع التنبيهات</div>
+              <div class="toggle-row"><label>🗂️ تنبيه الحالات المتأخرة</label><label class="sw"><input type="checkbox" id="nset-alert-late" checked onchange="saveNsSettings()"><span class="sl"></span></label></div>
+              <div class="toggle-row" style="margin-top:6px"><label>💸 تنبيه الديون المتأخرة</label><label class="sw"><input type="checkbox" id="nset-alert-debt" checked onchange="saveNsSettings()"><span class="sl"></span></label></div>
+              <div class="toggle-row" style="margin-top:6px"><label>📦 تنبيه انخفاض المخزون</label><label class="sw"><input type="checkbox" id="nset-alert-inv" checked onchange="saveNsSettings()"><span class="sl"></span></label></div>
+            </div>
+
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <button class="btn btn-ghost btn-sm" onclick="testAlertNow()" style="flex:1;justify-content:center">🔔 اختبار التنبيه</button>
+              <button class="btn btn-gold btn-sm" onclick="saveNsSettings()" style="flex:1;justify-content:center">💾 حفظ</button>
             </div>
           </div>
           <div class="nset-card">
@@ -5469,22 +5519,22 @@ function renderDgClientsList(){
     const isCustom = c.commRate!==null&&c.commRate!==undefined;
     return `<div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border-radius:8px;margin-bottom:8px;border:1px solid var(--border)">
       <div style="flex:1">
-        <strong style="font-size:13px">\${esc(cl.name)}</strong>
-        <div style="font-size:11px;color:var(--text3);margin-top:2px">\${cl.phone||''}</div>
+        <strong style="font-size:13px">${esc(cl.name)}</strong>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${cl.phone||''}</div>
       </div>
       <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer">
-        <input type="checkbox" \${c.commEnabled!==false?'checked':''} onchange="toggleDgClientComm('\${c.clientId}',this.checked)" style="width:15px;height:15px">
+        <input type="checkbox" ${c.commEnabled!==false?'checked':''} onchange="toggleDgClientComm('${c.clientId}',this.checked)" style="width:15px;height:15px">
         عمولة مفعّلة
       </label>
       <div style="display:flex;align-items:center;gap:4px;font-size:12px">
         <span style="color:var(--text3)">نسبة:</span>
-        <input type="number" min="0" max="100" step="0.5" value="\${c.commRate!==null&&c.commRate!==undefined?c.commRate:''}" placeholder="\${dg.comm||0}% (افتراضي)" 
-          onchange="setDgClientRate('\${c.clientId}',this.value)"
+        <input type="number" min="0" max="100" step="0.5" value="${c.commRate!==null&&c.commRate!==undefined?c.commRate:''}" placeholder="${dg.comm||0}% (افتراضي)" 
+          onchange="setDgClientRate('${c.clientId}',this.value)"
           style="width:90px;padding:4px 7px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:12px;font-family:Cairo,sans-serif;text-align:center">
         <span style="color:var(--text3)">%</span>
-        \${isCustom?'<span style="color:var(--gold);font-size:10px">مخصص</span>':'<span style="color:var(--text3);font-size:10px">افتراضي</span>'}
+        ${isCustom?'<span style="color:var(--gold);font-size:10px">مخصص</span>':'<span style="color:var(--text3);font-size:10px">افتراضي</span>'}
       </div>
-      <button onclick="removeDgClient('\${c.clientId}')" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--red)" title="إزالة الارتباط">✕</button>
+      <button onclick="removeDgClient('${c.clientId}')" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--red)" title="إزالة الارتباط">✕</button>
     </div>`;
   }).join('');
 }
@@ -5653,7 +5703,7 @@ async function saveUser(){
       list[idx].passHash=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
     }
     DB.set('users',list);
-    try{await _fbRTDB.ref('data/shared/users').set(list);}catch(e){}
+    if(_fbRTDB){try{await _fbRTDB.ref('data/shared/users').set(list);}catch(e){}}
     closeOv('ov-user');renderUsers();
     toast('✅ تم تعديل بيانات المستخدم');
   } else {
@@ -5665,12 +5715,12 @@ async function saveUser(){
     const passHash=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
     list.push({id:'u_'+Date.now(),name,email,role,passHash,active:true,createdAt:Date.now()});
     DB.set('users',list);
-    try{await _fbRTDB.ref('data/shared/users').set(list);}catch(e){}
+    if(_fbRTDB){try{await _fbRTDB.ref('data/shared/users').set(list);}catch(e){}}
     closeOv('ov-user');renderUsers();
     toast('✅ تمت إضافة المستخدم');
   }
 }
-function delSelUser(){const ids=getSel('users-tb');if(!ids.length){toast('اختر مستخدماً أولاً','err');return}confirm2('حذف',`حذف ${ids.length}؟`,async()=>{const newList=(DB.get('users')||[]).filter(x=>!ids.includes(x.id));DB.set('users',newList);try{await _fbRTDB.ref('data/shared/users').set(newList);}catch(e){}renderUsers();toast('تم الحذف')})}
+function delSelUser(){const ids=getSel('users-tb');if(!ids.length){toast('اختر مستخدماً أولاً','err');return}confirm2('حذف',`حذف ${ids.length}؟`,async()=>{const newList=(DB.get('users')||[]).filter(x=>!ids.includes(x.id));DB.set('users',newList);if(_fbRTDB){try{await _fbRTDB.ref('data/shared/users').set(newList);}catch(e){}}renderUsers();toast('تم الحذف')})}
 
 // INVENTORY
 let _ivId=null;
@@ -7369,12 +7419,12 @@ function renderReports(){
     // عرض العملاء المرتبطين
     const linkedClients=(info.clients||[]).map(c=>c.clientName||c.clientId).join('، ')||'—';
     return `<tr>
-      <td><strong>\${n}</strong><div style="font-size:10px;color:var(--text3);margin-top:2px">\${linkedClients}</div></td>
-      <td>\${v.cnt}</td>
-      <td>\${fmt(v.tot)} \${c}</td>
-      <td>\${badge(defaultRate+'%','bg-gold')}</td>
-      <td style="color:var(--gold2);font-weight:700">\${fmt(totalComm)} \${c}</td>
-      <td><button class="btn btn-sm" style="padding:2px 8px;font-size:10px;background:var(--teal);color:#fff" onclick="openDgClientsModal('\${info.id||''}')">👥</button></td>
+      <td><strong>${n}</strong><div style="font-size:10px;color:var(--text3);margin-top:2px">${linkedClients}</div></td>
+      <td>${v.cnt}</td>
+      <td>${fmt(v.tot)} ${c}</td>
+      <td>${badge(defaultRate+'%','bg-gold')}</td>
+      <td style="color:var(--gold2);font-weight:700">${fmt(totalComm)} ${c}</td>
+      <td><button class="btn btn-sm" style="padding:2px 8px;font-size:10px;background:var(--teal);color:#fff" onclick="openDgClientsModal('${info.id||''}')">👥</button></td>
     </tr>`;
   }).join('')||`<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px">لا توجد بيانات</td></tr>`;
   const prodM={};all.forEach(r=>{if(!r.product)return;if(!prodM[r.product])prodM[r.product]={cnt:0,tot:0};prodM[r.product].cnt++;prodM[r.product].tot+= +r.total});
@@ -8431,17 +8481,23 @@ function saveNsSettings(){
    'pr-logo','pr-contact','pr-debt','pr-active',
    'fi-logo','fi-contact','fi-history','fi-debt',
    'prt-logo','prt-debt','prt-proof','prt-active','prt-contact',
-   'alert-late','alert-debt','alert-inv'].forEach(k=>{
+   'alert-late','alert-debt','alert-inv','alert-shake','alert-repeat'].forEach(k=>{
     const a=document.getElementById('ns-'+k)||document.getElementById('nset-'+k);
     if(a)s[k]=a.checked;
   });
   ['footer-inv','footer-pr','footer-fi','prt-msg',
-   'dafter-late','proof-late','debt-late','alert-time'].forEach(k=>{
+   'dafter-late','proof-late','debt-late',
+   'alert-sound','alert-volume','alert-color','alert-duration'].forEach(k=>{
     const a=document.getElementById('ns-'+k)||document.getElementById('nset-'+k);
     if(a)s[k]=a.value;
   });
+  // Save multiple alert times
+  s['alert-times'] = _getAlertTimesFromUI();
+  // Backward compat: keep alert-time as first time
+  if(s['alert-times'].length) s['alert-time'] = s['alert-times'][0];
   DB.set('nsSettings',s);
   Object.entries(s).forEach(([k,v])=>{
+    if(k==='alert-times')return;
     ['ns-','nset-'].forEach(pfx=>{
       const el=document.getElementById(pfx+k);
       if(!el)return;
@@ -8449,12 +8505,14 @@ function saveNsSettings(){
       else el.value=v;
     });
   });
-  toast('تم حفظ إعدادات الإشعارات ✅');
+  _renderAlertColorPicker(s['alert-color']||'red');
+  toast('تم حفظ إعدادات التنبيهات ✅');
 }
 
 function loadNsSettings(){
   const s=DB.get('nsSettings');if(!s)return;
   Object.entries(s).forEach(([k,v])=>{
+    if(k==='alert-times')return;
     ['ns-','nset-'].forEach(pfx=>{
       const el=document.getElementById(pfx+k);
       if(!el)return;
@@ -8462,6 +8520,10 @@ function loadNsSettings(){
       else el.value=v;
     });
   });
+  // Load alert times
+  const times = s['alert-times']||(s['alert-time']?[s['alert-time']]:['09:00']);
+  _renderAlertTimesList(times);
+  _renderAlertColorPicker(s['alert-color']||'red');
 }
 
 // ======== DESIGN PANEL ENGINE ========
@@ -8802,16 +8864,99 @@ function previewInvDesign(){
 }
 
 // ======== ALERT ENGINE ========
+
+// ---- Multi-time alert helpers ----
+function _renderAlertTimesList(times){
+  const el=document.getElementById('alert-times-list');
+  if(!el)return;
+  if(!times||!times.length)times=['09:00'];
+  el.innerHTML=times.map((t,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;background:var(--bg3);padding:8px 12px;border-radius:8px;border:1px solid var(--border)">
+      <span style="font-size:16px">⏰</span>
+      <input type="time" value="${t}" onchange="saveNsSettings()" data-alert-time-idx="${i}"
+        style="flex:1;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:6px;font-family:Cairo,sans-serif;font-size:13px">
+      <span style="font-size:11px;color:var(--text3)">يومياً</span>
+      ${times.length>1?`<button onclick="_removeAlertTime(${i})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;padding:2px">✕</button>`:''}
+    </div>`).join('');
+}
+
+function _getAlertTimesFromUI(){
+  const inputs=document.querySelectorAll('[data-alert-time-idx]');
+  const times=[];
+  inputs.forEach(inp=>{if(inp.value)times.push(inp.value);});
+  return times.length?times:['09:00'];
+}
+
+function addAlertTime(){
+  const times=_getAlertTimesFromUI();
+  if(times.length>=4){toast('الحد الأقصى 4 أوقات تنبيه','err');return;}
+  times.push('12:00');
+  _renderAlertTimesList(times);
+  saveNsSettings();
+}
+
+function _removeAlertTime(idx){
+  const times=_getAlertTimesFromUI();
+  times.splice(idx,1);
+  _renderAlertTimesList(times);
+  saveNsSettings();
+}
+
+function _renderAlertColorPicker(selected){
+  document.querySelectorAll('#alert-color-picker [data-color]').forEach(el=>{
+    el.style.border=el.dataset.color===selected?'3px solid #fff':'3px solid transparent';
+  });
+  const inp=document.getElementById('nset-alert-color');
+  if(inp)inp.value=selected;
+}
+
+function setAlertColor(color){
+  _renderAlertColorPicker(color);
+  saveNsSettings();
+}
+
+// ---- Alert sound engine ----
+function _playAlertSound(type,volume){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const vol=Math.min(1,Math.max(0,(+volume||70)/100));
+    const gain=ctx.createGain();
+    gain.gain.value=vol;
+    gain.connect(ctx.destination);
+
+    const sounds={
+      beep:(c,g)=>{const o=c.createOscillator();o.type='sine';o.frequency.value=880;o.connect(g);o.start();o.stop(c.currentTime+0.15);setTimeout(()=>{const o2=c.createOscillator();o2.type='sine';o2.frequency.value=1100;o2.connect(g);o2.start();o2.stop(c.currentTime+0.15);},200);},
+      bell:(c,g)=>{[523,659,784,1047].forEach((f,i)=>{setTimeout(()=>{const o=c.createOscillator();const g2=c.createGain();o.type='sine';o.frequency.value=f;g2.gain.setValueAtTime(vol,c.currentTime);g2.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.5);o.connect(g2);g2.connect(c.destination);o.start();o.stop(c.currentTime+0.5);},i*150);});},
+      chime:(c,g)=>{[1047,1319,1568,2093].forEach((f,i)=>{setTimeout(()=>{const o=c.createOscillator();const g2=c.createGain();o.type='triangle';o.frequency.value=f;g2.gain.setValueAtTime(vol*0.7,c.currentTime);g2.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.8);o.connect(g2);g2.connect(c.destination);o.start();o.stop(c.currentTime+0.8);},i*200);});},
+      urgent:(c,g)=>{[880,0,880,0,880].forEach((f,i)=>{if(!f)return;setTimeout(()=>{const o=c.createOscillator();o.type='square';o.frequency.value=f;const g2=c.createGain();g2.gain.value=vol*0.4;o.connect(g2);g2.connect(c.destination);o.start();o.stop(c.currentTime+0.1);},i*150);})}
+    };
+    if(sounds[type])sounds[type](ctx,gain);
+  }catch(e){console.warn('Alert sound error:',e);}
+}
+
+function previewAlertSound(){
+  const type=document.getElementById('nset-alert-sound')?.value||'beep';
+  const vol=document.getElementById('nset-alert-volume')?.value||70;
+  if(type!=='none')_playAlertSound(type,vol);
+}
+
 function getAlertSettings(){
   const s=DB.get('nsSettings')||{};
   return{
     dafterLate:+(s['dafter-late']||7),
     proofLate:+(s['proof-late']||5),
     debtLate:+(s['debt-late']||30),
+    alertTimes:s['alert-times']||(s['alert-time']?[s['alert-time']]:['09:00']),
     alertTime:s['alert-time']||'09:00',
     alertLate:s['alert-late']!==false,
     alertDebt:s['alert-debt']!==false,
-    alertInv:s['alert-inv']!==false
+    alertInv:s['alert-inv']!==false,
+    alertSound:s['alert-sound']||'beep',
+    alertVolume:+(s['alert-volume']||70),
+    alertColor:s['alert-color']||'red',
+    alertDuration:+(s['alert-duration']||15),
+    alertShake:s['alert-shake']!==false,
+    alertRepeat:s['alert-repeat']===true
   };
 }
 
@@ -8887,55 +9032,101 @@ function computeAlerts(){
   return alerts;
 }
 
-function showAlertBanner(alerts){
+function showAlertBanner(alerts,cfg){
   const existing=document.getElementById('alert-banner');
   if(existing)existing.remove();
   if(!alerts.length)return;
+  if(!cfg)cfg=getAlertSettings();
+
+  const colorMap={red:'rgba(239,68,68,.15)',orange:'rgba(249,115,22,.15)',gold:'rgba(232,201,106,.15)',blue:'rgba(59,130,246,.15)',green:'rgba(34,197,94,.15)'};
+  const borderMap={red:'rgba(239,68,68,.4)',orange:'rgba(249,115,22,.4)',gold:'rgba(232,201,106,.4)',blue:'rgba(59,130,246,.4)',green:'rgba(34,197,94,.4)'};
+  const bg=colorMap[cfg.alertColor]||colorMap.red;
+  const bd=borderMap[cfg.alertColor]||borderMap.red;
 
   const banner=document.createElement('div');
   banner.id='alert-banner';
-  banner.style.cssText=`position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:8000;width:min(520px,92vw);background:var(--bg2);border:1px solid var(--border);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.5);overflow:hidden;direction:rtl`;
+  banner.style.cssText=`position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:8000;width:min(520px,92vw);background:var(--bg2);border:2px solid ${bd};border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.6);overflow:hidden;direction:rtl`;
 
-  const header=`<div style="background:linear-gradient(135deg,rgba(239,68,68,.15),rgba(245,158,11,.1));padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)">
-    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:18px">🔔</span><strong style="font-size:13px">تنبيهات تحتاج انتباهك</strong></div>
-    <button onclick="document.getElementById('alert-banner').remove()" style="background:none;border:none;cursor:pointer;color:var(--text2);font-size:16px;padding:2px 6px">✕</button>
+  const header=`<div style="background:${bg};padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid ${bd}">
+    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:22px">🔔</span><strong style="font-size:14px">تنبيهات تحتاج انتباهك</strong><span style="font-size:11px;color:var(--text3)">(${alerts.reduce((s,a)=>s+a.count,0)} عنصر)</span></div>
+    <button onclick="document.getElementById('alert-banner').remove();clearInterval(window._alertRepeatTimer)" style="background:none;border:none;cursor:pointer;color:var(--text2);font-size:18px;padding:2px 6px">✕</button>
   </div>`;
 
   const items=alerts.map(a=>`
-    <div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start">
-      <div style="font-size:20px;flex-shrink:0">${a.icon}</div>
+    <div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;cursor:pointer" onclick="goPage('notifications');document.getElementById('alert-banner')?.remove();clearInterval(window._alertRepeatTimer)">
+      <div style="font-size:22px;flex-shrink:0">${a.icon}</div>
       <div style="flex:1">
-        <div style="font-size:12px;font-weight:700;color:${a.color};margin-bottom:4px">${a.title}</div>
-        <div style="font-size:10px;color:var(--text3);line-height:1.8">${a.detail.join('<br>')}</div>
+        <div style="font-size:13px;font-weight:700;color:${a.color};margin-bottom:4px">${a.title}</div>
+        <div style="font-size:11px;color:var(--text3);line-height:1.9">${a.detail.join('<br>')}</div>
       </div>
     </div>`).join('');
 
   const footer=`<div style="padding:10px 16px;display:flex;gap:8px;justify-content:flex-end">
-    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('alert-banner').remove()">تجاهل</button>
-    <button class="btn btn-gold btn-sm" onclick="goPage('notifications');document.getElementById('alert-banner').remove()">عرض التفاصيل</button>
+    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('alert-banner').remove();clearInterval(window._alertRepeatTimer)">تجاهل</button>
+    <button class="btn btn-gold btn-sm" onclick="goPage('notifications');document.getElementById('alert-banner').remove();clearInterval(window._alertRepeatTimer)">عرض التفاصيل ←</button>
   </div>`;
 
   banner.innerHTML=header+items+footer;
   document.body.appendChild(banner);
-  // Auto-dismiss after 15s
-  setTimeout(()=>banner.remove&&banner.isConnected&&banner.remove(),15000);
+
+  // Sound
+  if(cfg.alertSound&&cfg.alertSound!=='none') _playAlertSound(cfg.alertSound,cfg.alertVolume);
+
+  // Shake effect
+  if(cfg.alertShake){
+    banner.style.animation='alertShake 0.5s ease';
+    if(!document.getElementById('alert-shake-style')){
+      const st=document.createElement('style');
+      st.id='alert-shake-style';
+      st.textContent='@keyframes alertShake{0%,100%{transform:translateX(-50%)}10%,50%,90%{transform:translateX(calc(-50% - 8px))}30%,70%{transform:translateX(calc(-50% + 8px))}}';
+      document.head.appendChild(st);
+    }
+  }
+
+  // Auto-dismiss
+  if(cfg.alertDuration>0){
+    setTimeout(()=>{const b=document.getElementById('alert-banner');if(b&&b.isConnected)b.remove();},cfg.alertDuration*1000);
+  }
+
+  // Repeat every 5 min if enabled
+  clearInterval(window._alertRepeatTimer);
+  if(cfg.alertRepeat){
+    window._alertRepeatTimer=setInterval(()=>{
+      if(!document.getElementById('alert-banner'))showAlertBanner(alerts,cfg);
+      else if(cfg.alertSound&&cfg.alertSound!=='none')_playAlertSound(cfg.alertSound,cfg.alertVolume);
+    },5*60*1000);
+  }
 }
 
 function checkAndFireAlerts(force=false){
   const cfg=getAlertSettings();
   const nowStr=new Date().toTimeString().slice(0,5);
-  const lastCheck=localStorage.getItem('plp_last_alert_check')||'';
   const todayKey=new Date().toISOString().slice(0,10);
-  const alreadyFired=localStorage.getItem('plp_alert_fired_date')===todayKey;
 
-  // Fire if: forced, OR (time >= alert time AND not yet fired today)
-  if(!force && (alreadyFired || nowStr < cfg.alertTime)) return;
+  if(!force){
+    // Check each alert time
+    const times=cfg.alertTimes||[cfg.alertTime];
+    const firedToday=JSON.parse(localStorage.getItem('plp_alert_fired_times')||'{}');
+    const shouldFire=times.some(t=>{
+      if(!firedToday[t]&&nowStr>=t)return true;
+      return false;
+    });
+    if(!shouldFire)return;
+    // Mark fired times
+    times.forEach(t=>{if(nowStr>=t)firedToday[t]=true;});
+    // Reset next day
+    if(localStorage.getItem('plp_alert_fired_date')!==todayKey){
+      localStorage.setItem('plp_alert_fired_date',todayKey);
+      localStorage.setItem('plp_alert_fired_times','{}');
+      times.forEach(t=>{if(nowStr>=t)firedToday[t]=true;});
+    }
+    localStorage.setItem('plp_alert_fired_times',JSON.stringify(firedToday));
+  }
 
   const alerts=computeAlerts();
   if(alerts.length){
-    showAlertBanner(alerts);
+    showAlertBanner(alerts,cfg);
     logSysEvent('تنبيه: '+alerts.map(a=>a.title).join(' | '),'alert','النظام');
-    if(!force)localStorage.setItem('plp_alert_fired_date',todayKey);
   }
   localStorage.setItem('plp_last_alert_check',new Date().toISOString());
 }
@@ -8943,7 +9134,7 @@ function checkAndFireAlerts(force=false){
 function testAlertNow(){
   const alerts=computeAlerts();
   if(!alerts.length){toast('✅ لا توجد تنبيهات حالياً — كل شيء على ما يرام');return;}
-  showAlertBanner(alerts);
+  showAlertBanner(alerts,getAlertSettings());
 }
 
 // ---- update updateNotifBadges to include late counts ----
@@ -9350,6 +9541,8 @@ setTimeout(()=>{loadNsSettings();loadInvDesign();},100);
 setTimeout(()=>{updateNotifBadges();initTechRepFilters();updateErpBadges();},300);
 setTimeout(()=>{loadTechRates();initPermsIfEmpty();},500);
 setTimeout(()=>{scheduleAllNoteReminders();checkOverdueNotes();},800);
+// Check alert times every minute (supports multiple daily alert times)
+setInterval(()=>{ try{checkAndFireAlerts();}catch(e){} }, 60*1000);
 // Fix: close inv-ov when clicking outside
 document.addEventListener('click',function(e){
   const invOv=document.getElementById('ov-inv-doc');
@@ -13312,7 +13505,9 @@ ${snapshot}
       price_cats:['زيركون','بورسلين','سيراميك','تقويم','متحرك','أخرى'],
       suppliers:[],purchases:[],sup_payments:[],batches:[],withdrawals:[],prod_costs:[],employees:[],
       fixed_assets:[],attendance:[],prospects:[],delegate_visits:[],dept_inventory:[],
-      notifications:[],nsSettings:{}
+      notifications:[]
+      // NOTE: nsSettings و perms و perms_advanced مُستثناة عن قصد
+      // لأن ensureDefaults يُشغَّل قبل syncFromFirebase أحياناً فيمسح الإعدادات
     };
     Object.keys(defs).forEach(k=>{if(DB.get(k)===null)DB.set(k,defs[k]);});
   }
@@ -13324,6 +13519,9 @@ ${snapshot}
     window._currentUser={...profile};
     DB._uid = 'shared';
     document.getElementById('login-screen').classList.add('hidden');
+    // FIX-PERMS: ensure perms are loaded from DB cache before applying session
+    // DB.get reads from cache which was populated by syncFromFirebase
+    initPermsIfEmpty();
     applySession(window._currentUser);
     // FIX-FREEZE: defer init() to let browser paint the dashboard skeleton first
     setTimeout(()=>{
@@ -13427,7 +13625,8 @@ ${snapshot}
         }
       }
       // فحص قائمة المستخدمين من Firebase
-      const usersSnap=await _fbRTDB.ref('data/shared/users').get();
+      if(!_fbRTDB){console.warn('Firebase not ready');return;}
+        const usersSnap=await _fbRTDB.ref('data/shared/users').get();
       const users=usersSnap.exists()?usersSnap.val():(DB.get('users')||[]);
       for(let u of users){
         const uNameNorm=(u.name||'').toLowerCase().replace(/\s+/g,'');const uMatch=(u.email&&(u.email.toLowerCase()===email.toLowerCase()||u.email===email))||(uNameNorm===email.toLowerCase().replace(/\s+/g,''));
@@ -13496,7 +13695,7 @@ ${snapshot}
             admin.passHash=await hashPassword(nw);delete admin.pass;
             localStorage.setItem('plp_admin_account',JSON.stringify(admin));
             // حفظ في Firebase أيضاً
-            _fbRTDB.ref('data/shared/admin').update({passHash:admin.passHash});
+            if(_fbRTDB)_fbRTDB.ref('data/shared/admin').update({passHash:admin.passHash});
             verified=true;
           }
         }
@@ -13538,7 +13737,7 @@ ${snapshot}
     const profile={uid,name,email,phone:_adminPhone,passHash,role:'admin',active:true,createdAt:Date.now()};
     localStorage.setItem('plp_admin_account',JSON.stringify(profile));
     // حفظ في Firebase
-    try{await _fbRTDB.ref('accounts/'+uid).set({uid,name,email,passHash,role:'admin',active:true});}catch(e){}
+    if(_fbRTDB)try{await _fbRTDB.ref('accounts/'+uid).set({uid,name,email,passHash,role:'admin',active:true});}catch(e){}
     DB._uid='shared';
     ensureDefaults();
     const safe=saveSession(profile);
