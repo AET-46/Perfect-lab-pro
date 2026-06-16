@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
 <!-- Firebase SDK -->
 <script>
-// Firebase SDK loader with CDN fallback
+// Firebase SDK loader with CDN fallback — يجب تحميل app SDK أولاً، ثم database SDK بعده
 (function() {
   function loadScript(url, fallback, cb) {
     var s = document.createElement('script');
@@ -24,17 +24,17 @@
     };
     document.head.appendChild(s);
   }
-  var loaded = 0;
-  function onLoaded() { loaded++; }
+  // التحميل بالتسلسل: database SDK يحتاج app SDK محمّلاً ومُهيّأ أولاً
   loadScript(
     'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js',
     'https://cdn.jsdelivr.net/npm/firebase@10.12.0/firebase-app-compat.min.js',
-    onLoaded
-  );
-  loadScript(
-    'https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js',
-    'https://cdn.jsdelivr.net/npm/firebase@10.12.0/firebase-database-compat.min.js',
-    onLoaded
+    function(){
+      loadScript(
+        'https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js',
+        'https://cdn.jsdelivr.net/npm/firebase@10.12.0/firebase-database-compat.min.js',
+        function(){}
+      );
+    }
   );
 })();
 </script>
@@ -13325,6 +13325,7 @@ function takeSnapshot(auto=false){
 }
 
 function autoSnapshot(){
+  if(localStorage.getItem('plp_autobackup')==='0')return; // معطّل فقط لو المستخدم عطّله بنفسه (افتراضيًا مفعّل)
   const last=localStorage.getItem('plp_last_autosnap')||'';
   const today=new Date().toISOString().slice(0,10);
   if(last===today)return;
@@ -13369,7 +13370,7 @@ function toggleAutoBackup(on){
 function renderBackup(){
   // Set auto-backup checkbox state
   const chk=document.getElementById('auto-backup-chk');
-  if(chk)chk.checked=localStorage.getItem('plp_autobackup')==='1';
+  if(chk)chk.checked=localStorage.getItem('plp_autobackup')!=='0';
 
   const snaps=JSON.parse(localStorage.getItem(SNAP_KEY)||'[]');
   const container=document.getElementById('snap-list-container');
