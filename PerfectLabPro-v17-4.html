@@ -4117,6 +4117,8 @@ let _fbInitDone = false;
 function _initFirebase() {
   if (typeof firebase === 'undefined') return false;
   if (_fbInitDone) return true;
+  // database SDK قد لا يكون اكتمل تحميله بعد حتى لو app SDK جاهز — هذا متوقع، لا نطبع تحذير له
+  if (typeof firebase.database !== 'function') return false;
   try {
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     _fbRTDB = firebase.database();
@@ -4556,6 +4558,7 @@ function closeSidebar(){
 
 // خريطة الصفحات → الصلاحيات المطلوبة
 const PAGE_PERM_MAP = {
+  dashboard:      'dashboard.view',
   dafter:         'dafter.view',
   proof:          'proof.view',
   archive:        'archive.view',
@@ -7604,7 +7607,7 @@ function renderReports(){
 // THEME & INIT
 function setTheme(cls){document.body.className=cls;document.querySelectorAll('.td').forEach((d,i)=>d.classList.toggle('on',i===(cls===''?0:1)));localStorage.setItem('plp_theme',cls);
   // Redraw charts on theme change
-  setTimeout(()=>{if(document.getElementById('pg-dashboard')?.classList.contains('active'))renderDash();},100);
+  setTimeout(()=>{if(document.getElementById('pg-dashboard')?.classList.contains('active') && can('dashboard.view'))renderDash();},100);
 }
 const _st=localStorage.getItem('plp_theme')||'';if(_st)setTheme(_st);
 
@@ -7613,7 +7616,7 @@ let _dashResizeTimer;
 window.addEventListener('resize',()=>{
   clearTimeout(_dashResizeTimer);
   _dashResizeTimer=setTimeout(()=>{
-    if(document.getElementById('pg-dashboard')?.classList.contains('active'))renderDash();
+    if(document.getElementById('pg-dashboard')?.classList.contains('active') && can('dashboard.view'))renderDash();
   },300);
 });
 
@@ -7739,7 +7742,7 @@ function init(){
   _applySidebarLogo(li.logo||'');
   // FIX-FREEZE: defer heavy renders — give browser time to paint login-hide transition first
   setTimeout(()=>{
-    try{ renderDash(); }catch(e){ console.warn('renderDash error:',e); }
+    try{ if(can('dashboard.view')) renderDash(); }catch(e){ console.warn('renderDash error:',e); }
     setTimeout(()=>{
       try{ updateBadges(); }catch(e){ console.warn('updateBadges error:',e); }
     },200);
@@ -13116,6 +13119,34 @@ function initAuth(){}
 function applySession(sess){
   if(!sess)return;
   initPermsIfEmpty();
+
+  // ── حماية فورية: إخفاء/تبديل لوحة التحكم قبل أي رندر لو الدور بدون صلاحية ──
+  // هذا يمنع ظهور أي بيانات مالية للحظة واحدة عند فتح التطبيق
+  if(sess.role && sess.role!=='admin'){
+    const advPermsEarly=DB.get('perms_advanced')||{};
+    const myPermsEarly=advPermsEarly[sess.role]||[];
+    if(myPermsEarly.length>0 && !myPermsEarly.includes('dashboard.view')){
+      const dashPg=document.getElementById('pg-dashboard');
+      const dashNav=document.querySelector('.nav-standalone[data-page="dashboard"]');
+      if(dashPg)dashPg.classList.remove('active');
+      if(dashNav)dashNav.classList.remove('active');
+      // فعّل أول صفحة مسموحة بدلاً منها فوراً
+      const navEls=[...document.querySelectorAll('[data-page]')]
+        .filter(el=>{
+          const pg=el.dataset.page;
+          if(!pg||pg==='dashboard')return false;
+          const pagePrefix=pg+'.';
+          return myPermsEarly.some(p=>p===pg||p.startsWith(pagePrefix));
+        });
+      const fallbackPg=navEls[0]?.dataset?.page||'dafter';
+      document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+      document.getElementById('pg-'+fallbackPg)?.classList.add('active');
+      document.querySelectorAll('.nav-item,.nav-standalone').forEach(n=>n.classList.remove('active'));
+      document.querySelector(`[data-page="${fallbackPg}"]`)?.classList.add('active');
+      window._fallbackPgAfterLogin=fallbackPg;
+    }
+  }
+
   const roleLabels={admin:'مدير',supervisor:'مشرف',employee:'موظف',accountant:'محاسب',delegate:'مندوب',technician:'فني'};
   const el=n=>document.getElementById(n);
   if(el('top-uname'))el('top-uname').textContent=sess.name||sess.email||'المدير';
@@ -13139,7 +13170,7 @@ function applySession(sess){
       if(hasAdvPerms){
         // استخدم النظام الجديد — اظهر الصفحة لو عنده أي صلاحية فيها
         const pagePrefix = pg + '.';
-        show = (pg==='dashboard') || advRolePerms.some(p=>p===pg||p.startsWith(pagePrefix));
+        show = advRolePerms.some(p=>p===pg||p.startsWith(pagePrefix));
       } else if(legacyAllowed.length > 0){
         // استخدم النظام القديم
         show = legacyAllowed.includes(pg)||(pg==='dashboard');
