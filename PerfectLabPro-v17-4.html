@@ -887,11 +887,11 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
     <div class="ph">
       <h2>الدفتر <small id="dafter-cnt"></small></h2>
       <div class="btn-row">
-        <button class="btn btn-gold" onclick="openDafter()">+ إضافة</button>
-        <button class="btn btn-ghost" onclick="editSelDafter()">تعديل</button>
-        <button class="btn btn-ghost" onclick="delSelDafter()">حذف</button>
-        <button class="btn btn-ghost" onclick="moveToProof()">نقل للبروفه</button>
-        <button class="btn btn-ghost" onclick="openTechAssign('dafter')">نقل للأرشيف</button>
+        <button class="btn btn-gold" onclick="openDafter()" data-perm-hide="dafter.add">+ إضافة</button>
+        <button class="btn btn-ghost" onclick="editSelDafter()" data-perm-hide="dafter.edit">تعديل</button>
+        <button class="btn btn-ghost" onclick="delSelDafter()" data-perm-hide="dafter.delete">حذف</button>
+        <button class="btn btn-ghost" onclick="moveToProof()" data-perm-hide="dafter.to_proof">نقل للبروفه</button>
+        <button class="btn btn-ghost" onclick="openTechAssign('dafter')" data-perm-hide="dafter.to_archive">نقل للأرشيف</button>
         <div style="position:relative;display:inline-block">
           <button class="btn btn-ghost" onclick="togglePrintMenu('pm-dafter')">🖨️ طباعة ▾</button>
           <div id="pm-dafter" style="display:none;position:absolute;left:0;top:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;z-index:999;min-width:180px;padding:4px;box-shadow:0 8px 24px rgba(0,0,0,.3)">
@@ -931,9 +931,9 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
     <div class="ph">
       <h2>البروفه <small id="proof-cnt"></small></h2>
       <div class="btn-row">
-        <button class="btn btn-orange" onclick="sendProofNotif()">🔬 إشعار بروفه</button>
-        <button class="btn btn-ghost" onclick="openTechAssign('proof')">نقل للأرشيف</button>
-        <button class="btn btn-ghost" onclick="returnToDafter()">إرجاع للدفتر</button>
+        <button class="btn btn-orange" onclick="sendProofNotif()" data-perm-hide="proof.send_notif">🔬 إشعار بروفه</button>
+        <button class="btn btn-ghost" onclick="openTechAssign('proof')" data-perm-hide="proof.to_archive">نقل للأرشيف</button>
+        <button class="btn btn-ghost" onclick="returnToDafter()" data-perm-hide="proof.back">إرجاع للدفتر</button>
         <div style="position:relative;display:inline-block">
           <button class="btn btn-ghost" onclick="togglePrintMenu('pm-proof')">🖨️ طباعة ▾</button>
           <div id="pm-proof" style="display:none;position:absolute;left:0;top:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;z-index:999;min-width:180px;padding:4px;box-shadow:0 8px 24px rgba(0,0,0,.3)">
@@ -961,10 +961,10 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
     <div class="ph">
       <h2>الأرشيف</h2>
       <div class="btn-row">
-        <button class="btn btn-blue" onclick="sendArcNotifOnly()">💬 إشعار</button>
-        <button class="btn btn-purple" onclick="sendArcInvOnly()">🖨️ فاتورة</button>
-        <button class="btn btn-ghost" onclick="returnToProof()">إرجاع للبروفه</button>
-        <button class="btn btn-purple" onclick="openSettle()">تسوية</button>
+        <button class="btn btn-blue" onclick="sendArcNotifOnly()" data-perm-hide="archive.send_inv">💬 إشعار</button>
+        <button class="btn btn-purple" onclick="sendArcInvOnly()" data-perm-hide="archive.invoice">🖨️ فاتورة</button>
+        <button class="btn btn-ghost" onclick="returnToProof()" data-perm-hide="archive.back">إرجاع للبروفه</button>
+        <button class="btn btn-purple" onclick="openSettle()" data-perm-hide="archive.settle">تسوية</button>
         <div style="position:relative;display:inline-block">
           <button class="btn btn-ghost" onclick="togglePrintMenu('pm-archive')">🖨️ طباعة ▾</button>
           <div id="pm-archive" style="display:none;position:absolute;left:0;top:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;z-index:999;min-width:180px;padding:4px;box-shadow:0 8px 24px rgba(0,0,0,.3)">
@@ -1013,8 +1013,8 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
     <div class="ph">
       <h2>الخزنة</h2>
       <div class="btn-row">
-        <button class="btn btn-gold" onclick="openTrModal()">➕ حركة جديدة</button>
-        <button class="btn btn-teal" onclick="openTrTransferModal()">🔄 تحويل بين الخزائن</button>
+        <button class="btn btn-gold" onclick="openTrModal()" data-perm-hide="treasury.add">➕ حركة جديدة</button>
+        <button class="btn btn-teal" onclick="openTrTransferModal()" data-perm-hide="treasury.add">🔄 تحويل بين الخزائن</button>
         <button class="btn btn-ghost btn-sm" onclick="printSelRows('tr-tb','treasury')">🖨️ طباعة مختارة</button>
         <button class="btn btn-ghost" onclick="window.print()">🖨️ طباعة الكل</button>
       </div>
@@ -2457,6 +2457,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
       <div class="master-tab" onclick="swMaster('md-design',this);loadDesignPanel()">🎨 تصميم الإشعارات</div>
       <div class="master-tab" onclick="swMaster('md-employees',this)">👔 الموظفون</div>
       <div class="master-tab" onclick="swMaster('md-backup',this);renderBackup()">💾 النسخ الاحتياطي</div>
+      <div class="master-tab" onclick="swMaster('md-actlog',this);renderActivityLog()">📋 سجل النشاط</div>
     </div>
 
     <!-- LAB INFO -->
@@ -2675,21 +2676,21 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
               <div class="fg">
                 <label>🗂️ بعد كم يوم تُعتبر حالة الدفتر متأخرة؟</label>
                 <div style="display:flex;align-items:center;gap:8px">
-                  <input type="number" id="nset-dafter-late" min="1" max="365" value="7" style="width:80px">
+                  <input type="number" id="nset-dafter-late" min="1" max="365" value="7" style="width:80px" oninput="saveNsSettings()">
                   <span style="font-size:11px;color:var(--text3)">يوم من تاريخ الإدخال</span>
                 </div>
               </div>
               <div class="fg">
                 <label>🔬 بعد كم يوم تُعتبر حالة البروفه متأخرة؟</label>
                 <div style="display:flex;align-items:center;gap:8px">
-                  <input type="number" id="nset-proof-late" min="1" max="365" value="5" style="width:80px">
+                  <input type="number" id="nset-proof-late" min="1" max="365" value="5" style="width:80px" oninput="saveNsSettings()">
                   <span style="font-size:11px;color:var(--text3)">يوم من تاريخ الإدخال</span>
                 </div>
               </div>
               <div class="fg">
                 <label>💸 بعد كم يوم يُعتبر الدين متأخراً؟</label>
                 <div style="display:flex;align-items:center;gap:8px">
-                  <input type="number" id="nset-debt-late" min="1" max="365" value="30" style="width:80px">
+                  <input type="number" id="nset-debt-late" min="1" max="365" value="30" style="width:80px" oninput="saveNsSettings()">
                   <span style="font-size:11px;color:var(--text3)">يوم من تاريخ الأرشفة</span>
                 </div>
               </div>
@@ -3206,12 +3207,42 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
       </div>
     </div>
 
+    <!-- ACTIVITY LOG -->
+    <div id="md-actlog" class="ms">
+      <div class="card">
+        <div class="card-head">
+          <h3>📋 سجل نشاط الموظفين</h3>
+          <button class="btn btn-ghost btn-sm" onclick="clearActivityLog()" style="color:var(--red)">🗑️ مسح السجل</button>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--border)">
+          <select id="actlog-user" onchange="renderActivityLog()" style="flex:1;min-width:120px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-size:12px">
+            <option value="">كل المستخدمين</option>
+          </select>
+          <select id="actlog-action" onchange="renderActivityLog()" style="flex:1;min-width:150px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-size:12px">
+            <option value="">كل العمليات</option>
+            <option value="dafter.add">➕ إضافة حالة</option>
+            <option value="dafter.edit">✏️ تعديل حالة</option>
+            <option value="dafter.delete">🗑️ حذف حالة</option>
+            <option value="dafter.to_proof">🔬 نقل للبروفه</option>
+            <option value="dafter.to_archive">📁 نقل للأرشيف</option>
+            <option value="proof.to_archive">📁 نقل للأرشيف من البروفه</option>
+            <option value="proof.back">↩️ إرجاع للدفتر</option>
+            <option value="archive.back">↩️ إرجاع للبروفه</option>
+            <option value="archive.delete">🗑️ حذف من الأرشيف</option>
+          </select>
+          <input type="date" id="actlog-date" onchange="renderActivityLog()" style="flex:1;min-width:130px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-size:12px">
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('actlog-user').value='';document.getElementById('actlog-action').value='';document.getElementById('actlog-date').value='';renderActivityLog()">🔄 إعادة ضبط</button>
+        </div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>التاريخ / الوقت</th><th>المستخدم</th><th>العملية</th><th>التفاصيل</th><th>ملاحظة</th><th>قبل/بعد</th></tr></thead>
+          <tbody id="actlog-tb"></tbody>
+        </table></div>
+        <div id="actlog-empty" class="empty" style="display:none"><div class="ei">📋</div><p>لا يوجد نشاط مسجل بعد</p></div>
+      </div>
+    </div>
+
     <!-- BACKUP -->
     <div id="md-backup" class="ms">
-      <div class="card">
-        <div class="card-head"><h3>💾 النسخ الاحتياطي والاستعادة</h3></div>
-        <div class="backup-grid">
-          <div class="backup-card">
             <div class="bc-icon">📤</div>
             <h4>تصدير نسخة احتياطية</h4>
             <p>احفظ جميع بيانات المختبر في ملف JSON على جهازك</p>
@@ -4367,7 +4398,7 @@ function clearPurchaseDateFilter(){
 // ---- End combined filters ----
 function toggleAll(id,c){document.querySelectorAll('#'+id+' input[type=checkbox]').forEach(cb=>{cb.checked=c;cb.closest('tr')?.classList.toggle('selected',c)});updateSelCount(id);}
 function getSel(id){return[...document.querySelectorAll('#'+id+' tr.selected')].map(tr=>tr.dataset.id).filter(Boolean)}
-function rowClick(tr){tr.classList.toggle('selected');const cb=tr.querySelector('input[type=checkbox]');if(cb)cb.checked=tr.classList.contains('selected')}
+function rowClick(tr){tr.classList.toggle('selected');const cb=tr.querySelector('input[type=checkbox]');if(cb)cb.checked=tr.classList.contains('selected');const tb=tr.closest('tbody');if(tb?.id)updateSelCount(tb.id);}
 
 // IMAGE UTILS
 function compressImage(dataUrl,maxW,maxH,quality,cb){
@@ -4599,6 +4630,8 @@ function goPage(pg){
     },balance:renderBalance,
     prospects:renderProspects};
   if(renders[pg]){try{renders[pg]();}catch(e){console.warn('render error page='+pg,e);}}
+  // إعادة تطبيق الصلاحيات بعد كل render
+  setTimeout(applyActionPerms, 50);
   // Scroll AFTER render — reset all possible scroll containers
   requestAnimationFrame(()=>{
     // الـ content div
@@ -4717,6 +4750,7 @@ const PERM_SCHEMA = [
       {id:'dafter.edit',    label:'تعديل حالة'},
       {id:'dafter.edit_own',label:'تعديل حالاته فقط'},
       {id:'dafter.delete',  label:'حذف حالة'},
+      {id:'dafter.delete_own',label:'حذف حالاته فقط'},
       {id:'dafter.price',   label:'رؤية الأسعار'},
       {id:'dafter.to_proof',label:'نقل للبروفه'},
       {id:'dafter.to_archive',label:'نقل للأرشيف'},
@@ -4739,6 +4773,7 @@ const PERM_SCHEMA = [
     section:'📁 الأرشيف', key:'archive',
     items:[
       {id:'archive.view',    label:'عرض الأرشيف'},
+      {id:'archive.back',    label:'إرجاع للبروفه'},
       {id:'archive.edit',    label:'تعديل حالة مؤرشفة'},
       {id:'archive.delete',  label:'حذف من الأرشيف'},
       {id:'archive.invoice', label:'فتح الفاتورة'},
@@ -5027,14 +5062,40 @@ function can(permId){
   return rolePerms.includes(permId);
 }
 
+// صلاحية على مستوى البيانات: يقدر يعدّل/يحذف فقط السجلات اللي أنشأها هو
+// permId مثل 'dafter.edit' → نبحث عن صلاحية مقابلة '_own' مثل 'dafter.edit_own'
+function canOwn(permId, recordId, storeKey){
+  const role = window._currentUser?.role;
+  if(!role || role==='admin') return false; // الأدمن مغطى أصلاً بـ can()
+  const ownPermId = permId.replace(/\.(add|edit|delete)$/, '.$1_own');
+  const allPerms = DB.get('perms_advanced') || {};
+  const rolePerms = allPerms[role] || PERM_DEFAULTS[role] || [];
+  if(!rolePerms.includes(ownPermId)) return false;
+  if(!recordId) return true; // إضافة جديدة — مالكها هو نفسه تلقائياً
+  const rec=(DB.get(storeKey)||[]).find(r=>r.id===recordId);
+  if(!rec) return false;
+  const myName=window._currentUser?.name;
+  return rec.createdBy && myName && rec.createdBy===myName;
+}
+
+// أخذ نسخة مصغّرة من سجل لأغراض سجل النشاط (before/after)
+function snapshotFields(rec, fields){
+  if(!rec)return null;
+  const out={};
+  fields.forEach(f=>{ if(rec[f]!==undefined) out[f]=rec[f]; });
+  return out;
+}
+
 // إضافة / إخفاء أزرار بناءً على الصلاحيات بعد تحميل الصفحة
 function applyActionPerms(){
   const role = window._currentUser?.role;
   if(!role || role==='admin') return;
 
-  // الدفتر
-  const addDfBtn = document.querySelector('#pg-dafter .btn-row .btn-gold:first-child');
-  if(addDfBtn && !can('dafter.add')) addDfBtn.style.display='none';
+  // إخفاء كل الأزرار المحمية بـ data-perm-hide تلقائياً
+  document.querySelectorAll('[data-perm-hide]').forEach(el=>{
+    const perm=el.getAttribute('data-perm-hide');
+    if(perm && !can(perm)) el.style.display='none';
+  });
 
   // إخفاء الأسعار في الدفتر
   if(!can('dafter.price')){
@@ -5050,6 +5111,11 @@ function applyActionPerms(){
   if(!can('treasury.balances')){
     const balRow = document.getElementById('tr-balances-row');
     if(balRow) balRow.style.display='none';
+  }
+
+  // إخفاء سجل النشاط من غير الأدمن والمشرف
+  if(!['admin','supervisor'].includes(role)){
+    document.querySelectorAll('[onclick*="md-actlog"]').forEach(el=>el.style.display='none');
   }
 }
 
@@ -5804,6 +5870,9 @@ function openDafter(editId=null){
   openOv('ov-dafter');
 }
 function saveDafter(){
+  // تحقق فعلي من الصلاحية (مش بس إخفاء الزر)
+  const action=_dfId?'dafter.edit':'dafter.add';
+  if(!can(action) && !canOwn(action,_dfId,'dafter')){toast('ليس لديك صلاحية لهذه العملية','err');return;}
   const clSel=document.getElementById('df-client');const opt=clSel.options[clSel.selectedIndex];
   const client=opt?.dataset?.name||opt?.textContent||'';
   const clientId=clSel.value||'';
@@ -5811,14 +5880,17 @@ function saveDafter(){
   if(!client){toast('يرجى اختيار العميل','err');return}if(!product){toast('يرجى اختيار المنتج','err');return}
   const qty=+document.getElementById('df-qty').value||1;const price=+document.getElementById('df-price').value||0;
   const ex=_dfId?(DB.get('dafter')||[]).find(x=>x.id===_dfId):null;
-  const data={id:_dfId||('d_'+Date.now()),caseId:ex?.caseId||nid('case'),client,clientId,phone:document.getElementById('df-phone').value,product,color:document.getElementById('df-color').value,qty,price,total:qty*price,date:document.getElementById('df-date').value,notes:document.getElementById('df-notes').value,noteName:document.getElementById('df-notename').value,delegate:document.getElementById('df-delegate').value,createdAt:ex?.createdAt||Date.now()};
+  const data={id:_dfId||('d_'+Date.now()),caseId:ex?.caseId||nid('case'),client,clientId,phone:document.getElementById('df-phone').value,product,color:document.getElementById('df-color').value,qty,price,total:qty*price,date:document.getElementById('df-date').value,notes:document.getElementById('df-notes').value,noteName:document.getElementById('df-notename').value,delegate:document.getElementById('df-delegate').value,createdAt:ex?.createdAt||Date.now(),createdBy:ex?.createdBy||window._currentUser?.name||'مجهول'};
   let list=DB.get('dafter')||[];
   if(_dfId)list=list.map(x=>x.id===_dfId?data:x);else list.push(data);
-  DB.set('dafter',list);closeOv('ov-dafter');renderDafter();updateBadges();toast(_dfId?'تم التعديل':'تمت الإضافة');
+  DB.set('dafter',list);
+  logActivity(action,{client:data.client,caseId:data.caseId,product:data.product,before:ex?snapshotFields(ex,['client','product','qty','price','total','date','noteName']):null,after:snapshotFields(data,['client','product','qty','price','total','date','noteName'])});
+  closeOv('ov-dafter');renderDafter();updateBadges();toast(_dfId?'تم التعديل':'تمت الإضافة');
 }
 function renderDafter(){
   const list=DB.get('dafter')||[];
   const cntEl=document.getElementById('dafter-cnt');if(cntEl)cntEl.textContent=list.length+' حالة';
+  const srch=document.querySelector('#pg-dafter .search-box input');if(srch)srch.value='';
   const tb=document.getElementById('dafter-tb');const em=document.getElementById('dafter-empty');
   if(!list.length){if(tb)tb.innerHTML='';if(em)em.style.display='block';return}
   if(em)em.style.display='none';
@@ -5835,8 +5907,28 @@ function renderDafter(){
     <td onclick="event.stopPropagation()"><button class="row-note-btn${rowNoteCount?` has-note`:''}" onclick="openRowNote('${r.id}','${esc(String(r.caseId))}','${esc(r.client)}','dafter')" title="ملاحظات الحالة">${rowNoteCount?`📝${rowNoteCount}`:'📝'}</button></td>
   </tr>`;}).join('');
 }
-function editSelDafter(){const ids=getSel('dafter-tb');if(ids.length!==1){toast('اختر حالة واحدة','err');return}openDafter(ids[0])}
-function delSelDafter(){if(!can('dafter.delete')){toast('ليس لديك صلاحية الحذف','err');return;}const ids=getSel('dafter-tb');if(!ids.length){toast('اختر حالة أولاً','err');return}confirm2('حذف',`حذف ${ids.length}؟`,()=>{DB.set('dafter',(DB.get('dafter')||[]).filter(x=>!ids.includes(x.id)));renderDafter();updateBadges();toast('تم الحذف')})}
+function editSelDafter(){
+  const ids=getSel('dafter-tb');if(ids.length!==1){toast('اختر حالة واحدة','err');return}
+  const rec=(DB.get('dafter')||[]).find(x=>x.id===ids[0]);
+  if(!can('dafter.edit') && !canOwn('dafter.edit',ids[0],'dafter')){toast('ليس لديك صلاحية تعديل هذه الحالة','err');return;}
+  openDafter(ids[0])
+}
+function delSelDafter(){
+  const ids=getSel('dafter-tb');if(!ids.length){toast('اختر حالة أولاً','err');return}
+  const all=DB.get('dafter')||[];
+  const rows=all.filter(x=>ids.includes(x.id));
+  // تحقق فعلي: صلاحية كاملة، أو صلاحية "حذف حالاته فقط" وكل السجلات المحددة من إنشائه
+  const hasFullPerm=can('dafter.delete');
+  const myName=window._currentUser?.name;
+  const allOwn=rows.every(r=>r.createdBy===myName);
+  if(!hasFullPerm && !(canOwn('dafter.delete',null,'dafter') && allOwn)){
+    toast('ليس لديك صلاحية الحذف','err');return;
+  }
+  confirm2('حذف',`حذف ${ids.length}؟`,()=>{
+    logActivity('dafter.delete',{count:ids.length,client:rows[0]?.client||'-',caseId:rows[0]?.caseId||'-',note:rows.map(r=>r.client+'#'+r.caseId).join(', '),before:rows.map(r=>snapshotFields(r,['client','product','qty','price','total','date','noteName','phone']))});
+    DB.set('dafter',all.filter(x=>!ids.includes(x.id)));renderDafter();updateBadges();toast('تم الحذف')
+  })
+}
 function moveToProof(){
   if(!can('dafter.to_proof')){toast('ليس لديك صلاحية النقل للبروفه','err');return;}
   const ids=getSel('dafter-tb');if(!ids.length){toast('اختر حالة أولاً','err');return}
@@ -5846,11 +5938,13 @@ function moveToProof(){
   const moving=d.filter(x=>ids.includes(x.id));
   if(!moving.length){toast('لم يتم العثور على الحالات المحددة','err');return;}
   const _ts=Date.now();
-  moving.forEach((r,i)=>p.push({...r,movedAt:_ts+i}));
+  const _todayStr=new Date().toISOString().split('T')[0];
+  moving.forEach((r,i)=>p.push({...r,movedAt:_ts+i,proofDate:_todayStr}));
   const newD=d.filter(x=>!ids.includes(x.id));
   DB.set('dafter',newD);DB.set('proof',p);
   // FIX: update cache immediately after write
   DB._c['dafter']=newD;DB._c['proof']=p;
+  logActivity('dafter.to_proof',{count:moving.length,client:moving[0]?.client||'-',caseId:moving[0]?.caseId||'-',note:moving.map(r=>r.client+'#'+r.caseId).join(', ')});
   renderDafter();renderProof();updateBadges();toast(`تم النقل للبروفه (${moving.length} حالة)`);
 }
 
@@ -5858,6 +5952,8 @@ function moveToProof(){
 function renderProof(){
   const list=DB.get('proof')||[];
   const cntEl=document.getElementById('proof-cnt');if(cntEl)cntEl.textContent=list.length+' حالة';
+  // مسح خانة البحث عند كل تحديث لتجنب إخفاء الصفوف الجديدة
+  const srch=document.querySelector('#pg-proof .search-box input');if(srch)srch.value='';
   const tb=document.getElementById('proof-tb');const em=document.getElementById('proof-empty');
   if(!list.length){if(tb)tb.innerHTML='';if(em)em.style.display='block';return}
   if(em)em.style.display='none';
@@ -5869,15 +5965,18 @@ function renderProof(){
     <td><span style="font-size:11px;color:var(--text3)">#${esc(String(r.caseId))}</span><br><strong>${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:10px;color:var(--teal)">${esc(r.noteName)}</span>`:''}</td>
     <td>${esc(r.product)}</td><td>${esc(r.color||'-')}</td><td>${esc(String(r.qty))}</td>
     <td><strong style="color:var(--gold2)">${fmt(r.total)}</strong></td>
-    <td>${r.delegate?badge(esc(r.delegate),'bg-teal'):'—'}</td><td>${esc(r.date||'-')}</td>
+    <td>${r.delegate?badge(esc(r.delegate),'bg-teal'):'—'}</td>
+    <td><span title="تاريخ الدفتر: ${esc(r.date||'-')}">${esc(r.proofDate||r.date||'-')}</span></td>
     <td onclick="event.stopPropagation()"><button class="row-note-btn${rowNoteCount?` has-note`:''}" onclick="openRowNote('${r.id}','${esc(String(r.caseId))}','${esc(r.client)}','proof')" title="ملاحظات الحالة">${rowNoteCount?`📝${rowNoteCount}`:'📝'}</button></td>
   </tr>`;}).join('');
 }
 function returnToDafter(){
+  if(!can('proof.back')){toast('ليس لديك صلاحية الإرجاع للدفتر','err');return;}
   const ids=getSel('proof-tb');if(!ids.length){toast('اختر حالة أولاً','err');return}
   let pf=DB.get('proof')||[];let d=DB.get('dafter')||[];
   d.push(...pf.filter(x=>ids.includes(x.id)).map(({movedAt,...r})=>r));
   DB.set('proof',pf.filter(x=>!ids.includes(x.id)));DB.set('dafter',d);
+  logActivity('proof.back',{count:ids.length,note:'إرجاع للدفتر'});
   renderProof();renderDafter();updateBadges();toast('تم الإرجاع للدفتر');
 }
 // sendProofNotif is defined below (multi-client version)
@@ -5896,6 +5995,8 @@ function openTechAssign(src){
   openOv('ov-ta');
 }
 function doArchive(){
+  const permId=_taSrc+'.to_archive';
+  if(!can(permId)){toast('ليس لديك صلاحية النقل للأرشيف','err');closeOv('ov-ta');return;}
   const stages=['تصميم','ليزر','بورسلين','تفنيش','زيركون','تقويم','متحرك'];
   const assigned={};stages.forEach(s=>{assigned[s]=document.getElementById('ta-'+s)?.value||''});
   // FIX: invalidate cache before reading to avoid stale data
@@ -5924,6 +6025,7 @@ function doArchive(){
   // FIX #28: write both collections atomically and update cache
   DB.set(_taSrc,newSrc);DB.set('archive',arc);
   DB._c[_taSrc]=newSrc;DB._c['archive']=arc;
+  logActivity(_taSrc+'.to_archive',{count:moving.length,client:moving[0]?.client||'-',caseId:moving[0]?.caseId||'-',note:moving.map(r=>r.client+'#'+r.caseId).join(', ')});
   closeOv('ov-ta');renderPage2(_taSrc);
   if(document.getElementById('pg-archive')?.classList.contains('active'))renderArchive();
   updateBadges();toast(`تم النقل للأرشيف (${moving.length} حالة)`);
@@ -5954,6 +6056,7 @@ function getTrPaidForArchive(arcId){
 let _arcF='all';
 function renderArchive(){
   _invalidateTrPaidCache(); // أعد بناء الـ cache عند كل render
+  const srch=document.querySelector('#pg-archive .search-box input');if(srch)srch.value='';
   let list=(DB.get('archive')||[]).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));if(_arcF!=='all')list=list.filter(x=>x.status===_arcF);
   // تطبيق حد عدد الصفوف
   const limitSel=document.getElementById('arc-limit');
@@ -5976,7 +6079,7 @@ function renderArchive(){
       <td>${r.delegate?badge(esc(r.delegate),'bg-teal'):'—'}</td>
       <td>${fmt(r.total)}</td><td style="color:var(--green)">${fmt(paid)}</td>
       <td style="color:${remaining>0?'var(--red)':'var(--green)'}">${fmt(remaining)}</td>
-      <td>${esc(r.date||'-')}</td><td>${stBadge(status)}</td>
+      <td><span title="تاريخ الدفتر: ${esc(r.date||'-')}">${r.archivedAt?new Date(r.archivedAt).toISOString().split('T')[0]:esc(r.date||'-')}</span></td><td>${stBadge(status)}</td>
       <td onclick="event.stopPropagation()">${(()=>{const cnt=allNotes.filter(n=>n.rowId===r.id||n.rowId===r.sourceId||n.caseNo===String(r.caseId||'')).length;return`<button class="row-note-btn${cnt?` has-note`:''}" onclick="openRowNote('${r.id}','${esc(String(r.caseId||r.invId||''))}','${esc(r.client)}','archive')" title="ملاحظات الحالة">${cnt?`📝${cnt}`:'📝'}</button>`;})()}</td>
     </tr>`;}).join('');
   // Sync computed statuses back to DB so filter tabs work correctly
@@ -5986,6 +6089,7 @@ function renderArchive(){
 }
 function arcF(f,el){_arcF=f;document.querySelectorAll('#pg-archive .tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');renderArchive()}
 function returnToProof(){
+  if(!can('archive.back')){toast('ليس لديك صلاحية الإرجاع للبروفه','err');return;}
   const ids=getSel('archive-tb');if(!ids.length){toast('اختر حالة أولاً','err');return}
   let arc=DB.get('archive')||[];let pf=DB.get('proof')||[];
   const moving=arc.filter(x=>ids.includes(x.id));
@@ -5995,6 +6099,7 @@ function returnToProof(){
     return clean;
   }));
   DB.set('archive',arc.filter(x=>!ids.includes(x.id)));DB.set('proof',pf);
+  logActivity('archive.back',{count:ids.length,note:'إرجاع للبروفه'});
   renderArchive();renderProof();updateBadges();toast('تم الإرجاع للبروفه');
 }
 // FIX #30: sendInvNotif was defined twice — first definition removed, second definition (line ~3343) is kept
@@ -6009,6 +6114,7 @@ function openSettle(){
   openOv('ov-settle');
 }
 function doSettle(){
+  if(!can('archive.settle')){toast('ليس لديك صلاحية التسوية','err');return;}
   const reason=document.getElementById('settle-reason').value.trim();if(!reason){toast('يرجى كتابة السبب','err');return}
   const amt=+document.getElementById('settle-amt').value||0;
   if(amt<=0){toast('يرجى إدخال مبلغ صحيح أكبر من صفر','err');return}
@@ -7511,6 +7617,106 @@ window.addEventListener('resize',()=>{
   },300);
 });
 
+// ============================================================
+// سجل النشاط — Activity Log
+// ============================================================
+function logActivity(action, details={}){
+  try{
+    const log=DB.get('activityLog')||[];
+    const user=window._currentUser;
+    log.unshift({
+      id:'log_'+Date.now(),
+      ts:Date.now(),
+      date:new Date().toISOString().split('T')[0],
+      time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}),
+      user:user?.name||user?.uname||'مجهول',
+      role:user?.role||'-',
+      action,
+      ...details
+    });
+    // احتفظ بآخر 1000 سجل فقط
+    if(log.length>1000)log.splice(1000);
+    DB.set('activityLog',log);
+  }catch(e){}
+}
+
+function renderActivityLog(){
+  const log=DB.get('activityLog')||[];
+  const tb=document.getElementById('actlog-tb');
+  const em=document.getElementById('actlog-empty');
+  const filterUser=document.getElementById('actlog-user')?.value||'';
+  const filterAction=document.getElementById('actlog-action')?.value||'';
+  const filterDate=document.getElementById('actlog-date')?.value||'';
+  let list=log;
+  if(filterUser)list=list.filter(r=>r.user===filterUser);
+  if(filterAction)list=list.filter(r=>r.action===filterAction);
+  if(filterDate)list=list.filter(r=>r.date===filterDate);
+  if(!tb)return;
+  if(!list.length){if(tb)tb.innerHTML='';if(em)em.style.display='block';return;}
+  if(em)em.style.display='none';
+  const actionLabel={
+    'dafter.add':'➕ إضافة حالة','dafter.edit':'✏️ تعديل حالة','dafter.delete':'🗑️ حذف حالة',
+    'dafter.to_proof':'🔬 نقل للبروفه','dafter.to_archive':'📁 نقل للأرشيف',
+    'proof.to_archive':'📁 نقل للأرشيف','proof.back':'↩️ إرجاع للدفتر',
+    'archive.back':'↩️ إرجاع للبروفه','archive.delete':'🗑️ حذف من الأرشيف',
+    'treasury.add':'💰 إضافة معاملة','treasury.delete':'🗑️ حذف معاملة',
+    'login':'🔑 تسجيل دخول','logout':'🚪 تسجيل خروج'
+  };
+  tb.innerHTML=list.map((r,idx)=>`<tr>
+    <td style="font-size:11px;color:var(--text3)">${esc(r.date)}<br>${esc(r.time)}</td>
+    <td><strong>${esc(r.user)}</strong><br><span style="font-size:10px;color:var(--text3)">${esc(r.role)}</span></td>
+    <td>${actionLabel[r.action]||esc(r.action)}</td>
+    <td style="font-size:11px">${r.client?`<span style="color:var(--gold2)">${esc(r.client)}</span>`:''}${r.caseId?` #${esc(String(r.caseId))}`:''}${r.product?`<br>${esc(r.product)}`:''}${r.count>1?`<br><span style="color:var(--teal)">${r.count} حالات</span>`:''}</td>
+    <td style="font-size:11px;color:var(--text3)">${r.note?esc(r.note):'-'}</td>
+    <td>${(r.before||r.after)?`<button class="btn btn-ghost btn-sm" onclick='showActLogDetail(${idx})'>👁️ تفاصيل</button>`:'-'}</td>
+  </tr>`).join('');
+  window._actLogFiltered=list;
+  // تعبئة فلتر المستخدمين
+  const userSel=document.getElementById('actlog-user');
+  if(userSel&&userSel.options.length<=1){
+    const users=[...new Set(log.map(r=>r.user))];
+    users.forEach(u=>{const o=document.createElement('option');o.value=u;o.textContent=u;userSel.appendChild(o);});
+  }
+}
+
+const _actFieldLabels={client:'العميل',product:'المنتج',qty:'الكمية',price:'السعر',total:'الإجمالي',date:'التاريخ',noteName:'رقم الحالة/المريض',phone:'الهاتف'};
+function showActLogDetail(idx){
+  const r=window._actLogFiltered?.[idx];if(!r)return;
+  const before=r.before, after=r.after;
+  let rows='';
+  if(Array.isArray(before)){
+    // حذف متعدد — كل سجل محذوف على حدة
+    before.forEach((b,i)=>{
+      rows+=`<div style="margin-bottom:10px;padding:8px;background:var(--bg3);border-radius:8px"><strong style="color:var(--red)">سجل محذوف #${i+1}</strong><br>`+
+        Object.entries(b).map(([k,v])=>`<span style="font-size:11px;color:var(--text3)">${_actFieldLabels[k]||k}: </span><span style="font-size:11px">${esc(String(v))}</span>`).join(' • ')+`</div>`;
+    });
+  } else {
+    const keys=new Set([...(before?Object.keys(before):[]),...(after?Object.keys(after):[])]);
+    keys.forEach(k=>{
+      const bv=before?.[k], av=after?.[k];
+      const changed=before&&after&&bv!==av;
+      rows+=`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">
+        <span style="color:var(--text3)">${_actFieldLabels[k]||k}</span>
+        <span>${before?`<span style="${changed?'color:var(--red);text-decoration:line-through':''}">${esc(String(bv??'-'))}</span>`:''}${before&&after?' ← ':''}${after?`<span style="${changed?'color:var(--teal);font-weight:700':''}">${esc(String(av??'-'))}</span>`:''}</span>
+      </div>`;
+    });
+  }
+  const modalHtml=`<div class="overlay open" id="ov-actdetail" onclick="if(event.target===this)closeOv('ov-actdetail')">
+    <div class="mc" style="max-width:420px">
+      <div class="mh"><h3>📋 تفاصيل العملية</h3><div class="mc-btn" onclick="closeOv('ov-actdetail')">✕</div></div>
+      <div class="mb" style="padding:14px 16px">${rows||'<p style="color:var(--text3);font-size:12px">لا توجد تفاصيل إضافية</p>'}</div>
+      <div class="mf"><button class="btn btn-ghost" onclick="closeOv('ov-actdetail')">إغلاق</button></div>
+    </div>
+  </div>`;
+  let existing=document.getElementById('ov-actdetail');if(existing)existing.remove();
+  document.body.insertAdjacentHTML('beforeend',modalHtml);
+}
+function clearActivityLog(){
+  confirm2('مسح السجل','هل أنت متأكد من مسح كل سجل النشاط؟',()=>{
+    DB.set('activityLog',[]);renderActivityLog();toast('تم مسح السجل');
+  });
+}
+
 function migratePatientName(){
   ['dafter','proof','archive'].forEach(key=>{
     const list=DB.get(key)||[];
@@ -8294,6 +8500,7 @@ function copyInvMsg(){
 // ---- FINANCIAL NOTIF FROM TREASURY ----
 // Fixed saveTr - enhanced with archive/purchase/supplier/other linking
 function saveTr(){
+  if(!can('treasury.add')){toast('ليس لديك صلاحية إضافة معاملات','err');return;}
   const amt=+document.getElementById('tr-amount').value;
   if(!amt||amt<=0){toast('يرجى إدخال مبلغ صحيح','err');return;}
   const accType=document.getElementById('tr-acc-type').value;
@@ -13566,6 +13773,7 @@ ${snapshot}
     },80);
     if(typeof checkAndFireAlerts==='function')setTimeout(checkAndFireAlerts,3000);
     if(typeof autoSnapshot==='function')setTimeout(autoSnapshot,5000);
+    logActivity('login',{note:'تسجيل دخول ناجح'});
     toast('✅ مرحباً '+profile.name);
   }
 
