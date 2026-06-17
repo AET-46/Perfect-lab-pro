@@ -1127,15 +1127,24 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
             <div class="fg"><label>👨‍🔧 الفني</label><select id="tr-rep-tech"><option value="">الكل</option></select></div>
           </div>
           <div class="sec-title">💰 نسب الفنيين (ج.م / وحدة)</div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:8px;padding:0 4px">🔵 زيركون</div>
           <div class="three-col" id="tr-rep-rates">
-            <div class="fg"><label>التصميم</label><input id="rate-تصميم" type="number" value="20" min="0"></div>
-            <div class="fg"><label>الخراطة</label><input id="rate-خراطة" type="number" value="25" min="0"></div>
-            <div class="fg"><label>الليزر</label><input id="rate-ليزر" type="number" value="20" min="0"></div>
-            <div class="fg"><label>البورسلين</label><input id="rate-بورسلين" type="number" value="30" min="0"></div>
-            <div class="fg"><label>التفنيش</label><input id="rate-تفنيش" type="number" value="25" min="0"></div>
-            <div class="fg"><label>الزيركون</label><input id="rate-زيركون" type="number" value="35" min="0"></div>
-            <div class="fg"><label>التقويم</label><input id="rate-تقويم" type="number" value="40" min="0"></div>
-            <div class="fg"><label>المتحرك</label><input id="rate-متحرك" type="number" value="45" min="0"></div>
+            <div class="fg"><label>تصميم زيركون</label><input id="rate-تصميم زيركون" type="number" value="20" min="0"></div>
+            <div class="fg"><label>خراطة</label><input id="rate-خراطة" type="number" value="25" min="0"></div>
+            <div class="fg"><label>بناء زيركون</label><input id="rate-بناء زيركون" type="number" value="35" min="0"></div>
+            <div class="fg"><label>تفنيش زيركون</label><input id="rate-تفنيش زيركون" type="number" value="25" min="0"></div>
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin:10px 0 8px;padding:0 4px">🟤 معدن / بورسلين / فيس</div>
+          <div class="three-col">
+            <div class="fg"><label>تصميم معدن</label><input id="rate-تصميم معدن" type="number" value="20" min="0"></div>
+            <div class="fg"><label>ليزر</label><input id="rate-ليزر" type="number" value="20" min="0"></div>
+            <div class="fg"><label>تفنيش معدن</label><input id="rate-تفنيش معدن" type="number" value="25" min="0"></div>
+            <div class="fg"><label>بناء بورسلين</label><input id="rate-بناء بورسلين" type="number" value="30" min="0"></div>
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin:10px 0 8px;padding:0 4px">🟢 متحرك / تقويم</div>
+          <div class="three-col">
+            <div class="fg"><label>تقويم</label><input id="rate-تقويم" type="number" value="40" min="0"></div>
+            <div class="fg"><label>متحرك</label><input id="rate-متحرك" type="number" value="45" min="0"></div>
             <div class="ffull"><button class="btn btn-gold btn-sm" onclick="saveTechRates()">💾 حفظ الأسعار</button></div>
           </div>
           <div class="mf" style="padding:12px 0 0;border:none;gap:8px">
@@ -3631,7 +3640,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
     <div class="mb">
       <div class="fgrid" style="grid-template-columns:1fr">
         <div class="fg"><label>الاسم <span class="req">*</span></label><input id="tc-name" type="text"></div>
-        <div class="fg"><label>التخصص</label><select id="tc-spec"><option>تصميم</option><option>خراطة</option><option>ليزر</option><option>بورسلين</option><option>تفنيش</option><option>زيركون</option><option>تقويم</option><option>متحرك</option><option>عام</option></select></div>
+        <div class="fg"><label>التخصص</label><select id="tc-spec"><option>تصميم زيركون</option><option>خراطة</option><option>بناء زيركون</option><option>تفنيش زيركون</option><option>تصميم معدن</option><option>ليزر</option><option>تفنيش معدن</option><option>بناء بورسلين</option><option>تقويم</option><option>متحرك</option><option>عام</option></select></div>
         <div class="fg"><label>الهاتف</label><input id="tc-phone" type="text"></div>
       </div>
     </div>
@@ -6040,11 +6049,11 @@ function getProductionCat(productName){
 }
 function getTechStagesForProduct(productName){
   const cat=getProductionCat(productName);
-  if(cat==='zirconia') return ['تصميم','خراطة','بناء زيركون','تفنيش'];
-  if(cat==='porcelain') return ['تصميم معدن','ليزر','بناء بورسلين'];
+  if(cat==='zirconia') return ['تصميم زيركون','خراطة','بناء زيركون','تفنيش زيركون'];
+  if(cat==='porcelain') return ['تصميم معدن','ليزر','تفنيش معدن','بناء بورسلين'];
   if(cat==='removable') return []; // بدون فنيين
-  // unknown → كل المراحل (السلوك القديم)
-  return ['تصميم','خراطة','ليزر','بورسلين','تفنيش','زيركون','تقويم','متحرك'];
+  // unknown → كل المراحل
+  return ['تصميم زيركون','خراطة','بناء زيركون','تفنيش زيركون','تصميم معدن','ليزر','تفنيش معدن','بناء بورسلين'];
 }
 
 let _taSrc='dafter',_taIds=[];
@@ -9701,13 +9710,14 @@ function initTechRepFilters(){
   if(toEl&&!toEl.value)toEl.value=todayStr;
 }
 
+const _TECH_STAGES=['تصميم زيركون','خراطة','بناء زيركون','تفنيش زيركون','تصميم معدن','ليزر','تفنيش معدن','بناء بورسلين','تقويم','متحرك'];
 function getRate(stage){
   const el=document.getElementById('rate-'+stage);
   return el?+el.value||0:0;
 }
 function saveTechRates(){
   const rates={};
-  ['تصميم','خراطة','ليزر','بورسلين','تفنيش','زيركون','تقويم','متحرك'].forEach(s=>{
+  _TECH_STAGES.forEach(s=>{
     const el=document.getElementById('rate-'+s);if(el)rates[s]=+el.value||0;
   });
   DB.set('techRates',rates);toast('تم حفظ الأسعار');
@@ -9794,7 +9804,7 @@ function renderTechReport(){
       <td style="text-align:center;color:var(--gold2);font-weight:900">${fmt(techTotals[name])} ${c}</td>
     </tr>`).join('');
 
-  // --- تفصيلي (detail) — كارت لكل فني ---
+  // --- تفصيلي (detail) — كارت لكل فني بالمراحل ---
   const detailCards=techNames.map(name=>{
     const stageData=techMap[name];
     let techTotal=0;
@@ -9826,11 +9836,71 @@ function renderTechReport(){
     </div>`;
   }).join('');
 
+  // --- كشف الحالات (cases) — جدول تفصيلي بكل حالة لكل فني ---
+  const casesCards=techNames.map(name=>{
+    // اجمع كل الحالات اللي اشتغل فيها هذا الفني مع مراحلها
+    const caseRows=[];
+    filtered.forEach(r=>{
+      const techs=r.technicians||{};
+      const myStages=Object.entries(techs).filter(([,t])=>t===name).map(([s])=>s);
+      if(!myStages.length)return;
+      const qty=+r.qty||0;
+      myStages.forEach(stage=>{
+        const rate=getRate(stage);
+        const amt=qty*rate;
+        caseRows.push({
+          client:r.client||'-',
+          patient:r.noteName||'-',
+          product:r.product||'-',
+          qty,
+          date:r.archivedAt?new Date(r.archivedAt).toISOString().split('T')[0]:(r.date||'-'),
+          stage,
+          amt
+        });
+      });
+    });
+    // ترتيب بالتاريخ
+    caseRows.sort((a,b)=>a.date.localeCompare(b.date));
+    const techCasesTotal=caseRows.reduce((s,x)=>s+x.amt,0);
+    const rows=caseRows.map((x,i)=>`<tr>
+      <td style="font-size:11px;color:var(--text3);text-align:center">${i+1}</td>
+      <td><strong style="font-size:12px">${esc(x.client)}</strong></td>
+      <td style="font-size:11px;color:var(--teal)">${esc(x.patient)}</td>
+      <td style="font-size:11px">${esc(x.product)}</td>
+      <td style="text-align:center">${x.qty}</td>
+      <td style="text-align:center;font-size:11px;color:var(--text2)">${esc(x.date)}</td>
+      <td>${esc(x.stage)}</td>
+      <td style="text-align:center;color:var(--gold2);font-weight:700">${fmt(x.amt)} ${c}</td>
+    </tr>`).join('');
+    return`<div class="card" style="margin-bottom:14px">
+      <div class="card-head" style="background:linear-gradient(135deg,rgba(59,130,246,.1),transparent)">
+        <h3>👨‍🔧 ${esc(name)}</h3>
+        <span style="font-size:12px;color:var(--text2)">${caseRows.length} سجل &nbsp;|&nbsp; <strong style="color:var(--gold2)">${fmt(techCasesTotal)} ${c}</strong></span>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr>
+          <th style="text-align:center">#</th>
+          <th>العميل</th><th>المريض</th><th>المنتج</th>
+          <th style="text-align:center">العدد</th>
+          <th style="text-align:center">التاريخ</th>
+          <th>المرحلة</th>
+          <th style="text-align:center">المستحق</th>
+        </tr></thead>
+        <tbody>${rows||`<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:16px">لا توجد حالات</td></tr>`}</tbody>
+        <tfoot><tr style="background:var(--bg3)">
+          <td colspan="7" style="font-weight:800;text-align:right;padding:8px 12px">الإجمالي</td>
+          <td style="text-align:center;font-weight:900;color:var(--gold2);font-size:14px">${fmt(techCasesTotal)} ${c}</td>
+        </tr></tfoot>
+      </table></div>
+    </div>`;
+  }).join('');
+
   document.getElementById('tech-rep-out').innerHTML=`
-    <!-- تبويبان -->
-    <div style="display:flex;gap:8px;margin-bottom:14px">
+    <!-- تبويبات ثلاثة -->
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
       <button id="trv-sum-btn" onclick="switchTechView('summary')" class="btn btn-gold btn-sm">📊 إجمالي</button>
-      <button id="trv-det-btn" onclick="switchTechView('detail')" class="btn btn-ghost btn-sm">🔍 تفصيلي</button>
+      <button id="trv-det-btn" onclick="switchTechView('detail')" class="btn btn-ghost btn-sm">🔍 تفصيلي بالمراحل</button>
+      <button id="trv-cas-btn" onclick="switchTechView('cases')" class="btn btn-ghost btn-sm">📋 كشف الحالات</button>
     </div>
 
     <!-- إجمالي -->
@@ -9848,15 +9918,20 @@ function renderTechReport(){
       </div>
     </div>
 
-    <!-- تفصيلي -->
-    <div id="trv-detail" style="display:none">${detailCards}</div>`;
+    <!-- تفصيلي بالمراحل -->
+    <div id="trv-detail" style="display:none">${detailCards}</div>
+
+    <!-- كشف الحالات -->
+    <div id="trv-cases" style="display:none">${casesCards}</div>`;
 }
 
 function switchTechView(view){
   document.getElementById('trv-summary').style.display=view==='summary'?'':'none';
   document.getElementById('trv-detail').style.display=view==='detail'?'':'none';
+  document.getElementById('trv-cases').style.display=view==='cases'?'':'none';
   document.getElementById('trv-sum-btn').className='btn btn-sm '+(view==='summary'?'btn-gold':'btn-ghost');
   document.getElementById('trv-det-btn').className='btn btn-sm '+(view==='detail'?'btn-gold':'btn-ghost');
+  document.getElementById('trv-cas-btn').className='btn btn-sm '+(view==='cases'?'btn-gold':'btn-ghost');
 }
 
 // OLD sendTechReportWA removed — replaced by summary-only version in new engine
