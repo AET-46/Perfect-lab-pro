@@ -175,7 +175,7 @@ body{font-family:"Cairo",sans-serif;background:var(--bg);color:var(--text);min-h
 .search-box input{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:6px 30px 6px 10px;border-radius:7px;font-family:"Cairo",sans-serif;font-size:12px;outline:none;width:190px;transition:border-color .15s}
 .search-box input:focus{border-color:var(--gold)}
 .search-icon{position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:12px;pointer-events:none}
-.tbl-wrap{overflow-x:auto}
+.tbl-wrap{overflow-x:auto;touch-action:pan-y;}
 table{width:100%;border-collapse:collapse}
 thead{background:var(--bg3)}
 th{padding:9px 13px;text-align:right;font-size:11px;font-weight:700;color:var(--text3);border-bottom:1px solid var(--border);white-space:nowrap}
@@ -3498,8 +3498,8 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
     <div class="mh" style="color:var(--purple)"><h3 style="color:var(--purple)">تسوية حساب عميل</h3><div class="mc-btn" onclick="closeOv('ov-settle')">✕</div></div>
     <div class="mb"><div class="ibox" id="settle-info"></div>
       <div class="fg"><label>سبب التسوية <span class="req">*</span></label><textarea id="settle-reason"></textarea></div>
-      <div class="fg" style="margin-top:10px"><label>المبلغ المحصّل (ج.م)</label><input id="settle-amt" type="number" value="0"></div>
-      <div class="fg" style="margin-top:10px"><label>الخزنة</label><select id="settle-box"></select></div>
+      <div class="fg" style="margin-top:10px"><label>مبلغ التسوية / الإعفاء (ج.م)</label><input id="settle-amt" type="number" value="0"></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px">ملاحظة: التسوية تصحيح محاسبي على حساب العميل فقط، ولا تُسجَّل كفلوس حقيقية في الخزنة.</div>
     </div>
     <div class="mf"><button class="btn btn-purple" onclick="doSettle()">تأكيد</button><button class="btn btn-ghost" onclick="closeOv('ov-settle')">إلغاء</button></div>
   </div>
@@ -4404,8 +4404,8 @@ const DB = {
         try { localStorage.setItem('plp_' + k, JSON.stringify(data[k])); } catch(e) {}
       });
       // إعادة render الصفحة الحالية إن كانت مفتوحة
-      // FIX #TOUCH-DEFER: لو المستخدم ماسك بيسحب أو لسه السكرول مستمر (momentum)، نأجل الريندر
-      // لحد ما يهدأ تماماً (استبدال DOM الجدول أثناء حركة فعلية بيسبب "تجمد" حقيقي للسكرول على أندرويد)
+      // FIX #TOUCH-DEFER: لو المستخدم ماسك بيسحب دلوقتي، نأجل الريندر لحد ما يسيب إصبعه
+      // (استبدال DOM الجدول أثناء لمسة فعلية بيسبب "تجمد" ظاهري للسكرول على أندرويد)
       const _doRealtimeRender=()=>{
         try {
           const activePg = document.querySelector('.page.active');
@@ -4419,12 +4419,12 @@ const DB = {
           }
         } catch(e) {}
       };
-      if (typeof _isUserBusyScrolling==='function' && _isUserBusyScrolling()) {
+      if (window._userTouching) {
         let _waitTicks=0;
         const _waitRelease=setInterval(()=>{
           _waitTicks++;
-          // حد أقصى أمان: لا نؤجل أكثر من ~10 ثوانٍ حتى لو ظل المستخدم يسكرول باستمرار
-          if (!_isUserBusyScrolling() || _waitTicks>66) { clearInterval(_waitRelease); _doRealtimeRender(); }
+          // حد أقصى أمان: لا نؤجل أكثر من ~10 ثوانٍ حتى لو ظل المستخدم ماسكاً باستمرار
+          if (!window._userTouching || _waitTicks>66) { clearInterval(_waitRelease); _doRealtimeRender(); }
         },150);
       } else {
         _doRealtimeRender();
@@ -4884,37 +4884,18 @@ document.getElementById('sidebar-nav').addEventListener('click',function(e){
 });
 window.goPage=goPage;
 
-// FIX #TOUCH-TRACK: تتبّع وجود لمسة نشطة أو سكرول جارٍ على منطقة المحتوى — يُستخدم لتأجيل
-// أي إعادة render (مثلاً من Firebase realtime sync) لحد ما المستخدم يسيب إصبعه ويهدأ السكرول تماماً،
-// لأن استبدال الـ DOM أثناء حركة سحب أو momentum scroll فعلية بيلخبط محرك اللمس على أندرويد
-// ويُحس وكأن الصفحة متجمدة (السكرول لا يتحرك إطلاقاً).
-// FIX #SCROLL-FREEZE: الاعتماد على touchend وحده كان فيه race condition — لو حصل تحديث Firebase
-// بالظبط لحظة رفع الإصبع وسط سكرول مستمر (momentum)، كان بيستبدل الجدول وسط الحركة فيوقف السكرول تماماً.
-// الحل: نضيف مراقبة فعلية لحدث scroll نفسه مع debounce، فمفيش render يحصل إلا بعد سكون حقيقي للتمرير.
+// FIX #TOUCH-TRACK: تتبّع وجود لمسة نشطة على منطقة المحتوى — يُستخدم لتأجيل
+// أي إعادة render (مثلاً من Firebase realtime sync) لحد ما المستخدم يسيب إصبعه،
+// لأن استبدال الـ DOM أثناء حركة سحب فعلية بيلخبط محرك اللمس على أندرويد ويُحس وكأن الصفحة متجمدة
 window._userTouching=false;
 (function(){
   const ct=document.querySelector('.content');
   if(!ct)return;
-  let _scrollIdleTimer=null;
-  window._userScrolling=false;
-  const markScrolling=()=>{
-    window._userScrolling=true;
-    clearTimeout(_scrollIdleTimer);
-    // 250ms سكون فعلي بعد آخر حدث scroll قبل ما نعتبر إن المستخدم خلص (يغطي momentum scrolling على أندرويد)
-    _scrollIdleTimer=setTimeout(()=>{window._userScrolling=false;},250);
-  };
-  ct.addEventListener('scroll',markScrolling,{passive:true});
   ct.addEventListener('touchstart',()=>{window._userTouching=true;},{passive:true});
-  const release=()=>{
-    window._userTouching=false;
-    // عند رفع الإصبع، استمر في اعتبار المستخدم "مشغول" لحد ما الـ momentum scroll يهدأ فعلياً
-    markScrolling();
-  };
+  const release=()=>{window._userTouching=false;};
   ct.addEventListener('touchend',release,{passive:true});
   ct.addEventListener('touchcancel',release,{passive:true});
 })();
-// يُستخدم في نقاط التأجيل بدل الاعتماد على _userTouching وحدها
-function _isUserBusyScrolling(){return window._userTouching||window._userScrolling;}
 function swTab(secId,el){
   const par=el.closest('.page');if(!par)return;
   par.querySelectorAll('.ms').forEach(s=>s.classList.remove('on'));
@@ -6688,8 +6669,6 @@ function openSettle(){
   const totalDebt=Math.max(0,summary.totalDebt);
   document.getElementById('settle-info').innerHTML=`<div class="irow"><label>العميل</label><span>${esc(r.client)}</span></div><div class="irow"><label>إجمالي مديونية العميل</label><span style="color:var(--red)">${fmt(totalDebt)} ${c}</span></div>`;
   document.getElementById('settle-reason').value='';document.getElementById('settle-amt').value=totalDebt;
-  const settleBoxSel=document.getElementById('settle-box');
-  if(settleBoxSel){settleBoxSel.innerHTML=boxOptionsHTML();settleBoxSel.value='cash';}
   openOv('ov-settle');
 }
 function doSettle(){
@@ -6699,28 +6678,24 @@ function doSettle(){
   if(amt<=0){toast('يرجى إدخال مبلغ صحيح أكبر من صفر','err');return}
   if(!_settleClientKey){toast('لم يتم تحديد العميل','err');return}
   const {id:clientId,name:clientName}=_resolveClientKey(_settleClientKey);
-  // FIX: تسجيل حركة التسوية في الخزنة على حساب العميل ككل (مش مرتبطة بفاتورة بعينها)
-  const trs=DB.get('treasury')||[];
-  trs.push({
-    id:'t_settle_'+Date.now(),
-    num:nid('tr'),
-    type:'in',
-    box:document.getElementById('settle-box')?.value||'cash',
-    accType:'client',
-    accName:clientName,
+  // FIX: التسوية إعفاء/تصحيح محاسبي بحت — لا تمثل فلوساً حقيقية، لذا تُسجَّل في سجل settlements
+  // منفصل تماماً عن treasury حتى لا تزيد رصيد الخزنة الفعلي بمبلغ وهمي. تُحسب فقط ضمن مديونية العميل.
+  const settles=DB.get('settlements')||[];
+  settles.push({
+    id:'st_'+Date.now(),
     clientId:clientId||undefined,
+    accName:clientName,
     amount:amt,
-    receiver:'',
-    notes:'تسوية حساب: '+reason,
+    reason:reason,
     date:today(),
-    createdAt:Date.now()
+    createdAt:Date.now(),
+    by:window._currentUser?.username||''
   });
-  DB.set('treasury',trs);
-  // ===== تتبع: تسجيل تسوية حساب عميل (تصحيح/إعفاء جزء من مديونيته الكلية) =====
+  DB.set('settlements',settles);
+  // ===== تتبع: تسجيل تسوية حساب عميل (تصحيح/إعفاء جزء من مديونيته الكلية — بدون أثر على رصيد الخزنة) =====
   logActivity('archive.settle',{client:clientName,note:'تسوية حساب بمبلغ '+fmt(amt)+' — السبب: '+reason});
   closeOv('ov-settle');renderArchive();
-  if(document.getElementById('pg-treasury')?.classList.contains('active'))renderTreasury();
-  toast('تمت تسوية حساب العميل وتسجيلها في الخزنة');
+  toast('تمت تسوية حساب العميل (بدون التأثير على رصيد الخزنة)');
 }
 
 // TREASURY
@@ -7571,12 +7546,11 @@ function _calcPnL(fromDate, toDate){
   const totalOpEx = adminSalaries + opExpenses + opSpares;
 
   // ── 9. خسائر التسويات ──
-  // بعد إلغاء مفهوم "تسوية فاتورة"، التسوية الآن حركة خزنة على حساب العميل ككل
-  // (accType='client', notes تبدأ بـ 'تسوية حساب:') — وتمثل مبلغاً اعتُبر مسدداً دون دخول فعلي،
-  // أي خسارة محاسبية فعلية تُحتسب هنا بالكامل.
-  const settledLoss = treasury
-    .filter(t=>inRange(t.date)&&t.type==='in'&&t.accType==='client'&&(t.notes||'').startsWith('تسوية حساب:'))
-    .reduce((s,t)=>s+(+t.amount||0),0);
+  // التسوية الآن سجل منفصل تماماً عن الخزنة (settlements) — لا تمر على treasury إطلاقاً
+  // لأنها لا تمثل فلوساً حقيقية، لكنها تمثل خسارة محاسبية فعلية على الربحية يجب احتسابها هنا.
+  const settledLoss = (DB.get('settlements')||[])
+    .filter(s=>inRange(s.date))
+    .reduce((s,x)=>s+(+x.amount||0),0);
 
   const netProfit = grossProfit - totalOpEx - settledLoss;
   const netPct    = totalRevenue>0?Math.round((netProfit/totalRevenue)*100):0;
@@ -12833,10 +12807,12 @@ function _clientAccountSummary(clientKey, from, to){
   const {id:clientId,name:clientName}=_resolveClientKey(clientKey);
   const arc=DB.get('archive')||[];
   const trs=DB.get('treasury')||[];
+  // التسويات (إعفاء/تصحيح محاسبي بحت — لا تمثل فلوساً حقيقية ولا تؤثر على رصيد الخزنة، لكنها تقفل جزءاً من مديونية العميل)
+  const settles=DB.get('settlements')||[];
   // الرصيد الافتتاحي للعميل
   const openingBal=_getClientOpeningBalance(clientId);
   // ===== القاعدة الذهبية الموحّدة (بعد إلغاء مفهوم مديونية الفاتورة الفردية) =====
-  // المديونية = (رصيد افتتاحي + إجمالي كل الفواتير) - (إجمالي كل المدفوعات على حساب العميل ككل)
+  // المديونية = (رصيد افتتاحي + إجمالي كل الفواتير) - (إجمالي كل المدفوعات الحقيقية + كل التسويات على حساب العميل ككل)
   // لا يوجد أي ربط بين دفعة معينة وفاتورة معينة — السداد ينزل من إجمالي حساب العميل دائماً،
   // بصرف النظر عن عدد الفواتير أو ترتيبها.
   // الفواتير قبل تاريخ البداية (لحساب "المديونية السابقة" عند عرض فترة محددة)
@@ -12845,23 +12821,28 @@ function _clientAccountSummary(clientKey, from, to){
     return _matchClientRecord(r,clientId,clientName)&&d<from;
   }):[];
   const prevArcTotal=prevArc.reduce((s,r)=>s+(+r.total||0),0);
-  // كل المدفوعات (حركات in غير المحوّلة) قبل تاريخ البداية — على حساب العميل ككل، بلا ربط بفاتورة
+  // كل المدفوعات الحقيقية (حركات in غير المحوّلة) + التسويات قبل تاريخ البداية — على حساب العميل ككل، بلا ربط بفاتورة
   const prevTrsPaid=(from?trs.filter(t=>_matchClientTreasury(t,clientId,clientName)&&t.date<from&&!t.isTransfer&&t.type==='in'):[]).reduce((s,t)=>s+ +t.amount,0);
-  // المديونية السابقة = فواتير سابقة - مدفوعات سابقة. لا نقفلها بالصفر هنا — لو كانت سالبة (سداد زائد/رصيد دائن مقدّم)
+  const prevSettled=(from?settles.filter(s=>_matchClientTreasury(s,clientId,clientName)&&s.date<from):[]).reduce((s,x)=>s+ +x.amount,0);
+  // المديونية السابقة = فواتير سابقة - (مدفوعات سابقة + تسويات سابقة). لا نقفلها بالصفر هنا — لو كانت سالبة (سداد زائد/رصيد دائن مقدّم)
   // يجب أن تترحّل وتُخصم من مديونية الفترة الحالية، وإلا ضاع الرصيد الدائن للعميل دون أثر.
-  const prevDebtFromArc=prevArcTotal - prevTrsPaid;
+  const prevDebtFromArc=prevArcTotal - prevTrsPaid - prevSettled;
   // الفواتير خلال الفترة
   const periodArc=arc.filter(r=>{
     const d=r.archivedAt?new Date(r.archivedAt).toISOString().split('T')[0]:(r.date||'');
     return _matchClientRecord(r,clientId,clientName)&&(!from||d>=from)&&(!to||d<=to);
   });
-  // الحركات المالية خلال الفترة
+  // الحركات المالية الحقيقية خلال الفترة
   const periodTrs=trs.filter(t=>_matchClientTreasury(t,clientId,clientName)&&(!from||t.date>=from)&&(!to||t.date<=to)&&!t.isTransfer);
+  // التسويات خلال الفترة (منفصلة عن الخزنة تماماً)
+  const periodSettles=settles.filter(s=>_matchClientTreasury(s,clientId,clientName)&&(!from||s.date>=from)&&(!to||s.date<=to));
   const withdrawn=periodArc.reduce((s,r)=>s+ +r.total,0); // المسحوب = إجمالي الفواتير
-  const paid=periodTrs.filter(t=>t.type==='in').reduce((s,t)=>s+ +t.amount,0); // المدفوع = كل مقبوضات الخزنة على حساب العميل خلال الفترة
-  // الإجمالي = (رصيد افتتاحي + مديونية سابقة) + فواتير الفترة - مدفوعات الفترة
+  const realPaid=periodTrs.filter(t=>t.type==='in').reduce((s,t)=>s+ +t.amount,0); // المدفوع الحقيقي = كل مقبوضات الخزنة الفعلية
+  const settledAmt=periodSettles.reduce((s,x)=>s+ +x.amount,0); // التسويات = إعفاء محاسبي بدون فلوس حقيقية
+  const paid=realPaid+settledAmt; // المدفوع الإجمالي (لأغراض حساب الدين) = حقيقي + تسويات
+  // الإجمالي = (رصيد افتتاحي + مديونية سابقة) + فواتير الفترة - (مدفوعات الفترة + تسويات الفترة)
   const totalDebt=(openingBal + prevDebtFromArc) + withdrawn - paid;
-  return {prevDebt:prevDebtFromArc, openingBal, withdrawn, paid, totalDebt, periodArc, periodTrs};
+  return {prevDebt:prevDebtFromArc, openingBal, withdrawn, paid, realPaid, settledAmt, totalDebt, periodArc, periodTrs, periodSettles};
 }
 function renderClientCard(){
   const clientKey=document.getElementById('cc-client')?.value||'';
