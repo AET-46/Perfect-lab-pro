@@ -65,7 +65,7 @@ body{font-family:"Cairo",sans-serif;background:var(--bg);color:var(--text);min-h
 .app{display:flex;min-height:100vh;min-height:-webkit-fill-available;}
 .main{margin-right:var(--sidebar-w);display:flex;flex-direction:column;height:100vh;height:-webkit-fill-available;height:100dvh;overflow:hidden;flex:1;min-width:0;max-width:calc(100vw - var(--sidebar-w));}
 /* FIX: sidebar pointer-events on mobile — CSS handles it, no JS needed */
-@media(max-width:700px){.sidebar{pointer-events:none;will-change:transform}.sidebar.mob{pointer-events:auto}}
+@media(max-width:700px){.sidebar{pointer-events:none}.sidebar.mob{pointer-events:auto}}
 
 /* ===== MODERN SIDEBAR ===== */
 .sidebar{width:var(--sidebar-w);background:var(--bg2);border-left:1px solid var(--border);position:fixed;top:0;right:0;bottom:0;z-index:85;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--border2) transparent;-webkit-overflow-scrolling:touch;transition:transform .3s cubic-bezier(.4,0,.2,1)}
@@ -4772,6 +4772,18 @@ function closeSidebar(){
   if(isMobile){
     sb.classList.remove('mob');
     document.getElementById('sidebar-overlay').classList.remove('show');
+    // FIX #SIDEBAR-SCROLL-STUCK: إجبار المتصفح على إعادة حساب قابلية تمرير .content
+    // بعد إغلاق القائمة الجانبية — على بعض أجهزة أندرويد، الـ GPU layer الخاصة بحركة
+    // القائمة (حتى بعد انتهائها) تترك .content في حالة "عالقة" لا تستجيب للمس حتى يحدث reflow فعلي.
+    setTimeout(()=>{
+      const ct=document.querySelector('.content');
+      if(ct){
+        const prevOverflow=ct.style.overflowY;
+        ct.style.overflowY='hidden';
+        void ct.offsetHeight; // إجبار المتصفح على reflow فوري
+        ct.style.overflowY=prevOverflow||'';
+      }
+    },320); // بعد انتهاء transition القائمة (300ms) بهامش أمان
   }
   // على الديسكتوب لا تغلق السايدبار عند التنقل بين الصفحات
 }
