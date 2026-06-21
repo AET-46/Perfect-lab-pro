@@ -913,8 +913,8 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
           <button class="btn btn-ghost" onclick="togglePrintMenu('pm-dafter')">🖨️ طباعة ▾</button>
           <div id="pm-dafter" style="display:none;position:absolute;left:0;top:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;z-index:999;min-width:180px;padding:4px;box-shadow:0 8px 24px rgba(0,0,0,.3)">
             <div onclick="printPageRows('dafter-tb','الدفتر','dafter');closePrintMenus()" style="padding:8px 12px;cursor:pointer;border-radius:6px;font-size:12px" onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">📄 طباعة الصفحة كاملة</div>
-            <div onclick="printSelRows('dafter-tb','dafter');closePrintMenus()" style="padding:8px 12px;cursor:pointer;border-radius:6px;font-size:12px" onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">☑️ طباعة المحدد تفصيلي</div>
             <div onclick="printRowsAsPRInvoice('dafter-tb','dafter');closePrintMenus()" style="padding:8px 12px;cursor:pointer;border-radius:6px;font-size:12px" onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">🧾 فاتورة احترافية (PR)</div>
+            <div onclick="openPRTemplatePicker('dafter-tb','dafter');closePrintMenus()" style="padding:5px 12px 7px;cursor:pointer;border-radius:6px;font-size:10.5px;color:var(--text3)" onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">🎨 تغيير قالب PR</div>
             <div style="border-top:1px solid var(--border);margin:4px 0;padding:4px 12px;font-size:10px;color:var(--text3)">حجم الورق</div>
             <div style="display:flex;gap:6px;padding:4px 12px">
               <label style="font-size:11px;cursor:pointer"><input type="radio" name="dafter-paper" value="a4" checked> A4</label>
@@ -956,8 +956,8 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
           <button class="btn btn-ghost" onclick="togglePrintMenu('pm-proof')">🖨️ طباعة ▾</button>
           <div id="pm-proof" style="display:none;position:absolute;left:0;top:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;z-index:999;min-width:180px;padding:4px;box-shadow:0 8px 24px rgba(0,0,0,.3)">
             <div onclick="printPageRows('proof-tb','البروفه','proof');closePrintMenus()" style="padding:8px 12px;cursor:pointer;border-radius:6px;font-size:12px" onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">📄 طباعة الصفحة كاملة</div>
-            <div onclick="printSelRows('proof-tb','proof');closePrintMenus()" style="padding:8px 12px;cursor:pointer;border-radius:6px;font-size:12px" onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">☑️ طباعة المحدد تفصيلي</div>
             <div onclick="printRowsAsPRInvoice('proof-tb','proof');closePrintMenus()" style="padding:8px 12px;cursor:pointer;border-radius:6px;font-size:12px" onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">🧾 فاتورة احترافية (PR)</div>
+            <div onclick="openPRTemplatePicker('proof-tb','proof');closePrintMenus()" style="padding:5px 12px 7px;cursor:pointer;border-radius:6px;font-size:10.5px;color:var(--text3)" onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">🎨 تغيير قالب PR</div>
             <div style="border-top:1px solid var(--border);margin:4px 0;padding:4px 12px;font-size:10px;color:var(--text3)">حجم الورق</div>
             <div style="display:flex;gap:6px;padding:4px 12px">
               <label style="font-size:11px;cursor:pointer"><input type="radio" name="proof-paper" value="a4" checked> A4</label>
@@ -988,8 +988,8 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
           <button class="btn btn-ghost" onclick="togglePrintMenu('pm-archive')">🖨️ طباعة ▾</button>
           <div id="pm-archive" style="display:none;position:absolute;left:0;top:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;z-index:999;min-width:180px;padding:4px;box-shadow:0 8px 24px rgba(0,0,0,.3)">
             <div onclick="printPageRows('archive-tb','الأرشيف','archive');closePrintMenus()" style="padding:8px 12px;cursor:pointer;border-radius:6px;font-size:12px" onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">📄 طباعة الصفحة كاملة</div>
-            <div onclick="printSelRows('archive-tb','archive');closePrintMenus()" style="padding:8px 12px;cursor:pointer;border-radius:6px;font-size:12px" onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">☑️ طباعة المحدد تفصيلي</div>
             <div onclick="printRowsAsPRInvoice('archive-tb','archive');closePrintMenus()" style="padding:8px 12px;cursor:pointer;border-radius:6px;font-size:12px" onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">🧾 فاتورة احترافية (PR)</div>
+            <div onclick="openPRTemplatePicker('archive-tb','archive');closePrintMenus()" style="padding:5px 12px 7px;cursor:pointer;border-radius:6px;font-size:10.5px;color:var(--text3)" onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">🎨 تغيير قالب PR</div>
             <div style="border-top:1px solid var(--border);margin:4px 0;padding:4px 12px;font-size:10px;color:var(--text3)">حجم الورق</div>
             <div style="display:flex;gap:6px;padding:4px 12px">
               <label style="font-size:11px;cursor:pointer"><input type="radio" name="archive-paper" value="a4" checked> A4</label>
@@ -2530,6 +2530,11 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
                 <div class="fg"><label>فيسبوك</label><input id="li-fb" type="text"></div>
                 <div class="fg"><label>إنستجرام</label><input id="li-ig" type="text"></div>
               </div>
+              <div class="sec-title" style="margin-top:12px">📊 أرقام الإدارة (لاستقبال التقارير)</div>
+              <div class="fgrid" style="grid-template-columns:1fr">
+                <div class="fg"><label>رقم الإدارة 1</label><input id="li-admin1" type="text" placeholder="01xxxxxxxxx"></div>
+                <div class="fg"><label>رقم الإدارة 2</label><input id="li-admin2" type="text" placeholder="01xxxxxxxxx (اختياري)"></div>
+              </div>
               <div class="sec-title" style="margin-top:12px">رسالة الفاتورة</div>
               <div class="fg"><textarea id="li-msg" style="min-height:70px" placeholder="شكراً لثقتكم..."></textarea></div>
               <div class="sec-title" style="margin-top:12px">💬 رسالة ترحيب العميل الجديد (واتساب)</div>
@@ -3413,6 +3418,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 
 <div class="toast" id="toast"></div>
 <div class="conf-ov" id="conf-ov"><div class="conf-box"><h4 id="conf-ttl">تأكيد</h4><p id="conf-msg"></p><div class="conf-btns"><button class="btn btn-red" id="conf-ok">تأكيد</button><button class="btn btn-ghost" onclick="closeConf()">إلغاء</button></div></div></div>
+<div class="conf-ov" id="admin-pick-ov"><div class="conf-box"><h4>📤 إرسال التقرير إلى</h4><p style="font-size:12px;color:var(--text3);margin-bottom:10px">اختر رقم الإدارة المطلوب إرسال التقرير عليه</p><div id="admin-pick-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px"></div><div class="conf-btns"><button class="btn btn-ghost" onclick="closeAdminPick()">إلغاء</button></div></div></div>
 
 <!-- DAFTER MODAL -->
 <div class="overlay" id="ov-dafter">
@@ -3472,6 +3478,17 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
     <div class="mh" style="background:linear-gradient(135deg,#2d1a0a,#1a0f05)"><h3 style="color:#ffb74d">إشعار بروفه</h3><div class="mc-btn" onclick="closeOv('ov-proof-notif')">✕</div></div>
     <div class="mb" id="proof-notif-body"></div>
     <div class="mf" id="proof-static-footer"><button class="btn btn-green" id="proof-wa-btn">💬 واتساب</button><button class="btn btn-ghost" id="proof-copy-btn">📋 نسخ</button><button class="btn btn-ghost" onclick="closeOv('ov-proof-notif')">إغلاق</button></div>
+  </div>
+</div>
+
+<!-- PR TEMPLATE PICKER -->
+<div class="overlay" id="ov-pr-tpl">
+  <div class="modal modal-sm">
+    <div class="mh"><h3 style="color:#e8c96a">🎨 قالب فاتورة PR</h3><div class="mc-btn" onclick="closeOv('ov-pr-tpl')">✕</div></div>
+    <div class="mb">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:10px">القالب المختار هيتطبع فورًا، وهيبقى الافتراضي تلقائيًا في المرات الجاية</div>
+      <div id="pr-tpl-list"></div>
+    </div>
   </div>
 </div>
 
@@ -4897,6 +4914,7 @@ function loadLabInfo(){
   sv('li-name',li.name);sv('li-ph1',li.ph1);sv('li-ph2',li.ph2);sv('li-ph3',li.ph3);
   sv('li-wa',li.wa);sv('li-email',li.email);sv('li-web',li.web);sv('li-fb',li.fb);sv('li-ig',li.ig);
   sv('li-addr',li.addr);sv('li-map',li.map);sv('li-reg',li.reg);sv('li-tax',li.tax);sv('li-msg',li.msg);
+  sv('li-admin1',li.admin1);sv('li-admin2',li.admin2);
   // رسالة الترحيب — تحميل المحفوظة أو الافتراضية
   const wmEl=document.getElementById('li-welcome-msg');
   if(wmEl) wmEl.value=li.welcomeMsg||_defaultWelcomeMsg(li.name||'');
@@ -4908,7 +4926,7 @@ function loadLabInfo(){
 function saveLabInfo(){
   const gv=id=>document.getElementById(id)?.value||'';
   const li=DB.get('labinfo')||{};
-  Object.assign(li,{name:gv('li-name'),ph1:gv('li-ph1'),ph2:gv('li-ph2'),ph3:gv('li-ph3'),wa:gv('li-wa'),email:gv('li-email'),web:gv('li-web'),fb:gv('li-fb'),ig:gv('li-ig'),addr:gv('li-addr'),map:gv('li-map'),reg:gv('li-reg'),tax:gv('li-tax'),msg:gv('li-msg'),welcomeMsg:gv('li-welcome-msg')});
+  Object.assign(li,{name:gv('li-name'),ph1:gv('li-ph1'),ph2:gv('li-ph2'),ph3:gv('li-ph3'),wa:gv('li-wa'),email:gv('li-email'),web:gv('li-web'),fb:gv('li-fb'),ig:gv('li-ig'),addr:gv('li-addr'),map:gv('li-map'),reg:gv('li-reg'),tax:gv('li-tax'),msg:gv('li-msg'),welcomeMsg:gv('li-welcome-msg'),admin1:gv('li-admin1'),admin2:gv('li-admin2')});
   DB.set('labinfo',li);
   document.getElementById('s-lab-name').textContent=li.name||'Perfect Lab Pro';
   _applySidebarLogo(li.logo||'');
@@ -6978,50 +6996,16 @@ function printSelRows(tbId,page){
 }
 // ======== PRINT HELPERS END ========
 
-// ===== طباعة فاتورة احترافية (PR-style) للصف/الصفوف المحددة فقط =====
-// تُستخدم من dafter/proof/archive — تعرض نفس بيانات الإشعار (بدون رقم فاتورة وبدون لون)
-// بالإضافة لتفاصيل الصف، مع المديونية الإجمالية وقيمة الفاتورة الحالية
-function printRowsAsPRInvoice(tbId,page){
-  const tb=document.getElementById(tbId);
-  if(!tb)return;
-  const checked=[...tb.querySelectorAll('input[type=checkbox]:checked')].map(cb=>cb.closest('tr'));
-  if(!checked.length){toast('حدد صفاً واحداً على الأقل','err');return;}
-  const ids=checked.map(tr=>tr.dataset.id||tr.querySelector('[data-id]')?.dataset.id).filter(Boolean);
-  const dbKey={dafter:'dafter',proof:'proof',archive:'archive'}[page];
-  if(!dbKey){toast('غير مدعوم لهذه الصفحة','err');return;}
-  const rows=(DB.get(dbKey)||[]).filter(r=>ids.includes(r.id));
-  if(!rows.length){toast('تعذر العثور على الصفوف المحددة','err');return;}
-  const clientNames=[...new Set(rows.map(r=>r.client))];
-  if(clientNames.length>1){toast('اختر صفوفاً لعميل واحد فقط لطباعة فاتورة PR','err');return;}
-  const clientName=clientNames[0];
-  const {id:_cid}=_resolveClientKey(clientName);
-  _invalidateTrPaidCache();
-
-  const li=DB.get('labinfo')||{};
-  const c=cur();
-  const dateStr=dateAr();
-  // المديونية الإجمالية الحقيقية (شاملة الرصيد الافتتاحي) — نفس منطق الإشعار
-  const summary=_clientAccountSummary(clientName);
-  const grandDebt=Math.max(0,summary.totalDebt);
-  // قيمة الفاتورة الحالية = إجمالي الصفوف المحددة فقط
-  const rowTotal=rows.reduce((s,r)=>s+(+r.total||0),0);
-  const phone=rows[0]?.phone||'';
-  const clInfo=(DB.get('clients')||[]).find(x=>x.name===clientName)||{};
-  const addrParts=[clInfo.addr,clInfo.city,clInfo.gov].filter(Boolean);
-
-  const itemsRows=rows.map((r,i)=>`
-    <tr>
-      <td style="text-align:center;color:#888">${i+1}</td>
-      <td><strong style="color:#0d1b2a">${esc(r.noteName||'—')}</strong></td>
-      <td><strong>${esc(r.product||'—')}</strong></td>
-      <td style="text-align:center">${toAr(r.qty||0)}</td>
-      <td style="font-weight:700;color:#0d1b2a">${fmtAr(r.total||0)} ${c}</td>
-    </tr>`).join('');
-
-  const pageBadge={dafter:'📂 حالة قيد التنفيذ',proof:'🔬 بروفه',archive:'🧾 فاتورة مبيعات'}[page]||'فاتورة';
-  const showTotalsCol=true;
-
-  const html=`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">
+// ===== نظام قوالب فاتورة PR (PR Template System) =====
+// كل قالب: {id, name, render(ctx)->html}. القالب الافتراضي navyGold هو نفس التصميم القديم بالظبط (بدون أي تغيير بصري).
+// إضافة قالب جديد مستقبلاً = إضافة entry جديد هنا فقط، باقي النظام (الحفظ/الاختيار/الطباعة) جاهز ومش محتاج تعديل.
+const PR_TEMPLATES = {
+  navyGold: {
+    id: 'navyGold',
+    name: 'الكحلي والذهبي (الافتراضي)',
+    render(ctx){
+      const {li,c,dateStr,clientName,addrParts,phone,pageBadge,itemsRows,rowTotal,grandDebt,showTotalsCol}=ctx;
+      return `<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <style>
     *{font-family:'Cairo',sans-serif;box-sizing:border-box;margin:0;padding:0}
@@ -7088,7 +7072,85 @@ function printRowsAsPRInvoice(tbId,page){
     </div>
   </div>
   </body></html>`;
+    }
+  }
+};
+function getPRTemplateId(){ const id=DB.get('prTemplate'); return (id && PR_TEMPLATES[id]) ? id : 'navyGold'; }
+function setPRTemplateId(id){ if(PR_TEMPLATES[id]) DB.set('prTemplate', id); }
+
+// ===== طباعة فاتورة احترافية (PR-style) للصف/الصفوف المحددة فقط =====
+// تُستخدم من dafter/proof/archive — تعرض نفس بيانات الإشعار (بدون رقم فاتورة وبدون لون)
+// بالإضافة لتفاصيل الصف، مع المديونية الإجمالية وقيمة الفاتورة الحالية
+// forceTplId (اختياري): يُستخدم من شاشة اختيار القالب لفرض قالب معين وحفظه كافتراضي جديد
+function printRowsAsPRInvoice(tbId,page,forceTplId){
+  const tb=document.getElementById(tbId);
+  if(!tb)return;
+  const checked=[...tb.querySelectorAll('input[type=checkbox]:checked')].map(cb=>cb.closest('tr'));
+  if(!checked.length){toast('حدد صفاً واحداً على الأقل','err');return;}
+  const ids=checked.map(tr=>tr.dataset.id||tr.querySelector('[data-id]')?.dataset.id).filter(Boolean);
+  const dbKey={dafter:'dafter',proof:'proof',archive:'archive'}[page];
+  if(!dbKey){toast('غير مدعوم لهذه الصفحة','err');return;}
+  const rows=(DB.get(dbKey)||[]).filter(r=>ids.includes(r.id));
+  if(!rows.length){toast('تعذر العثور على الصفوف المحددة','err');return;}
+  const clientNames=[...new Set(rows.map(r=>r.client))];
+  if(clientNames.length>1){toast('اختر صفوفاً لعميل واحد فقط لطباعة فاتورة PR','err');return;}
+  const clientName=clientNames[0];
+  const {id:_cid}=_resolveClientKey(clientName);
+  _invalidateTrPaidCache();
+
+  const li=DB.get('labinfo')||{};
+  const c=cur();
+  const dateStr=dateAr();
+  // المديونية الإجمالية الحقيقية (شاملة الرصيد الافتتاحي) — نفس منطق الإشعار
+  const summary=_clientAccountSummary(clientName);
+  const grandDebt=Math.max(0,summary.totalDebt);
+  // قيمة الفاتورة الحالية = إجمالي الصفوف المحددة فقط
+  const rowTotal=rows.reduce((s,r)=>s+(+r.total||0),0);
+  const phone=rows[0]?.phone||'';
+  const clInfo=(DB.get('clients')||[]).find(x=>x.name===clientName)||{};
+  const addrParts=[clInfo.addr,clInfo.city,clInfo.gov].filter(Boolean);
+
+  const itemsRows=rows.map((r,i)=>`
+    <tr>
+      <td style="text-align:center;color:#888">${i+1}</td>
+      <td><strong style="color:#0d1b2a">${esc(r.noteName||'—')}</strong></td>
+      <td><strong>${esc(r.product||'—')}</strong></td>
+      <td style="text-align:center">${toAr(r.qty||0)}</td>
+      <td style="font-weight:700;color:#0d1b2a">${fmtAr(r.total||0)} ${c}</td>
+    </tr>`).join('');
+
+  const pageBadge={dafter:'📂 حالة قيد التنفيذ',proof:'🔬 بروفه',archive:'🧾 فاتورة مبيعات'}[page]||'فاتورة';
+  const showTotalsCol=true;
+
+  // اختيار القالب: forceTplId (من شاشة الاختيار) أو آخر قالب محفوظ تلقائيًا بدون سؤال
+  const tplId = forceTplId || getPRTemplateId();
+  if(forceTplId) setPRTemplateId(forceTplId);
+  const tpl = PR_TEMPLATES[tplId] || PR_TEMPLATES.navyGold;
+  const html = tpl.render({li,c,dateStr,clientName,addrParts,phone,pageBadge,itemsRows,rowTotal,grandDebt,showTotalsCol});
   _doPrint(html);
+}
+
+// ===== شاشة اختيار قالب PR (تُفتح من قائمة الطباعة عند الحاجة لتغيير القالب) =====
+let _prTplCtx=null;
+function openPRTemplatePicker(tbId,page){
+  const tb=document.getElementById(tbId);
+  const hasSel=tb && tb.querySelectorAll('input[type=checkbox]:checked').length>0;
+  if(!hasSel){toast('حدد صفاً واحداً على الأقل أولاً','err');return;}
+  _prTplCtx={tbId,page};
+  const curId=getPRTemplateId();
+  const list=document.getElementById('pr-tpl-list');
+  if(list){
+    list.innerHTML=Object.values(PR_TEMPLATES).map(t=>`
+      <div onclick="choosePRTemplate('${t.id}')" style="display:flex;align-items:center;justify-content:space-between;padding:11px 13px;border:1.5px solid ${t.id===curId?'#e8c96a':'var(--border)'};background:${t.id===curId?'rgba(232,201,106,.08)':'transparent'};border-radius:9px;margin-bottom:8px;cursor:pointer">
+        <span style="font-size:13px;font-weight:${t.id===curId?'700':'400'}">${esc(t.name)}</span>
+        ${t.id===curId?'<span style="font-size:11px;color:#e8c96a">✓ الحالي</span>':''}
+      </div>`).join('');
+  }
+  openOv('ov-pr-tpl');
+}
+function choosePRTemplate(tplId){
+  closeOv('ov-pr-tpl');
+  if(_prTplCtx){ printRowsAsPRInvoice(_prTplCtx.tbId,_prTplCtx.page,tplId); _prTplCtx=null; }
 }
 // ======== TREASURY: NO DELETE POLICY ========
 // القاعدة الذهبية: لا حذف لأي حركة مالية في الخزنة أبداً
@@ -8721,7 +8783,73 @@ function filterNotifGrid(gridId,q){
 }
 
 // ---- MESSAGE BUILDERS ----
+// ===== تجميع صفوف الإشعار حسب اسم المنتج الفعلي + ترتيب وتنسيق كل سطر =====
+// تُستخدم في buildProofMsg و buildInvoiceMsg لتفادي تكرار المنطق
+// التجميع هنا حسب اسم المنتج بالضبط (وليس فئة الإنتاج الكبرى) — كل اسم منتج مختلف = مجموعة مستقلة
+const _GROUP_COLOR_CYCLE=['🟦','🟢','🟡','🟣','🟧','🔵','🟤','🔴','⚫','⚪','🔶','⬛','⬜'];
+let _groupColorMap={}; // يُعاد تصفيره مع كل رسالة جديدة عبر _resetGroupColors()
+function _resetGroupColors(){_groupColorMap={};}
+function _colorForGroup(productName){
+  if(_groupColorMap[productName])return _groupColorMap[productName];
+  const used=Object.keys(_groupColorMap).length;
+  const icon=_GROUP_COLOR_CYCLE[used%_GROUP_COLOR_CYCLE.length];
+  _groupColorMap[productName]=icon;
+  return icon;
+}
+// رقم الحالة كرقم قابل للمقارنة (لو مفيش رقم حالة يترتب في الآخر)
+function _caseNoSortVal(noteName){
+  const cn=_extractCaseNo(noteName);
+  if(!cn)return Infinity;
+  const parts=cn.split('/').map(Number);
+  return (parts[0]||0)*1000+(parts[1]||0);
+}
+// بيبني سطر واحد منسق لصف (حالة) واحد، مع التعامل مع نقص الاسم/رقم الحالة
+function _fmtNotifRow(r,opts={}){
+  const cn=_extractCaseNo(r.noteName);
+  const hasName=!!(r.noteName&&r.noteName.trim());
+  let line;
+  if(hasName){
+    const suffix=cn?'':' (بدون رقم حالة)';
+    line=`●${r.noteName}${suffix}  —  ${r.product||''} × ${r.qty||0}`;
+  } else {
+    // الاسم ناقص بالكامل: نكتب نوع المنتج بدل الاسم
+    line=`●${r.product||'—'} × ${r.qty||0}`;
+  }
+  if(opts.withTotal&&r.total){
+    line+=`  |  ${fmtAr(r.total)} ${cur()}`;
+  }
+  return line;
+}
+// بيجمع صفوف حسب اسم المنتج الفعلي، ويرتب كل مجموعة برقم الحالة تصاعدياً،
+// ويرجع مصفوفة أسطر جاهزة للإضافة في رسالة الواتساب (تشمل عناوين المجموعات والعداد)
+function _buildGroupedSection(rows,sectionTitle,opts={}){
+  if(!rows.length)return [];
+  // 1) تجميع حسب اسم المنتج بالترتيب الطبيعي للظهور في البيانات
+  const order=[];
+  const groups={};
+  rows.forEach(r=>{
+    const key=r.product||'—';
+    if(!groups[key]){groups[key]=[];order.push(key);}
+    groups[key].push(r);
+  });
+  // 2) ترتيب كل مجموعة تصاعدياً برقم الحالة
+  order.forEach(key=>{
+    groups[key].sort((a,b)=>_caseNoSortVal(a.noteName)-_caseNoSortVal(b.noteName));
+  });
+  const lines=[];
+  lines.push(`*${sectionTitle} (${rows.length}):*`);
+  lines.push('');
+  order.forEach((key,idx)=>{
+    const list=groups[key];
+    const icon=_colorForGroup(key);
+    lines.push(`*${icon} ${key} (${list.length})*`);
+    list.forEach(r=>lines.push(_fmtNotifRow(r,opts)));
+    if(idx<order.length-1)lines.push('');
+  });
+  return lines;
+}
 function buildInvoiceMsg(clientName,paidNow,_tplVars={},selectedIds=null){
+  _resetGroupColors();
   const {id:_cid}=_resolveClientKey(clientName);
   // Manual template override
   const manualTpl=(_getDc('wa-inv-manual','')||'').trim();
@@ -8774,6 +8902,7 @@ function buildInvoiceMsg(clientName,paidNow,_tplVars={},selectedIds=null){
 
   // 1. اسم المعمل عريض
   if(getNs('inv-logo')) lines.push('*🦷 '+(li.name||'Perfect Dental Lab')+'*');
+  lines.push('🧿🧾 إشعار فاتورة 🧾🧿');
   lines.push(sep);
 
   // 2. اسم العميل
@@ -8782,34 +8911,26 @@ function buildInvoiceMsg(clientName,paidNow,_tplVars={},selectedIds=null){
 
   lines.push(sep);
 
-  // 4. فاتورة مبيعات — كل فاتورة سطر واحد (بدون رقم الفاتورة الداخلي وبدون اللون)
+  // 4. فاتورة مبيعات — مجمعة حسب اسم المنتج، مرتبة برقم الحالة، بدون رقم فاتورة داخلي وبدون اللون
   if(unpaid.length>0){
-    lines.push('*🧾 فاتورة مبيعات:*');
-    unpaid.forEach((r,i)=>{
-      const name=r.noteName||r.caseId||'—';
-      lines.push(`${i+1}. ${name}  —  ${r.product} × ${r.qty}  |  ${fmtAr(r.total)} ${c}`);
-    });
+    lines.push(..._buildGroupedSection(unpaid,'🧾 فاتورة مبيعات',{withTotal:true}));
   }
 
   // البروفات إن وجدت عريض (بدون رقم فاتورة وبدون لون)
   if(getNs('inv-proof')&&clientPf.length){
     lines.push('');
     lines.push(sep);
-    lines.push('*🔬 البروفات:*');
-    clientPf.forEach((r,i)=>{
-      const name=r.noteName||r.caseId||'—';
-      lines.push(`${i+1}. ${name}  —  ${r.product} × ${r.qty}`);
-    });
+    lines.push(..._buildGroupedSection(clientPf,'🔬 البروفات'));
   }
 
-  // قيد التنفيذ إن وجد عريض
+  // قيد التنفيذ إن وجد — سطور بسيطة بدون تجميع/ألوان
   if(getNs('inv-active')&&clientDf.length){
     lines.push('');
     lines.push(sep);
     lines.push('*📂 قيد التنفيذ:*');
-    clientDf.forEach((r,i)=>{
+    clientDf.forEach(r=>{
       const name=r.noteName||r.caseId||'—';
-      lines.push(`${i+1}. ${name}  —  ${r.product} × ${r.qty}`);
+      lines.push(`${name}  —  ${r.product} × ${r.qty}`);
     });
   }
 
@@ -8834,6 +8955,7 @@ function buildInvoiceMsg(clientName,paidNow,_tplVars={},selectedIds=null){
   return lines.join('\n');
 }
 function buildProofMsg(clientName,_tplVars={},selectedIds=null){
+  _resetGroupColors();
   const {id:_cid}=_resolveClientKey(clientName);
   const manualTpl=(_getDc('wa-pf-manual','')||'').trim();
   if(manualTpl){
@@ -8865,31 +8987,17 @@ function buildProofMsg(clientName,_tplVars={},selectedIds=null){
 
   // 1. اسم المعمل عريض
   if(getNs('pr-logo')) lines.push('*🦷 '+(li.name||'Perfect Dental Lab')+'*');
+  lines.push('⌛🎨 إشعار بروفة 🎨⌛');
   lines.push(sep);
 
   // 2. اسم العميل
   lines.push('👤 '+clientName);
   lines.push('📅 '+new Date().toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'}).replace(/[٠-٩]/g,d=>'0123456789'['٠١٢٣٤٥٦٧٨٩'.indexOf(d)]));
-  lines.push('');
+  lines.push(sep);
 
-  // 3. المديونية إن وجدت
-  if(getNs('pr-debt')){
-    _invalidateTrPaidCache();
-    const debt=Math.max(0,_clientAccountSummary(clientName).totalDebt);
-    if(debt>0){
-      lines.push('*💳 المديونية : '+fmtAr(debt)+' '+c+'*');
-      lines.push('');
-    }
-  }
-
-  // 4. البروفات الجاهزة للتسليم — بلا سعر وبلا رقم فاتورة داخلي وبلا لون
+  // 3. البروفات الجاهزة للتسليم — مجمعة حسب اسم المنتج، بلا سعر وبلا رقم فاتورة داخلي وبلا لون وبلا مديونية
   if(clientPfReady.length){
-    lines.push('*🔬 بروفات جاهزة للتسليم:*');
-    lines.push(sep);
-    clientPfReady.forEach((r,i)=>{
-      const name=r.noteName||r.caseId||'—';
-      lines.push(`${i+1}. ${name}  —  ${r.product} × ${r.qty}`);
-    });
+    lines.push(..._buildGroupedSection(clientPfReady,'🔬 بروفات جاهزة للتسليم'));
   } else if(!hasSel) {
     lines.push('لا توجد بروفات حالياً');
   }
@@ -8898,21 +9006,17 @@ function buildProofMsg(clientName,_tplVars={},selectedIds=null){
   if(clientPfOther.length){
     lines.push('');
     lines.push(sep);
-    lines.push('*📤 بروفات أخرى سلمت (بانتظار الرد):*');
-    clientPfOther.forEach((r,i)=>{
-      const name=r.noteName||r.caseId||'—';
-      lines.push(`${i+1}. ${name}  —  ${r.product} × ${r.qty}`);
-    });
+    lines.push(..._buildGroupedSection(clientPfOther,'📤 بروفات أخرى سلمت (بانتظار الرد)'));
   }
 
-  // قيد التنفيذ إن وجد عريض
+  // قيد التنفيذ إن وجد — سطور بسيطة بدون تجميع/ألوان
   if(getNs('pr-active')&&clientDf.length){
     lines.push('');
     lines.push(sep);
     lines.push('*📂 قيد التنفيذ:*');
-    clientDf.forEach((r,i)=>{
+    clientDf.forEach(r=>{
       const name=r.noteName||r.caseId||'—';
-      lines.push(`${i+1}. ${name}  —  ${r.product} × ${r.qty}`);
+      lines.push(`${name}  —  ${r.product} × ${r.qty}`);
     });
   }
 
@@ -10329,11 +10433,38 @@ function clearSysLog(){
     renderSysLog();toast('تم مسح سجل النظام');
   });
 }
+// ===== إرسال رسالة للإدارة — يختار رقم واحد تلقائياً، أو يعرض قائمة اختيار لو فيه رقمين =====
+let _adminSendMsg='';
+let _adminSendMeta={};
+function _sendToAdminWithPicker(msg,meta){
+  const li=DB.get('labinfo')||{};
+  const numbers=[
+    {label:'رقم الإدارة 1',phone:li.admin1||''},
+    {label:'رقم الإدارة 2',phone:li.admin2||''}
+  ].filter(n=>n.phone);
+
+  if(!numbers.length){toast('أضف رقم إدارة واحداً على الأقل في البيانات الأساسية للمختبر','err');return;}
+
+  if(numbers.length===1){
+    wa(numbers[0].phone,msg,meta||{});
+    return;
+  }
+  // فيه رقمين: نعرض قائمة اختيار
+  _adminSendMsg=msg;
+  _adminSendMeta=meta||{};
+  const list=document.getElementById('admin-pick-list');
+  list.innerHTML=numbers.map(n=>`<button class="btn btn-gold" onclick="_sendAdminMsgTo('${esc(n.phone)}')">${esc(n.label)} — ${esc(n.phone)}</button>`).join('');
+  document.getElementById('admin-pick-ov').classList.add('open');
+}
+function _sendAdminMsgTo(phone){
+  closeAdminPick();
+  wa(phone,_adminSendMsg,_adminSendMeta);
+}
+function closeAdminPick(){document.getElementById('admin-pick-ov').classList.remove('open');}
+
 function sendNotifReportToAdmin(){
   const li=DB.get('labinfo')||{};
-  const adminPhone=li.wa||li.ph1||'';
   const logs=(DB.get('notif_log')||[]).filter(l=>l.type!=='system').slice(0,20);
-  const c=cur();
   const lines=[
     '*📊 تقرير الإشعارات المرسلة*',
     '━━━━━━━━━━━━━━━━━━━━━━━━',
@@ -10349,10 +10480,9 @@ function sendNotifReportToAdmin(){
   });
   if(logs.length>10)lines.push(`... و ${logs.length-10} إشعار آخر`);
   lines.push('','━━━━━━━━━━━━━━━━━━━━━━━━','📤 تم إرسال التقرير تلقائياً من النظام');
-  const msg=lines.join('\n');
-  if(!adminPhone){toast('أضف رقم واتساب المدير في إعدادات المختبر','err');return;}
-  wa(adminPhone,msg,{type:'system',page:'الإشعارات',client:'الإدارة'});
+  _sendToAdminWithPicker(lines.join('\n'),{type:'system',page:'الإشعارات',client:'الإدارة'});
 }
+
 
 function updateNotifBadges(){
   const arc=DB.get('archive')||[];
@@ -14114,10 +14244,10 @@ function scheduleNoteReminder(note){
       }
       toast('⏰ تذكير: '+(note.title||'ملاحظة'),'gold');
       logSysEvent('تذكير ملاحظة: '+(note.title||'—'),'alert','الملاحظات');
-      // إرسال واتساب للإدارة إن طُلب
+      // إرسال واتساب للإدارة إن طُلب — يُرسل لرقم الإدارة الأول فقط (تذكير تلقائي بلا تفاعل المستخدم، تجنباً لحظر النوافذ المنبثقة)
       if(note.sendWa){
         const li=DB.get('labinfo')||{};
-        const phone=li.wa||li.ph1||'';
+        const phone=li.admin1||'';
         if(phone){
           const msg='⏰ *تذكير من النظام*\n'+(note.title||'')+'\n\n'+(note.content||'')+'\n\n📅 '+(note.remindDate||'')+' — '+( note.remindTime||'')+'\n👤 '+(note.author||'');
           wa(phone,msg,{type:'system',page:'الملاحظات',client:'الإدارة'});
@@ -14177,8 +14307,6 @@ setInterval(()=>{
 
 function sendNotesReport(){
   const li=DB.get('labinfo')||{};
-  const phone=li.wa||li.ph1||'';
-  if(!phone){toast('أضف رقم واتساب الإدارة في الإعدادات','err');return;}
   const notes=DB.get('notes')||[];
   const pending=notes.filter(n=>!n.done);
   const overdue=pending.filter(n=>n.remindDate&&n.remindTime&&new Date(n.remindDate+'T'+n.remindTime)<new Date());
@@ -14204,7 +14332,7 @@ function sendNotesReport(){
     overdue.slice(0,5).forEach((n,i)=>lines.push(`${i+1}. ${n.title} — ${n.remindDate} ${n.remindTime}`));
   }
   lines.push('','━━━━━━━━━━━━━━━━━━━━━━━━','📤 من نظام Perfect Lab Pro');
-  wa(phone,lines.join('\n'),{type:'system',page:'الملاحظات',client:'الإدارة'});
+  _sendToAdminWithPicker(lines.join('\n'),{type:'system',page:'الملاحظات',client:'الإدارة'});
 }
 
 // ======== NOTES ENGINE END ========
@@ -15695,7 +15823,6 @@ function waOrCopy(text,opts){
   // opts = {type:'general'|'client'|'supplier'|'delegate'|'tech', name:'...' }
   opts=opts||{};
   const li=DB.get('labinfo')||{};
-  const adminNum=li.wa||li.ph1||'';
   // Build recipient list
   const recipients=[];
   if(opts.type==='client'&&opts.name){
@@ -15714,8 +15841,9 @@ function waOrCopy(text,opts){
     const emp=(DB.get('employees')||[]).find(x=>x.name===opts.name)||{};
     if(emp.wa||emp.phone) recipients.push({label:'👨‍🔧 الفني: '+opts.name, phone:emp.wa||emp.phone});
   }
-  // Always add admin if available
-  if(adminNum) recipients.push({label:'⚙️ الإدارة: '+adminNum, phone:adminNum});
+  // Always add admin numbers if available (رقمي الإدارة المسجلين في البيانات الأساسية)
+  if(li.admin1) recipients.push({label:'⚙️ الإدارة 1: '+li.admin1, phone:li.admin1});
+  if(li.admin2) recipients.push({label:'⚙️ الإدارة 2: '+li.admin2, phone:li.admin2});
   // Copy button always available
   recipients.push({label:'📋 نسخ النص فقط', phone:null});
 
