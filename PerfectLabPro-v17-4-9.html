@@ -118,7 +118,7 @@ body{font-family:"Cairo",sans-serif;background:var(--bg);color:var(--text);min-h
 .td.on{border-color:var(--gold);transform:scale(1.2)}
 .user-chip{display:flex;align-items:center;gap:7px;padding:5px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;cursor:pointer}
 .ua{width:26px;height:26px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#000}
-.content{flex:1;padding:18px;padding-bottom:140px;overflow-y:auto;overflow-x:hidden;height:0;min-height:0;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;-webkit-flex:1;touch-action:pan-y;}
+.content{flex:1;padding:18px;padding-bottom:140px;overflow-y:auto;overflow-x:hidden;height:0;min-height:0;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;-webkit-flex:1;scroll-behavior:smooth;}
 /* ===== PAGE MEMO BUTTON (topbar) ===== */
 #page-memo-btn{position:relative;width:34px;height:34px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--text2);transition:all .15s}
 #page-memo-btn:hover{border-color:var(--gold);color:var(--gold)}
@@ -4509,18 +4509,8 @@ function fmt(n){const v=parseFloat(n);return (isNaN(v)?0:v).toLocaleString('en-U
 function today(){return new Date().toISOString().split('T')[0]}
 function toast(msg,t='ok'){const el=document.getElementById('toast');el.textContent=msg;el.className='toast '+(t==='ok'?'ok':'err');el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2800)}
 // FIX: removed duplicate esc() — defined once at top of script
-// FIX ANDROID SCROLL: body overflow:hidden يكسر touch-action:pan-y على أندرويد
-let _ovOpenCount=0;
-function openOv(id){
-  document.getElementById(id).classList.add('open');
-  _ovOpenCount++;
-  if(window.innerWidth>700) document.body.style.overflow='hidden';
-}
-function closeOv(id){
-  document.getElementById(id).classList.remove('open');
-  _ovOpenCount=Math.max(0,_ovOpenCount-1);
-  if(_ovOpenCount===0) document.body.style.overflow='';
-}
+function openOv(id){document.getElementById(id).classList.add('open');document.body.style.overflow='hidden'}
+function closeOv(id){document.getElementById(id).classList.remove('open');document.body.style.overflow=''}
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)closeOv(o.id)}));
 let _cb=null;let _cbId=0;
 function confirm2(t,m,cb){const myId=++_cbId;document.getElementById('conf-ttl').textContent=t;document.getElementById('conf-msg').textContent=m;_cb={fn:cb,id:myId};document.getElementById('conf-ov').classList.add('open')}
@@ -9484,12 +9474,12 @@ function openInvDoc(clientName,selectedIds=null){
   // Open modal
   loadInvDesign();
   document.getElementById('ov-inv-doc').classList.add('open');
-  if(window.innerWidth>700) document.body.style.overflow='hidden';
+  document.body.style.overflow='hidden';
 }
 
 function closeInvDoc(){
   document.getElementById('ov-inv-doc').classList.remove('open');
-  document.body.style.overflow=''; // آمن: هذا الـ modal مستقل عن openOv
+  document.body.style.overflow='';
 }
 function doPrintInv(){
   const tb=document.getElementById('inv-toolbar');
