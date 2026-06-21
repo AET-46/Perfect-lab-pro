@@ -118,7 +118,7 @@ body{font-family:"Cairo",sans-serif;background:var(--bg);color:var(--text);min-h
 .td.on{border-color:var(--gold);transform:scale(1.2)}
 .user-chip{display:flex;align-items:center;gap:7px;padding:5px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;cursor:pointer}
 .ua{width:26px;height:26px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#000}
-.content{flex:1;padding:18px;padding-bottom:140px;overflow-y:auto;overflow-x:hidden;height:0;min-height:0;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;-webkit-flex:1;scroll-behavior:smooth;}
+.content{flex:1;padding:18px;padding-bottom:140px;overflow-y:auto;overflow-x:hidden;height:0;min-height:0;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;-webkit-flex:1;touch-action:pan-y;}
 /* ===== PAGE MEMO BUTTON (topbar) ===== */
 #page-memo-btn{position:relative;width:34px;height:34px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--text2);transition:all .15s}
 #page-memo-btn:hover{border-color:var(--gold);color:var(--gold)}
@@ -150,7 +150,7 @@ body{font-family:"Cairo",sans-serif;background:var(--bg);color:var(--text);min-h
 .row-note-btn{background:none;border:none;cursor:pointer;font-size:13px;padding:2px 4px;border-radius:4px;transition:all .15s;color:var(--text3);line-height:1}
 .row-note-btn:hover{color:var(--gold);background:rgba(245,158,11,.1)}
 .row-note-btn.has-note{color:var(--gold)}
-.page{display:none}.page.active{display:block;animation:fi .2s ease;will-change:opacity;}
+.page{display:none}.page.active{display:block;animation:fi .2s ease;}
 @keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 @keyframes badge-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.75;transform:scale(1.12)}}
@@ -4404,17 +4404,28 @@ const DB = {
         try { localStorage.setItem('plp_' + k, JSON.stringify(data[k])); } catch(e) {}
       });
       // إعادة render الصفحة الحالية إن كانت مفتوحة
-      try {
-        const activePg = document.querySelector('.page.active');
-        if (activePg) {
-          const pgId = activePg.id?.replace('pg-', '');
-          if (pgId && pgId !== 'dashboard') {
-            const renders = {dafter:renderDafter,proof:renderProof,archive:renderArchive,
-              treasury:renderTreasury,debts:renderDebts,inventory:renderInventory};
-            if (renders[pgId]) renders[pgId]();
+      // FIX #TOUCH-DEFER: لو المستخدم ماسك بيسحب دلوقتي، نأجل الريندر لحد ما يسيب إصبعه
+      // (استبدال DOM الجدول أثناء لمسة فعلية بيسبب "تجمد" ظاهري للسكرول على أندرويد)
+      const _doRealtimeRender=()=>{
+        try {
+          const activePg = document.querySelector('.page.active');
+          if (activePg) {
+            const pgId = activePg.id?.replace('pg-', '');
+            if (pgId && pgId !== 'dashboard') {
+              const renders = {dafter:renderDafter,proof:renderProof,archive:renderArchive,
+                treasury:renderTreasury,debts:renderDebts,inventory:renderInventory};
+              if (renders[pgId]) renders[pgId]();
+            }
           }
-        }
-      } catch(e) {}
+        } catch(e) {}
+      };
+      if (window._userTouching) {
+        const _waitRelease=setInterval(()=>{
+          if (!window._userTouching) { clearInterval(_waitRelease); _doRealtimeRender(); }
+        },150);
+      } else {
+        _doRealtimeRender();
+      }
     }, err => { console.warn('Firebase realtime error:', err.message); });
   },
 
@@ -4869,6 +4880,19 @@ document.getElementById('sidebar-nav').addEventListener('click',function(e){
   setTimeout(()=>goPage(pg),50);
 });
 window.goPage=goPage;
+
+// FIX #TOUCH-TRACK: تتبّع وجود لمسة نشطة على منطقة المحتوى — يُستخدم لتأجيل
+// أي إعادة render (مثلاً من Firebase realtime sync) لحد ما المستخدم يسيب إصبعه،
+// لأن استبدال الـ DOM أثناء حركة سحب فعلية بيلخبط محرك اللمس على أندرويد ويُحس وكأن الصفحة متجمدة
+window._userTouching=false;
+(function(){
+  const ct=document.querySelector('.content');
+  if(!ct)return;
+  ct.addEventListener('touchstart',()=>{window._userTouching=true;},{passive:true});
+  const release=()=>{window._userTouching=false;};
+  ct.addEventListener('touchend',release,{passive:true});
+  ct.addEventListener('touchcancel',release,{passive:true});
+})();
 function swTab(secId,el){
   const par=el.closest('.page');if(!par)return;
   par.querySelectorAll('.ms').forEach(s=>s.classList.remove('on'));
@@ -7004,7 +7028,7 @@ const PR_TEMPLATES = {
     id: 'navyGold',
     name: 'الكحلي والذهبي (الافتراضي)',
     render(ctx){
-      const {li,c,dateStr,clientName,addrParts,phone,pageBadge,itemsRows,rowTotal,grandDebt,showTotalsCol}=ctx;
+      const {li,c,dateStr,clientName,addrParts,phone,pageBadge,itemsRows,rowTotal,grandDebt,showTotalsCol,showDebt}=ctx;
       return `<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <style>
@@ -7062,10 +7086,10 @@ const PR_TEMPLATES = {
       </tr></thead>
       <tbody>${itemsRows}</tbody>
     </table>
-    <div class="pr-totals">
+    ${(showTotalsCol||showDebt)?`<div class="pr-totals">
       ${showTotalsCol?`<div class="pr-tot-row"><span>🧾 قيمة الفاتورة الحالية</span><span style="font-weight:700">${fmtAr(rowTotal)} ${c}</span></div>`:''}
-      <div class="pr-tot-row grand"><span>📌 إجمالي المديونية</span><span>${fmtAr(grandDebt)} ${c}</span></div>
-    </div>
+      ${showDebt?`<div class="pr-tot-row grand"><span>📌 إجمالي المديونية</span><span>${fmtAr(grandDebt)} ${c}</span></div>`:''}
+    </div>`:''}
     <div class="pr-foot">
       <div class="msg">${esc(getNsText('footer-inv','✨ شكراً لثقتكم 🌷'))}</div>
       <div class="contacts">${[li.ph1?'📞 '+li.ph1:'',li.ph2?'📞 '+li.ph2:'',li.wa?'💬 '+li.wa:'',li.addr?'📍 '+li.addr:''].filter(Boolean).join('  •  ')}</div>
@@ -7101,14 +7125,19 @@ function printRowsAsPRInvoice(tbId,page,forceTplId){
   const li=DB.get('labinfo')||{};
   const c=cur();
   const dateStr=dateAr();
+  // البروفة لم تُنقل بعد لحساب العميل (مش فاتورة) — فلا داعي لعرض/حساب المديونية لها
+  const showDebt = page!=='proof';
   // المديونية الإجمالية الحقيقية (شاملة الرصيد الافتتاحي) — نفس منطق الإشعار
-  const summary=_clientAccountSummary(clientName);
-  const grandDebt=Math.max(0,summary.totalDebt);
+  const grandDebt = showDebt ? Math.max(0,_clientAccountSummary(clientName).totalDebt) : 0;
   // قيمة الفاتورة الحالية = إجمالي الصفوف المحددة فقط
   const rowTotal=rows.reduce((s,r)=>s+(+r.total||0),0);
   const phone=rows[0]?.phone||'';
   const clInfo=(DB.get('clients')||[]).find(x=>x.name===clientName)||{};
   const addrParts=[clInfo.addr,clInfo.city,clInfo.gov].filter(Boolean);
+
+  const pageBadge={dafter:'📂 حالة قيد التنفيذ',proof:'🔬 بروفه',archive:'🧾 فاتورة مبيعات'}[page]||'فاتورة';
+  // البروفة: لا تُظهر أي سعر/حساب مالي في الطباعة (نفس منطق الإشعار)
+  const showTotalsCol = page!=='proof';
 
   const itemsRows=rows.map((r,i)=>`
     <tr>
@@ -7116,17 +7145,14 @@ function printRowsAsPRInvoice(tbId,page,forceTplId){
       <td><strong style="color:#0d1b2a">${esc(r.noteName||'—')}</strong></td>
       <td><strong>${esc(r.product||'—')}</strong></td>
       <td style="text-align:center">${toAr(r.qty||0)}</td>
-      <td style="font-weight:700;color:#0d1b2a">${fmtAr(r.total||0)} ${c}</td>
+      ${showTotalsCol?`<td style="font-weight:700;color:#0d1b2a">${fmtAr(r.total||0)} ${c}</td>`:''}
     </tr>`).join('');
-
-  const pageBadge={dafter:'📂 حالة قيد التنفيذ',proof:'🔬 بروفه',archive:'🧾 فاتورة مبيعات'}[page]||'فاتورة';
-  const showTotalsCol=true;
 
   // اختيار القالب: forceTplId (من شاشة الاختيار) أو آخر قالب محفوظ تلقائيًا بدون سؤال
   const tplId = forceTplId || getPRTemplateId();
   if(forceTplId) setPRTemplateId(forceTplId);
   const tpl = PR_TEMPLATES[tplId] || PR_TEMPLATES.navyGold;
-  const html = tpl.render({li,c,dateStr,clientName,addrParts,phone,pageBadge,itemsRows,rowTotal,grandDebt,showTotalsCol});
+  const html = tpl.render({li,c,dateStr,clientName,addrParts,phone,pageBadge,itemsRows,rowTotal,grandDebt,showTotalsCol,showDebt});
   _doPrint(html);
 }
 
@@ -8807,14 +8833,11 @@ function _caseNoSortVal(noteName){
 function _fmtNotifRow(r,opts={}){
   const cn=_extractCaseNo(r.noteName);
   const hasName=!!(r.noteName&&r.noteName.trim());
-  let line;
-  if(hasName){
-    const suffix=cn?'':' (بدون رقم حالة)';
-    line=`●${r.noteName}${suffix}  —  ${r.product||''} × ${r.qty||0}`;
-  } else {
-    // الاسم ناقص بالكامل: نكتب نوع المنتج بدل الاسم
-    line=`●${r.product||'—'} × ${r.qty||0}`;
-  }
+  // لو الاسم موجود نعرضه، ولو ناقص بالكامل نعرض اسم المنتج بدله
+  const label=hasName?r.noteName:(r.product||'—');
+  let line=`●${label} × ${r.qty||0}`;
+  // اللاحقة تتطبق في الحالتين: الاسم ناقص بالكامل، أو موجود بس من غير رقم حالة داخله
+  if(!cn) line+=' (بدون رقم حالة)';
   if(opts.withTotal&&r.total){
     line+=`  |  ${fmtAr(r.total)} ${cur()}`;
   }
@@ -8900,9 +8923,9 @@ function buildInvoiceMsg(clientName,paidNow,_tplVars={},selectedIds=null){
 
   const lines=[];
 
-  // 1. اسم المعمل عريض
-  if(getNs('inv-logo')) lines.push('*🦷 '+(li.name||'Perfect Dental Lab')+'*');
+  // 1. الشارة أولاً ثم اسم المعمل
   lines.push('🧿🧾 إشعار فاتورة 🧾🧿');
+  if(getNs('inv-logo')) lines.push('*🦷 '+(li.name||'Perfect Dental Lab')+'*');
   lines.push(sep);
 
   // 2. اسم العميل
@@ -8985,9 +9008,9 @@ function buildProofMsg(clientName,_tplVars={},selectedIds=null){
   const clientDf=df.filter(r=>_matchClientRecord(r,_cid,clientName));
   const lines=[];
 
-  // 1. اسم المعمل عريض
-  if(getNs('pr-logo')) lines.push('*🦷 '+(li.name||'Perfect Dental Lab')+'*');
+  // 1. الشارة أولاً ثم اسم المعمل
   lines.push('⌛🎨 إشعار بروفة 🎨⌛');
+  if(getNs('pr-logo')) lines.push('*🦷 '+(li.name||'Perfect Dental Lab')+'*');
   lines.push(sep);
 
   // 2. اسم العميل
