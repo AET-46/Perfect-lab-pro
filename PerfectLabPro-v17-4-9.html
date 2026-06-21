@@ -1016,7 +1016,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
         </div>
       </div>
       <div class="selbar"><input type="checkbox" onchange="toggleAll('archive-tb',this.checked)"><a onclick="toggleAll('archive-tb',true)">تحديد الكل</a> | <a onclick="toggleAll('archive-tb',false)">إلغاء</a></div>
-      <div class="tbl-wrap"><table><thead><tr><th class="chk-col"></th><th>رقم الحالة / المريض</th><th>المندوب</th><th>المبلغ</th><th>المدفوع</th><th>المتبقي</th><th>التاريخ</th><th style="width:36px"></th></tr></thead><tbody id="archive-tb"></tbody></table></div>
+      <div class="tbl-wrap"><table><thead><tr><th class="chk-col"></th><th>رقم الحالة / المريض</th><th>المندوب</th><th>الإجمالي</th><th>التاريخ</th><th style="width:36px"></th></tr></thead><tbody id="archive-tb"></tbody></table></div>
       <div id="archive-empty" class="empty" style="display:none"><div class="ei">📁</div><p>لا توجد حالات</p></div>
     </div>
   </div>
@@ -3495,7 +3495,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 <!-- SETTLE -->
 <div class="overlay" id="ov-settle">
   <div class="modal modal-sm">
-    <div class="mh"><h3 style="color:var(--purple)">تسوية فاتورة</h3><div class="mc-btn" onclick="closeOv('ov-settle')">✕</div></div>
+    <div class="mh" style="color:var(--purple)"><h3 style="color:var(--purple)">تسوية حساب عميل</h3><div class="mc-btn" onclick="closeOv('ov-settle')">✕</div></div>
     <div class="mb"><div class="ibox" id="settle-info"></div>
       <div class="fg"><label>سبب التسوية <span class="req">*</span></label><textarea id="settle-reason"></textarea></div>
       <div class="fg" style="margin-top:10px"><label>المبلغ المحصّل (ج.م)</label><input id="settle-amt" type="number" value="0"></div>
@@ -4404,8 +4404,8 @@ const DB = {
         try { localStorage.setItem('plp_' + k, JSON.stringify(data[k])); } catch(e) {}
       });
       // إعادة render الصفحة الحالية إن كانت مفتوحة
-      // FIX #TOUCH-DEFER: لو المستخدم ماسك بيسحب دلوقتي، نأجل الريندر لحد ما يسيب إصبعه
-      // (استبدال DOM الجدول أثناء لمسة فعلية بيسبب "تجمد" ظاهري للسكرول على أندرويد)
+      // FIX #TOUCH-DEFER: لو المستخدم ماسك بيسحب أو لسه السكرول مستمر (momentum)، نأجل الريندر
+      // لحد ما يهدأ تماماً (استبدال DOM الجدول أثناء حركة فعلية بيسبب "تجمد" حقيقي للسكرول على أندرويد)
       const _doRealtimeRender=()=>{
         try {
           const activePg = document.querySelector('.page.active');
@@ -4419,9 +4419,12 @@ const DB = {
           }
         } catch(e) {}
       };
-      if (window._userTouching) {
+      if (typeof _isUserBusyScrolling==='function' && _isUserBusyScrolling()) {
+        let _waitTicks=0;
         const _waitRelease=setInterval(()=>{
-          if (!window._userTouching) { clearInterval(_waitRelease); _doRealtimeRender(); }
+          _waitTicks++;
+          // حد أقصى أمان: لا نؤجل أكثر من ~10 ثوانٍ حتى لو ظل المستخدم يسكرول باستمرار
+          if (!_isUserBusyScrolling() || _waitTicks>66) { clearInterval(_waitRelease); _doRealtimeRender(); }
         },150);
       } else {
         _doRealtimeRender();
@@ -4881,18 +4884,37 @@ document.getElementById('sidebar-nav').addEventListener('click',function(e){
 });
 window.goPage=goPage;
 
-// FIX #TOUCH-TRACK: تتبّع وجود لمسة نشطة على منطقة المحتوى — يُستخدم لتأجيل
-// أي إعادة render (مثلاً من Firebase realtime sync) لحد ما المستخدم يسيب إصبعه،
-// لأن استبدال الـ DOM أثناء حركة سحب فعلية بيلخبط محرك اللمس على أندرويد ويُحس وكأن الصفحة متجمدة
+// FIX #TOUCH-TRACK: تتبّع وجود لمسة نشطة أو سكرول جارٍ على منطقة المحتوى — يُستخدم لتأجيل
+// أي إعادة render (مثلاً من Firebase realtime sync) لحد ما المستخدم يسيب إصبعه ويهدأ السكرول تماماً،
+// لأن استبدال الـ DOM أثناء حركة سحب أو momentum scroll فعلية بيلخبط محرك اللمس على أندرويد
+// ويُحس وكأن الصفحة متجمدة (السكرول لا يتحرك إطلاقاً).
+// FIX #SCROLL-FREEZE: الاعتماد على touchend وحده كان فيه race condition — لو حصل تحديث Firebase
+// بالظبط لحظة رفع الإصبع وسط سكرول مستمر (momentum)، كان بيستبدل الجدول وسط الحركة فيوقف السكرول تماماً.
+// الحل: نضيف مراقبة فعلية لحدث scroll نفسه مع debounce، فمفيش render يحصل إلا بعد سكون حقيقي للتمرير.
 window._userTouching=false;
 (function(){
   const ct=document.querySelector('.content');
   if(!ct)return;
+  let _scrollIdleTimer=null;
+  window._userScrolling=false;
+  const markScrolling=()=>{
+    window._userScrolling=true;
+    clearTimeout(_scrollIdleTimer);
+    // 250ms سكون فعلي بعد آخر حدث scroll قبل ما نعتبر إن المستخدم خلص (يغطي momentum scrolling على أندرويد)
+    _scrollIdleTimer=setTimeout(()=>{window._userScrolling=false;},250);
+  };
+  ct.addEventListener('scroll',markScrolling,{passive:true});
   ct.addEventListener('touchstart',()=>{window._userTouching=true;},{passive:true});
-  const release=()=>{window._userTouching=false;};
+  const release=()=>{
+    window._userTouching=false;
+    // عند رفع الإصبع، استمر في اعتبار المستخدم "مشغول" لحد ما الـ momentum scroll يهدأ فعلياً
+    markScrolling();
+  };
   ct.addEventListener('touchend',release,{passive:true});
   ct.addEventListener('touchcancel',release,{passive:true});
 })();
+// يُستخدم في نقاط التأجيل بدل الاعتماد على _userTouching وحدها
+function _isUserBusyScrolling(){return window._userTouching||window._userScrolling;}
 function swTab(secId,el){
   const par=el.closest('.page');if(!par)return;
   par.querySelectorAll('.ms').forEach(s=>s.classList.remove('on'));
@@ -6614,10 +6636,9 @@ function getTrPaidForArchive(arcId){
 // ARCHIVE
 let _arcF='all';
 function renderArchive(){
-  _invalidateTrPaidCache(); // أعد بناء الـ cache عند كل render
   const srch=document.querySelector('#pg-archive .search-box input');if(srch)srch.value='';
-  // ملاحظة: تم حذف تبويبات فلتر الحالة (الكل/غير مسدد/جزئي/مسدد) من العرض —
-  // النظام الحسابي يعتمد على إجمالي مديونية العميل (راجع _clientAccountSummary) وليس حالة الفاتورة الفردية
+  // ملاحظة: تم إلغاء مفهوم "مديونية الفاتورة الفردية" بالكامل —
+  // النظام الحسابي يعتمد فقط على إجمالي مديونية العميل (راجع _clientAccountSummary). كل فاتورة تعرض إجماليها فقط.
   let list=(DB.get('archive')||[]).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
   // تطبيق حد عدد الصفوف
   const limitSel=document.getElementById('arc-limit');
@@ -6626,29 +6647,17 @@ function renderArchive(){
   const tb=document.getElementById('archive-tb');const em=document.getElementById('archive-empty');
   if(!list.length){if(tb)tb.innerHTML='';if(em)em.style.display='block';return}
   if(em)em.style.display='none';
+  const allNotes=DB.get('notes')||[];
   tb.innerHTML=list.map(r=>{
     const techs=Object.entries(r.technicians||{}).filter(([,v])=>v).map(([k,v])=>esc(k)+':'+esc(v)).join(' | ')||'-';
-    // القاعدة الذهبية: paid/remaining تُحسب من الخزنة
-    const paid=Math.max(0,getTrPaidForArchive(r.id));
-    const remaining=Math.max(0,(+r.total||0)-paid);
-    // ملاحظة: status لا تزال تُحسب وتُخزّن داخلياً (تُستخدم في صفحات أخرى مثل المديونيات والتقارير)
-    // لكن لم تعد تُعرض كعمود أو فلتر مستقل في صفحة الأرشيف نفسها
-    const status=remaining<=0?'done':paid>0?'partial':'unpaid';
-    if(r.status!==status){r.status=status;r.paid=paid;r.remaining=remaining;}
-    const allNotes=DB.get('notes')||[];
     return`<tr data-id="${esc(r.id)}" onclick="rowClick(this)">
       <td class="chk-col"><input type="checkbox" onclick="event.stopPropagation()"></td>
       <td><span style="font-size:11px;color:var(--text3)">#${esc(String(r.caseId||'-'))}</span><br><strong style="font-size:12px">${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:10px;color:var(--teal)">${esc(r.noteName)}</span>`:''}</td>
       <td>${r.delegate?badge(esc(r.delegate),'bg-teal'):'—'}</td>
-      <td>${fmt(r.total)}</td><td style="color:var(--green)">${fmt(paid)}</td>
-      <td style="color:${remaining>0?'var(--red)':'var(--green)'}">${fmt(remaining)}</td>
+      <td><strong>${fmt(r.total)}</strong></td>
       <td><span title="تاريخ الدفتر: ${esc(r.date||'-')}">${r.archivedAt?new Date(r.archivedAt).toISOString().split('T')[0]:esc(r.date||'-')}</span></td>
       <td onclick="event.stopPropagation()">${(()=>{const cnt=allNotes.filter(n=>n.rowId===r.id||n.rowId===r.sourceId||n.caseNo===String(r.caseId||'')).length;return`<button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2)" onclick="openRowDetail('${r.id}','archive')" title="عرض التفاصيل">👁️</button> <button class="row-note-btn${cnt?` has-note`:''}" onclick="openRowNote('${r.id}','${esc(String(r.caseId||r.invId||''))}','${esc(r.client)}','archive')" title="ملاحظات الحالة">${cnt?`📝${cnt}`:'📝'}</button>`;})()}</td>
     </tr>`;}).join('');
-  // مزامنة status/paid/remaining المحسوبة مع قاعدة البيانات (تُستخدم في صفحات أخرى)
-  const _arcAll=DB.get('archive')||[];let _statusDirty=false;
-  _arcAll.forEach(r=>{const p=Math.max(0,getTrPaidForArchive(r.id));const rm=Math.max(0,(+r.total||0)-p);const st=rm<=0?'done':p>0?'partial':'unpaid';if(r.status!==st){r.status=st;r.paid=p;r.remaining=rm;_statusDirty=true;}});
-  if(_statusDirty)DB.set('archive',_arcAll);
 }
 // تم إبقاء الدالة كـ no-op آمن تحسباً لأي استدعاء قديم متبقٍ — التبويبات نفسها أُزيلت من الواجهة
 function arcF(f,el){_arcF=f;renderArchive()}
@@ -6668,14 +6677,17 @@ function returnToProof(){
   renderArchive();renderProof();updateBadges();toast('تم الإرجاع للبروفه');
 }
 // FIX #30: sendInvNotif was defined twice — first definition removed, second definition (line ~3343) is kept
-let _settleId=null;
+let _settleClientKey=null;
 function openSettle(){
-  const ids=getSel('archive-tb');if(ids.length!==1){toast('اختر فاتورة واحدة','err');return}
-  _settleId=ids[0];const r=(DB.get('archive')||[]).find(x=>x.id===_settleId);const c=cur();
-  const realPaid=getTrPaidForArchive(_settleId);
-  const realRemaining=Math.max(0,(+r.total||0)-realPaid);
-  document.getElementById('settle-info').innerHTML=`<div class="irow"><label>الفاتورة</label><span>${r.invId}</span></div><div class="irow"><label>المدفوع فعلاً</label><span style="color:var(--green)">${fmt(realPaid)} ${c}</span></div><div class="irow"><label>المتبقي الفعلي</label><span style="color:var(--red)">${fmt(realRemaining)} ${c}</span></div>`;
-  document.getElementById('settle-reason').value='';document.getElementById('settle-amt').value=realRemaining;
+  const ids=getSel('archive-tb');if(ids.length!==1){toast('اختر فاتورة واحدة لتحديد العميل','err');return}
+  const r=(DB.get('archive')||[]).find(x=>x.id===ids[0]);
+  if(!r){toast('لم يتم إيجاد الفاتورة','err');return}
+  _settleClientKey=r.clientId||r.client;
+  const c=cur();
+  const summary=_clientAccountSummary(_settleClientKey);
+  const totalDebt=Math.max(0,summary.totalDebt);
+  document.getElementById('settle-info').innerHTML=`<div class="irow"><label>العميل</label><span>${esc(r.client)}</span></div><div class="irow"><label>إجمالي مديونية العميل</label><span style="color:var(--red)">${fmt(totalDebt)} ${c}</span></div>`;
+  document.getElementById('settle-reason').value='';document.getElementById('settle-amt').value=totalDebt;
   const settleBoxSel=document.getElementById('settle-box');
   if(settleBoxSel){settleBoxSel.innerHTML=boxOptionsHTML();settleBoxSel.value='cash';}
   openOv('ov-settle');
@@ -6685,38 +6697,30 @@ function doSettle(){
   const reason=document.getElementById('settle-reason').value.trim();if(!reason){toast('يرجى كتابة السبب','err');return}
   const amt=+document.getElementById('settle-amt').value||0;
   if(amt<=0){toast('يرجى إدخال مبلغ صحيح أكبر من صفر','err');return}
-  const rec=(DB.get('archive')||[]).find(r=>r.id===_settleId);
-  if(!rec){toast('لم يتم إيجاد الفاتورة','err');return}
-  const arc=(DB.get('archive')||[]).map(r=>{
-    if(r.id!==_settleId)return r;
-    // القاعدة الذهبية: paid/remaining من الخزنة — لا نعدّل هنا
-    // نحدّث status فقط بعد تسجيل الحركة في الخزنة
-    return {...r,settleReason:reason};
-  });
-  DB.set('archive',arc);
-  // FIX: تسجيل حركة التسوية في الخزنة
+  if(!_settleClientKey){toast('لم يتم تحديد العميل','err');return}
+  const {id:clientId,name:clientName}=_resolveClientKey(_settleClientKey);
+  // FIX: تسجيل حركة التسوية في الخزنة على حساب العميل ككل (مش مرتبطة بفاتورة بعينها)
   const trs=DB.get('treasury')||[];
   trs.push({
     id:'t_settle_'+Date.now(),
     num:nid('tr'),
     type:'in',
     box:document.getElementById('settle-box')?.value||'cash',
-    accType:'archive',
-    accName:rec.client,
-    linkedId:_settleId,
-    linkedType:'archive',
+    accType:'client',
+    accName:clientName,
+    clientId:clientId||undefined,
     amount:amt,
     receiver:'',
-    notes:'تسوية: '+reason,
+    notes:'تسوية حساب: '+reason,
     date:today(),
     createdAt:Date.now()
   });
   DB.set('treasury',trs);
-  // ===== تتبع: تسجيل تسوية فاتورة (تصحيح/إعفاء جزء من المديونية) =====
-  logActivity('archive.settle',{client:rec.client,caseId:rec.caseId,note:'تسوية بمبلغ '+fmt(amt)+' — السبب: '+reason});
+  // ===== تتبع: تسجيل تسوية حساب عميل (تصحيح/إعفاء جزء من مديونيته الكلية) =====
+  logActivity('archive.settle',{client:clientName,note:'تسوية حساب بمبلغ '+fmt(amt)+' — السبب: '+reason});
   closeOv('ov-settle');renderArchive();
   if(document.getElementById('pg-treasury')?.classList.contains('active'))renderTreasury();
-  toast('تمت التسوية وتسجيلها في الخزنة');
+  toast('تمت تسوية حساب العميل وتسجيلها في الخزنة');
 }
 
 // TREASURY
@@ -6777,10 +6781,7 @@ function printTrReceipt(id){
   const clients=DB.get('clients')||[];
   const cl=clients.find(x=>x.id===tr.clientId)||clients.find(x=>x.name===tr.accName)||{};
   const arc=DB.get('archive')||[];
-  const clArc=cl.id?arc.filter(r=>r.clientId===cl.id):arc.filter(r=>r.client===tr.accName);
-  // أضف الرصيد الافتتاحي للعميل إلى المديونية
-  const _clientOB=(_getClientOpeningBalance&&cl.id)?_getClientOpeningBalance(cl.id):0;
-  const totalDebt=clArc.reduce((s,r)=>s+(+r.remaining||0),0)+(_clientOB>0?_clientOB:0);
+  const totalDebt=Math.max(0,_clientAccountSummary(cl.id||tr.accName).totalDebt);
   const html=`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">
   <style>
     *{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif}
@@ -6955,8 +6956,8 @@ function printSelRows(tbId,page){
       ...(r.delegate?[{label:'المندوب',val:r.delegate}]:[]),
       ...(r.phone?[{label:'الهاتف',val:r.phone}]:[]),
       ...(r.total!==undefined?[{label:'إجمالي الفاتورة',val:fmtAr(r.total)+' '+c,bold:true}]:[]),
-      ...(r.remaining!==undefined?[{label:'المتبقي',val:fmtAr(r.remaining||0)+' '+c,red:+r.remaining>0}]:[]),
-      ...(r.status?[{label:'الحالة',val:statusLabel,color:statusCol}]:[]),
+      ...(pg==='archive'?[{label:'إجمالي مديونية العميل',val:fmtAr(Math.max(0,_clientAccountSummary(r.clientId||r.client).totalDebt))+' '+c,red:Math.max(0,_clientAccountSummary(r.clientId||r.client).totalDebt)>0}]:(r.remaining!==undefined?[{label:'المتبقي',val:fmtAr(r.remaining||0)+' '+c,red:+r.remaining>0}]:[])),
+      ...(pg!=='archive'&&r.status?[{label:'الحالة',val:statusLabel,color:statusCol}]:[]),
     ];
     const half=Math.ceil(details.length/2);
     const left=details.slice(0,half);
@@ -7570,9 +7571,12 @@ function _calcPnL(fromDate, toDate){
   const totalOpEx = adminSalaries + opExpenses + opSpares;
 
   // ── 9. خسائر التسويات ──
-  const settledLoss = arcInRange
-    .filter(r=>r.status==='settled')
-    .reduce((s,r)=>{const p=getTrPaidForArchive(r.id);return s+Math.max(0,(+r.total||0)-p);},0);
+  // بعد إلغاء مفهوم "تسوية فاتورة"، التسوية الآن حركة خزنة على حساب العميل ككل
+  // (accType='client', notes تبدأ بـ 'تسوية حساب:') — وتمثل مبلغاً اعتُبر مسدداً دون دخول فعلي،
+  // أي خسارة محاسبية فعلية تُحتسب هنا بالكامل.
+  const settledLoss = treasury
+    .filter(t=>inRange(t.date)&&t.type==='in'&&t.accType==='client'&&(t.notes||'').startsWith('تسوية حساب:'))
+    .reduce((s,t)=>s+(+t.amount||0),0);
 
   const netProfit = grossProfit - totalOpEx - settledLoss;
   const netPct    = totalRevenue>0?Math.round((netProfit/totalRevenue)*100):0;
@@ -7693,14 +7697,15 @@ function renderBalance(){
     const d=r.archivedAt?new Date(r.archivedAt).toISOString().split('T')[0]:(r.date||'');
     return upTo(d);
   });
-  // FIX: احسب المتبقي من total مباشرة عبر getTrPaidForArchive — لا تعتمد على r.remaining القديم
-  const clientDebt = arcUpTo
-    .filter(r=>r.status!=='settled')
-    .reduce((s,r)=>{
-      const realPaid=getTrPaidForArchive(r.id);
-      const realRem=Math.max(0,(+r.total||0)-realPaid);
-      return s+realRem;
-    },0);
+  // FIX: مديونية العملاء = إجمالي كل الفواتير حتى هذا التاريخ - إجمالي كل مدفوعات العملاء حتى نفس التاريخ
+  // (بعد إلغاء مفهوم مديونية الفاتورة الفردية — لا يوجد ربط بين دفعة وفاتورة معينة)
+  const arcTotalUpTo = arcUpTo.reduce((s,r)=>s+(+r.total||0),0);
+  const trsUpTo = (DB.get('treasury')||[]).filter(t=>{
+    const d=t.date||'';
+    return upTo(d)&&t.type==='in'&&!t.isTransfer&&(t.accType==='client'||t.accType==='archive');
+  });
+  const clientPaidUpTo = trsUpTo.reduce((s,t)=>s+(+t.amount||0),0);
+  const clientDebt = Math.max(0, arcTotalUpTo - clientPaidUpTo);
   // FIX: أضف الأرصدة الافتتاحية للعملاء (debit)
   const clientsOBDebt = (DB.get('clients')||[]).reduce((s,cl)=>{
     const ob=_getClientOpeningBalance(cl.id);
@@ -7956,24 +7961,32 @@ function printBalance(){
 }
 
 function renderDebts(){
-  const arc=DB.get('archive')||[];const map={};const c=cur();
+  const arc=DB.get('archive')||[];const c=cur();
+  // كل عميل ظهر في الأرشيف أو لديه رصيد افتتاحي — مديونيته الفعلية تُحسب من _clientAccountSummary فقط
+  const invCount={};
   arc.forEach(r=>{
-    const paid=Math.max(0,getTrPaidForArchive(r.id));
-    const remaining=Math.max(0,(+r.total||0)-paid);
-    if(remaining<=0)return;
-    // ربط بـ clientId إذا موجود، وإلا الاسم كـ fallback
     const key=r.clientId||r.client;
-    if(!map[key])map[key]={client:r.client,clientId:r.clientId||'',phone:r.phone,invoices:0,total:0};
-    map[key].invoices++;map[key].total+=remaining;
+    invCount[key]=(invCount[key]||0)+1;
   });
-  // FIX: أضف الرصيد الافتتاحي للعملاء (debit) حتى لو لم تكن لهم فواتير
+  const seen=new Set();
+  const map={};
+  arc.forEach(r=>{
+    const key=r.clientId||r.client;
+    if(seen.has(key))return;
+    seen.add(key);
+    const debt=_clientAccountSummary(key).totalDebt;
+    if(debt>0){
+      map[key]={client:r.client,clientId:r.clientId||'',phone:r.phone,invoices:invCount[key]||0,total:debt};
+    }
+  });
+  // عملاء برصيد افتتاحي فقط بدون فواتير أرشيف
   const clients=DB.get('clients')||[];
   clients.forEach(cl=>{
-    const ob=_getClientOpeningBalance(cl.id);
-    if(ob>0){
-      const key=cl.id||cl.name;
-      if(!map[key])map[key]={client:cl.name,clientId:cl.id||'',phone:cl.phone||cl.wa||'',invoices:0,total:0};
-      map[key].total+=ob;
+    const key=cl.id||cl.name;
+    if(seen.has(key))return;
+    const debt=_clientAccountSummary(key).totalDebt;
+    if(debt>0){
+      map[key]={client:cl.name,clientId:cl.id||'',phone:cl.phone||cl.wa||'',invoices:0,total:debt};
     }
   });
   const list=Object.values(map).filter(d=>d.total>0).sort((a,b)=>b.total-a.total);
@@ -8168,9 +8181,21 @@ function renderDash(){
 
   const bI=tr.filter(t=>t.type==='in').reduce((s,t)=>s+ +t.amount,0);
   const bO=tr.filter(t=>t.type==='out').reduce((s,t)=>s+ +t.amount,0);
-  const debts=arc.filter(a=>a.status!=='settled').reduce((s,a)=>{const p=getTrPaidForArchive(a.id);return s+Math.max(0,(+a.total||0)-p);},0);
+  // مديونية إجمالية = مجموع _clientAccountSummary لكل عميل ظهر في الأرشيف (بعد إلغاء مفهوم دين الفاتورة الفردية)
+  const debts=(()=>{
+    const seen=new Set();let sum=0;
+    arc.forEach(a=>{
+      const key=a.clientId||a.client;
+      if(seen.has(key))return;
+      seen.add(key);
+      sum+=Math.max(0,_clientAccountSummary(key).totalDebt);
+    });
+    return sum;
+  })();
   const tRev=arcF.reduce((s,r)=>s+ +r.total,0);
-  const tCol=arcF.reduce((s,r)=>s+getTrPaidForArchive(r.id),0);
+  // المحصّل خلال الفترة = حركات الخزنة الفعلية (in) للعملاء خلال نفس الفترة، بلا ربط بفاتورة بعينها
+  const cutoffDate=periodDays>0?new Date(cutoff).toISOString().split('T')[0]:'';
+  const tCol=tr.filter(t=>t.type==='in'&&!t.isTransfer&&(t.accType==='client'||t.accType==='archive')&&(!cutoffDate||(t.date||'')>=cutoffDate)).reduce((s,t)=>s+ +t.amount,0);
   const cfg=getAlertSettings();
   const lateDafter=d.filter(r=>daysDiff(r.date||r.createdAt?.slice?.(0,10))>=cfg.dafterLate).length;
   const lateProof=pf.filter(r=>daysDiff(r.date||r.createdAt?.slice?.(0,10))>=cfg.proofLate).length;
@@ -8210,7 +8235,11 @@ function renderDash(){
         try{return new Date(r.archivedAt).toISOString().slice(0,7)===key;}catch(e){return false;}
       });
       revData.push(mArc.reduce((s,r)=>s+ +r.total,0));
-      colData.push(mArc.reduce((s,r)=>s+getTrPaidForArchive(r.id),0));
+      const mTrs=tr.filter(t=>{
+        if(t.type!=='in'||t.isTransfer||!(t.accType==='client'||t.accType==='archive'))return false;
+        return (t.date||'').slice(0,7)===key;
+      });
+      colData.push(mTrs.reduce((s,t)=>s+ +t.amount,0));
     }
     ChartEngine.line('chart-revenue',months,[
       {data:revData,color:'#c9a84c',fill:true,label:'الإيرادات'},
@@ -8288,21 +8317,27 @@ function renderReports(){
   });
   const all=[...d,...pf,...arcF];
   const tRev=arcF.reduce((s,r)=>s+ +r.total,0);
-  const tCol=arcF.reduce((s,r)=>s+Math.max(0,getTrPaidForArchive(r.id)),0);
-  const tPen=arcF.reduce((s,r)=>s+Math.max(0,(+r.total||0)-getTrPaidForArchive(r.id)),0);
+  // المحصّل/المتبقي خلال الفترة = من حركات الخزنة الفعلية للعملاء، بلا ربط بفاتورة بعينها
+  const tCol=(DB.get('treasury')||[]).filter(t=>t.type==='in'&&!t.isTransfer&&(t.accType==='client'||t.accType==='archive')&&(!ovFrom||(t.date||'')>=ovFrom)&&(!ovTo||(t.date||'')<=ovTo)).reduce((s,t)=>s+ +t.amount,0);
+  const tPen=Math.max(0,tRev-tCol);
   document.getElementById('rep-stats').innerHTML=`
     <div class="stat" style="--c:var(--blue)"><label>إجمالي الحالات</label><div class="val">${all.length}</div></div>
     <div class="stat" style="--c:var(--gold)"><label>الإيرادات</label><div class="val">${fmt(tRev)}</div><div class="sub">${c}</div></div>
     <div class="stat" style="--c:var(--green)"><label>المحصّل</label><div class="val">${fmt(tCol)}</div><div class="sub">${c}</div></div>
     <div class="stat" style="--c:var(--red)"><label>المتبقي</label><div class="val">${fmt(tPen)}</div><div class="sub">${c}</div></div>`;
   const mN=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  const trAll=DB.get('treasury')||[];
   const mon={};arcF.forEach(r=>{
     let k;
     if(r.archivedAt){const dd=new Date(r.archivedAt);k=dd.getFullYear()+'-'+String(dd.getMonth()+1).padStart(2,'0');}
     else if(r.date&&r.date.length>=7){k=r.date.slice(0,7);}
     else return;
-    const paid=getTrPaidForArchive(r.id);
-    if(!mon[k])mon[k]={cnt:0,rev:0,col:0};mon[k].cnt++;mon[k].rev+= +r.total;mon[k].col+=paid;
+    if(!mon[k])mon[k]={cnt:0,rev:0,col:0};mon[k].cnt++;mon[k].rev+= +r.total;
+  });
+  // المحصّل الشهري = حركات الخزنة الفعلية للعملاء في نفس الشهر (بلا ربط بفاتورة بعينها)
+  trAll.filter(t=>t.type==='in'&&!t.isTransfer&&(t.accType==='client'||t.accType==='archive')&&t.date).forEach(t=>{
+    const k=t.date.slice(0,7);
+    if(mon[k])mon[k].col+=(+t.amount||0);
   });
   document.getElementById('rep-mon').innerHTML=Object.entries(mon).sort((a,b)=>b[0].localeCompare(a[0])).map(([k,v])=>{const[yr,mo]=k.split('-');return`<tr><td>${mN[+mo-1]} ${yr}</td><td>${v.cnt}</td><td>${fmt(v.rev)} ${c}</td><td style="color:var(--green)">${fmt(v.col)} ${c}</td></tr>`}).join('')||`<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:20px">لا توجد بيانات</td></tr>`;
   renderDelReport();
@@ -8310,28 +8345,28 @@ function renderReports(){
   const gT=Object.values(prodM).reduce((s,v)=>s+v.tot,0)||1;
   document.getElementById('rep-prod').innerHTML=Object.entries(prodM).sort((a,b)=>b[1].tot-a[1].tot).map(([n,v])=>`<tr><td><strong>${n}</strong></td><td>${v.cnt}</td><td>${fmt(v.tot)} ${c}</td><td>${badge(((v.tot/gT)*100).toFixed(1)+'%','bg-gold')}</td></tr>`).join('')||`<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:20px">لا توجد بيانات</td></tr>`;
   // FIX #MERGE-DEBTS: merged clients + debts — include phone + WA button + debt stats
+  // بعد إلغاء مفهوم مديونية الفاتورة الفردية: المديونية تُحسب لكل عميل من _clientAccountSummary مباشرة
   const clients=DB.get('clients')||[];
-  const clM={};arc.forEach(r=>{
-    const paid=Math.max(0,getTrPaidForArchive(r.id));
-    const rem=Math.max(0,(+r.total||0)-paid);
-    // ربط بـ clientId إذا موجود، وإلا الاسم كـ fallback
+  const clM={};
+  const _seenClKeys=new Set();
+  arc.forEach(r=>{
     const key=r.clientId||r.client;
     if(!clM[key])clM[key]={name:r.client,clientId:r.clientId||'',cnt:0,tot:0,paid:0,rem:0,phone:r.phone||''};
-    clM[key].cnt++;clM[key].tot+= +r.total;clM[key].paid+=paid;clM[key].rem+=rem;
+    clM[key].cnt++;clM[key].tot+= +r.total;
     if(!clM[key].phone&&r.phone)clM[key].phone=r.phone;
-  });
-  // FIX: أضف الرصيد الافتتاحي للعملاء في تقرير المديونيات
-  clients.forEach(cl=>{
-    const ob=_getClientOpeningBalance(cl.id);
-    const key=cl.id||cl.name;
-    if(ob!==0){
-      if(!clM[key])clM[key]={name:cl.name,clientId:cl.id||'',cnt:0,tot:0,paid:0,rem:0,phone:cl.phone||cl.wa||''};
-      // debit → زيادة المديونية، credit → تخفيض
-      clM[key].rem+=ob;
-      if(ob>0)clM[key].tot+=ob; // يُضاف للإجمالي فقط لو مدين
+    if(!_seenClKeys.has(key)){
+      _seenClKeys.add(key);
+      clM[key].rem=Math.max(0,_clientAccountSummary(key).totalDebt);
     }
-    // enrich phone
-    if(clM[key]&&!clM[key].phone)clM[key].phone=cl.phone||cl.wa||'';
+  });
+  // FIX: أضف عملاء برصيد افتتاحي فقط دون أي فواتير أرشيف (من ظهر بالأرشيف بالفعل تم احتساب رصيده الافتتاحي ضمن _clientAccountSummary أعلاه)
+  clients.forEach(cl=>{
+    const key=cl.id||cl.name;
+    if(clM[key])return; // محسوب بالفعل ضمن حلقة الأرشيف أعلاه
+    const debt=Math.max(0,_clientAccountSummary(key).totalDebt);
+    if(debt>0){
+      clM[key]={name:cl.name,clientId:cl.id||'',cnt:0,tot:debt,paid:0,rem:debt,phone:cl.phone||cl.wa||''};
+    }
   });
   const clList=Object.entries(clM).sort((a,b)=>b[1].rem-a[1].rem||b[1].tot-a[1].tot);
   const totalDebt=clList.reduce((s,[,v])=>s+(v.rem>0?v.rem:0),0);
@@ -8727,9 +8762,16 @@ function getClientsForNotif(type){
   // returns [{name, phone}] deduplicated
   const map={};
   if(type==='inv'||type==='all'){
-    (DB.get('archive')||[]).filter(r=>r.status!=='done'&&r.status!=='settled').forEach(r=>{
+    // العملاء الذين لديهم مديونية فعلية (بعد إلغاء مفهوم حالة الفاتورة الفردية)
+    const seen=new Set();
+    (DB.get('archive')||[]).forEach(r=>{
       const key=r.clientId||r.client;
-      if(!map[key])map[key]={name:r.client,phone:r.phone||''};
+      if(seen.has(key))return;
+      seen.add(key);
+      const debt=_clientAccountSummary(key).totalDebt;
+      if(debt>0){
+        if(!map[key])map[key]={name:r.client,phone:r.phone||''};
+      }
     });
   }
   if(type==='pf'||type==='all'){
@@ -8879,7 +8921,7 @@ function buildInvoiceMsg(clientName,paidNow,_tplVars={},selectedIds=null){
   if(manualTpl){
     const cl=DB.get('clients')||[];
     const found=cl.find(c=>c.name===clientName)||{};
-    const arc=(DB.get('archive')||[]).filter(r=>_matchClientRecord(r,_cid,clientName)&&!r.paid);
+    const arc=(DB.get('archive')||[]).filter(r=>_matchClientRecord(r,_cid,clientName)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
     return manualTpl
       .replace(/\{caseId\}/g,_tplVars.caseId||arc[0]?.caseId||'—')
       .replace(/\{patient\}/g,_tplVars.patient||arc[0]?.noteName||'—')
@@ -8899,18 +8941,11 @@ function buildInvoiceMsg(clientName,paidNow,_tplVars={},selectedIds=null){
   const sep=_getDc('wa-inv-sep','━━━━━━━━━━━━━━━━━━━━━━━━');
   const footer=getNsText('footer-inv','✨ شكراً لثقتكم 🌷');
 
-  // القاعدة الذهبية: الديون من _clientAccountSummary (شاملة الرصيد الافتتاحي)
-  _invalidateTrPaidCache();
+  // القاعدة الذهبية: الديون من _clientAccountSummary (شاملة الرصيد الافتتاحي) — لا يوجد مفهوم "فاتورة غير مسددة" منفردة
   const clientArcAll=arc.filter(r=>_matchClientRecord(r,_cid,clientName));
-  // كل الفواتير غير المسددة أو جزئية (للعرض فقط)
-  const unpaidAll=clientArcAll.filter(r=>{
-    const p=getTrPaidForArchive(r.id);
-    const rem=Math.max(0,(+r.total||0)-p);
-    return rem>0;
-  });
-  // لو فيه صفوف محددة: نعرض فقط الصفوف المحددة (المديونية الإجمالية تبقى شاملة كل الحساب دائماً)
+  // كل فواتير العميل (للعرض) — لو فيه صفوف محددة: نعرض فقط الصفوف المحددة
   const hasSel=Array.isArray(selectedIds)&&selectedIds.length>0;
-  const unpaid=hasSel?unpaidAll.filter(r=>selectedIds.includes(r.id)):unpaidAll;
+  const unpaid=hasSel?clientArcAll.filter(r=>selectedIds.includes(r.id)):clientArcAll;
   // إجمالي قيمة الفواتير المعروضة (total)
   const invoiceTotal=unpaid.reduce((s,r)=>s+(+r.total||0),0);
   // المديونية الموحدة من _clientAccountSummary
@@ -9317,17 +9352,13 @@ function openInvDoc(clientName,selectedIds=null){
   const pf=DB.get('proof')||[];
   const df=DB.get('dafter')||[];
   const c=cur();
-  // القاعدة الذهبية: كل الحسابات من _clientAccountSummary
-  _invalidateTrPaidCache();
+  // القاعدة الذهبية: كل الحسابات من _clientAccountSummary — لا يوجد مفهوم "فاتورة غير مسددة" منفردة
   const allRecs=arc.filter(r=>_matchClientRecord(r,_cid,clientName));
   // المديونية الفعلية الموحدة (شاملة الرصيد الافتتاحي) — تبقى دائماً شاملة كل حساب العميل
   const summary=_clientAccountSummary(clientName);
   const prevDebt=Math.max(0,summary.totalDebt);
-  // الفواتير غير المسددة بالكامل (للعرض)
-  const unpaidAll=allRecs.filter(r=>{
-    const p=getTrPaidForArchive(r.id);
-    return Math.max(0,(+r.total||0)-p)>0;
-  });
+  // كل فواتير العميل (للعرض)
+  const unpaidAll=allRecs;
   // لو فيه صفوف محددة: نعرض فقط هذه الصفوف (وليس كل فواتير العميل)
   const hasSel=Array.isArray(selectedIds)&&selectedIds.length>0;
   const unpaid=hasSel?unpaidAll.filter(r=>selectedIds.includes(r.id)):unpaidAll;
@@ -10203,20 +10234,25 @@ function computeAlerts(){
     });
   }
 
-  // Late debts
+  // Late debts — على مستوى العميل ككل (بعد إلغاء مفهوم مديونية الفاتورة الفردية)
   if(cfg.alertDebt){
     const arc=DB.get('archive')||[];
-    const lateDebts=arc.filter(r=>{
-      if(r.status==='done'||r.status==='settled')return false;
-      const rem=+r.remaining||0;
-      if(rem<=0)return false;
-      const age=daysDiff(r.date||r.archivedAt?.slice?.(0,10));
-      return age>=cfg.debtLate;
+    const clientMap={};
+    arc.forEach(r=>{
+      const key=r.clientId||r.client;
+      if(!clientMap[key])clientMap[key]={name:r.client,oldestDate:r.date||r.archivedAt?.slice?.(0,10)};
+      const d=r.date||r.archivedAt?.slice?.(0,10);
+      if(d&&(!clientMap[key].oldestDate||d<clientMap[key].oldestDate))clientMap[key].oldestDate=d;
     });
+    const lateDebts=Object.entries(clientMap).map(([key,info])=>{
+      const debt=_clientAccountSummary(key).totalDebt;
+      const age=daysDiff(info.oldestDate);
+      return {client:info.name,remaining:debt,age};
+    }).filter(x=>x.remaining>0&&x.age>=cfg.debtLate);
     if(lateDebts.length)alerts.push({
       type:'debt',icon:'💸',color:'var(--red)',
-      title:`${lateDebts.length} دين متأخر عن ${cfg.debtLate} يوم`,
-      detail:lateDebts.map(r=>`${r.client} — ${fmt(r.remaining)} ج.م (${daysDiff(r.date||r.archivedAt?.slice?.(0,10))} يوم)`).slice(0,5),
+      title:`${lateDebts.length} عميل بمديونية متأخرة عن ${cfg.debtLate} يوم`,
+      detail:lateDebts.map(r=>`${r.client} — ${fmt(r.remaining)} ج.م (${r.age} يوم)`).slice(0,5),
       count:lateDebts.length
     });
   }
@@ -10512,7 +10548,15 @@ function updateNotifBadges(){
   const pf=DB.get('proof')||[];
   const dafter=DB.get('dafter')||[];
   const cfg=getAlertSettings();
-  const arcClients=new Set(arc.filter(r=>r.status!=='done'&&r.status!=='settled').map(r=>r.client));
+  // عملاء عندهم مديونية فعلية (بعد إلغاء مفهوم حالة الفاتورة الفردية)
+  const _seenArcKeys=new Set();
+  const arcClients=new Set();
+  arc.forEach(r=>{
+    const key=r.clientId||r.client;
+    if(_seenArcKeys.has(key))return;
+    _seenArcKeys.add(key);
+    if(_clientAccountSummary(key).totalDebt>0)arcClients.add(r.client);
+  });
   const pfClients=new Set(pf.map(r=>r.client));
   const lateCount=computeAlerts().reduce((s,a)=>s+a.count,0);
   const waLogs=(DB.get('notif_log')||[]).filter(l=>l.type!=='system'&&l.type!=='alert').length;
@@ -10855,13 +10899,10 @@ function openRowDetail(id,source){
     {label:'تاريخ الإنشاء',val:rec.createdAt?new Date(rec.createdAt).toLocaleString('ar-EG'):'—'},
   ];
   if(src==='archive'){
-    const rPaid=Math.max(0,getTrPaidForArchive(rec.id));
-    const rRem=Math.max(0,(+rec.total||0)-rPaid);
+    const clientDebt=Math.max(0,_clientAccountSummary(rec.clientId||rec.client).totalDebt);
     fields.push(
       {label:'تاريخ الأرشفة',val:rec.archivedAt?new Date(rec.archivedAt).toISOString().split('T')[0]:'—'},
-      {label:'المحصّل',val:'<span style="color:var(--green);font-weight:700">'+fmt(rPaid)+' '+c+'</span>'},
-      {label:'المتبقي',val:'<span style="color:'+(rRem>0?'var(--red)':'var(--green)')+';font-weight:700">'+fmt(rRem)+' '+c+'</span>'},
-      {label:'الحالة',val:({unpaid:'غير مسدد',partial:'جزئي',settled:'مسدد',done:'منتهي'})[rec.status]||rec.status||'—'}
+      {label:'إجمالي مديونية العميل',val:'<span style="color:'+(clientDebt>0?'var(--red)':'var(--green)')+';font-weight:700">'+fmt(clientDebt)+' '+c+'</span>'}
     );
     if(rec.technicians&&Object.keys(rec.technicians).length){
       const techList=Object.entries(rec.technicians).filter(([,v])=>v).map(([s,t])=>s+': '+t).join(' | ');
@@ -11868,9 +11909,9 @@ function renderProfitability(){
     savedFixedExtra,daysInRange,
   }=pnl;
 
-  // حسابات مستكملة للعرض
-  const totalPaid  = arcInRange.reduce((s,r)=>s+(+r.paid||0),0);
-  const totalUnpaid= arcInRange.reduce((s,r)=>s+(+r.remaining||0),0);
+  // حسابات مستكملة للعرض — المحصّل من حركات الخزنة الفعلية خلال الفترة (بلا ربط بفاتورة بعينها)
+  const totalPaid  = (DB.get('treasury')||[]).filter(t=>t.type==='in'&&!t.isTransfer&&(t.accType==='client'||t.accType==='archive')&&(!fromDate||(t.date||'')>=fromDate)&&(!toDate||(t.date||'')<=toDate)).reduce((s,t)=>s+(+t.amount||0),0);
+  const totalUnpaid= Math.max(0,totalRevenue-totalPaid);
 
   // تحميل قيمة التكاليف الثابتة المحفوظة في الحقل
   const fcEl=document.getElementById('pnl-fixed-costs');
@@ -12794,18 +12835,21 @@ function _clientAccountSummary(clientKey, from, to){
   const trs=DB.get('treasury')||[];
   // الرصيد الافتتاحي للعميل
   const openingBal=_getClientOpeningBalance(clientId);
-  // المديونية السابقة = فواتير قبل تاريخ البداية محسوبة من الخزنة
+  // ===== القاعدة الذهبية الموحّدة (بعد إلغاء مفهوم مديونية الفاتورة الفردية) =====
+  // المديونية = (رصيد افتتاحي + إجمالي كل الفواتير) - (إجمالي كل المدفوعات على حساب العميل ككل)
+  // لا يوجد أي ربط بين دفعة معينة وفاتورة معينة — السداد ينزل من إجمالي حساب العميل دائماً،
+  // بصرف النظر عن عدد الفواتير أو ترتيبها.
+  // الفواتير قبل تاريخ البداية (لحساب "المديونية السابقة" عند عرض فترة محددة)
   const prevArc=from?arc.filter(r=>{
     const d=r.archivedAt?new Date(r.archivedAt).toISOString().split('T')[0]:(r.date||'');
     return _matchClientRecord(r,clientId,clientName)&&d<from;
   }):[];
-  const prevDebtFromArc=prevArc.reduce((s,r)=>s+Math.max(0,(+r.total||0)-getTrPaidForArchive(r.id)),0);
-  // الدفعات السابقة للرصيد الافتتاحي (مدفوعات الخزنة قبل تاريخ البداية غير مرتبطة بفاتورة)
-  const prevTrsPaid=(from?trs.filter(t=>_matchClientTreasury(t,clientId,clientName)&&t.date<from&&!t.isTransfer&&t.type==='in'):trs.filter(t=>_matchClientTreasury(t,clientId,clientName)&&!t.isTransfer&&t.type==='in'&&!t.archiveId)).reduce((s,t)=>s+ +t.amount,0);
-  // المديونية السابقة الإجمالية = الرصيد الافتتاحي + فواتير سابقة
-  const prevDebt = (from ? prevDebtFromArc : 0) + (from ? 0 : openingBal);
-  // لو في تاريخ بداية، نأخذ الرصيد الافتتاحي في الاعتبار كجزء من "ما قبل الفترة"
-  const openingContrib = from ? openingBal : 0;
+  const prevArcTotal=prevArc.reduce((s,r)=>s+(+r.total||0),0);
+  // كل المدفوعات (حركات in غير المحوّلة) قبل تاريخ البداية — على حساب العميل ككل، بلا ربط بفاتورة
+  const prevTrsPaid=(from?trs.filter(t=>_matchClientTreasury(t,clientId,clientName)&&t.date<from&&!t.isTransfer&&t.type==='in'):[]).reduce((s,t)=>s+ +t.amount,0);
+  // المديونية السابقة = فواتير سابقة - مدفوعات سابقة. لا نقفلها بالصفر هنا — لو كانت سالبة (سداد زائد/رصيد دائن مقدّم)
+  // يجب أن تترحّل وتُخصم من مديونية الفترة الحالية، وإلا ضاع الرصيد الدائن للعميل دون أثر.
+  const prevDebtFromArc=prevArcTotal - prevTrsPaid;
   // الفواتير خلال الفترة
   const periodArc=arc.filter(r=>{
     const d=r.archivedAt?new Date(r.archivedAt).toISOString().split('T')[0]:(r.date||'');
@@ -12814,7 +12858,7 @@ function _clientAccountSummary(clientKey, from, to){
   // الحركات المالية خلال الفترة
   const periodTrs=trs.filter(t=>_matchClientTreasury(t,clientId,clientName)&&(!from||t.date>=from)&&(!to||t.date<=to)&&!t.isTransfer);
   const withdrawn=periodArc.reduce((s,r)=>s+ +r.total,0); // المسحوب = إجمالي الفواتير
-  const paid=periodTrs.filter(t=>t.type==='in').reduce((s,t)=>s+ +t.amount,0); // المدفوع = مقبوضات الخزنة
+  const paid=periodTrs.filter(t=>t.type==='in').reduce((s,t)=>s+ +t.amount,0); // المدفوع = كل مقبوضات الخزنة على حساب العميل خلال الفترة
   // الإجمالي = (رصيد افتتاحي + مديونية سابقة) + فواتير الفترة - مدفوعات الفترة
   const totalDebt=(openingBal + prevDebtFromArc) + withdrawn - paid;
   return {prevDebt:prevDebtFromArc, openingBal, withdrawn, paid, totalDebt, periodArc, periodTrs};
@@ -12862,21 +12906,15 @@ function renderClientCard(){
         </div>
         <h4 style="margin-bottom:8px;color:var(--gold2)">📋 الفواتير خلال الفترة (${periodArc.length})</h4>
         <div class="tbl-wrap"><table>
-          <thead><tr><th>رقم الفاتورة</th><th>البيان</th><th>المنتج</th><th>ك</th><th>الإجمالي</th><th>المدفوع</th><th>المتبقي</th><th>الحالة</th><th>التاريخ</th></tr></thead>
+          <thead><tr><th>رقم الفاتورة</th><th>البيان</th><th>المنتج</th><th>ك</th><th>الإجمالي</th><th>التاريخ</th></tr></thead>
           <tbody>${periodArc.map(r=>{
-            const rPaid=Math.max(0,getTrPaidForArchive(r.id));
-            const rRem=Math.max(0,(+r.total||0)-rPaid);
-            const rStatus=rRem<=0?'done':rPaid>0?'partial':'unpaid';
             return`<tr>
             <td><strong>${r.invId||('#'+r.caseId)}</strong></td>
             <td>${r.noteName||r.caseId||'—'}</td>
             <td>${r.product}</td><td>${r.qty}</td>
-            <td style="color:var(--gold2)">${fmt(r.total)} ${c}</td>
-            <td style="color:var(--green)">${fmt(rPaid)} ${c}</td>
-            <td style="color:${statusColor[rStatus]||'inherit'}">${fmt(rRem)} ${c}</td>
-            <td style="color:${statusColor[rStatus]||'inherit'}">${statusMap[rStatus]||rStatus}</td>
+            <td style="color:var(--gold2)"><strong>${fmt(r.total)} ${c}</strong></td>
             <td>${r.archivedAt?new Date(r.archivedAt).toISOString().split('T')[0]:(r.date||'—')}</td>
-          </tr>`;}).join('')||'<tr><td colspan="9" style="text-align:center;color:var(--text3)">لا توجد فواتير</td></tr>'}
+          </tr>`;}).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--text3)">لا توجد فواتير</td></tr>'}
           </tbody>
         </table></div>
         ${periodTrs.length?`<h4 style="margin:14px 0 8px;color:var(--gold2)">💵 حركات الخزنة (${periodTrs.length})</h4>
@@ -14853,8 +14891,8 @@ function renderBackup(){
 
     // Archive stats
     const arcTotal=archive.reduce((s,r)=>s+(+r.total||0),0);
-    const arcPaid=archive.reduce((s,r)=>s+Math.max(0,getTrPaidForArchive(r.id)),0);
-    const arcDebt=arcTotal-arcPaid;
+    const arcPaid=treasury.filter(t=>t.type==='in'&&!t.isTransfer&&(t.accType==='client'||t.accType==='archive')).reduce((s,t)=>s+(+t.amount||0),0);
+    const arcDebt=(()=>{const seen=new Set();let sum=0;archive.forEach(r=>{const key=r.clientId||r.client;if(seen.has(key))return;seen.add(key);sum+=Math.max(0,_clientAccountSummary(key).totalDebt);});return sum;})();
     const arcThisMonth=archive.filter(r=>(r.date||r.archivedAt||'').slice(0,7)===thisMonth);
     const arcMonthTotal=arcThisMonth.reduce((s,r)=>s+(+r.total||0),0);
 
@@ -14909,10 +14947,8 @@ ${topProds.join('\n') || 'لا يوجد بيانات'}
 ⚠️ خامات منخفضة في المخزن:
 ${lowInv.length?lowInv.join('، '):'لا يوجد خامات منخفضة ✅'}
 
-📦 حالات الأرشيف حسب الوضع:
-- غير مسدد: ${archive.filter(r=>r.status==='unpaid').length}
-- جزئي: ${archive.filter(r=>r.status==='partial').length}
-- مسوى: ${archive.filter(r=>r.status==='settled'||r.status==='done').length}
+📦 حالات الأرشيف: ${archive.length} فاتورة بإجمالي ${archive.reduce((s,r)=>s+(+r.total||0),0).toLocaleString()} ج.م
+👥 عملاء عليهم مديونية: ${(()=>{const seen=new Set();let cnt=0,sum=0;archive.forEach(r=>{const key=r.clientId||r.client;if(seen.has(key))return;seen.add(key);const d=_clientAccountSummary(key).totalDebt;if(d>0){cnt++;sum+=d;}});return cnt+' عميل بإجمالي '+sum.toLocaleString()+' ج.م';})()}
 
 💸 سجلات جرد الأقسام (تكلفة الإنتاج): ${deptInvAI.length} سجل جرد | إجمالي تكلفة: ${deptInvAI.reduce((s,r)=>s+(+r.grandTotal||+r.totalCost||0),0).toLocaleString()} ج.م
 🛒 فواتير الشراء: ${purchases.length} فاتورة`;
@@ -15393,26 +15429,18 @@ function printClientCardPaged(){
     // Cumulative running total up to this page
     const cumRows=rows.slice(0,(pg+1)*pageSize);
     const cumTotal=cumRows.reduce(function(s,r){return s+ +r.total;},0);
-    const cumPaid=cumRows.reduce(function(s,r){return s+ +r.paid||0;},0);
-    const cumRem=cumRows.reduce(function(s,r){return s+ +r.remaining||0;},0);
     const rowsHTML=pageRows.map(function(r,i){
-      const sc=statusColor[r.status]||'#6b7280';
       return '<tr style="'+(i%2===0?'background:#f8f9fa':'')+'">'
         +'<td style="padding:7px 8px;border-bottom:1px solid #e5e7eb;font-size:10.5px;font-weight:700">'+esc(r.invId||('#'+r.caseId)||'—')+'</td>'
         +'<td style="padding:7px 8px;border-bottom:1px solid #e5e7eb;font-size:10px;color:#6b7280">'+esc(r.noteName||r.caseId||'—')+'</td>'
         +'<td style="padding:7px 8px;border-bottom:1px solid #e5e7eb;font-size:10.5px">'+esc(r.product||'—')+'</td>'
         +'<td style="padding:7px 8px;border-bottom:1px solid #e5e7eb;font-size:10.5px;text-align:center">'+(r.qty||0)+'</td>'
         +'<td style="padding:7px 8px;border-bottom:1px solid #e5e7eb;font-size:10.5px;font-weight:700;color:#c9a84c">'+fmt(r.total)+' '+c+'</td>'
-        +'<td style="padding:7px 8px;border-bottom:1px solid #e5e7eb;font-size:10.5px;color:#059669">'+fmt(r.paid||0)+' '+c+'</td>'
-        +'<td style="padding:7px 8px;border-bottom:1px solid #e5e7eb;font-size:10.5px;color:'+sc+';font-weight:700">'+fmt(r.remaining||0)+' '+c+'</td>'
-        +'<td style="padding:7px 8px;border-bottom:1px solid #e5e7eb"><span style="background:'+sc+'22;color:'+sc+';padding:2px 8px;border-radius:10px;font-size:9.5px;font-weight:700">'+esc(statusMap[r.status]||r.status||'—')+'</span></td>'
         +'<td style="padding:7px 8px;border-bottom:1px solid #e5e7eb;font-size:10px;color:#6b7280">'+(r.archivedAt?new Date(r.archivedAt).toISOString().split('T')[0]:(r.date||'—'))+'</td>'
         +'</tr>';}).join('');
     const cumFooter='<tr style="background:linear-gradient(90deg,#1a3a6b,#0f2a52);color:#fff">'
-      +'<td colspan="4" style="padding:8px 10px;font-size:11px;font-weight:700;color:#e8c96a">📊 '+(isLast?'الإجمالي النهائي':'إجمالي تراكمي حتى الصفحة '+(pg+1))+'</td>'
-      +'<td style="padding:8px 10px;font-size:11px;font-weight:900;color:#e8c96a">'+fmt(isLast?res.withdrawn:cumTotal)+' '+c+'</td>'
-      +'<td style="padding:8px 10px;font-size:11px;font-weight:900;color:#86efac">'+fmt(isLast?res.paid:cumPaid)+' '+c+'</td>'
-      +'<td colspan="3" style="padding:8px 10px;font-size:11px;font-weight:900;color:'+(res.totalDebt>0?'#fca5a5':'#86efac')+'">'+fmt(isLast?res.totalDebt:cumRem)+' '+c+'</td>'
+      +'<td colspan="4" style="padding:8px 10px;font-size:11px;font-weight:700;color:#e8c96a">📊 '+(isLast?'إجمالي فواتير الفترة':'إجمالي تراكمي حتى الصفحة '+(pg+1))+'</td>'
+      +'<td colspan="2" style="padding:8px 10px;font-size:11px;font-weight:900;color:#e8c96a">'+fmt(isLast?res.withdrawn:cumTotal)+' '+c+'</td>'
       +'</tr>';
     const pageBreak=isLast?'auto':'always';
     pages+='<div class="pp" style="page-break-after:'+pageBreak+'">'
@@ -15445,7 +15473,7 @@ function printClientCardPaged(){
       +'<div style="display:grid;grid-template-columns:repeat(4,1fr);background:#0a1628;position:relative">'
       +'<div style="padding:12px 10px;text-align:center;border-left:1px solid rgba(255,255,255,.08)">'
       +'<div style="font-size:9px;color:rgba(255,255,255,.4)">مديونية سابقة</div>'
-      +'<div style="font-size:14px;font-weight:900;color:#fca5a5;margin-top:3px">'+fmt(res.prevDebt)+' '+c+'</div>'
+      +'<div style="font-size:14px;font-weight:900;color:#fca5a5;margin-top:3px">'+fmt(Math.max(0,res.prevDebt))+' '+c+'</div>'
       +'</div>'
       +'<div style="padding:12px 10px;text-align:center;border-left:1px solid rgba(255,255,255,.08)">'
       +'<div style="font-size:9px;color:rgba(255,255,255,.4)">إجمالي الفواتير</div>'
@@ -15456,8 +15484,8 @@ function printClientCardPaged(){
       +'<div style="font-size:14px;font-weight:900;color:#86efac;margin-top:3px">'+fmt(res.paid)+' '+c+'</div>'
       +'</div>'
       +'<div style="padding:12px 10px;text-align:center">'
-      +'<div style="font-size:9px;color:rgba(255,255,255,.4)">الإجمالي المتبقي</div>'
-      +'<div style="font-size:14px;font-weight:900;color:'+(res.totalDebt>0?'#fca5a5':'#86efac')+';margin-top:3px">'+fmt(res.totalDebt)+' '+c+'</div>'
+      +'<div style="font-size:9px;color:rgba(255,255,255,.4)">'+(res.totalDebt>0?'الإجمالي المتبقي':'رصيد دائن للعميل')+'</div>'
+      +'<div style="font-size:14px;font-weight:900;color:'+(res.totalDebt>0?'#fca5a5':'#86efac')+';margin-top:3px">'+fmt(Math.abs(res.totalDebt))+' '+c+'</div>'
       +'</div>'
       +'</div>'
       // Gold accent bar
@@ -15473,9 +15501,6 @@ function printClientCardPaged(){
       +'<th style="padding:7px 8px;text-align:right;font-size:10.5px;font-weight:700">المنتج</th>'
       +'<th style="padding:7px 8px;text-align:center;font-size:10.5px;font-weight:700">ك</th>'
       +'<th style="padding:7px 8px;text-align:right;font-size:10.5px;font-weight:700">الإجمالي</th>'
-      +'<th style="padding:7px 8px;text-align:right;font-size:10.5px;font-weight:700">المدفوع</th>'
-      +'<th style="padding:7px 8px;text-align:right;font-size:10.5px;font-weight:700">المتبقي</th>'
-      +'<th style="padding:7px 8px;text-align:right;font-size:10.5px;font-weight:700">الحالة</th>'
       +'<th style="padding:7px 8px;text-align:right;font-size:10.5px;font-weight:700">التاريخ</th>'
       +'</tr></thead>'
       +'<tbody>'+rowsHTML+'</tbody>'
@@ -15676,10 +15701,16 @@ function printGeneralReport(type){
   var colors={ov:'#1a3a6b',del:'#14532d',prod:'#7c2d12',cl:'#7f1d1d'};
   var accentColors={ov:'#c9a84c',del:'#c9a84c',prod:'#c9a84c',cl:'#c9a84c'};
   if(type==='cl'){
-    const clM={};arc.forEach(function(r){const paid=Math.max(0,getTrPaidForArchive(r.id));const rem=Math.max(0,(+r.total||0)-paid);const key=r.clientId||r.client;if(!clM[key])clM[key]={name:r.client,cnt:0,tot:0,paid:0,rem:0,phone:r.phone||''};clM[key].cnt++;clM[key].tot+= +r.total;clM[key].paid+=paid;clM[key].rem+=rem;});
-    const rows=Object.entries(clM).sort(function(a,b){return b[1].rem-a[1].rem;}).map(function(e){const v=e[1];return[esc(v.name),esc(v.phone||'—'),v.cnt,fmt(v.tot)+' '+c,fmt(v.paid)+' '+c,fmt(v.rem)+' '+c];});
+    const clM={};const _seenK=new Set();
+    arc.forEach(function(r){
+      const key=r.clientId||r.client;
+      if(!clM[key])clM[key]={name:r.client,cnt:0,tot:0,paid:0,rem:0,phone:r.phone||''};
+      clM[key].cnt++;clM[key].tot+= +r.total;
+      if(!_seenK.has(key)){_seenK.add(key);clM[key].rem=Math.max(0,_clientAccountSummary(key).totalDebt);}
+    });
+    const rows=Object.entries(clM).sort(function(a,b){return b[1].rem-a[1].rem;}).map(function(e){const v=e[1];return[esc(v.name),esc(v.phone||'—'),v.cnt,fmt(v.tot)+' '+c,fmt(v.rem)+' '+c];});
     const totRem=Object.values(clM).reduce(function(s,v){return s+v.rem;},0);
-    printPagedReport({title:titles[type],subtitle:new Date().toLocaleDateString('ar-EG'),color:colors[type],accentColor:accentColors[type],headers:['العميل','الهاتف','الحالات','الإيرادات','المحصّل','المتبقي'],rows:rows,footerRow:['الإجمالي','','','','',fmt(totRem)+' '+c],pageSize:25});
+    printPagedReport({title:titles[type],subtitle:new Date().toLocaleDateString('ar-EG'),color:colors[type],accentColor:accentColors[type],headers:['العميل','الهاتف','الحالات','الإيرادات','المديونية'],rows:rows,footerRow:['الإجمالي','','','',fmt(totRem)+' '+c],pageSize:25});
   } else if(type==='del'){
     const degs=DB.get('delegates')||[];const delM={};
     arc.forEach(function(r){if(!r.delegate)return;if(!delM[r.delegate])delM[r.delegate]={cnt:0,tot:0};delM[r.delegate].cnt++;delM[r.delegate].tot+= +r.total;});
@@ -15691,10 +15722,12 @@ function printGeneralReport(type){
     const rows=Object.entries(prodM).sort(function(a,b){return b[1].tot-a[1].tot;}).map(function(e){const n=e[0];const v=e[1];return[esc(n),v.cnt,fmt(v.tot)+' '+c,(v.tot/gT*100).toFixed(1)+'%'];});
     printPagedReport({title:titles[type],subtitle:new Date().toLocaleDateString('ar-EG'),color:colors[type],accentColor:accentColors[type],headers:['المنتج','الحالات','الإيرادات','النسبة'],rows:rows,footerRow:null,pageSize:25});
   } else {
-    const mon={};arc.forEach(function(r){var k;if(r.archivedAt){var dd=new Date(r.archivedAt);k=dd.getFullYear()+'-'+String(dd.getMonth()+1).padStart(2,'0');}else if(r.date&&r.date.length>=7){k=r.date.slice(0,7);}else return;const rPaid=getTrPaidForArchive(r.id);if(!mon[k])mon[k]={cnt:0,rev:0,col:0};mon[k].cnt++;mon[k].rev+= +r.total;mon[k].col+=rPaid;});
+    const mon={};arc.forEach(function(r){var k;if(r.archivedAt){var dd=new Date(r.archivedAt);k=dd.getFullYear()+'-'+String(dd.getMonth()+1).padStart(2,'0');}else if(r.date&&r.date.length>=7){k=r.date.slice(0,7);}else return;if(!mon[k])mon[k]={cnt:0,rev:0,col:0};mon[k].cnt++;mon[k].rev+= +r.total;});
+    (DB.get('treasury')||[]).filter(function(t){return t.type==='in'&&!t.isTransfer&&(t.accType==='client'||t.accType==='archive')&&t.date;}).forEach(function(t){const k=t.date.slice(0,7);if(mon[k])mon[k].col+=(+t.amount||0);});
     var mN=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
     const rows=Object.entries(mon).sort(function(a,b){return b[0].localeCompare(a[0]);}).map(function(e){var yr=e[0].split('-')[0];var mo=e[0].split('-')[1];var v=e[1];return[mN[+mo-1]+' '+yr,v.cnt,fmt(v.rev)+' '+c,fmt(v.col)+' '+c];});
-    const totRev=arc.reduce(function(s,r){return s+ +r.total;},0);const totCol=arc.reduce(function(s,r){return s+Math.max(0,getTrPaidForArchive(r.id));},0);
+    const totRev=arc.reduce(function(s,r){return s+ +r.total;},0);
+    const totCol=(DB.get('treasury')||[]).filter(function(t){return t.type==='in'&&!t.isTransfer&&(t.accType==='client'||t.accType==='archive');}).reduce(function(s,t){return s+(+t.amount||0);},0);
     printPagedReport({title:titles[type],subtitle:new Date().toLocaleDateString('ar-EG'),color:colors[type],accentColor:accentColors[type],headers:['الشهر','الحالات','الإيرادات','المحصّل'],rows:rows,footerRow:['الإجمالي','',fmt(totRev)+' '+c,fmt(totCol)+' '+c],pageSize:25});
   }
 }
@@ -15711,9 +15744,10 @@ function sendClientCardWA(){
   const c=cur();
   const cl=(DB.get('clients')||[]).find(function(x){return x.id===clientId;})||{};
   const res=_clientAccountSummary(clientKey,from,to);
+  const debtLine=res.totalDebt>0?'🔴 المتبقي: '+fmt(res.totalDebt)+' '+c:'✅ رصيد دائن للعميل: '+fmt(Math.abs(res.totalDebt))+' '+c;
   const msg=['🦷 '+_labLine(),_sep(),'📋 كارت حساب العميل: '+clientName,'📅 الفترة: '+(from||'البداية')+' ← '+to,'',
     '📊 ملخص الحساب:','💰 إجمالي الفواتير: '+fmt(res.withdrawn)+' '+c,
-    '✅ إجمالي المدفوع: '+fmt(res.paid)+' '+c,'🔴 المتبقي: '+fmt(res.totalDebt)+' '+c,
+    '✅ إجمالي المدفوع: '+fmt(res.paid)+' '+c,debtLine,
     _sep(),_labLine()].join('\n');
   waOrCopy(msg,{type:'client',name:clientName});
 }
@@ -15802,7 +15836,14 @@ function sendTreasuryWA(){
 function sendGeneralReportWA(type){
   const c=cur();const arc=DB.get('archive')||[];
   if(type==='cl'){
-    const clM={};arc.filter(function(r){return(+r.remaining)>0&&r.status!=='done'&&r.status!=='settled';}).forEach(function(r){const key=r.clientId||r.client;if(!clM[key])clM[key]={name:r.client,rem:0};clM[key].rem+= +r.remaining;});
+    const clM={};const _seenK1=new Set();
+    arc.forEach(function(r){
+      const key=r.clientId||r.client;
+      if(_seenK1.has(key))return;
+      _seenK1.add(key);
+      const rem=Math.max(0,_clientAccountSummary(key).totalDebt);
+      if(rem>0)clM[key]={name:r.client,rem:rem};
+    });
     const list=Object.entries(clM).sort(function(a,b){return b[1].rem-a[1].rem;});
     const totDebt=list.reduce(function(s,e){return s+e[1].rem;},0);
     const lines=['🦷 '+_labLine(),_sep(),'👥 مديونيات العملاء','📅 '+new Date().toLocaleDateString('ar-EG'),''];
@@ -15827,8 +15868,8 @@ function sendGeneralReportWA(type){
     waOrCopy(lines.join('\n'));
   } else {
     const tRev=arc.reduce(function(s,r){return s+ +r.total;},0);
-    const tCol=arc.reduce(function(s,r){return s+Math.max(0,getTrPaidForArchive(r.id));},0);
-    const tPen=arc.reduce(function(s,r){return s+Math.max(0,(+r.total||0)-getTrPaidForArchive(r.id));},0);
+    const tCol=(DB.get('treasury')||[]).filter(function(t){return t.type==='in'&&!t.isTransfer&&(t.accType==='client'||t.accType==='archive');}).reduce(function(s,t){return s+(+t.amount||0);},0);
+    const tPen=Math.max(0,tRev-tCol);
     const msg=['🦷 '+_labLine(),_sep(),'📈 النظرة العامة','📅 '+new Date().toLocaleDateString('ar-EG'),'',
       '📊 إجمالي الإيرادات: '+fmt(tRev)+' '+c,'✅ المحصّل: '+fmt(tCol)+' '+c,'🔴 المتبقي: '+fmt(tPen)+' '+c,
       _sep(),_labLine()].join('\n');
@@ -15943,8 +15984,8 @@ function copyReportSummary(type){
   let text='';
   if(type==='ov'){
     const tRev=arc.reduce(function(s,r){return s+ +r.total;},0);
-    const tCol=arc.reduce(function(s,r){return s+ +r.paid;},0);
-    const tPen=arc.reduce(function(s,r){return s+ +r.remaining;},0);
+    const tCol=(DB.get('treasury')||[]).filter(function(t){return t.type==='in'&&!t.isTransfer&&(t.accType==='client'||t.accType==='archive');}).reduce(function(s,t){return s+(+t.amount||0);},0);
+    const tPen=Math.max(0,tRev-tCol);
     text=['🦷 '+labLine,sep,'📈 النظرة العامة','📅 '+new Date().toLocaleDateString('ar-EG'),'',
       '📊 إجمالي الإيرادات: '+fmt(tRev)+' '+c,
       '✅ المحصّل: '+fmt(tCol)+' '+c,
@@ -15965,7 +16006,14 @@ function copyReportSummary(type){
     lines.push(sep,'💰 إجمالي: '+fmt(gT)+' '+c,sep,labLine);
     text=lines.join('\n');
   } else if(type==='cl'){
-    const clM={};arc.filter(function(r){return(+r.remaining)>0&&r.status!=='done'&&r.status!=='settled';}).forEach(function(r){const key=r.clientId||r.client;if(!clM[key])clM[key]={name:r.client,rem:0};clM[key].rem+= +r.remaining;});
+    const clM={};const _seenK2=new Set();
+    arc.forEach(function(r){
+      const key=r.clientId||r.client;
+      if(_seenK2.has(key))return;
+      _seenK2.add(key);
+      const rem=Math.max(0,_clientAccountSummary(key).totalDebt);
+      if(rem>0)clM[key]={name:r.client,rem:rem};
+    });
     const list=Object.entries(clM).sort(function(a,b){return b[1].rem-a[1].rem;});
     const totD=list.reduce(function(s,e){return s+e[1].rem;},0);
     const lines=['🦷 '+labLine,sep,'👥 مديونيات العملاء','📅 '+new Date().toLocaleDateString('ar-EG'),''];
