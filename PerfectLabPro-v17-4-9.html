@@ -1685,7 +1685,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
             <label style="font-size:9px;color:var(--text3);display:block;margin-bottom:3px">إجمالي التكاليف والمصروفات</label>
             <span id="pnl-s-cost" style="font-size:16px;font-weight:800;color:var(--red)">0.00 ج.م</span>
           </div>
-          <div style="background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:10px 14px;grid-column:1/-1">
+          <div id="pnl-net-box" style="background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:10px 14px;grid-column:1/-1">
             <label style="font-size:10px;color:var(--gold2);display:block;margin-bottom:3px;font-weight:700">صافي الربح / الخسارة</label>
             <span id="pnl-net" style="font-size:22px;font-weight:900">0.00 ج.م</span>
           </div>
@@ -4156,89 +4156,6 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 </div>
 
 <!-- ============================================================ -->
-<!-- ============ WHATSAPP NUMBER MODAL ======================= -->
-<!-- ============================================================ -->
-<div class="overlay" id="ov-wa-num">
-  <div class="modal modal-md">
-    <div class="mh" style="background:linear-gradient(135deg,#075e54,#128c7e)">
-      <h3 style="color:#fff">📱 رقم واتساب</h3>
-      <div class="mc-btn" style="color:#fff;border-color:rgba(255,255,255,.3)" onclick="closeOv('ov-wa-num')">✕</div>
-    </div>
-    <div class="mb">
-      <div class="fgrid">
-        <div class="fg"><label>الرقم (بدون +) <span class="req">*</span></label><input type="text" id="wn-number" placeholder="201012345678" dir="ltr"></div>
-        <div class="fg"><label>الاسم / الوصف <span class="req">*</span></label><input type="text" id="wn-label" placeholder="رقم المندوب أحمد"></div>
-        <div class="fg"><label>النوع</label>
-          <select id="wn-type">
-            <option value="delegate">مندوب</option>
-            <option value="technician">فني</option>
-            <option value="accountant">محاسب</option>
-            <option value="admin">مدير</option>
-            <option value="lab">المعمل (عام)</option>
-          </select>
-        </div>
-        <div class="fg"><label>مرتبط بموظف</label>
-          <select id="wn-assigned"><option value="">-- لا أحد --</option></select>
-        </div>
-        <div class="fg"><label>الحد الأقصى يومياً</label><input type="number" id="wn-max-day" value="100" min="1"></div>
-        <div class="fg"><label>ملاحظات</label><input type="text" id="wn-notes"></div>
-      </div>
-      <div style="margin-top:12px">
-        <div class="toggle-row"><label>يمكنه الإرسال للعملاء</label><label class="sw"><input type="checkbox" id="wn-can-send" checked><span class="sl"></span></label></div>
-        <div class="toggle-row"><label>يمكن استقبال رسائل العملاء</label><label class="sw"><input type="checkbox" id="wn-can-recv" checked><span class="sl"></span></label></div>
-        <div class="toggle-row"><label>نشط</label><label class="sw"><input type="checkbox" id="wn-active" checked><span class="sl"></span></label></div>
-      </div>
-      <input type="hidden" id="wn-edit-id">
-    </div>
-    <div class="mf">
-      <button class="btn btn-green" onclick="saveWaNum()">💾 حفظ</button>
-      <button class="btn btn-ghost" onclick="closeOv('ov-wa-num')">إلغاء</button>
-    </div>
-  </div>
-</div>
-<!-- ============================================================ -->
-<!-- ============ WHATSAPP TEMPLATE MODAL ===================== -->
-<!-- ============================================================ -->
-<div class="overlay" id="ov-wa-tpl">
-  <div class="modal modal-md">
-    <div class="mh" style="background:linear-gradient(135deg,#1a2e4a,#0d1b2a)">
-      <h3 style="color:var(--gold2)">📋 قالب رسالة</h3>
-      <div class="mc-btn" onclick="closeOv('ov-wa-tpl')">✕</div>
-    </div>
-    <div class="mb">
-      <div class="fgrid">
-        <div class="fg"><label>اسم القالب <span class="req">*</span></label><input type="text" id="wt-name" placeholder="تذكير بدفع"></div>
-        <div class="fg"><label>نوع القالب</label>
-          <select id="wt-type">
-            <option value="payment_reminder">تذكير بدفع</option>
-            <option value="new_case">حالة جديدة</option>
-            <option value="proof_ready">بروفه جاهزة</option>
-            <option value="delivery">تسليم</option>
-            <option value="welcome">ترحيب</option>
-            <option value="custom">مخصص</option>
-          </select>
-        </div>
-        <div class="fg ffull">
-          <label>نص القالب <span class="req">*</span></label>
-          <textarea id="wt-content" style="min-height:130px" placeholder="عزيزي العميل، {اسم_العميل}&#10;يرجى سداد المبلغ {المبلغ}" oninput="wtUpdatePreview()"></textarea>
-          <span style="font-size:10px;color:var(--text3);margin-top:4px;display:block">استخدم {متغير} مثل: {اسم_العميل} {المبلغ} {رقم_الحالة}</span>
-        </div>
-        <div class="fg ffull">
-          <label>معاينة</label>
-          <div id="wt-preview" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:12px;line-height:1.8;white-space:pre-wrap;min-height:80px;color:var(--text2)">ستظهر المعاينة هنا...</div>
-        </div>
-      </div>
-      <input type="hidden" id="wt-edit-id">
-    </div>
-    <div class="mf">
-      <button class="btn btn-gold" onclick="saveWaTpl()">💾 حفظ</button>
-      <button class="btn btn-ghost" onclick="closeOv('ov-wa-tpl')">إلغاء</button>
-    </div>
-  </div>
-</div>
-<!-- ============================================================ -->
-
-<!-- ============================================================ -->
 <!-- ============ VISIT MODAL ================================== -->
 <!-- ============================================================ -->
 <div class="overlay" id="ov-visit">
@@ -4261,6 +4178,9 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
           </select>
         </div>
 
+        <div class="fg"><label>وقت الوصول</label><input type="time" id="vis-arrival" onchange="calcVisitDuration()"></div>
+        <div class="fg"><label>وقت المغادرة</label><input type="time" id="vis-departure" onchange="calcVisitDuration()"></div>
+        <div class="fg"><label>المدة</label><div id="vis-duration" style="padding:9px 0;font-weight:700;color:var(--teal)">—</div></div>
         <div class="fg ffull"><label>ملاحظات</label><textarea id="vis-notes" style="min-height:55px"></textarea></div>
       </div>
       <input type="hidden" id="vis-edit-id">
@@ -4346,6 +4266,16 @@ const DB = {
     } catch(e) { return null; }
   },
   _wt: {},
+  _lastSyncFailToast: 0,
+  // FIX #SYNC-FAIL-NOTICE: تنبيه المستخدم لحظة فشل التزامن مع Firebase (بدل الكتمان
+  // الصامت السابق) — مع throttle بحيث لا يتكرر التنبيه أكثر من مرة كل 20 ثانية حتى لو
+  // فشلت كتابات متتالية (مثلاً بسبب انقطاع الإنترنت)؛ البيانات تبقى محفوظة محلياً دائماً.
+  _notifySyncFail() {
+    const now = Date.now();
+    if (now - this._lastSyncFailToast < 20000) return;
+    this._lastSyncFailToast = now;
+    try { toast('⚠️ تم الحفظ محلياً، لكن فشلت المزامنة مع السيرفر — تحقق من الإنترنت', 'err'); } catch(e) {}
+  },
   set(k, v) {
     this._c[k] = v;
     try { localStorage.setItem('plp_' + k, JSON.stringify(v)); } catch(e) {}
@@ -4356,8 +4286,9 @@ const DB = {
         try {
           _fbRTDB.ref('data/shared/' + k).set(this._c[k]).catch(e=>{
             console.warn('Firebase write:', k, e.code);
+            this._notifySyncFail();
           });
-        } catch(e) { console.warn('DB.set error', k, e); }
+        } catch(e) { console.warn('DB.set error', k, e); this._notifySyncFail(); }
       }
       delete this._wt[k];
     }, 800);
@@ -4414,7 +4345,19 @@ const DB = {
             if (pgId && pgId !== 'dashboard') {
               const renders = {dafter:renderDafter,proof:renderProof,archive:renderArchive,
                 treasury:renderTreasury,debts:renderDebts,inventory:renderInventory};
-              if (renders[pgId]) renders[pgId]();
+              if (renders[pgId]) {
+                // FIX #SCROLL-PRESERVE: حفظ موضع التمرير قبل استبدال innerHTML
+                // واسترجاعه فوراً بعد الرسم — بدون ده، أي تحديث لحظي بيرجّع المستخدم
+                // لقمة الجدول أو يقطع حركة اللمس وسط القراءة/السحب.
+                const ct=document.querySelector('.content');
+                const savedScroll=ct?ct.scrollTop:0;
+                renders[pgId]();
+                if(ct){
+                  ct.scrollTop=savedScroll;
+                  // درجة أمان إضافية: بعض المتصفحات تحتاج فريم إضافي بعد reflow الجدول الجديد
+                  requestAnimationFrame(()=>{ct.scrollTop=savedScroll;});
+                }
+              }
             }
           }
         } catch(e) {}
@@ -4424,7 +4367,12 @@ const DB = {
         const _waitRelease=setInterval(()=>{
           _waitTicks++;
           // حد أقصى أمان: لا نؤجل أكثر من ~10 ثوانٍ حتى لو ظل المستخدم ماسكاً باستمرار
-          if (!window._userTouching || _waitTicks>66) { clearInterval(_waitRelease); _doRealtimeRender(); }
+          if (!window._userTouching || _waitTicks>66) {
+            clearInterval(_waitRelease);
+            // FIX #TOUCH-GAP: هامش أمان صغير بعد ما المستخدم يسيب إصبعه — تجنباً
+            // لأي حركة inertia scrolling لسه شغالة على أندرويد فور رفع اللمسة
+            setTimeout(_doRealtimeRender,80);
+          }
         },150);
       } else {
         _doRealtimeRender();
@@ -4778,10 +4726,13 @@ function closeSidebar(){
     setTimeout(()=>{
       const ct=document.querySelector('.content');
       if(ct){
-        const prevOverflow=ct.style.overflowY;
+        // FIX #SCROLL-STUCK-V2: تثبيت القيمة على 'scroll' مباشرة بدل الاعتماد على
+        // prevOverflow — لأن لو كانت فاضية ('') كان العنصر يرجع يعتمد على قاعدة
+        // CSS العادية، وممكن يحصل تعارض/سباق توقيت مع أي كتابة أخرى على نفس
+        // الخاصية خلال نفس الفترة الزمنية، فيتجمد التمرير على 'hidden'.
         ct.style.overflowY='hidden';
         void ct.offsetHeight; // إجبار المتصفح على reflow فوري
-        ct.style.overflowY=prevOverflow||'';
+        ct.style.overflowY='scroll';
       }
     },320); // بعد انتهاء transition القائمة (300ms) بهامش أمان
   }
@@ -4799,7 +4750,6 @@ const PAGE_PERM_MAP = {
   debts:          'debts.view',
   suppliers:      'suppliers.view',
   purchases:      'purchases.view',
-  suppayments:    'suppayments.view',
   supdebts:       'suppayments.view',
   inventory:      'inventory.view',
   batches:        'batches.view',
@@ -5142,8 +5092,7 @@ const PERM_SCHEMA = [
       {id:'purchases.view',   label:'عرض فواتير الشراء'},
       {id:'purchases.add',    label:'إضافة فاتورة شراء'},
       {id:'purchases.delete', label:'حذف فاتورة'},
-      {id:'suppayments.view', label:'عرض مدفوعات الموردين'},
-      {id:'suppayments.add',  label:'إضافة دفعة لمورد'},
+      {id:'suppayments.view', label:'عرض مديونيات الموردين'},
     ]
   },
   {
@@ -5240,7 +5189,7 @@ const PERM_DEFAULTS = {
     'archive.view','archive.invoice','archive.send_inv','archive.settle','archive.price',
     'treasury.view','treasury.add','treasury.collect','treasury.send_notif','treasury.balances',
     'reports.view','debts.view','reports.export',
-    'suppayments.view','suppayments.add',
+    'suppayments.view',
     'notifications.view','notes.view','notes.add',
     'dashboard.view','dashboard.stats','dashboard.alerts',
   ],
@@ -5371,7 +5320,7 @@ function _syncLegacyPerms(allPerms){
     'inventory':'inventory.view','notifications':'notifications.view',
     'notes':'notes.view','dashboard':'dashboard.view',
     'suppliers':'suppliers.view','purchases':'purchases.view',
-    'suppayments':'suppayments.view','supdebts':'suppayments.view',
+    'supdebts':'suppayments.view',
     'batches':'batches.view','withdrawal':'withdrawal.view',
     'inventory-report':'inventory_report.view',
     'production-report':'production-report.view','profitability':'profitability.view'
@@ -6258,7 +6207,6 @@ async function saveUser(){
       list[idx].passHash=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
     }
     DB.set('users',list);
-    if(_fbRTDB){try{await _fbRTDB.ref('data/shared/users').set(list);}catch(e){}}
     closeOv('ov-user');renderUsers();
     toast('✅ تم تعديل بيانات المستخدم');
   } else {
@@ -6270,12 +6218,11 @@ async function saveUser(){
     const passHash=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
     list.push({id:'u_'+Date.now(),name,email,role,passHash,active:true,createdAt:Date.now()});
     DB.set('users',list);
-    if(_fbRTDB){try{await _fbRTDB.ref('data/shared/users').set(list);}catch(e){}}
     closeOv('ov-user');renderUsers();
     toast('✅ تمت إضافة المستخدم');
   }
 }
-function delSelUser(){const ids=getSel('users-tb');if(!ids.length){toast('اختر مستخدماً أولاً','err');return}confirm2('حذف',`حذف ${ids.length}؟`,async()=>{const newList=(DB.get('users')||[]).filter(x=>!ids.includes(x.id));DB.set('users',newList);if(_fbRTDB){try{await _fbRTDB.ref('data/shared/users').set(newList);}catch(e){}}renderUsers();toast('تم الحذف')})}
+function delSelUser(){const ids=getSel('users-tb');if(!ids.length){toast('اختر مستخدماً أولاً','err');return}confirm2('حذف',`حذف ${ids.length}؟`,()=>{const newList=(DB.get('users')||[]).filter(x=>!ids.includes(x.id));DB.set('users',newList);renderUsers();toast('تم الحذف')})}
 
 // INVENTORY
 let _ivId=null;
@@ -6636,7 +6583,7 @@ function renderArchive(){
   // تطبيق حد عدد الصفوف
   const limitSel=document.getElementById('arc-limit');
   const limitVal=limitSel?limitSel.value:'50';
-  if(limitVal!=='all'){const n=parseInt(limitVal)||50;list=list.slice(0,n);}
+  if(limitVal!=='all'){const n=parseInt(limitVal,10)||50;list=list.slice(0,n);}
   const tb=document.getElementById('archive-tb');const em=document.getElementById('archive-empty');
   if(!list.length){if(tb)tb.innerHTML='';if(em)em.style.display='block';return}
   if(em)em.style.display='none';
@@ -8839,7 +8786,8 @@ function filterNotifGrid(gridId,q){
 // ---- MESSAGE BUILDERS ----
 // ===== تجميع صفوف الإشعار حسب اسم المنتج الفعلي + ترتيب وتنسيق كل سطر =====
 // تُستخدم في buildProofMsg و buildInvoiceMsg لتفادي تكرار المنطق
-// التجميع هنا حسب اسم المنتج بالضبط (وليس فئة الإنتاج الكبرى) — كل اسم منتج مختلف = مجموعة مستقلة
+// التجميع هنا حسب هوية المنتج (productId) وليس اسمه النصي — بحيث لا ينقسم نفس
+// المنتج لمجموعتين لو تغيّر اسمه بعد إنشاء السجلات (وليس فئة الإنتاج الكبرى أيضاً)
 const _GROUP_COLOR_CYCLE=['🟦','🟢','🟡','🟣','🟧','🔵','🟤','🔴','⚫','⚪','🔶','⬛','⬜'];
 let _groupColorMap={}; // يُعاد تصفيره مع كل رسالة جديدة عبر _resetGroupColors()
 function _resetGroupColors(){_groupColorMap={};}
@@ -8871,17 +8819,21 @@ function _fmtNotifRow(r,opts={}){
   }
   return line;
 }
-// بيجمع صفوف حسب اسم المنتج الفعلي، ويرتب كل مجموعة برقم الحالة تصاعدياً،
+// بيجمع صفوف حسب هوية المنتج الفعلية (productId إن وُجد، وإلا الاسم كـ fallback)
+// — هذا يضمن إن نفس المنتج يظل في مجموعة واحدة حتى لو تغيّر اسمه بعد إنشاء السجلات،
+// مع عرض أحدث اسم متاح للمنتج في عنوان المجموعة. يرتب كل مجموعة برقم الحالة تصاعدياً،
 // ويرجع مصفوفة أسطر جاهزة للإضافة في رسالة الواتساب (تشمل عناوين المجموعات والعداد)
 function _buildGroupedSection(rows,sectionTitle,opts={}){
   if(!rows.length)return [];
-  // 1) تجميع حسب اسم المنتج بالترتيب الطبيعي للظهور في البيانات
+  // 1) تجميع حسب productId (أو الاسم لو productId غير متوفر) بالترتيب الطبيعي للظهور في البيانات
   const order=[];
   const groups={};
+  const groupNames={}; // أحدث اسم عرض لكل مفتاح مجموعة
   rows.forEach(r=>{
-    const key=r.product||'—';
+    const key=r.productId||r.product||'—';
     if(!groups[key]){groups[key]=[];order.push(key);}
     groups[key].push(r);
+    groupNames[key]=r.product||groupNames[key]||'—'; // آخر اسم مُصادف يُستخدم للعرض
   });
   // 2) ترتيب كل مجموعة تصاعدياً برقم الحالة
   order.forEach(key=>{
@@ -8892,8 +8844,9 @@ function _buildGroupedSection(rows,sectionTitle,opts={}){
   lines.push('');
   order.forEach((key,idx)=>{
     const list=groups[key];
+    const displayName=groupNames[key];
     const icon=_colorForGroup(key);
-    lines.push(`*${icon} ${key} (${list.length})*`);
+    lines.push(`*${icon} ${displayName} (${list.length})*`);
     list.forEach(r=>lines.push(_fmtNotifRow(r,opts)));
     if(idx<order.length-1)lines.push('');
   });
@@ -9572,7 +9525,6 @@ function saveTr(){
   renderTreasury();
   // Refresh related pages if visible
   if(document.getElementById('pg-archive')?.classList.contains('active'))renderArchive();
-  if(document.getElementById('pg-suppayments')?.classList.contains('active'))renderSupPayments();
   if(document.getElementById('pg-supdebts')?.classList.contains('active'))renderSupDebts();
   if(document.getElementById('pg-debts')?.classList.contains('active'))renderDebts();
   toast('✅ تم حفظ الحركة'+(linkedType==='supplier'?' وتسجيل دفعة المورد':''));
@@ -9927,7 +9879,7 @@ function livePreviewWaFi(){
 function copyDesignPreview(type){
   const el=document.getElementById('wa-'+type+'-preview');
   if(!el)return;
-  navigator.clipboard.writeText(el.textContent).then(()=>toast('✅ تم نسخ الرسالة'));
+  navigator.clipboard?.writeText(el.textContent).then(()=>toast('✅ تم نسخ الرسالة')).catch(()=>toast('فشل النسخ — حاول تحديد النص ونسخه يدوياً','err'));
 }
 
 function saveAllDesign(){
@@ -11427,42 +11379,10 @@ function viewPurchaseDetail(purId){
 // دفع المورد يتم الآن فقط من شاشة الخزنة (saveTr بـ accType='supplier'),
 // والتي تسجّل الحركة في treasury وفي sup_payments معاً (fromTreasury:true).
 // هذا يمنع "اختفاء" مديونية المورد دفترياً بدون خصم فعلي من أي صندوق.
-function renderSupPayments(){
-  const pays=DB.get('sup_payments')||[];const tb=document.getElementById('suppay-tb');
-  if(!pays.length){document.getElementById('suppay-empty').style.display='';tb.innerHTML='';return;}
-  document.getElementById('suppay-empty').style.display='none';
-  tb.innerHTML=[...pays].reverse().map(p=>`<tr><td>${p.date}</td><td>${p.supName}</td><td><strong>${fmt(p.amount)}</strong> ج.م</td><td><span class="badge bg-gray">${p.method}</span></td><td>${p.receipt||'—'}</td><td>${p.notes||'—'}</td><td><button class="btn btn-red btn-sm" onclick="delSupPayment('${p.id}')">حذف</button></td></tr>`).join('');
-}
-function delSupPayment(id){
-  const pays0=DB.get('sup_payments')||[];
-  const pay0=pays0.find(x=>x.id===id);
-  if(pay0?.fromTreasury){
-    toast('هذه الدفعة مسجّلة من الخزنة — استخدم التسوية العكسية في الخزنة لتصحيحها','err');
-    return;
-  }
-  confirm2('حذف الدفعة','هل أنت متأكد؟ سيتم التراجع عن تأثيرها على فواتير الشراء.',()=>{
-    const pays=DB.get('sup_payments')||[];
-    const pay=pays.find(x=>x.id===id);
-    if(!pay){toast('الدفعة غير موجودة','err');return;}
-    // FIX #DEL-SUP-PAY: عكس تأثير الدفعة على فواتير الشراء (oldest-first)
-    const purs=DB.get('purchases')||[];
-    let leftToReverse=+pay.amount;
-    const updated=purs.map(p=>{
-      if(leftToReverse<=0||p.supId!==pay.supId)return p;
-      const alreadyPaid=+p.paid||0;
-      const reverse=Math.min(leftToReverse,alreadyPaid);
-      leftToReverse-=reverse;
-      return{...p,paid:alreadyPaid-reverse,remain:(+p.total||0)-(alreadyPaid-reverse)};
-    });
-    DB.set('sup_payments',pays.filter(x=>x.id!==id));
-    DB.set('purchases',updated);
-    // ===== تتبع: تسجيل حذف دفعة مورد (تأثير مباشر على حساب المورد) =====
-    logActivity('sup_payment.delete',{client:pay.supName||pay.supId,note:'حذف دفعة بمبلغ '+fmt(pay.amount)+' — تم التراجع عن تأثيرها على فواتير الشراء',before:snapshotFields(pay,['supName','amount','date','method'])});
-    renderSupPayments();renderSuppliers();
-    if(typeof renderPurchases==='function')renderPurchases();
-    toast('تم الحذف والتراجع عن تأثيره');
-  });
-}
+// FIX #CLEANUP-DEAD-PAGE: حُذفت renderSupPayments و delSupPayment — كانتا تخصان
+// صفحة "دفع الموردين" (pg-suppayments) التي أُزيلت من الـ HTML، وأصبح الوصول لهما
+// مستحيلاً فعلياً للمستخدم. بيانات sup_payments نفسها باقية وتُستخدم بشكل سليم
+// من شاشة الخزنة ومن حسابات مديونيات الموردين (renderSupDebts).
 
 /* ---- SUP DEBTS ---- */
 function renderSupDebts(){
@@ -11978,8 +11898,10 @@ function renderProfitability(){
   netEl.textContent=fmt(netProfit)+' '+c;
   netEl.style.color=netProfit>=0?'var(--green)':'var(--red)';
   const netBox=document.getElementById('pnl-net-box');
-  netBox.style.background=netProfit>=0?'linear-gradient(135deg,rgba(34,197,94,.08),rgba(34,197,94,.03))':'linear-gradient(135deg,rgba(239,68,68,.08),rgba(239,68,68,.03))';
-  netBox.style.borderColor=netProfit>=0?'rgba(34,197,94,.25)':'rgba(239,68,68,.25)';
+  if(netBox){
+    netBox.style.background=netProfit>=0?'linear-gradient(135deg,rgba(34,197,94,.08),rgba(34,197,94,.03))':'linear-gradient(135deg,rgba(239,68,68,.08),rgba(239,68,68,.03))';
+    netBox.style.borderColor=netProfit>=0?'rgba(34,197,94,.25)':'rgba(239,68,68,.25)';
+  }
 
   document.getElementById('pnl-s-rev').textContent=fmt(totalRevenue)+' '+c;
   document.getElementById('pnl-s-cost').textContent=fmt(totalCOGS+totalOpEx+settledLoss)+' '+c;
@@ -14560,8 +14482,6 @@ function getAllData(){
     'prospect_visits',     // زيارات المبيعات
     'delegate_visits',     // زيارات المندوبين
     'techRates',           // نسب الفنيين
-    'whatsapp_numbers',    // أرقام WhatsApp
-    'whatsapp_templates',  // قوالب WhatsApp
     'pnl_fixed_costs',     // التكاليف الثابتة المحفوظة
     'notifications',       // إعدادات الإشعارات
   ];
@@ -15316,7 +15236,16 @@ ${snapshot}
     const profile={uid,name,email,phone:_adminPhone,passHash,role:'admin',active:true,createdAt:Date.now()};
     localStorage.setItem('plp_admin_account',JSON.stringify(profile));
     // حفظ في Firebase
-    if(_fbRTDB)try{await _fbRTDB.ref('accounts/'+uid).set({uid,name,email,passHash,role:'admin',active:true});}catch(e){}
+    if(_fbRTDB){
+      try{
+        await _fbRTDB.ref('accounts/'+uid).set({uid,name,email,passHash,role:'admin',active:true});
+      }catch(e){
+        // FIX #SYNC-FAIL-NOTICE: هذا الحساب أساس دخول كل الأجهزة الأخرى — فشل
+        // مزامنته أهم من أي حفظ عادي، لذا التنبيه هنا فوري وواضح وليس toast عابر فقط
+        console.warn('Firebase admin account sync failed', e);
+        toast('⚠️ تم إنشاء الحساب محلياً، لكن فشلت مزامنته مع السيرفر — تحقق من الإنترنت ثم أعد المحاولة من جهاز آخر إذا احتجت','err');
+      }
+    }
     DB._uid='shared';
     ensureDefaults();
     const safe=saveSession(profile);
@@ -17138,190 +17067,13 @@ function delSparePart(id){
 }
 
 
-// ================================================================
-// ============= WHATSAPP NUMBERS SYSTEM ==========================
-// ================================================================
-function waNumNextId(){const list=DB.get('whatsapp_numbers')||[];return list.length?Math.max(...list.map(x=>x.id||0))+1:1;}
-
-function openWaNumModal(id){
-  // Fill assigned dropdown
-  const emps=[...(DB.get('employees')||[]),...(DB.get('delegates')||[]),...(DB.get('technicians')||[])];
-  const asel=document.getElementById('wn-assigned');
-  asel.innerHTML='<option value="">-- لا أحد --</option>'+emps.map(e=>`<option value="${esc(e.id)}">${esc(e.name)}</option>`).join('');
-  document.getElementById('wn-edit-id').value='';
-  ['wn-number','wn-label','wn-notes'].forEach(x=>{const el=document.getElementById(x);if(el)el.value='';});
-  document.getElementById('wn-type').value='delegate';
-  document.getElementById('wn-max-day').value=100;
-  document.getElementById('wn-can-send').checked=true;
-  document.getElementById('wn-can-recv').checked=true;
-  document.getElementById('wn-active').checked=true;
-  if(id){
-    const rec=(DB.get('whatsapp_numbers')||[]).find(x=>x.id===id);
-    if(rec){
-      document.getElementById('wn-edit-id').value=id;
-      document.getElementById('wn-number').value=rec.number||'';
-      document.getElementById('wn-label').value=rec.label||'';
-      document.getElementById('wn-type').value=rec.type||'delegate';
-      asel.value=rec.assignedTo||'';
-      document.getElementById('wn-max-day').value=rec.maxPerDay||100;
-      document.getElementById('wn-notes').value=rec.notes||'';
-      document.getElementById('wn-can-send').checked=!!rec.canSendToClients;
-      document.getElementById('wn-can-recv').checked=!!rec.canReceiveFromClients;
-      document.getElementById('wn-active').checked=rec.isActive!==false;
-    }
-  }
-  openOv('ov-wa-num');
-}
-
-function saveWaNum(){
-  const number=document.getElementById('wn-number').value.trim();
-  const label=document.getElementById('wn-label').value.trim();
-  if(!number||!label){toast('أدخل الرقم والاسم','err');return;}
-  if(!/^\d{7,15}$/.test(number)){toast('الرقم يجب أن يكون أرقاماً فقط (7-15 رقم)','err');return;}
-  const editId=document.getElementById('wn-edit-id').value;
-  const list=DB.get('whatsapp_numbers')||[];
-  const rec={
-    id:editId?+editId:waNumNextId(),
-    number,label,
-    type:document.getElementById('wn-type').value,
-    assignedTo:document.getElementById('wn-assigned').value,
-    isActive:document.getElementById('wn-active').checked,
-    canSendToClients:document.getElementById('wn-can-send').checked,
-    canReceiveFromClients:document.getElementById('wn-can-recv').checked,
-    maxPerDay:+document.getElementById('wn-max-day').value||100,
-    notes:document.getElementById('wn-notes').value,
-    createdAt:editId?((list.find(x=>x.id===+editId)||{}).createdAt||Date.now()):Date.now()
-  };
-  if(editId){const i=list.findIndex(x=>x.id===+editId);if(i>=0)list[i]=rec;else list.push(rec);}
-  else list.push(rec);
-  DB.set('whatsapp_numbers',list);
-  closeOv('ov-wa-num');
-  renderWaNumbers();
-  toast('تم حفظ الرقم');
-}
-
-function renderWaNumbers(){
-  if(!document.getElementById('wa-num-tb'))return;
-  const list=DB.get('whatsapp_numbers')||[];
-  const c=cur();
-  // stats
-  const active=list.filter(x=>x.isActive!==false).length;
-  document.getElementById('wa-num-stats').innerHTML=`
-    <div class="stat" style="--c:var(--green)"><label>الأرقام النشطة</label><div class="val">${active}</div><div class="ico">📱</div></div>
-    <div class="stat" style="--c:var(--blue)"><label>إجمالي الأرقام</label><div class="val">${list.length}</div><div class="ico">📱</div></div>`;
-  const typeMap={delegate:'🚗 مندوب',technician:'🔬 فني',accountant:'💰 محاسب',admin:'👑 مدير',lab:'🏥 المعمل'};
-  const emps=[...(DB.get('employees')||[]),...(DB.get('delegates')||[]),...(DB.get('technicians')||[])];
-  const tb=document.getElementById('wa-num-tb');
-  tb.innerHTML=list.map(r=>{
-    const emp=emps.find(e=>e.id===r.assignedTo);
-    return`<tr>
-      <td dir="ltr" style="font-weight:700;color:var(--gold2)">+${esc(r.number)}</td>
-      <td><strong>${esc(r.label)}</strong></td>
-      <td>${typeMap[r.type]||r.type}</td>
-      <td>${emp?esc(emp.name):'—'}</td>
-      <td>${r.canSendToClients?'<span class="badge bg-green">نعم</span>':'<span class="badge bg-gray">لا</span>'}</td>
-      <td>${r.maxPerDay||100} رسالة/يوم</td>
-      <td>${r.isActive!==false?'<span class="badge bg-green">نشط</span>':'<span class="badge bg-gray">غير نشط</span>'}</td>
-      <td>
-        <button class="btn btn-ghost btn-sm" onclick="openWaNumModal(${r.id})">✏️</button>
-        <button class="btn btn-sm" style="background:var(--red);color:#fff" onclick="delWaNum(${r.id})">🗑️</button>
-      </td>
-    </tr>`;
-  }).join('');
-  document.getElementById('wa-num-empty').style.display=list.length?'none':'block';
-}
-
-function delWaNum(id){
-  confirm2('حذف هذا الرقم؟',()=>{
-    DB.set('whatsapp_numbers',(DB.get('whatsapp_numbers')||[]).filter(x=>x.id!==id));
-    renderWaNumbers();toast('تم الحذف');
-  });
-}
-
-// ================================================================
-// ============= WHATSAPP TEMPLATES ===============================
-// ================================================================
-function waTplNextId(){const list=DB.get('whatsapp_templates')||[];return list.length?Math.max(...list.map(x=>x.id||0))+1:1;}
-
-function openWaTplModal(id){
-  document.getElementById('wt-edit-id').value='';
-  document.getElementById('wt-name').value='';
-  document.getElementById('wt-content').value='';
-  document.getElementById('wt-type').value='payment_reminder';
-  document.getElementById('wt-preview').textContent='ستظهر المعاينة هنا...';
-  if(id){
-    const rec=(DB.get('whatsapp_templates')||[]).find(x=>x.id===id);
-    if(rec){
-      document.getElementById('wt-edit-id').value=id;
-      document.getElementById('wt-name').value=rec.name||'';
-      document.getElementById('wt-content').value=rec.content||'';
-      document.getElementById('wt-type').value=rec.type||'custom';
-      wtUpdatePreview();
-    }
-  }
-  openOv('ov-wa-tpl');
-}
-
-function wtUpdatePreview(){
-  const txt=document.getElementById('wt-content').value;
-  document.getElementById('wt-preview').textContent=txt||'ستظهر المعاينة هنا...';
-}
-
-function saveWaTpl(){
-  const name=document.getElementById('wt-name').value.trim();
-  const content=document.getElementById('wt-content').value.trim();
-  if(!name||!content){toast('أدخل الاسم والنص','err');return;}
-  const vars=[...content.matchAll(/\{([^}]+)\}/g)].map(m=>m[1]);
-  const editId=document.getElementById('wt-edit-id').value;
-  const list=DB.get('whatsapp_templates')||[];
-  const rec={id:editId?+editId:waTplNextId(),name,content,variables:vars,type:document.getElementById('wt-type').value,createdAt:editId?((list.find(x=>x.id===+editId)||{}).createdAt||Date.now()):Date.now()};
-  if(editId){const i=list.findIndex(x=>x.id===+editId);if(i>=0)list[i]=rec;else list.push(rec);}
-  else list.push(rec);
-  DB.set('whatsapp_templates',list);
-  closeOv('ov-wa-tpl');
-  renderWaTemplates();
-  toast('تم حفظ القالب');
-}
-
-function renderWaTemplates(){
-  if(!document.getElementById('wa-tpl-grid'))return;
-  const list=DB.get('whatsapp_templates')||[];
-  const typeLabels={payment_reminder:'💰 تذكير دفع',new_case:'📋 حالة جديدة',proof_ready:'🔬 بروفه جاهزة',delivery:'📦 تسليم',welcome:'👋 ترحيب',custom:'✏️ مخصص'};
-  const grid=document.getElementById('wa-tpl-grid');
-  grid.innerHTML=list.map(r=>`
-    <div class="card" style="margin-bottom:0;border-right:4px solid var(--gold)">
-      <div class="card-head" style="flex-wrap:nowrap">
-        <div>
-          <div style="font-weight:700;font-size:13px">${esc(r.name)}</div>
-          <div style="font-size:10px;color:var(--text3);margin-top:3px">${typeLabels[r.type]||r.type}</div>
-        </div>
-        <div style="display:flex;gap:6px;flex-shrink:0">
-          <button class="btn btn-gold btn-sm" onclick="useTemplateNow(${r.id})">📤 استخدام</button>
-          <button class="btn btn-ghost btn-sm" onclick="openWaTplModal(${r.id})">✏️</button>
-          <button class="btn btn-sm" style="background:var(--red);color:#fff" onclick="delWaTpl(${r.id})">🗑️</button>
-        </div>
-      </div>
-      <div style="padding:12px 15px;font-size:12px;white-space:pre-wrap;line-height:1.7;color:var(--text2);max-height:140px;overflow-y:auto">${esc(r.content)}</div>
-      ${r.variables&&r.variables.length?`<div style="padding:0 15px 12px;display:flex;gap:6px;flex-wrap:wrap">${r.variables.map(v=>`<span class="badge bg-blue">{${esc(v)}}</span>`).join('')}</div>`:''}
-    </div>`).join('');
-  document.getElementById('wa-tpl-empty').style.display=list.length?'none':'block';
-}
-
-function delWaTpl(id){
-  confirm2('حذف هذا القالب؟',()=>{
-    DB.set('whatsapp_templates',(DB.get('whatsapp_templates')||[]).filter(x=>x.id!==id));
-    renderWaTemplates();toast('تم الحذف');
-  });
-}
-
-function useTemplateNow(id){
-  const rec=(DB.get('whatsapp_templates')||[]).find(x=>x.id===id);
-  if(!rec)return;
-  if(navigator.clipboard)navigator.clipboard.writeText(rec.content||'').then(()=>toast('✅ تم نسخ نص القالب'));
-  else toast('✅ تم نسخ نص القالب');
-}
-
-// ================================================================
+// FIX #CLEANUP-DEAD-FEATURE: حُذف نظام "أرقام واتساب وقوالب الرسائل" بالكامل
+// (كان يتضمن مودالي إضافة/تعديل ov-wa-num و ov-wa-tpl، ودوال
+// openWaNumModal/saveWaNum/renderWaNumbers/delWaNum/openWaTplModal/saveWaTpl/
+// renderWaTemplates/delWaTpl/useTemplateNow/wtUpdatePreview) — لم تكن هناك أي
+// صفحة قائمة (wa-num-tb/wa-tpl-grid) تعرض السجلات، ولا أي زر بالواجهة يفتح
+// المودالات لأول مرة، فلم يكن للميزة أي نقطة دخول فعلية للمستخدم. هذه الميزة
+// مختلفة عن نظام "أرقام الإدمن" الجديد قيد التطوير حالياً.
 // === TEAM MONITOR PAGE (واتساب + تتبع الفريق) ===================
 // ================================================================
 
@@ -17335,6 +17087,21 @@ function useTemplateNow(id){
 // ================================================================
 // Visit Duration & Save — moved inside script block (were outside </html>)
 // ================================================================
+function calcVisitDuration(){
+  const arrEl=document.getElementById('vis-arrival');
+  const depEl=document.getElementById('vis-departure');
+  const durEl=document.getElementById('vis-duration');
+  if(!durEl)return;
+  const arr=arrEl?.value||'';
+  const dep=depEl?.value||'';
+  if(!arr||!dep){durEl.textContent='—';return;}
+  const[ah,am]=arr.split(':').map(Number);
+  const[dh,dm]=dep.split(':').map(Number);
+  let mins=(dh*60+dm)-(ah*60+am);
+  if(mins<0)mins+=24*60; // عبور منتصف الليل
+  const h=Math.floor(mins/60);const m=mins%60;
+  durEl.textContent=h>0?`${h} ساعة${m>0?' و'+m+' دقيقة':''}`:`${m} دقيقة`;
+}
 function openVisitModal(editId){
   // Reset fields
   document.getElementById('vis-edit-id').value = editId||'';
