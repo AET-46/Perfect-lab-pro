@@ -4780,15 +4780,14 @@ function onColorChange(sel){
 // يُستخدم في كل مسار يكتب للخزنة (رواتب، سلف، معاملات، تحويلات)
 // ══════════════════════════════════════════════════════════════
 function _saveTreasury(list){
+  // FIX #TREASURY-DOUBLE-WRITE: كانت الدالة بتعمل كتابة Firebase فورية يدوية
+  // بالإضافة لكتابة DB.set المؤجلة (800ms) لنفس المفتاح — يعني كتابتين فعليتين
+  // لكل عملية خزنة، مع احتمال وصول الكتابة الفورية لعملية لاحقة قبل الكتابة
+  // المؤجلة لعملية سابقة (ترتيب غير مضمون). DB.set وحدها كافية: تحفظ محلياً
+  // فوراً + تجدول كتابة فايربيز + تُسجّل _lastLocalWrite + محمية بالفعل من
+  // الـ realtime listener (FIX #PENDING-WRITE-RACE) ضد أي snapshot قديم وارد
+  // أثناء وجود كتابة مجدولة لنفس المفتاح.
   DB.set('treasury', list);
-  window._lastLocalWrite = Date.now();
-  if(window._fbRTDB){
-    try{
-      window._fbRTDB.ref('data/shared/treasury')
-        .set(list)
-        .catch(e=>console.warn('⚠️ treasury FB write:', e.code||e));
-    }catch(e){ console.warn('⚠️ treasury FB write ex:', e); }
-  }
 }
 
 function nid(t){
