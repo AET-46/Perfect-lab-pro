@@ -438,16 +438,47 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 .snap-item .snap-date{color:var(--text);font-weight:600}
 .snap-item .snap-size{color:var(--text3)}
 .snap-actions{display:flex;gap:5px}
-/* ===== AI ASSISTANT ===== */
-#ai-fab{position:fixed;bottom:28px;left:28px;z-index:1000;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;cursor:pointer;box-shadow:0 4px 20px rgba(99,102,241,.5);display:flex;align-items:center;justify-content:center;font-size:24px;transition:all .2s;color:#fff}
-#ai-fab:hover{transform:scale(1.1);box-shadow:0 6px 28px rgba(99,102,241,.7)}
-#note-fab{position:fixed;bottom:96px;left:28px;z-index:1000;width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#d97706);border:none;cursor:pointer;box-shadow:0 4px 16px rgba(245,158,11,.5);display:flex;align-items:center;justify-content:center;font-size:20px;transition:all .2s;color:#fff}
+/* ===== AI ASSISTANT v2 ===== */
+#ai-fab{
+  position:fixed;bottom:28px;left:28px;z-index:1000;
+  width:58px;height:58px;border-radius:50%;
+  background:linear-gradient(135deg,#4f46e5,#7c3aed,#a855f7);
+  border:2px solid rgba(168,85,247,.4);
+  cursor:pointer;
+  box-shadow:0 6px 24px rgba(99,102,241,.6),0 0 0 0 rgba(168,85,247,.4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;transition:all .25s;color:#fff;
+  animation:aifabglow 3s ease infinite;
+}
+@keyframes aifabglow{
+  0%,100%{box-shadow:0 6px 24px rgba(99,102,241,.6),0 0 0 0 rgba(168,85,247,.3)}
+  50%{box-shadow:0 8px 32px rgba(99,102,241,.8),0 0 0 8px rgba(168,85,247,.0)}
+}
+#ai-fab:hover{transform:scale(1.12) rotate(-5deg);box-shadow:0 10px 36px rgba(99,102,241,.8)}
+#ai-fab:active{transform:scale(.95)}
+#ai-fab .ai-fab-inner{
+  width:100%;height:100%;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,rgba(255,255,255,.15),rgba(255,255,255,.05));
+  font-size:26px;
+}
+#ai-fab .ai-pulse{position:absolute;inset:-4px;border-radius:50%;border:2px solid rgba(168,85,247,.5);animation:aipulse 2.5s ease infinite}
+@keyframes aipulse{0%,100%{opacity:.7;transform:scale(1)}50%{opacity:0;transform:scale(1.3)}}
+#ai-fab .ai-badge{
+  position:absolute;top:-3px;right:-3px;
+  background:linear-gradient(135deg,#f59e0b,#d97706);
+  color:#000;border-radius:10px;font-size:9px;font-weight:900;
+  padding:2px 5px;min-width:16px;text-align:center;
+  display:none;font-family:Cairo,sans-serif;
+}
+#ai-fab.has-alert .ai-badge{display:block}
+#note-fab{position:fixed;bottom:100px;left:28px;z-index:1000;width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#d97706);border:none;cursor:pointer;box-shadow:0 4px 16px rgba(245,158,11,.5);display:flex;align-items:center;justify-content:center;font-size:20px;transition:all .2s;color:#fff}
 #note-fab:hover{transform:scale(1.1);box-shadow:0 6px 24px rgba(245,158,11,.7)}
 #note-fab .note-badge{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;border-radius:10px;font-size:9px;font-weight:900;padding:1px 5px;min-width:16px;text-align:center;display:none}
 #note-fab.has-notes .note-badge{display:block}
 #note-fab.has-notes{animation:notepulse 2.5s ease infinite}
 @keyframes notepulse{0%,100%{box-shadow:0 4px 16px rgba(245,158,11,.5)}50%{box-shadow:0 4px 24px rgba(245,158,11,.9),0 0 0 6px rgba(245,158,11,.15)}}
-#note-quick-panel{position:fixed;bottom:155px;left:28px;z-index:1000;width:340px;max-height:520px;background:var(--bg2);border:1px solid rgba(245,158,11,.35);border-radius:16px;box-shadow:0 16px 50px rgba(0,0,0,.5);display:flex;flex-direction:column;transform:translateY(14px) scale(.95);opacity:0;pointer-events:none;transition:all .22s;overflow:hidden}
+#note-quick-panel{position:fixed;bottom:159px;left:28px;z-index:1000;width:340px;max-height:520px;background:var(--bg2);border:1px solid rgba(245,158,11,.35);border-radius:16px;box-shadow:0 16px 50px rgba(0,0,0,.5);display:flex;flex-direction:column;transform:translateY(14px) scale(.95);opacity:0;pointer-events:none;transition:all .22s;overflow:hidden}
 #note-quick-panel.open{transform:none;opacity:1;pointer-events:all}
 .nqp-head{padding:12px 14px;background:linear-gradient(135deg,rgba(245,158,11,.2),rgba(217,119,6,.1));border-bottom:1px solid rgba(245,158,11,.2);display:flex;align-items:center;justify-content:space-between}
 .nqp-context{font-size:10px;color:var(--gold);padding:6px 14px;background:rgba(245,158,11,.08);border-bottom:1px solid rgba(245,158,11,.15);min-height:26px}
@@ -462,36 +493,132 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 .nqp-add input{flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:7px 11px;border-radius:8px;font-family:Cairo,sans-serif;font-size:12px;outline:none;direction:rtl}
 .nqp-add input:focus{border-color:rgba(245,158,11,.5)}
 .nqp-send{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#f59e0b,#d97706);border:none;cursor:pointer;color:#fff;font-size:14px;display:flex;align-items:center;justify-content:center}
-@media(max-width:700px){#note-quick-panel{width:calc(100vw - 20px);left:10px}#note-fab{bottom:86px;left:18px}}
-#ai-fab .ai-pulse{position:absolute;inset:-3px;border-radius:50%;border:2px solid rgba(99,102,241,.5);animation:aipulse 2s ease infinite}
-@keyframes aipulse{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:0;transform:scale(1.25)}}
-#ai-panel{position:fixed;bottom:94px;left:28px;z-index:1000;width:370px;max-height:600px;background:var(--bg2);border:1px solid rgba(99,102,241,.35);border-radius:16px;box-shadow:0 16px 50px rgba(0,0,0,.5);display:flex;flex-direction:column;transform:translateY(18px) scale(.95);opacity:0;pointer-events:none;transition:all .22s}
+@media(max-width:700px){#note-quick-panel{width:calc(100vw - 20px);left:10px}#note-fab{bottom:90px;left:18px}}
+
+/* AI Panel */
+#ai-panel{
+  position:fixed;bottom:98px;left:28px;z-index:1000;
+  width:380px;max-height:640px;
+  background:var(--bg2);
+  border:1px solid rgba(99,102,241,.3);
+  border-radius:18px;
+  box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 0 1px rgba(168,85,247,.1);
+  display:flex;flex-direction:column;
+  transform:translateY(20px) scale(.94);opacity:0;pointer-events:none;
+  transition:all .25s cubic-bezier(.34,1.56,.64,1);
+  overflow:hidden;
+}
 #ai-panel.open{transform:none;opacity:1;pointer-events:all}
-.ai-head{padding:13px 16px;background:linear-gradient(135deg,rgba(99,102,241,.2),rgba(139,92,246,.1));border-bottom:1px solid rgba(99,102,241,.2);border-radius:16px 16px 0 0;display:flex;align-items:center;gap:9px}
-.ai-head-icon{width:34px;height:34px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
-.ai-head-info{flex:1}
-.ai-head-info strong{font-size:13px;font-weight:800;color:var(--text)}
-.ai-head-info small{font-size:10px;color:var(--text3);display:block}
-.ai-close{width:26px;height:26px;border:1px solid var(--border);background:var(--bg3);border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text2)}
-.ai-close:hover{border-color:var(--red);color:var(--red)}
-.ai-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;min-height:200px;max-height:380px}
-.ai-msg{max-width:88%;padding:9px 13px;border-radius:12px;font-size:12px;line-height:1.75;direction:rtl}
-.ai-msg.user{background:linear-gradient(135deg,rgba(99,102,241,.25),rgba(139,92,246,.15));border:1px solid rgba(99,102,241,.3);align-self:flex-start;border-radius:12px 12px 0 12px}
+.ai-head{
+  padding:14px 16px;
+  background:linear-gradient(135deg,rgba(79,70,229,.25),rgba(124,58,237,.15));
+  border-bottom:1px solid rgba(99,102,241,.2);
+  display:flex;align-items:center;gap:10px;
+  position:relative;overflow:hidden;
+}
+.ai-head::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 0% 50%,rgba(168,85,247,.15) 0%,transparent 70%);
+}
+.ai-head-icon{
+  width:38px;height:38px;
+  background:linear-gradient(135deg,#4f46e5,#7c3aed);
+  border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;
+  box-shadow:0 4px 12px rgba(79,70,229,.4);
+  position:relative;z-index:1;
+}
+.ai-head-info{flex:1;position:relative;z-index:1}
+.ai-head-info strong{font-size:13px;font-weight:800;color:var(--text);display:block}
+.ai-head-info small{font-size:10px;color:rgba(168,85,247,.8);display:block;margin-top:1px}
+.ai-head-actions{display:flex;gap:5px;position:relative;z-index:1}
+.ai-head-btn{
+  width:28px;height:28px;border-radius:8px;
+  border:1px solid rgba(99,102,241,.3);
+  background:rgba(99,102,241,.1);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:13px;color:var(--text2);transition:all .15s;
+}
+.ai-head-btn:hover{background:rgba(99,102,241,.2);color:var(--text);border-color:rgba(99,102,241,.5)}
+.ai-close{width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text2);transition:all .15s}
+.ai-close:hover{border-color:var(--red);color:var(--red);background:rgba(239,68,68,.08)}
+
+/* AI Tabs */
+.ai-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg3)}
+.ai-tab{flex:1;padding:8px 6px;font-size:11px;font-weight:700;color:var(--text3);cursor:pointer;text-align:center;border-bottom:2px solid transparent;transition:all .15s;font-family:Cairo,sans-serif}
+.ai-tab:hover{color:var(--text);background:rgba(99,102,241,.05)}
+.ai-tab.on{color:#818cf8;border-bottom-color:#6366f1;background:rgba(99,102,241,.08)}
+
+/* Daily Report */
+.ai-daily{padding:12px;flex:1;overflow-y:auto}
+.ai-daily-card{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:12px;padding:12px;margin-bottom:10px;
+}
+.ai-daily-card h4{font-size:12px;font-weight:800;color:var(--gold2);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.ai-daily-stat{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(42,49,71,.5);font-size:11px}
+.ai-daily-stat:last-child{border:none}
+.ai-daily-stat .lbl{color:var(--text3)}
+.ai-daily-stat .val{color:var(--text);font-weight:700}
+.ai-daily-stat .val.green{color:var(--green)}
+.ai-daily-stat .val.red{color:var(--red)}
+.ai-daily-stat .val.gold{color:var(--gold2)}
+
+/* Smart Alerts */
+.ai-alerts{padding:10px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:7px}
+.ai-alert-item{
+  background:var(--bg3);border-radius:10px;padding:10px 12px;
+  display:flex;align-items:flex-start;gap:9px;
+  border-right:3px solid var(--border);
+  font-size:11px;line-height:1.6;
+  cursor:pointer;transition:all .15s;
+}
+.ai-alert-item:hover{background:var(--bg4)}
+.ai-alert-item.urgent{border-right-color:var(--red)}
+.ai-alert-item.warn{border-right-color:var(--orange)}
+.ai-alert-item.info{border-right-color:var(--blue)}
+.ai-alert-item.good{border-right-color:var(--green)}
+.ai-alert-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.ai-alert-text{flex:1}
+.ai-alert-text strong{display:block;color:var(--text);font-weight:700;margin-bottom:2px}
+.ai-alert-text span{color:var(--text3)}
+
+/* Chat */
+.ai-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;min-height:180px;max-height:340px}
+.ai-msg{max-width:90%;padding:9px 13px;border-radius:12px;font-size:12px;line-height:1.8;direction:rtl}
+.ai-msg.user{background:linear-gradient(135deg,rgba(79,70,229,.3),rgba(124,58,237,.2));border:1px solid rgba(99,102,241,.3);align-self:flex-start;border-radius:12px 12px 0 12px}
 .ai-msg.bot{background:var(--bg3);border:1px solid var(--border);align-self:flex-end;border-radius:12px 12px 12px 0;color:var(--text)}
 .ai-msg.bot.thinking{color:var(--text3);font-style:italic}
-.ai-suggestions{padding:6px 12px 8px;display:flex;gap:5px;flex-wrap:wrap;border-bottom:1px solid var(--border)}
-.ai-sug{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:10px;cursor:pointer;color:var(--text2);transition:all .15s;font-family:"Cairo",sans-serif}
+.ai-suggestions{padding:7px 12px 9px;display:flex;gap:5px;flex-wrap:wrap;border-bottom:1px solid var(--border);background:var(--bg3)}
+.ai-sug{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:10px;cursor:pointer;color:var(--text2);transition:all .15s;font-family:"Cairo",sans-serif;white-space:nowrap}
 .ai-sug:hover{border-color:rgba(99,102,241,.5);color:#818cf8;background:rgba(99,102,241,.08)}
-.ai-inp-row{padding:10px 12px;display:flex;gap:7px;align-items:center}
-.ai-inp-row input{flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:9px;font-family:"Cairo",sans-serif;font-size:12px;outline:none;direction:rtl;transition:border-color .15s}
+.ai-inp-row{padding:10px 12px;display:flex;gap:6px;align-items:center;background:var(--bg3);border-top:1px solid var(--border)}
+.ai-inp-row input{flex:1;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:9px;font-family:"Cairo",sans-serif;font-size:12px;outline:none;direction:rtl;transition:border-color .15s}
 .ai-inp-row input:focus{border-color:rgba(99,102,241,.5)}
-.ai-send{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff;flex-shrink:0;transition:opacity .15s}
-.ai-send:hover{opacity:.85}
-.ai-api-setup{padding:14px;text-align:center}
-.ai-api-setup p{font-size:11px;color:var(--text2);margin-bottom:10px;line-height:1.7}
-.ai-api-setup input{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-family:"Cairo",monospace;font-size:11px;outline:none;direction:ltr;margin-bottom:8px}
+.ai-send{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff;flex-shrink:0;transition:all .15s}
+.ai-send:hover{opacity:.85;transform:scale(1.05)}
+/* Voice button */
+.ai-voice-btn{
+  width:36px;height:36px;border-radius:9px;
+  background:var(--bg2);border:1px solid var(--border);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:15px;color:var(--text2);flex-shrink:0;transition:all .15s;
+}
+.ai-voice-btn:hover{border-color:rgba(239,68,68,.5);color:var(--red)}
+.ai-voice-btn.recording{
+  background:rgba(239,68,68,.15);border-color:var(--red);color:var(--red);
+  animation:voicepulse .8s ease infinite;
+}
+@keyframes voicepulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.ai-api-setup{padding:20px;text-align:center}
+.ai-api-setup p{font-size:11px;color:var(--text2);margin-bottom:12px;line-height:1.8}
+.ai-api-setup input{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:9px;font-family:"Cairo",monospace;font-size:11px;outline:none;direction:ltr;margin-bottom:10px;transition:border-color .15s}
 .ai-api-setup input:focus{border-color:rgba(99,102,241,.5)}
-@media(max-width:700px){#ai-panel{width:calc(100vw - 20px);left:10px;bottom:84px}#ai-fab{bottom:18px;left:18px}}
+@media(max-width:700px){
+  #ai-panel{width:calc(100vw - 16px);left:8px;bottom:88px;max-height:75vh}
+  #ai-fab{bottom:20px;left:14px;width:52px;height:52px;font-size:22px}
+}
 
 @page{margin:1.5cm;size:A4}
 @media print{
@@ -1030,7 +1157,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
         <button class="btn btn-purple" onclick="sendArcInvOnly()" data-perm-hide="archive.invoice">🖨️ فاتورة</button>
         <button class="btn btn-ghost" onclick="returnToProof()" data-perm-hide="archive.back">إرجاع للبروفه</button>
         <button class="btn btn-purple" onclick="openSettle()" data-perm-hide="archive.settle">تسوية</button>
-        <div style="position:relative;display:inline-block">
+        <div style="position:relative;display:inline-block" data-perm-hide="archive.view_price">
           <button class="btn btn-ghost" onclick="togglePrintMenu('pm-archive')">🖨️ طباعة ▾</button>
           <div id="pm-archive" style="display:none;position:absolute;left:0;top:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;z-index:999;min-width:180px;padding:4px;box-shadow:0 8px 24px rgba(0,0,0,.3)">
             <div onclick="printPageRows('archive-tb','الأرشيف','archive');closePrintMenus()" style="padding:8px 12px;cursor:pointer;border-radius:6px;font-size:12px" onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">📄 طباعة الصفحة كاملة</div>
@@ -1099,14 +1226,14 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
     <div class="ph"><h2>📊 التقارير</h2><div class="btn-row"><button class="btn btn-ghost btn-sm" onclick="renderReports()">🔄 تحديث</button></div></div>
     <div class="tabs" style="flex-wrap:wrap">
       <div class="tab on" onclick="toggleReport('reps-ov',this);renderReports()">📈 نظرة عامة</div>
-      <div class="tab" onclick="toggleReport('reps-del',this);renderReports()">🤝 المناديب</div>
+      <div class="tab" onclick="toggleReport('reps-del',this);renderReports()" data-perm-hide="reports.view_delegate">🤝 المناديب</div>
       <div class="tab" onclick="toggleReport('reps-prod',this);renderReports()">🦷 المنتجات</div>
       <div class="tab" onclick="toggleReport('reps-cl',this);renderReports()">👥 العملاء</div>
-      <div class="tab" onclick="toggleReport('reps-tech',this);renderTechReport()">👨‍🔧 الفنيين</div>
-      <div class="tab" onclick="toggleReport('reps-salary',this);renderSalaryReport()">💰 الرواتب</div>
-      <div class="tab" onclick="toggleReport('reps-client-card',this);initClientCardSelects();initRepDates('cc-from','cc-to')">🃏 كارت عميل</div>
+      <div class="tab" onclick="toggleReport('reps-tech',this);renderTechReport()" data-perm-hide="reports.view_tech_report">👨‍🔧 الفنيين</div>
+      <div class="tab" onclick="toggleReport('reps-salary',this);renderSalaryReport()" data-perm-hide="reports.view_salary">💰 الرواتب</div>
+      <div class="tab" onclick="toggleReport('reps-client-card',this);initClientCardSelects();initRepDates('cc-from','cc-to')" data-perm-hide="reports.view_client_card">🃏 كارت عميل</div>
       <div class="tab" onclick="toggleReport('reps-sup-card',this);initSupCardSelects();initRepDates('sc-from','sc-to')">🏢 كارت مورد</div>
-      <div class="tab" onclick="toggleReport('reps-treasury',this);initRepDates('trep-from','trep-to');renderTreasuryReport()">🏦 تقرير الخزنة</div>
+      <div class="tab" onclick="toggleReport('reps-treasury',this);initRepDates('trep-from','trep-to');renderTreasuryReport()" data-perm-hide="reports.view_treasury_rep">🏦 تقرير الخزنة</div>
     </div>
 
     <!-- نظرة عامة -->
@@ -1114,8 +1241,8 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
       <div class="card" style="margin-bottom:12px">
         <div class="card-head"><h3>📅 الفترة الزمنية</h3>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <button class="btn btn-ghost btn-sm" onclick="printGeneralReport('ov')">🖨️ طباعة / PDF</button>
-            <button class="btn btn-green btn-sm" onclick="sendGeneralReportWA('ov')">💬 واتساب</button>
+            <button class="btn btn-ghost btn-sm" onclick="printGeneralReport('ov')" data-perm-hide="reports.export">🖨️ طباعة / PDF</button>
+            <button class="btn btn-green btn-sm" onclick="sendGeneralReportWA('ov')" data-perm-hide="reports.export_wa">💬 واتساب</button>
             <button class="btn btn-teal btn-sm" onclick="copyReportSummary('ov')">📋 نسخ</button>
           </div>
         </div>
@@ -4648,6 +4775,22 @@ function onColorChange(sel){
 */
 
 
+// ══════════════════════════════════════════════════════════════
+// _saveTreasury — حفظ آمن للخزنة: localStorage + Firebase معاً
+// يُستخدم في كل مسار يكتب للخزنة (رواتب، سلف، معاملات، تحويلات)
+// ══════════════════════════════════════════════════════════════
+function _saveTreasury(list){
+  DB.set('treasury', list);
+  window._lastLocalWrite = Date.now();
+  if(window._fbRTDB){
+    try{
+      window._fbRTDB.ref('data/shared/treasury')
+        .set(list)
+        .catch(e=>console.warn('⚠️ treasury FB write:', e.code||e));
+    }catch(e){ console.warn('⚠️ treasury FB write ex:', e); }
+  }
+}
+
 function nid(t){
   // FIX #37: add random suffix to prevent duplicate sequence numbers with concurrent users
   const c=DB.get('ctr')||{};
@@ -5021,41 +5164,43 @@ function closeSidebar(){
   }
 }
 
-// خريطة الصفحات → الصلاحيات المطلوبة
+// خريطة الصفحات → الصلاحية المطلوبة للدخول — صفحات موجودة فعلاً في النظام فقط
 const PAGE_PERM_MAP = {
-  dashboard:      'dashboard.view',
-  dafter:         'dafter.view',
-  proof:          'proof.view',
-  archive:        'archive.view',
-  treasury:       'treasury.view',
-  reports:        'reports.view',
-  debts:          'debts.view',
-  suppliers:      'suppliers.view',
-  purchases:      'purchases.view',
-  supdebts:       'suppayments.view',
-  inventory:      'inventory.view',
-  batches:        'batches.view',
-  'inventory-report': 'inventory_report.view',
-  'dept-withdrawal':  'dept-withdrawal.view',
-  'dept-inventory':   'dept-inventory.view',
-  'fixed-assets':     'fixed-assets.view',
-  'spare-parts':      'spare-parts.view',
+  dashboard:           'dashboard.view',
+  dafter:              'dafter.view',
+  proof:               'proof.view',
+  archive:             'archive.view',
+  treasury:            'treasury.view',
+  reports:             'reports.view',
+  balance:             'balance.view',
+  suppliers:           'suppliers.view',
+  purchases:           'purchases.view',
+  supdebts:            'suppayments.view',
+  inventory:           'inventory.view',
+  batches:             'batches.view',
+  'inventory-report':  'inventory_report.view',
+  'dept-withdrawal':   'dept-withdrawal.view',
+  'dept-inventory':    'dept-inventory.view',
+  'fixed-assets':      'fixed-assets.view',
+  'spare-parts':       'spare-parts.view',
   'production-report': 'production-report.view',
-  profitability:      'profitability.view',
-  prospects:          'prospects.view',
-  notifications:      'notifications.view',
-  notes:              'notes.view',
-  masterdata:         'masterdata.view',
-  balance:            'reports.view',
+  profitability:       'profitability.view',
+  prospects:           'prospects.view',
+  notifications:       'notifications.view',
+  notes:               'notes.view',
+  masterdata:          'masterdata.view',
+  debts:               'debts.view',
 };
 
-function goPage(pg){
+function goPage(pg, fromHistory){
   // فحص الصلاحية قبل التنقل
   const requiredPerm = PAGE_PERM_MAP[pg];
   if(requiredPerm && !can(requiredPerm)){
     toast('ليس لديك صلاحية للوصول لهذه الصفحة','err');
     return;
   }
+  // ── Hash Navigation: تحديث الـ URL للرجوع للخلف ──
+  if(!fromHistory){ try{ history.pushState({page:pg},'','#'+pg); }catch(e){} }
   // FIX #LASTPAGE: حفظ الصفحة الحالية
   try { localStorage.setItem('plp_last_page', pg); } catch(e) {}
   closeSidebar();
@@ -5304,197 +5449,308 @@ function deleteExtraBox(id){
   });
 }
 
-// ======== ADVANCED PERMISSIONS ENGINE ========
+// ======== ADVANCED PERMISSIONS ENGINE v2 ========
+// بنية صلاحيات متكاملة — تحكم على مستوى الصفحة + الزر + البيانات
 const PERM_SCHEMA = [
-  {
-    section:'📋 الدفتر', key:'dafter',
-    items:[
-      {id:'dafter.view',    label:'عرض الدفتر'},
-      {id:'dafter.add',     label:'إضافة حالة جديدة'},
-      {id:'dafter.edit',    label:'تعديل حالة'},
-      {id:'dafter.edit_own',label:'تعديل حالاته فقط'},
-      {id:'dafter.delete',  label:'حذف حالة'},
-      {id:'dafter.delete_own',label:'حذف حالاته فقط'},
-      {id:'dafter.price',   label:'رؤية الأسعار'},
-      {id:'dafter.to_proof',label:'نقل للبروفه'},
-      {id:'dafter.to_archive',label:'نقل للأرشيف'},
-      {id:'dafter.print',   label:'طباعة/مشاركة'},
-      {id:'dafter.notes',   label:'إضافة ملاحظة للحالة'},
-    ]
-  },
-  {
-    section:'🔬 البروفه', key:'proof',
-    items:[
-      {id:'proof.view',    label:'عرض البروفه'},
-      {id:'proof.edit',    label:'تعديل حالة'},
-      {id:'proof.back',    label:'إرجاع للدفتر'},
-      {id:'proof.to_archive',label:'نقل للأرشيف'},
-      {id:'proof.send_notif',label:'إرسال إشعار واتساب'},
-      {id:'proof.print',   label:'طباعة/تصدير'},
-    ]
-  },
-  {
-    section:'📁 الأرشيف', key:'archive',
-    items:[
-      {id:'archive.view',    label:'عرض الأرشيف'},
-      {id:'archive.back',    label:'إرجاع للبروفه'},
-      {id:'archive.edit',    label:'تعديل حالة مؤرشفة'},
-      {id:'archive.delete',  label:'حذف من الأرشيف'},
-      {id:'archive.invoice', label:'فتح الفاتورة'},
-      {id:'archive.send_inv',label:'إرسال الفاتورة واتساب'},
-      {id:'archive.settle',  label:'تسوية المديونية'},
-      {id:'archive.price',   label:'رؤية الأسعار والمبالغ'},
-    ]
-  },
-  {
-    section:'💰 الخزنة', key:'treasury',
-    items:[
-      {id:'treasury.view',    label:'عرض الخزنة'},
-      {id:'treasury.add',     label:'إضافة معاملة'},
-      {id:'treasury.delete',  label:'حذف معاملة'},
-      {id:'treasury.collect', label:'تحصيل مبلغ من عميل'},
-      {id:'treasury.send_notif',label:'إرسال إشعار مالي واتساب'},
-      {id:'treasury.balances',label:'رؤية الأرصدة الكاملة'},
-    ]
-  },
-  {
-    section:'📊 التقارير والمديونيات', key:'reports',
-    items:[
-      {id:'reports.view',    label:'عرض التقارير العامة'},
-      {id:'debts.view',      label:'عرض مديونيات العملاء'},
-      {id:'reports.export',  label:'تصدير التقارير'},
-    ]
-  },
-  {
-    section:'🛒 المشتريات والموردون', key:'purchases',
-    items:[
-      {id:'suppliers.view',   label:'عرض الموردين'},
-      {id:'suppliers.add',    label:'إضافة/تعديل مورد'},
-      {id:'purchases.view',   label:'عرض فواتير الشراء'},
-      {id:'purchases.add',    label:'إضافة فاتورة شراء'},
-      {id:'purchases.delete', label:'حذف فاتورة'},
-      {id:'suppayments.view', label:'عرض مديونيات الموردين'},
-    ]
-  },
-  {
-    section:'📦 المخزن', key:'inventory',
-    items:[
-      {id:'inventory.view',     label:'عرض المخزون'},
-      {id:'inventory.add',      label:'إضافة/تعديل صنف'},
-      {id:'batches.view',       label:'عرض دفعات FIFO'},
-      {id:'inventory_report.view',label:'جرد المخزن'},
-      {id:'dept-withdrawal.view', label:'عرض صرف الأقسام'},
-      {id:'dept-withdrawal.add',  label:'إضافة صرف للأقسام'},
-      {id:'dept-inventory.view',  label:'عرض جرد الأقسام'},
-      {id:'fixed-assets.view',    label:'عرض الأصول الثابتة'},
-      {id:'fixed-assets.add',     label:'إضافة/تعديل أصل ثابت'},
-      {id:'spare-parts.view',     label:'عرض قطع الغيار'},
-      {id:'spare-parts.add',      label:'تسوية قطعة غيار'},
-    ]
-  },
-  {
-    section:'⚙️ الإنتاج والتكاليف', key:'production',
-    items:[
-      {id:'production-report.view', label:'عرض تقرير تكلفة الإنتاج'},
-      {id:'profitability.view',     label:'عرض تحليل الربحية'},
-    ]
-  },
-  {
-    section:'🗺️ العملاء المحتملون', key:'prospects',
-    items:[
-      {id:'prospects.view',    label:'عرض العملاء المحتملين'},
-      {id:'prospects.add',     label:'إضافة عميل محتمل'},
-      {id:'prospects.edit',    label:'تعديل عميل محتمل'},
-      {id:'prospects.delete',  label:'حذف عميل محتمل'},
-      {id:'prospects.visit',   label:'تسجيل زيارة ميدانية'},
-      {id:'prospects.activate',label:'تفعيل كعميل فعلي'},
-      {id:'prospects.analytics',label:'عرض التحليلات'},
-    ]
-  },
-  {
-    section:'⚙️ البيانات الأساسية', key:'masterdata',
-    items:[
-      {id:'masterdata.view',      label:'عرض البيانات الأساسية'},
-      {id:'masterdata.lab',       label:'تعديل بيانات المختبر'},
-      {id:'masterdata.clients',   label:'إدارة العملاء'},
-      {id:'masterdata.prices',    label:'إدارة الأسعار'},
-      {id:'masterdata.tech',      label:'إدارة الفنيين'},
-      {id:'masterdata.delegates', label:'إدارة المناديب'},
-      {id:'masterdata.employees', label:'إدارة الموظفين'},
-      {id:'masterdata.users',     label:'إدارة المستخدمين'},
-      {id:'masterdata.perms',     label:'إدارة الصلاحيات'},
-      {id:'masterdata.backup',    label:'النسخ الاحتياطي'},
-    ]
-  },
-  {
-    section:'🔔 الإشعارات والملاحظات', key:'notif',
-    items:[
-      {id:'notifications.view', label:'عرض الإشعارات'},
-      {id:'notes.view',         label:'عرض الملاحظات'},
-      {id:'notes.add',          label:'إضافة ملاحظة'},
-      {id:'notes.delete',       label:'حذف ملاحظة'},
-      {id:'notes.team',         label:'رؤية ملاحظات الفريق'},
-    ]
-  },
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   {
     section:'🏠 لوحة التحكم', key:'dashboard',
+    hint:'التحكم في ما يراه المستخدم عند فتح النظام',
     items:[
-      {id:'dashboard.view',    label:'عرض لوحة التحكم'},
-      {id:'dashboard.stats',   label:'رؤية الإحصاءات المالية'},
-      {id:'dashboard.alerts',  label:'رؤية التنبيهات'}
+      {id:'dashboard.view',          label:'دخول لوحة التحكم',          hint:'بدونها يُحوَّل لأول صفحة مسموح بها'},
+      {id:'dashboard.stats',         label:'رؤية الإحصاءات المالية',     hint:'الإيرادات، رصيد الخزنة، المديونيات'},
+      {id:'dashboard.counts',        label:'رؤية عدادات الحالات',        hint:'عداد الدفتر والبروفه والأرشيف'},
+      {id:'dashboard.alerts',        label:'رؤية شريط التنبيهات',        hint:'تنبيهات التأخير والحالات المتأخرة'},
+      {id:'dashboard.charts',        label:'رؤية الرسوم البيانية',        hint:'مخططات الإيرادات والحجم'},
     ]
-  }
+  },
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {
+    section:'📋 الدفتر', key:'dafter',
+    hint:'إدارة حالات الدفتر — المرحلة الأولى في سير العمل',
+    items:[
+      {id:'dafter.view',             label:'عرض الدفتر',                 hint:'الدخول لصفحة الدفتر ورؤية القائمة'},
+      {id:'dafter.view_price',       label:'رؤية عمود السعر/الإجمالي',   hint:'إخفاء المبالغ المالية من الجدول'},
+      {id:'dafter.view_phone',       label:'رؤية أرقام الهاتف',          hint:'إخفاء أرقام هواتف العملاء'},
+      {id:'dafter.view_delegate',    label:'رؤية عمود المندوب',           hint:'إخفاء بيانات المندوب'},
+      {id:'dafter.view_own_only',    label:'يرى حالاته فقط',              hint:'يُصفّي الجدول ليظهر ما أنشأه هو فقط'},
+      {id:'dafter.add',              label:'إضافة حالة جديدة',            hint:'زر إضافة + فتح نموذج الإضافة'},
+      {id:'dafter.edit',             label:'تعديل أي حالة',               hint:'صلاحية تعديل كل الحالات'},
+      {id:'dafter.edit_own',         label:'تعديل حالاته هو فقط',         hint:'يعدّل فقط ما أنشأه هو'},
+      {id:'dafter.delete',           label:'حذف أي حالة',                 hint:'حذف كل الحالات'},
+      {id:'dafter.delete_own',       label:'حذف حالاته هو فقط',           hint:'يحذف فقط ما أنشأه هو'},
+      {id:'dafter.to_proof',         label:'نقل حالة للبروفه',             hint:'زر نقل للبروفه'},
+      {id:'dafter.to_archive',       label:'نقل مباشر للأرشيف',           hint:'تخطي البروفه والنقل للأرشيف مباشرة'},
+      {id:'dafter.print',            label:'طباعة / تصدير',               hint:'طباعة قائمة الدفتر'},
+      {id:'dafter.notes',            label:'إضافة ملاحظة للحالة',         hint:'زر الملاحظات السريعة على كل صف'},
+      {id:'dafter.filter_client',    label:'فلترة بالعميل',               hint:'استخدام فلتر اسم العميل'},
+      {id:'dafter.filter_delegate',  label:'فلترة بالمندوب',              hint:'استخدام فلتر المندوب'},
+    ]
+  },
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {
+    section:'🔬 البروفه', key:'proof',
+    hint:'إدارة الحالات في مرحلة البروفه',
+    items:[
+      {id:'proof.view',              label:'عرض البروفه',                 hint:'الدخول لصفحة البروفه ورؤية القائمة'},
+      {id:'proof.view_price',        label:'رؤية الأسعار في البروفه',     hint:'إخفاء المبالغ من جدول البروفه'},
+      {id:'proof.view_phone',        label:'رؤية أرقام الهاتف',          hint:'إخفاء أرقام هواتف العملاء'},
+      {id:'proof.edit',              label:'تعديل حالة في البروفه',       hint:'تعديل بيانات الحالة'},
+      {id:'proof.back',              label:'إرجاع حالة للدفتر',           hint:'زر الإرجاع للدفتر'},
+      {id:'proof.to_archive',        label:'نقل للأرشيف',                 hint:'تأهيل الحالة وإرسالها للأرشيف'},
+      {id:'proof.send_notif',        label:'إرسال إشعار واتساب',          hint:'إرسال إشعار البروفه للعميل'},
+      {id:'proof.print',             label:'طباعة / تصدير',               hint:'طباعة قائمة البروفه'},
+    ]
+  },
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {
+    section:'📁 الأرشيف', key:'archive',
+    hint:'إدارة الحالات المؤرشفة والفواتير',
+    items:[
+      {id:'archive.view',            label:'عرض الأرشيف',                hint:'الدخول لصفحة الأرشيف'},
+      {id:'archive.view_price',      label:'رؤية الأسعار والمبالغ',      hint:'عمود السعر وإجمالي الفاتورة'},
+      {id:'archive.view_phone',      label:'رؤية أرقام الهاتف',          hint:'إخفاء أرقام هواتف العملاء'},
+      {id:'archive.view_debt',       label:'رؤية المديونية',             hint:'رؤية عمود المديونية وحساب الديون'},
+      {id:'archive.view_own_only',   label:'يرى حالاته فقط',             hint:'يُصفّي الأرشيف ليظهر حالاته هو فقط'},
+      {id:'archive.edit',            label:'تعديل حالة مؤرشفة',          hint:'تعديل بيانات حالة في الأرشيف'},
+      {id:'archive.delete',          label:'حذف من الأرشيف',             hint:'حذف حالة مؤرشفة نهائياً'},
+      {id:'archive.back',            label:'إرجاع حالة للبروفه',         hint:'زر الإرجاع للبروفه'},
+      {id:'archive.invoice',         label:'فتح / طباعة الفاتورة',        hint:'زر الفاتورة وعرض تفاصيلها'},
+      {id:'archive.send_inv',        label:'إرسال الفاتورة واتساب',       hint:'مشاركة الفاتورة عبر واتساب'},
+      {id:'archive.settle',          label:'تسوية المديونية',             hint:'تسجيل دفعة وتسوية الدين'},
+      {id:'archive.filter_client',   label:'فلترة بالعميل',              hint:'فلتر البحث باسم العميل'},
+    ]
+  },
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {
+    section:'💰 الخزنة', key:'treasury',
+    hint:'إدارة الحركات المالية وأرصدة الخزائن',
+    items:[
+      {id:'treasury.view',           label:'عرض الخزنة',                 hint:'الدخول لصفحة الخزنة'},
+      {id:'treasury.view_balances',  label:'رؤية الأرصدة الكاملة',       hint:'رؤية رصيد كل خزنة والإجماليات'},
+      {id:'treasury.view_all_entries',label:'رؤية كل الحركات',           hint:'يرى حركات كل المستخدمين'},
+      {id:'treasury.view_own_entries',label:'يرى حركاته فقط',            hint:'يرى فقط الحركات التي أدخلها هو'},
+      {id:'treasury.view_amounts',   label:'رؤية المبالغ في الحركات',    hint:'إخفاء الأرقام المالية من الجدول'},
+      {id:'treasury.add',            label:'إضافة معاملة جديدة',         hint:'زر إضافة حركة + حفظها'},
+      {id:'treasury.delete',         label:'حذف / عكس معاملة',           hint:'حذف أو تسوية عكسية لحركة'},
+      {id:'treasury.collect',        label:'تحصيل مبلغ من عميل',         hint:'تسجيل دفعة واردة من عميل'},
+      {id:'treasury.transfer',       label:'تحويل بين الخزائن',           hint:'تحويل مبلغ من خزنة لأخرى'},
+      {id:'treasury.send_notif',     label:'إرسال إشعار مالي واتساب',    hint:'إرسال إيصال دفعة للعميل'},
+    ]
+  },
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {
+    section:'📊 التقارير والتحليل', key:'reports',
+    hint:'التقارير المالية والإحصائية',
+    items:[
+      {id:'reports.view',            label:'عرض التقارير العامة',        hint:'الدخول لصفحة التقارير'},
+      {id:'reports.view_revenue',    label:'رؤية أرقام الإيرادات',       hint:'إخفاء أرقام المبيعات والإيرادات'},
+      {id:'reports.view_client_card',label:'رؤية كارت العميل',           hint:'تفاصيل حساب العميل الكامل'},
+      {id:'reports.view_tech_report',label:'رؤية تقرير الفنيين',         hint:'تفاصيل إنتاج وأرباح الفنيين'},
+      {id:'reports.view_delegate',   label:'رؤية تقرير المناديب',        hint:'تفاصيل عمولات المناديب'},
+      {id:'reports.view_salary',     label:'رؤية تقرير الرواتب',         hint:'كشف رواتب الموظفين'},
+      {id:'reports.view_treasury_rep',label:'رؤية تقرير الخزنة',        hint:'ملخص الحركات المالية التفصيلي'},
+      {id:'reports.export',          label:'تصدير التقارير (Excel/PDF)', hint:'زر التصدير في كل التقارير'},
+      {id:'reports.export_wa',       label:'إرسال التقارير واتساب',       hint:'مشاركة التقارير عبر واتساب'},
+      {id:'debts.view',              label:'عرض مديونيات العملاء',        hint:'صفحة المديونيات الكاملة'},
+      {id:'balance.view',            label:'عرض الميزان المحاسبي',       hint:'صفحة الميزان والأصول والخصوم'},
+      {id:'profitability.view',      label:'عرض تحليل الربحية',          hint:'صفحة تحليل الأرباح والخسائر'},
+      {id:'production-report.view',  label:'عرض تقرير تكلفة الإنتاج',   hint:'صفحة تكاليف الإنتاج'},
+    ]
+  },
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {
+    section:'🛒 المشتريات والموردون', key:'purchases',
+    hint:'إدارة فواتير الشراء والموردين',
+    items:[
+      {id:'suppliers.view',          label:'عرض الموردين',               hint:'الدخول لصفحة الموردين'},
+      {id:'suppliers.add',           label:'إضافة / تعديل مورد',          hint:'إضافة مورد جديد أو تعديل بياناته'},
+      {id:'suppliers.delete',        label:'حذف مورد',                   hint:'حذف مورد من القائمة'},
+      {id:'suppliers.view_contact',  label:'رؤية بيانات التواصل',        hint:'رؤية الهاتف والإيميل والعنوان'},
+      {id:'purchases.view',          label:'عرض فواتير الشراء',           hint:'الدخول لصفحة فواتير الشراء'},
+      {id:'purchases.view_prices',   label:'رؤية أسعار الفواتير',        hint:'إخفاء المبالغ من فواتير الشراء'},
+      {id:'purchases.add',           label:'إضافة فاتورة شراء',           hint:'إنشاء فاتورة شراء جديدة'},
+      {id:'purchases.delete',        label:'حذف فاتورة شراء',             hint:'حذف فاتورة شراء'},
+      {id:'suppayments.view',        label:'عرض مديونيات الموردين',       hint:'الدخول لصفحة مديونيات الموردين'},
+      {id:'suppayments.view_amounts',label:'رؤية مبالغ مديونيات الموردين',hint:'إخفاء الأرقام المالية'},
+      {id:'suppayments.pay',         label:'تسجيل دفعة للمورد',           hint:'تسجيل سداد لمورد'},
+    ]
+  },
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {
+    section:'📦 المخزن', key:'inventory',
+    hint:'إدارة المخزون والمواد',
+    items:[
+      {id:'inventory.view',          label:'عرض المخزون الرئيسي',        hint:'الدخول لصفحة المخزون'},
+      {id:'inventory.view_costs',    label:'رؤية تكاليف المخزون',        hint:'إخفاء أسعار التكلفة والقيم'},
+      {id:'inventory.add',           label:'إضافة / تعديل صنف',           hint:'إضافة أو تعديل صنف في المخزون'},
+      {id:'inventory.delete',        label:'حذف صنف من المخزون',          hint:'حذف صنف'},
+      {id:'batches.view',            label:'عرض دفعات FIFO',              hint:'الدخول لصفحة دفعات الشراء'},
+      {id:'inventory_report.view',   label:'إجراء جرد المخزن',           hint:'الدخول لصفحة جرد المخزن وإدخال أرقام الجرد'},
+      {id:'inventory_report.delete', label:'حذف سجل جرد',                hint:'حذف سجل جرد سابق'},
+      {id:'dept-withdrawal.view',    label:'عرض صرف الأقسام',            hint:'الدخول لصفحة صرف الأقسام'},
+      {id:'dept-withdrawal.add',     label:'إضافة صرف للأقسام',          hint:'تسجيل صرف مواد من المخزن للأقسام'},
+      {id:'dept-withdrawal.delete',  label:'حذف صرف الأقسام',            hint:'حذف سجل صرف'},
+      {id:'dept-inventory.view',     label:'عرض جرد الأقسام',            hint:'الدخول لصفحة جرد الأقسام'},
+      {id:'dept-inventory.add',      label:'إضافة جرد للأقسام',          hint:'تسجيل جرد قسم جديد'},
+      {id:'fixed-assets.view',       label:'عرض الأصول الثابتة',         hint:'الدخول لصفحة الأصول الثابتة'},
+      {id:'fixed-assets.add',        label:'إضافة / تعديل أصل ثابت',      hint:'إضافة أو تعديل أصل'},
+      {id:'fixed-assets.delete',     label:'حذف أصل ثابت',               hint:'حذف أصل من السجل'},
+      {id:'spare-parts.view',        label:'عرض قطع الغيار',              hint:'الدخول لصفحة قطع الغيار'},
+      {id:'spare-parts.add',         label:'تسوية قطعة غيار',             hint:'تسجيل صيانة أو استهلاك'},
+    ]
+  },
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {
+    section:'🗺️ العملاء المحتملون', key:'prospects',
+    hint:'إدارة خط مبيعات العملاء الجدد',
+    items:[
+      {id:'prospects.view',          label:'عرض العملاء المحتملين',      hint:'الدخول لصفحة العملاء المحتملين'},
+      {id:'prospects.view_contact',  label:'رؤية بيانات التواصل',        hint:'رؤية الهاتف والموقع'},
+      {id:'prospects.add',           label:'إضافة عميل محتمل',           hint:'إضافة عميل محتمل جديد'},
+      {id:'prospects.edit',          label:'تعديل عميل محتمل',           hint:'تعديل بيانات العميل المحتمل'},
+      {id:'prospects.delete',        label:'حذف عميل محتمل',             hint:'حذف عميل من القائمة'},
+      {id:'prospects.visit',         label:'تسجيل زيارة ميدانية',        hint:'إضافة وعرض سجل الزيارات'},
+      {id:'prospects.activate',      label:'تفعيل كعميل فعلي',           hint:'تحويل العميل المحتمل لعميل فعلي'},
+      {id:'prospects.analytics',     label:'عرض التحليلات',              hint:'إحصاءات وتحليلات العملاء المحتملين'},
+    ]
+  },
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {
+    section:'🔔 الإشعارات', key:'notif',
+    hint:'إدارة إشعارات واتساب وسجل الإرسال',
+    items:[
+      {id:'notifications.view',      label:'عرض صفحة الإشعارات',        hint:'الدخول لصفحة الإشعارات'},
+      {id:'notifications.view_log',  label:'رؤية سجل الإشعارات المرسلة',hint:'تاريخ الإشعارات السابقة'},
+      {id:'notifications.send',      label:'إرسال الإشعارات اليدوية',    hint:'إرسال إشعارات بروفه وفواتير يدوياً'},
+      {id:'notifications.settings',  label:'تعديل إعدادات الإشعارات',   hint:'تعديل القوالب وأوقات الإرسال'},
+    ]
+  },
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {
+    section:'📝 الملاحظات', key:'notes',
+    hint:'نظام الملاحظات المرتبطة بالحالات',
+    items:[
+      {id:'notes.view',              label:'عرض ملاحظاته الشخصية',       hint:'يرى فقط ملاحظاته هو'},
+      {id:'notes.view_team',         label:'رؤية ملاحظات الفريق كله',    hint:'يرى ملاحظات جميع المستخدمين'},
+      {id:'notes.add',               label:'إضافة ملاحظة',               hint:'إنشاء ملاحظة جديدة'},
+      {id:'notes.edit_own',          label:'تعديل ملاحظاته فقط',         hint:'يعدّل ما كتبه هو فقط'},
+      {id:'notes.delete',            label:'حذف ملاحظاته فقط',           hint:'يحذف ما كتبه هو'},
+      {id:'notes.delete_any',        label:'حذف أي ملاحظة',              hint:'حذف ملاحظات الآخرين أيضاً'},
+    ]
+  },
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {
+    section:'⚙️ البيانات الأساسية', key:'masterdata',
+    hint:'إعدادات النظام والبيانات المرجعية',
+    items:[
+      {id:'masterdata.view',         label:'دخول صفحة البيانات الأساسية',hint:'رؤية القائمة العلوية فقط'},
+      {id:'masterdata.lab',          label:'تعديل بيانات المختبر',        hint:'الاسم، الشعار، معلومات التواصل'},
+      {id:'masterdata.clients',      label:'إدارة العملاء',               hint:'إضافة / تعديل / حذف العملاء'},
+      {id:'masterdata.clients.view_debt',label:'رؤية ديون العملاء في الإدارة',hint:'رؤية رصيد الدين في قائمة العملاء'},
+      {id:'masterdata.prices',       label:'إدارة الأسعار',               hint:'إضافة / تعديل / حذف قوائم الأسعار'},
+      {id:'masterdata.tech',         label:'إدارة الفنيين',               hint:'إضافة / تعديل / حذف الفنيين'},
+      {id:'masterdata.delegates',    label:'إدارة المناديب',              hint:'إضافة / تعديل / حذف المناديب'},
+      {id:'masterdata.employees',    label:'إدارة الموظفين والرواتب',     hint:'بيانات الموظفين، الرواتب، الحضور'},
+      {id:'masterdata.employees.view_salary',label:'رؤية مبالغ الرواتب', hint:'رؤية أرقام الرواتب في إدارة الموظفين'},
+      {id:'masterdata.users',        label:'إدارة المستخدمين',            hint:'إضافة / تعديل / حذف حسابات الدخول'},
+      {id:'masterdata.perms',        label:'إدارة الصلاحيات',             hint:'⚠️ صلاحية خطيرة — تحكم في كل الصلاحيات'},
+      {id:'masterdata.inventory_md', label:'إدارة مخزون البيانات الأساسية',hint:'إدارة المخزون من تبويب البيانات الأساسية'},
+      {id:'masterdata.trsetup',      label:'إعداد الخزائن',               hint:'إضافة وتعديل الخزائن وأسمائها'},
+      {id:'masterdata.notif_design', label:'تصميم الإشعارات',             hint:'تصميم قوالب وألوان الإشعارات'},
+      {id:'masterdata.dept_map',     label:'ربط الأقسام بالإنتاج',        hint:'ربط الأقسام بفئات المنتجات'},
+      {id:'masterdata.backup',       label:'النسخ الاحتياطي',             hint:'تصدير واستيراد بيانات النظام — ⚠️ خطير'},
+      {id:'masterdata.actlog',       label:'سجل النشاط',                  hint:'مراجعة نشاط المستخدمين'},
+    ]
+  },
 ];
 
-// القيم الافتراضية لكل دور
+// القيم الافتراضية لكل دور — محدّثة لتتوافق مع PERM_SCHEMA v2
 const PERM_DEFAULTS = {
+  // ── المشرف: صلاحيات واسعة ماعدا إدارة المستخدمين والصلاحيات والنسخ الاحتياطي ──
   supervisor: [
-    'dafter.view','dafter.add','dafter.edit','dafter.price','dafter.to_proof','dafter.to_archive','dafter.print','dafter.notes',
-    'proof.view','proof.edit','proof.back','proof.to_archive','proof.send_notif','proof.print',
-    'archive.view','archive.edit','archive.invoice','archive.send_inv','archive.price',
-    'treasury.view','treasury.add','treasury.collect','treasury.send_notif','treasury.balances',
-    'reports.view','debts.view','reports.export',
-    'suppliers.view','purchases.view','suppayments.view',
-    'inventory.view','batches.view','inventory_report.view','dept-withdrawal.view','dept-withdrawal.add','dept-inventory.view','fixed-assets.view','fixed-assets.add','spare-parts.view','spare-parts.add',
-    'production-report.view','profitability.view',
-    'prospects.view','prospects.add','prospects.edit','prospects.delete','prospects.visit','prospects.activate','prospects.analytics',
-    'masterdata.view','masterdata.lab','masterdata.clients','masterdata.prices','masterdata.tech','masterdata.delegates','masterdata.employees','masterdata.users','masterdata.perms','masterdata.backup',
-    'notifications.view','notes.view','notes.add','notes.team',
-    'dashboard.view','dashboard.stats','dashboard.alerts',
+    'dashboard.view','dashboard.stats','dashboard.counts','dashboard.alerts','dashboard.charts',
+    'dafter.view','dafter.view_price','dafter.view_phone','dafter.view_delegate',
+    'dafter.add','dafter.edit','dafter.delete','dafter.to_proof','dafter.to_archive',
+    'dafter.print','dafter.notes','dafter.filter_client','dafter.filter_delegate',
+    'proof.view','proof.view_price','proof.view_phone',
+    'proof.edit','proof.back','proof.to_archive','proof.send_notif','proof.print',
+    'archive.view','archive.view_price','archive.view_phone','archive.view_debt',
+    'archive.edit','archive.delete','archive.back',
+    'archive.invoice','archive.send_inv','archive.settle','archive.filter_client',
+    'treasury.view','treasury.view_balances','treasury.view_all_entries','treasury.view_amounts',
+    'treasury.add','treasury.delete','treasury.collect','treasury.transfer','treasury.send_notif',
+    'reports.view','reports.view_revenue','reports.view_client_card','reports.view_tech_report',
+    'reports.view_delegate','reports.view_salary','reports.view_treasury_rep',
+    'reports.export','reports.export_wa','debts.view','balance.view','profitability.view','production-report.view',
+    'suppliers.view','suppliers.add','suppliers.view_contact',
+    'purchases.view','purchases.view_prices','purchases.add',
+    'suppayments.view','suppayments.view_amounts',
+    'inventory.view','inventory.view_costs','inventory.add',
+    'batches.view','inventory_report.view',
+    'dept-withdrawal.view','dept-withdrawal.add',
+    'dept-inventory.view','dept-inventory.add',
+    'fixed-assets.view','fixed-assets.add',
+    'spare-parts.view','spare-parts.add',
+    'prospects.view','prospects.view_contact','prospects.add','prospects.edit','prospects.delete',
+    'prospects.visit','prospects.activate','prospects.analytics',
+    'notifications.view','notifications.view_log','notifications.send',
+    'notes.view','notes.view_team','notes.add','notes.edit_own','notes.delete',
+    'masterdata.view','masterdata.lab','masterdata.clients','masterdata.clients.view_debt',
+    'masterdata.prices','masterdata.tech','masterdata.delegates','masterdata.employees',
+    'masterdata.trsetup','masterdata.notif_design','masterdata.dept_map','masterdata.actlog',
   ],
+  // ── المحاسب: يرى كل المالي، يحصّل، لا يضيف/يعدل حالات ──
   accountant: [
-    'dafter.view','dafter.price',
-    'proof.view',
-    'archive.view','archive.invoice','archive.send_inv','archive.settle','archive.price',
-    'treasury.view','treasury.add','treasury.collect','treasury.send_notif','treasury.balances',
-    'reports.view','debts.view','reports.export',
-    'suppayments.view',
-    'notifications.view','notes.view','notes.add',
-    'dashboard.view','dashboard.stats','dashboard.alerts',
+    'dashboard.view','dashboard.stats','dashboard.counts','dashboard.alerts','dashboard.charts',
+    'dafter.view','dafter.view_price','dafter.filter_client',
+    'proof.view','proof.view_price',
+    'archive.view','archive.view_price','archive.view_debt','archive.view_phone',
+    'archive.invoice','archive.send_inv','archive.settle','archive.filter_client',
+    'treasury.view','treasury.view_balances','treasury.view_all_entries','treasury.view_amounts',
+    'treasury.add','treasury.collect','treasury.transfer','treasury.send_notif',
+    'reports.view','reports.view_revenue','reports.view_client_card',
+    'reports.view_delegate','reports.view_salary','reports.view_treasury_rep',
+    'reports.export','reports.export_wa','debts.view','balance.view','profitability.view',
+    'suppliers.view','purchases.view','purchases.view_prices',
+    'suppayments.view','suppayments.view_amounts','suppayments.pay',
+    'notifications.view','notifications.view_log',
+    'notes.view','notes.add','notes.edit_own','notes.delete',
+    'masterdata.view','masterdata.clients','masterdata.clients.view_debt',
+    'masterdata.employees','masterdata.employees.view_salary',
   ],
+  // ── الموظف: يضيف ويعدل حالات، لا يرى أسعار ولا ماليات ──
   employee: [
-    'dafter.view','dafter.add','dafter.edit','dafter.notes',
-    'proof.view',
-    'archive.view',
-    'notifications.view','notes.view','notes.add',
-    'dashboard.view','dashboard.alerts',
+    'dashboard.view','dashboard.counts','dashboard.alerts',
+    'dafter.view','dafter.view_phone','dafter.view_delegate',
+    'dafter.add','dafter.edit','dafter.notes','dafter.to_proof','dafter.filter_client',
+    'proof.view','proof.view_phone',
+    'archive.view','archive.view_phone','archive.filter_client',
+    'notifications.view','notifications.send',
+    'notes.view','notes.add','notes.edit_own','notes.delete',
+    'masterdata.view',
   ],
+  // ── المندوب: يرى حالاته فقط، يحصّل مدفوعات، يتابع عملاء محتملين ──
   delegate: [
-    'dafter.view','dafter.add','dafter.edit_own','dafter.notes',
-    'archive.view',
-    'treasury.collect',
+    'dashboard.view','dashboard.counts','dashboard.alerts',
+    'dafter.view','dafter.view_phone','dafter.view_own_only',
+    'dafter.add','dafter.edit_own','dafter.notes','dafter.filter_client','dafter.filter_delegate',
+    'archive.view','archive.view_own_only','archive.view_phone','archive.filter_client',
+    'treasury.collect','treasury.send_notif',
     'debts.view',
-    'prospects.view','prospects.add','prospects.visit','prospects.analytics',
-    'notifications.view','notes.view','notes.add',
-    'dashboard.view','dashboard.alerts',
+    'prospects.view','prospects.view_contact','prospects.add','prospects.visit','prospects.analytics',
+    'notifications.view',
+    'notes.view','notes.add','notes.edit_own','notes.delete',
   ],
+  // ── الفني: يرى الحالات المرتبطة به، يتابع البروفه، يرى المخزون ──
   technician: [
+    'dashboard.view','dashboard.counts','dashboard.alerts',
     'dafter.view','dafter.notes',
-    'proof.view','proof.edit','proof.to_archive','proof.send_notif',
+    'proof.view','proof.edit','proof.to_archive','proof.send_notif','proof.print',
     'archive.view',
     'inventory.view',
-    'notifications.view','notes.view','notes.add',
-    'dashboard.view','dashboard.alerts'
+    'notifications.view','notifications.send',
+    'notes.view','notes.add','notes.edit_own','notes.delete',
   ]
 };
 
@@ -5513,39 +5769,101 @@ function swPermRole(role, btn){
 function renderPermSections(){
   const allPerms = DB.get('perms_advanced') || {};
   const rolePerms = allPerms[_permCurrentRole] || PERM_DEFAULTS[_permCurrentRole] || [];
+  const total = PERM_SCHEMA.reduce((s,sec)=>s+sec.items.length,0);
+  const granted = PERM_SCHEMA.reduce((s,sec)=>s+sec.items.filter(it=>rolePerms.includes(it.id)).length,0);
+  const pct = total ? Math.round(granted/total*100) : 0;
 
-  const html = PERM_SCHEMA.map(sec=>`
-    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <div style="font-size:13px;font-weight:800;color:var(--gold2)">${sec.section}</div>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-ghost btn-sm" onclick="permSecAll('${sec.key}',true)" style="font-size:10px;padding:3px 8px">✅ كل القسم</button>
-          <button class="btn btn-ghost btn-sm" onclick="permSecAll('${sec.key}',false)" style="font-size:10px;padding:3px 8px">❌ إلغاء القسم</button>
+  // تصنيف بصري لنوع الصلاحية بناءً على اسمها
+  function permBadge(id){
+    if(id.includes('.view_own') || id.includes('_own'))
+      return `<span style="font-size:9px;background:rgba(59,130,246,.15);color:var(--blue2);border-radius:4px;padding:1px 5px;flex-shrink:0">هو فقط</span>`;
+    if(id.includes('.view_') || id.match(/\.(view|counts|charts|alerts|stats)$/))
+      return `<span style="font-size:9px;background:rgba(34,197,94,.12);color:var(--green);border-radius:4px;padding:1px 5px;flex-shrink:0">عرض</span>`;
+    if(id.includes('.delete') || id.includes('.backup'))
+      return `<span style="font-size:9px;background:rgba(239,68,68,.15);color:var(--red);border-radius:4px;padding:1px 5px;flex-shrink:0">⚠️ حذف</span>`;
+    if(id.includes('.add') || id.includes('.edit') || id.includes('.save') || id.includes('.activate') || id.includes('.pay') || id.includes('.settle') || id.includes('.collect') || id.includes('.transfer'))
+      return `<span style="font-size:9px;background:rgba(249,115,22,.12);color:var(--orange);border-radius:4px;padding:1px 5px;flex-shrink:0">تعديل</span>`;
+    if(id.includes('.send') || id.includes('_wa') || id.includes('.notif'))
+      return `<span style="font-size:9px;background:rgba(20,184,166,.12);color:var(--teal);border-radius:4px;padding:1px 5px;flex-shrink:0">إرسال</span>`;
+    if(id.includes('.perms') || id.includes('masterdata.users'))
+      return `<span style="font-size:9px;background:rgba(168,85,247,.15);color:var(--purple);border-radius:4px;padding:1px 5px;flex-shrink:0">🔑 حساس</span>`;
+    return '';
+  }
+
+  const summaryBar = `
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:14px">
+      <div style="flex:1">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:5px">نسبة الصلاحيات الممنوحة لهذا الدور</div>
+        <div style="background:var(--bg);border-radius:6px;height:8px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:6px;transition:width .4s"></div>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px">
+      <div style="text-align:center;min-width:60px">
+        <div style="font-size:22px;font-weight:900;color:var(--gold2)">${pct}%</div>
+        <div style="font-size:10px;color:var(--text3)">${granted} / ${total}</div>
+      </div>
+    </div>`;
+
+  const html = summaryBar + PERM_SCHEMA.map(sec=>{
+    const secGranted = sec.items.filter(it=>rolePerms.includes(it.id)).length;
+    const secTotal = sec.items.length;
+    return `
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:13px;font-weight:800;color:var(--gold2)">${sec.section}</span>
+          <span style="font-size:10px;background:var(--bg4);border-radius:5px;padding:2px 7px;color:var(--text3)">${secGranted}/${secTotal}</span>
+        </div>
+        <div style="display:flex;gap:5px">
+          <button class="btn btn-ghost btn-sm" onclick="permSecAll('${sec.key}',true)" style="font-size:10px;padding:2px 8px">✅ كل القسم</button>
+          <button class="btn btn-ghost btn-sm" onclick="permSecAll('${sec.key}',false)" style="font-size:10px;padding:2px 8px">❌ إلغاء</button>
+        </div>
+      </div>
+      ${sec.hint?`<div style="font-size:10px;color:var(--text3);margin-bottom:10px;padding-right:2px">${sec.hint}</div>`:''}
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:7px">
         ${sec.items.map(item=>{
           const checked = rolePerms.includes(item.id);
-          return `<label style="display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid ${checked?'rgba(201,168,76,.3)':'var(--border)'};border-radius:8px;padding:9px 12px;cursor:pointer;transition:border-color .15s" 
-            onmouseenter="this.style.borderColor='rgba(201,168,76,.4)'" 
-            onmouseleave="this.style.borderColor='${checked?'rgba(201,168,76,.3)':'var(--border)'}'">
-            <input type="checkbox" data-perm="${item.id}" data-sec="${sec.key}" ${checked?'checked':''} 
-              onchange="onPermChange(this)" 
-              style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer">
-            <span style="font-size:12px;color:var(--text)">${item.label}</span>
+          const isDanger = item.id.includes('.perms') || item.id.includes('masterdata.users') || item.id.includes('.backup') || item.id.includes('.delete');
+          return `<label style="display:flex;align-items:flex-start;gap:9px;background:var(--bg);border:1px solid ${checked?(isDanger?'rgba(239,68,68,.35)':'rgba(201,168,76,.35)'):'var(--border)'};border-radius:8px;padding:9px 11px;cursor:pointer;transition:all .15s"
+            onmouseenter="this.style.borderColor='${isDanger?'rgba(239,68,68,.5)':'rgba(201,168,76,.5)'}'"
+            onmouseleave="this.style.borderColor='${checked?(isDanger?'rgba(239,68,68,.35)':'rgba(201,168,76,.35)'):'var(--border)'}'">
+            <input type="checkbox" data-perm="${item.id}" data-sec="${sec.key}" ${checked?'checked':''}
+              onchange="onPermChange(this)"
+              style="width:15px;height:15px;accent-color:${isDanger?'var(--red)':'var(--gold)'};cursor:pointer;margin-top:2px;flex-shrink:0">
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+                <span style="font-size:12px;color:var(--text);font-weight:600">${item.label}</span>
+                ${permBadge(item.id)}
+              </div>
+              ${item.hint?`<div style="font-size:10px;color:var(--text3);margin-top:2px;line-height:1.4">${item.hint}</div>`:''}
+            </div>
           </label>`;
         }).join('')}
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 
   document.getElementById('perm-sections').innerHTML = html;
 }
 
 function onPermChange(cb){
-  // تحديث لون البوردر للبطاقة
   const label = cb.closest('label');
-  if(label) label.style.borderColor = cb.checked ? 'rgba(201,168,76,.3)' : 'var(--border)';
+  const isDanger = cb.dataset.perm && (cb.dataset.perm.includes('.perms') || cb.dataset.perm.includes('.users') || cb.dataset.perm.includes('.backup') || cb.dataset.perm.includes('.delete'));
+  if(label){
+    label.style.borderColor = cb.checked ? (isDanger ? 'rgba(239,68,68,.35)' : 'rgba(201,168,76,.35)') : 'var(--border)';
+    label.onmouseleave = ()=>{ label.style.borderColor = cb.checked ? (isDanger ? 'rgba(239,68,68,.35)' : 'rgba(201,168,76,.35)') : 'var(--border)'; };
+  }
+  // تحديث الإحصاء الفوري
+  const allCbs = document.querySelectorAll('#perm-sections input[type="checkbox"]');
+  const total = allCbs.length;
+  const granted = [...allCbs].filter(c=>c.checked).length;
+  const pct = total ? Math.round(granted/total*100) : 0;
+  const bar = document.querySelector('#perm-sections .perm-progress-bar');
+  const pctEl = document.querySelector('#perm-sections .perm-pct');
+  const cntEl = document.querySelector('#perm-sections .perm-cnt');
+  if(bar) bar.style.width = pct+'%';
+  if(pctEl) pctEl.textContent = pct+'%';
+  if(cntEl) cntEl.textContent = granted+' / '+total;
 }
 
 function permSecAll(secKey, val){
@@ -5578,6 +5896,7 @@ function permClearAll(){
 }
 
 function savePermsAdvanced(){
+  if(!can('masterdata.perms') && window._currentUser?.role!=='admin'){toast('ليس لديك صلاحية تعديل الصلاحيات','err');return;}
   const allPerms = DB.get('perms_advanced') || {};
   allPerms[_permCurrentRole] = [];
   document.querySelectorAll('#perm-sections input[type="checkbox"]').forEach(cb=>{
@@ -5592,21 +5911,10 @@ function savePermsAdvanced(){
 }
 
 function _syncLegacyPerms(allPerms){
-  // map advanced perms back to page-level for applySession
-  const pageMap = {
-    'dafter':'dafter.view','proof':'proof.view','archive':'archive.view',
-    'treasury':'treasury.view','reports':'reports.view','debts':'debts.view',
-    'inventory':'inventory.view','notifications':'notifications.view',
-    'notes':'notes.view','dashboard':'dashboard.view',
-    'suppliers':'suppliers.view','purchases':'purchases.view',
-    'supdebts':'suppayments.view',
-    'batches':'batches.view',
-    'inventory-report':'inventory_report.view',
-    'production-report':'production-report.view','profitability':'profitability.view'
-  };
+  // مزامنة صلاحيات الصفحات مع PAGE_PERM_MAP لـ applySession
   const legacyPerms = {};
   Object.entries(allPerms).forEach(([role, items])=>{
-    legacyPerms[role] = Object.entries(pageMap)
+    legacyPerms[role] = Object.entries(PAGE_PERM_MAP)
       .filter(([,permId])=>items.includes(permId))
       .map(([page])=>page);
   });
@@ -5646,37 +5954,166 @@ function snapshotFields(rec, fields){
   return out;
 }
 
-// إضافة / إخفاء أزرار بناءً على الصلاحيات بعد تحميل الصفحة
+// ════════════════════════════════════════════════════════════════
+//  applyActionPerms — محرك الصلاحيات الأمني الكامل (v2)
+//  يُطبَّق بعد كل render + بعد تسجيل الدخول
+//  مبدأ Defense-in-Depth: Layer 1 = إخفاء UI  |  Layer 2 = can() داخل الدوال
+// ════════════════════════════════════════════════════════════════
 function applyActionPerms(){
   const role = window._currentUser?.role;
   if(!role || role==='admin') return;
 
-  // إخفاء كل الأزرار المحمية بـ data-perm-hide تلقائياً
+  // — L1-A: كل عنصر له data-perm-hide يُخفى تلقائياً —
   document.querySelectorAll('[data-perm-hide]').forEach(el=>{
-    const perm=el.getAttribute('data-perm-hide');
-    if(perm && !can(perm)) el.style.display='none';
+    el.style.display = can(el.getAttribute('data-perm-hide')) ? '' : 'none';
   });
 
-  // إخفاء الأسعار في الدفتر
-  if(!can('dafter.price')){
-    document.querySelectorAll('.df-price-col, #df-price, #df-total').forEach(el=>{ if(el)el.style.display='none'; });
-  }
+  // ──────────── الدفتر ────────────
+  // أسعار الدفتر
+  const showDafterPrice = can('dafter.view_price');
+  document.querySelectorAll('.df-price-col,[data-hide="price"],#df-price,#df-total').forEach(el=>{
+    if(el) el.style.display = showDafterPrice ? '' : 'none';
+  });
+  // هاتف الدفتر
+  if(!can('dafter.view_phone'))
+    document.querySelectorAll('#pg-dafter td:nth-child(3),[data-col="phone"]').forEach(el=>el.style.display='none');
+  // المندوب في الدفتر
+  if(!can('dafter.view_delegate'))
+    document.querySelectorAll('#pg-dafter .dafter-delegate-col').forEach(el=>el.style.display='none');
 
-  // إخفاء الأسعار في الأرشيف
-  if(!can('archive.price')){
-    document.querySelectorAll('.arc-price-col').forEach(el=>{ if(el)el.style.display='none'; });
-  }
+  // ──────────── البروفه ────────────
+  if(!can('proof.view_price'))
+    document.querySelectorAll('#pg-proof .proof-price-col').forEach(el=>el.style.display='none');
+  if(!can('proof.view_phone'))
+    document.querySelectorAll('#pg-proof .proof-phone-col').forEach(el=>el.style.display='none');
 
-  // إخفاء الأرصدة الكاملة في الخزنة
-  if(!can('treasury.balances')){
-    const balRow = document.getElementById('tr-balances-row');
-    if(balRow) balRow.style.display='none';
-  }
+  // ──────────── الأرشيف ────────────
+  if(!can('archive.view_price'))
+    document.querySelectorAll('.arc-price-col,[data-hide="arc-price"]').forEach(el=>el.style.display='none');
+  if(!can('archive.view_debt'))
+    document.querySelectorAll('.arc-debt-col,[data-hide="arc-debt"]').forEach(el=>el.style.display='none');
+  if(!can('archive.view_phone'))
+    document.querySelectorAll('#pg-archive .arc-phone-col').forEach(el=>el.style.display='none');
+  if(!can('archive.delete'))
+    document.querySelectorAll('[data-perm-hide="archive.delete"]').forEach(el=>el.style.display='none');
+  if(!can('archive.settle'))
+    document.querySelectorAll('[data-perm-hide="archive.settle"]').forEach(el=>el.style.display='none');
 
-  // إخفاء سجل النشاط من غير الأدمن والمشرف
-  if(!['admin','supervisor'].includes(role)){
+  // ──────────── الخزنة ────────────
+  if(!can('treasury.view_balances')){
+    const balRow=document.getElementById('tr-balances-row');if(balRow)balRow.style.display='none';
+    document.getElementById('tr-bals') && (document.getElementById('tr-bals').style.display='none');
+  }
+  if(!can('treasury.view_amounts'))
+    document.querySelectorAll('.tr-amount-col,[data-hide="tr-amount"]').forEach(el=>el.style.display='none');
+  if(!can('treasury.add')){
+    document.querySelectorAll('[data-perm-hide="treasury.add"]').forEach(el=>el.style.display='none');
+    document.querySelectorAll('#pg-treasury .btn-gold,#pg-treasury .btn-teal').forEach(el=>el.style.display='none');
+  }
+  if(!can('treasury.delete'))
+    document.querySelectorAll('[data-perm-hide="treasury.delete"],.tr-del-btn,.tr-reverse-btn').forEach(el=>el.style.display='none');
+  if(!can('treasury.transfer'))
+    document.querySelectorAll('[onclick*="openTrTransferModal"]').forEach(el=>el.style.display='none');
+
+  // ──────────── التقارير ────────────
+  if(!can('reports.view_revenue')){
+    document.querySelectorAll('.rep-revenue-col,.rep-amount-col,[data-hide="rep-amount"]').forEach(el=>el.style.display='none');
+  }
+  if(!can('reports.export'))
+    document.querySelectorAll('.btn-export,[data-perm-hide="reports.export"],[onclick*="exportExcel"],[onclick*="exportCSV"],[onclick*="exportPDF"]').forEach(el=>el.style.display='none');
+  if(!can('reports.export_wa'))
+    document.querySelectorAll('[onclick*="sendGeneralReportWA"],[onclick*="sendTechReportWA"],[onclick*="sendSalaryWA"],[onclick*="sendTreasuryWA"],[onclick*="sendClientCardWA"],[onclick*="sendDelReport"]').forEach(el=>el.style.display='none');
+  if(!can('reports.view_salary'))
+    document.querySelectorAll('#pg-reports .tab[onclick*="salary"],[onclick*="renderSalaryReport"]').forEach(el=>el.style.display='none');
+  if(!can('reports.view_treasury_rep'))
+    document.querySelectorAll('#pg-reports .tab[onclick*="treasury"],[onclick*="renderTreasuryReport"]').forEach(el=>el.style.display='none');
+
+  // ──────────── لوحة التحكم ────────────
+  if(!can('dashboard.stats'))
+    document.querySelectorAll('.stat-financial,[data-hide="stat-financial"]').forEach(el=>el.style.display='none');
+  if(!can('dashboard.charts'))
+    document.querySelectorAll('#dash-charts-row,#dash-charts,[data-hide="dash-charts"]').forEach(el=>el.style.display='none');
+  if(!can('dashboard.alerts'))
+    document.querySelectorAll('#dash-alert-strip,[data-hide="dash-alerts"]').forEach(el=>el.style.display='none');
+
+  // ──────────── المشتريات ────────────
+  if(!can('purchases.view_prices'))
+    document.querySelectorAll('.pur-price-col,[data-hide="pur-price"]').forEach(el=>el.style.display='none');
+  if(!can('suppliers.add'))
+    document.querySelectorAll('[onclick*="openSupplierModal"],[data-perm-hide="suppliers.add"]').forEach(el=>el.style.display='none');
+  if(!can('purchases.add'))
+    document.querySelectorAll('[onclick*="openPurchaseModal"],[data-perm-hide="purchases.add"]').forEach(el=>el.style.display='none');
+  if(!can('purchases.delete'))
+    document.querySelectorAll('[data-perm-hide="purchases.delete"],[onclick*="delPur"]').forEach(el=>el.style.display='none');
+  if(!can('suppliers.view_contact'))
+    document.querySelectorAll('.sup-contact-col,[data-hide="sup-contact"]').forEach(el=>el.style.display='none');
+
+  // ──────────── المخزون ────────────
+  if(!can('inventory.view_costs'))
+    document.querySelectorAll('.inv-cost-col,[data-hide="inv-cost"]').forEach(el=>el.style.display='none');
+  if(!can('inventory.add'))
+    document.querySelectorAll('[onclick*="openInvModal"],[data-perm-hide="inventory.add"]').forEach(el=>el.style.display='none');
+  if(!can('inventory.delete'))
+    document.querySelectorAll('[onclick*="delSelInv"],[data-perm-hide="inventory.delete"]').forEach(el=>el.style.display='none');
+  if(!can('inventory_report.delete'))
+    document.querySelectorAll('[onclick*="deleteInventoryCount"],[data-perm-hide="inventory_report.delete"]').forEach(el=>el.style.display='none');
+  if(!can('dept-withdrawal.add'))
+    document.querySelectorAll('#pg-dept-withdrawal .btn-gold,[data-perm-hide="dept-withdrawal.add"]').forEach(el=>el.style.display='none');
+  if(!can('dept-withdrawal.delete'))
+    document.querySelectorAll('[onclick*="delDeptWithdrawal"],[data-perm-hide="dept-withdrawal.delete"]').forEach(el=>el.style.display='none');
+  if(!can('dept-inventory.add'))
+    document.querySelectorAll('[onclick*="openDeptInventoryModal"],[data-perm-hide="dept-inventory.add"]').forEach(el=>el.style.display='none');
+  if(!can('fixed-assets.add'))
+    document.querySelectorAll('#pg-fixed-assets .btn-gold,[data-perm-hide="fixed-assets.add"]').forEach(el=>el.style.display='none');
+  if(!can('fixed-assets.delete'))
+    document.querySelectorAll('[onclick*="delFixedAsset"],[data-perm-hide="fixed-assets.delete"]').forEach(el=>el.style.display='none');
+  if(!can('spare-parts.add'))
+    document.querySelectorAll('#pg-spare-parts .btn-gold,[data-perm-hide="spare-parts.add"]').forEach(el=>el.style.display='none');
+
+  // ──────────── العملاء المحتملون ────────────
+  if(!can('prospects.view_contact'))
+    document.querySelectorAll('.prospect-phone-col,.prospect-location-col,[data-hide="prospect-contact"]').forEach(el=>el.style.display='none');
+  if(!can('prospects.add'))
+    document.querySelectorAll('[onclick*="openProspectModal()"],[data-perm-hide="prospects.add"]').forEach(el=>el.style.display='none');
+  if(!can('prospects.edit'))
+    document.querySelectorAll('[data-perm-hide="prospects.edit"],[onclick*="openProspectModal(\'edit"]').forEach(el=>el.style.display='none');
+  if(!can('prospects.delete'))
+    document.querySelectorAll('[onclick*="deleteProspect"],[data-perm-hide="prospects.delete"]').forEach(el=>el.style.display='none');
+  if(!can('prospects.activate'))
+    document.querySelectorAll('[onclick*="openActivateProspect"],[data-perm-hide="prospects.activate"]').forEach(el=>el.style.display='none');
+  if(!can('prospects.analytics'))
+    document.querySelectorAll('[onclick*="tab-analytics"],[data-perm-hide="prospects.analytics"]').forEach(el=>el.style.display='none');
+
+  // ──────────── الإشعارات ────────────
+  if(!can('notifications.view_log'))
+    document.querySelectorAll('[onclick*="ntab-log"],[onclick*="ntab-syslog"],[data-perm-hide="notifications.view_log"]').forEach(el=>el.style.display='none');
+  if(!can('notifications.settings'))
+    document.querySelectorAll('[onclick*="ntab-nset"],[data-perm-hide="notifications.settings"]').forEach(el=>el.style.display='none');
+
+  // ──────────── الملاحظات ────────────
+  if(!can('notes.delete_any') && !can('notes.delete'))
+    document.querySelectorAll('.note-del-btn,[data-perm-hide="notes.delete"]').forEach(el=>el.style.display='none');
+
+  // ──────────── البيانات الأساسية ────────────
+  // إخفاء تبويبات masterdata بناءً على الصلاحية
+  if(!can('masterdata.perms'))
+    document.querySelectorAll('[onclick*="md-perms"]').forEach(el=>el.style.display='none');
+  if(!can('masterdata.users'))
+    document.querySelectorAll('[onclick*="md-users"]').forEach(el=>el.style.display='none');
+  if(!can('masterdata.backup'))
+    document.querySelectorAll('[onclick*="md-backup"]').forEach(el=>el.style.display='none');
+  if(!can('masterdata.actlog'))
     document.querySelectorAll('[onclick*="md-actlog"]').forEach(el=>el.style.display='none');
-  }
+  if(!can('masterdata.notif_design'))
+    document.querySelectorAll('[onclick*="md-design"]').forEach(el=>el.style.display='none');
+  if(!can('masterdata.trsetup'))
+    document.querySelectorAll('[onclick*="md-trsetup"]').forEach(el=>el.style.display='none');
+  if(!can('masterdata.dept_map'))
+    document.querySelectorAll('[onclick*="md-dept-map"]').forEach(el=>el.style.display='none');
+  if(!can('masterdata.employees.view_salary'))
+    document.querySelectorAll('.emp-salary-col,[data-hide="emp-salary"]').forEach(el=>el.style.display='none');
+  if(!can('masterdata.clients.view_debt'))
+    document.querySelectorAll('.client-debt-col,[data-hide="client-debt"]').forEach(el=>el.style.display='none');
 }
 
 function renderPerms(){ swPermRole('supervisor', document.querySelector('.perm-role-tab.active')); }
@@ -5817,7 +6254,7 @@ function _propagateClientNameChange(clientId,oldName,newName){
     }
     return t;
   });
-  if(trChanged)DB.set('treasury',fixedTrs);
+  if(trChanged)_saveTreasury(fixedTrs);
   // تحديث اسم العميل داخل سجل المندوب المرتبط أيضاً
   const dgs=DB.get('delegates')||[];
   let dgChanged=false;
@@ -5830,6 +6267,7 @@ function _propagateClientNameChange(clientId,oldName,newName){
   if(dgChanged)DB.set('delegates',dgs);
 }
 function saveClient(){
+  if(!can('masterdata.clients')){toast('ليس لديك صلاحية إدارة العملاء','err');return;}
   const name=document.getElementById('cl-name').value.trim();if(!name){toast('يرجى إدخال الاسم','err');return}
   const isNew=!_clId;
   const existingClients=DB.get('clients')||[];
@@ -5971,7 +6409,9 @@ function copyNewClientWA(){
   closeOv('ov-new-client-wa');
 }
 function editSelClient(){const ids=getSel('clients-tb');if(ids.length!==1){toast('اختر عميلاً واحداً','err');return}openClientModal(ids[0])}
-function delSelClient(){const ids=getSel('clients-tb');if(!ids.length){toast('اختر عميلاً أولاً','err');return}
+function delSelClient(){
+  if(!can('masterdata.clients')){toast('ليس لديك صلاحية حذف العملاء','err');return;}
+  const ids=getSel('clients-tb');if(!ids.length){toast('اختر عميلاً أولاً','err');return}
 // Get the exact client objects to delete (by ID)
 const toDelete=(DB.get('clients')||[]).filter(x=>ids.includes(x.id));
 const names=toDelete.map(x=>x.name);
@@ -6135,6 +6575,7 @@ function _propagateProductNameChange(productId,oldName,newName){
   });
 }
 function savePrice(){
+  if(!can('masterdata.prices')){toast('ليس لديك صلاحية إدارة الأسعار','err');return;}
   const name=document.getElementById('pr-name').value.trim();const price=+document.getElementById('pr-price').value;
   if(!name){toast('يرجى إدخال الاسم','err');return}if(!price){toast('يرجى إدخال السعر','err');return}
   const existingPrices=DB.get('prices')||[];
@@ -6213,6 +6654,7 @@ function openTechModal(editId=null){
   openOv('ov-tech');
 }
 function saveTech(){
+  if(!can('masterdata.tech')){toast('ليس لديك صلاحية إدارة الفنيين','err');return;}
   const name=document.getElementById('tc-name').value.trim();if(!name){toast('يرجى إدخال الاسم','err');return}
   // FIX #TECH-STAGE-OPTIONAL: السعر صفر لمرحلة معيّنة يعني أن هذا الفني لا يشتغل هذه
   // المرحلة أصلاً (مش خطأ يحتاج تنبيه) — يكفي أن يكون عنده سعر فعلي (>0) في مرحلة واحدة
@@ -6273,6 +6715,7 @@ function renderDgDocs(){
   el.innerHTML=_dgDocs.map((d,i)=>`<div class="doc-item">📄 ${d.name}<div style="display:flex;gap:6px"><a href="${d.data}" download="${d.name}">⬇️</a><span style="cursor:pointer;color:var(--red)" onclick="_dgDocs.splice(${i},1);renderDgDocs()">🗑️</span></div></div>`).join('');
 }
 function saveDelegate(){
+  if(!can('masterdata.delegates')){toast('ليس لديك صلاحية إدارة المناديب','err');return;}
   const name=document.getElementById('dg-name').value.trim();if(!name){toast('يرجى إدخال الاسم','err');return}
   // الحفاظ على قائمة العملاء المرتبطين عند التعديل
   const existingDelegate = _dgId ? (DB.get('delegates')||[]).find(x=>x.id===_dgId) : null;
@@ -6691,6 +7134,7 @@ function openUserModal(u){
   openOv('ov-user');
 }
 async function saveUser(){
+  if(!can('masterdata.users') && window._currentUser?.role!=='admin'){toast('ليس لديك صلاحية إدارة المستخدمين','err');return;}
   const name=document.getElementById('us-name').value.trim();
   const email=(document.getElementById('us-email')?.value||'').trim().toLowerCase();
   const pass=document.getElementById('us-pass').value;
@@ -6779,6 +7223,7 @@ function openInvModal(editId=null){
   openOv('ov-inv');
 }
 function saveInv(){
+  if(!can('inventory.add')){toast('ليس لديك صلاحية إضافة أو تعديل المخزون','err');return;}
   const name=document.getElementById('iv-name').value.trim();if(!name){toast('يرجى إدخال الاسم','err');return}
   const type=document.getElementById('iv-type').value;if(!type){toast('يرجى اختيار نوع الصنف','err');return}
   const qty=+document.getElementById('iv-qty').value||0;
@@ -6934,7 +7379,14 @@ function saveDafter(){
   closeOv('ov-dafter');renderDafter();updateBadges();toast(_dfId?'تم التعديل ✅':'تمت الإضافة ✅');
 }
 function renderDafter(){
-  const list=DB.get('dafter')||[];
+  // Layer 3: فلترة البيانات — المندوب/الموظف بصلاحية "يرى حالاته فقط"
+  const _myName = window._currentUser?.name;
+  const _ownOnly = can('dafter.view_own_only') && !can('dafter.view') ? false : // view بدون own_only = يرى الكل
+                   (!can('dafter.view') ? true : can('dafter.view_own_only') && !can('dafter.edit'));
+  const rawList=DB.get('dafter')||[];
+  const list = (can('dafter.view_own_only') && _myName && !window._currentUser?.role?.includes('admin') && !['supervisor','accountant'].includes(window._currentUser?.role))
+    ? rawList.filter(r=>!r.createdBy || r.createdBy===_myName)
+    : rawList;
   const cntEl=document.getElementById('dafter-cnt');if(cntEl)cntEl.textContent=list.length+' حالة';
   // FIX #DAFTER-SHOW: مسح فلاتر التاريخ والبحث حتى تظهر الحالات الجديدة دائماً
   const srch=document.querySelector('#pg-dafter .search-box input');if(srch)srch.value='';
@@ -6976,6 +7428,13 @@ function delSelDafter(){
   const ids=getSel('dafter-tb');if(!ids.length){toast('اختر حالة أولاً','err');return}
   const all=DB.get('dafter')||[];
   const rows=all.filter(x=>ids.includes(x.id));
+  // Layer 2: التحقق من صلاحية الحذف
+  if(!can('dafter.delete') && !can('dafter.delete_own')){toast('ليس لديك صلاحية الحذف','err');return;}
+  if(!can('dafter.delete') && can('dafter.delete_own')){
+    const myName=window._currentUser?.name||window._currentUser?.uname;
+    const forbidden=rows.filter(r=>r.createdBy && r.createdBy!==myName);
+    if(forbidden.length){toast('يمكنك حذف حالاتك فقط ('+forbidden.length+' حالة غير مسموح بها)','err');return;}
+  }
   // تحقق فعلي: صلاحية كاملة، أو صلاحية "حذف حالاته فقط" وكل السجلات المحددة من إنشائه
   const hasFullPerm=can('dafter.delete');
   const myName=window._currentUser?.name;
@@ -7227,6 +7686,9 @@ function renderPage2(pg){({dafter:renderDafter,proof:renderProof})[pg]?.()}
 // ARCHIVE
 let _arcF='all';
 function renderArchive(bypassLimit){
+  // Layer 3: المندوب يرى أرشيف حالاته فقط
+  const _arcMyName = window._currentUser?.name;
+  const _arcOwnOnly = can('archive.view_own_only') && _arcMyName && !['admin','supervisor','accountant'].includes(window._currentUser?.role);
   // لا نمسح خانة البحث هنا — filterArchiveCombined مسؤولة عن إدارة البحث
   // فلتر فئة نشط (غير "الكل") يتطلب تجاوز الحد كي يعمل الفلتر على كل البيانات لا الجزء المعروض فقط
   if(_catFilter.archive&&_catFilter.archive!=='all')bypassLimit=true;
@@ -7282,6 +7744,7 @@ function returnToProof(){
 // FIX #30: sendInvNotif was defined twice — first definition removed, second definition (line ~3343) is kept
 let _settleClientKey=null;
 function openSettle(){
+  if(!can('archive.settle')){toast('ليس لديك صلاحية تسوية المديونيات','err');return;}
   const ids=getSel('archive-tb');if(ids.length!==1){toast('اختر فاتورة واحدة لتحديد العميل','err');return}
   const r=(DB.get('archive')||[]).find(x=>x.id===ids[0]);
   if(!r){toast('لم يتم إيجاد الفاتورة','err');return}
@@ -7338,13 +7801,22 @@ function renderTreasury(){
   if(!list.length){if(tb)tb.innerHTML='';if(em)em.style.display='block';return}
   if(em)em.style.display='none';
   const bxL={cash:ts.cash,net:ts.net,bank:ts.bank,...Object.fromEntries(extraBoxes.map(b=>[b.id,(b.icon||'💼')+' '+b.name]))};
-  const accTypeLabel={client:'👤 عميل',supplier:'🏭 مورد',archive:'📋 أرشيف',purchase:'🛒 شراء',other:'📝 أخرى'};
-  tb.innerHTML=[...list].sort((a,b)=>b.createdAt-a.createdAt).map(t=>`<tr data-id="${t.id}">
+  const accTypeLabel={client:'👤 عميل',supplier:'🏭 مورد',archive:'📋 أرشيف',purchase:'🛒 شراء',employee:'👷 موظف',other:'📝 أخرى'};
+  // FIX: ترتيب آمن — يستخدم createdAt أولاً، ثم الـ date، ثم num كاحتياط
+  const sorted=[...list].sort((a,b)=>{
+    const ca=a.createdAt||0, cb=b.createdAt||0;
+    if(ca!==cb) return cb-ca;
+    // احتياط: لو createdAt متشابه أو صفر، رتب بالتاريخ ثم الرقم
+    const da=(a.date||''), db=(b.date||'');
+    if(da!==db) return db.localeCompare(da);
+    return (+b.num||0)-(+a.num||0);
+  });
+  tb.innerHTML=sorted.map(t=>`<tr data-id="${t.id}">
     <td class="chk-col"><input type="checkbox" data-id="${t.id}" class="row-chk" data-tb="tr-tb"></td>
     <td>T-${esc(String(t.num||''))}</td><td>${esc(t.date||'-')}</td>
     <td>${t.type==='in'?badge('مقبوضات','bg-green'):badge('مدفوعات','bg-red')}</td>
     <td>${esc(bxL[t.box]||t.box)}</td>
-    <td><small style="color:var(--text3)">${esc(accTypeLabel[t.accType]||'')}</small><br>${esc(t.accName||'-')}</td>
+    <td><small style="color:var(--text3)">${esc(accTypeLabel[t.accType]||t.accType||'')}</small><br>${esc(t.accName||'-')}${t.isSalary?` <span style="font-size:9px;background:rgba(168,85,247,.15);color:#c084fc;border-radius:4px;padding:1px 5px">راتب ${t.salaryMonth||''}</span>`:''}</td>
     <td style="color:${t.type==='in'?'var(--green)':'var(--red)'};font-weight:700">${t.type==='in'?'+':'-'}${fmt(t.amount)}</td>
     <td>${esc(t.receiver||'-')}</td><td>${esc(t.notes||'-')}</td>
     <td style="display:flex;gap:4px;flex-wrap:nowrap">
@@ -7840,7 +8312,7 @@ function saveTrReversal(){
   const origIdx=list.findIndex(t=>t.id===_trReverseId);
   if(origIdx>=0) list[origIdx].reversedBy=revId;
   list.push(reversal);
-  DB.set('treasury',list);
+  _saveTreasury(list);
   // ===== تتبع: تسجيل التسوية العكسية (إلغاء/تصحيح حركة مالية) =====
   logActivity('treasury.reverse',{
     client:orig.accName,
@@ -7898,6 +8370,7 @@ function onTrfChange(){
 }
 
 function saveTrTransfer(){
+  if(!can('treasury.transfer')){toast('ليس لديك صلاحية التحويل بين الخزائن','err');return;}
   const fromBox=document.getElementById('trf-from').value;
   const toBox=document.getElementById('trf-to').value;
   const amt=+document.getElementById('trf-amount').value;
@@ -7916,7 +8389,7 @@ function saveTrTransfer(){
   list.push({id:'t_trf_out_'+Date.now(),num:nid('tr'),type:'out',box:fromBox,accType:'other',accName:'تحويل داخلي → '+bxL[toBox],linkedId:transferRef,linkedType:'transfer',amount:amt,receiver:bxL[toBox],notes:noteText,date:trfDate,isTransfer:true,transferRef,createdAt:Date.now()});
   // حركة 2: مقبوضات في الخزنة الهدف
   list.push({id:'t_trf_in_'+Date.now(),num:nid('tr'),type:'in',box:toBox,accType:'other',accName:'تحويل داخلي ← '+bxL[fromBox],linkedId:transferRef,linkedType:'transfer',amount:amt,receiver:bxL[toBox],notes:noteText,date:trfDate,isTransfer:true,transferRef,createdAt:Date.now()+1});
-  DB.set('treasury',list);
+  _saveTreasury(list);
   // ===== تتبع: تسجيل التحويل الداخلي بين الخزن =====
   logActivity('treasury.transfer',{note:'تحويل '+fmt(amt)+' '+(ts.cur||'ج.م')+' من '+bxL[fromBox]+' إلى '+bxL[toBox]+(notes?' | '+notes:'')});
   closeOv('ov-tr-transfer');
@@ -8809,15 +9282,19 @@ function renderDash(){
   const lateDafter=d.filter(r=>daysDiff(r.date||r.createdAt?.slice?.(0,10))>=cfg.dafterLate).length;
   const lateProof=pf.filter(r=>daysDiff(r.date||r.createdAt?.slice?.(0,10))>=cfg.proofLate).length;
 
+  // Layer 3: إخفاء البيانات المالية من داخل الـ render نفسه
+  const _showStats  = can('dashboard.stats');
+  const _showCounts = can('dashboard.counts');
+  const _hiddenVal  = `<span style="filter:blur(5px);user-select:none;pointer-events:none">●●●●</span>`;
   document.getElementById('dash-stats').innerHTML=`
-    <div class="stat" style="--c:var(--gold)"><label>📒 الدفتر</label><div class="val">${d.length}</div><div class="sub">قيد التنفيذ${lateDafter?` <span style="color:var(--orange)">⚠️${lateDafter}</span>`:''}
-</div></div>
-    <div class="stat" style="--c:var(--orange)"><label>🔬 البروفه</label><div class="val">${pf.length}</div><div class="sub">جاهزة${lateProof?` <span style="color:var(--orange)">⚠️${lateProof}</span>`:''}
-</div></div>
-    <div class="stat" style="--c:var(--blue)"><label>📁 الأرشيف</label><div class="val">${arcF.length}</div><div class="sub">في الفترة</div></div>
-    <div class="stat" style="--c:var(--green)"><label>💰 الإيرادات</label><div class="val">${fmt(tRev)}</div><div class="sub">${c} — المحصّل ${fmt(tCol)}</div></div>
-    <div class="stat" style="--c:var(--green)"><label>🏦 رصيد الخزنة</label><div class="val">${fmt(bI-bO)}</div><div class="sub">${c}</div></div>
-    <div class="stat" style="--c:var(--red)"><label>💳 المديونيات</label><div class="val">${fmt(debts)}</div><div class="sub">${c}</div></div>`;
+    ${_showCounts?`<div class="stat" style="--c:var(--gold)"><label>📒 الدفتر</label><div class="val">${d.length}</div><div class="sub">قيد التنفيذ${lateDafter?` <span style="color:var(--orange)">⚠️${lateDafter}</span>`:''}</div></div>`:''}
+    ${_showCounts?`<div class="stat" style="--c:var(--orange)"><label>🔬 البروفه</label><div class="val">${pf.length}</div><div class="sub">جاهزة${lateProof?` <span style="color:var(--orange)">⚠️${lateProof}</span>`:''}</div></div>`:''}
+    ${_showCounts?`<div class="stat" style="--c:var(--blue)"><label>📁 الأرشيف</label><div class="val">${arcF.length}</div><div class="sub">في الفترة</div></div>`:''}
+    ${_showStats?`<div class="stat stat-financial" style="--c:var(--green)"><label>💰 الإيرادات</label><div class="val">${fmt(tRev)}</div><div class="sub">${c} — المحصّل ${fmt(tCol)}</div></div>`:''}
+    ${_showStats?`<div class="stat stat-financial" style="--c:var(--green)"><label>🏦 رصيد الخزنة</label><div class="val">${fmt(bI-bO)}</div><div class="sub">${c}</div></div>`:''}
+    ${_showStats?`<div class="stat stat-financial" style="--c:var(--red)"><label>💳 المديونيات</label><div class="val">${fmt(debts)}</div><div class="sub">${c}</div></div>`:''}
+    ${(!_showStats&&!_showCounts)?`<div style="padding:20px;text-align:center;color:var(--text3);font-size:13px">🔒 ليس لديك صلاحية رؤية الإحصاءات</div>`:''}
+  `;
 
   // ---- Alert strip ----
   const alerts=computeAlerts();
@@ -9393,7 +9870,7 @@ function migrateTreasuryClientId(){
     }
     return t;
   });
-  if(changed)DB.set('treasury',fixed);
+  if(changed)_saveTreasury(fixed);
   if(unresolved.length){
     console.warn('⚠️ تعذر ربط سجلات treasury بعميل (لا يوجد اسم مطابق):', unresolved);
   }
@@ -10103,7 +10580,7 @@ function copyInvMsg(){
 // ---- FINANCIAL NOTIF FROM TREASURY ----
 // Fixed saveTr - enhanced with archive/purchase/supplier/other linking
 function saveTr(){
-  if(!can('treasury.add')){toast('ليس لديك صلاحية إضافة معاملات','err');return;}
+  if(!can('treasury.add') && !can('treasury.collect')){toast('ليس لديك صلاحية إضافة حركات مالية','err');return;}
   const amt=+document.getElementById('tr-amount').value;
   if(!amt||amt<=0){toast('يرجى إدخال مبلغ صحيح','err');return;}
   const accType=document.getElementById('tr-acc-type').value;
@@ -10166,10 +10643,8 @@ function saveTr(){
     date:document.getElementById('tr-date')?.value||today(),
     createdAt:Date.now()
   });
-  DB.set('treasury',list);
+  _saveTreasury(list);
   // FIX #SAVTR-FIREBASE: منع realtime listener من استبدال البيانات الجديدة قبل renderTreasury
-  window._lastLocalWrite=Date.now();
-  if(_fbRTDB)try{_fbRTDB.ref('data/shared/treasury').set(list).catch(e=>console.warn('tr write:',e.code));}catch(e){}
   // ===== تتبع: تسجيل إضافة حركة مالية (قبض/صرف) — الأهم لمنع تغيير الحسابات دون علم =====
   logActivity('treasury.add',{
     client:accName,
@@ -11464,12 +11939,28 @@ function swNotifTab(secId,el){
 
 
 function swMaster(secId,el){
-  // فحص صلاحية التبويب
-  const _mdPermMap={'md-lab':'masterdata.lab','md-clients':'masterdata.clients','md-prices':'masterdata.prices',
-    'md-tech':'masterdata.tech','md-delegates':'masterdata.delegates','md-employees':'masterdata.employees',
-    'md-users':'masterdata.users','md-perms':'masterdata.perms','md-backup':'masterdata.backup'};
+  // فحص صلاحية التبويب — خريطة شاملة لكل تبويبات البيانات الأساسية
+  const _mdPermMap={
+    'md-lab':       'masterdata.lab',
+    'md-clients':   'masterdata.clients',
+    'md-prices':    'masterdata.prices',
+    'md-tech':      'masterdata.tech',
+    'md-delegates': 'masterdata.delegates',
+    'md-employees': 'masterdata.employees',
+    'md-users':     'masterdata.users',
+    'md-perms':     'masterdata.perms',
+    'md-backup':    'masterdata.backup',
+    'md-actlog':    'masterdata.actlog',
+    'md-trsetup':   'masterdata.trsetup',
+    'md-notif-sets':'masterdata.notif_design',
+    'md-dept-map':  'masterdata.dept_map',
+    'md-inv':       'masterdata.inventory_md',
+  };
   const tabPerm = _mdPermMap[secId];
-  if(tabPerm && !can(tabPerm)){toast('ليس لديك صلاحية لهذا القسم','err');return;}
+  if(tabPerm && !can(tabPerm) && window._currentUser?.role!=='admin'){
+    toast('ليس لديك صلاحية الوصول لهذا القسم 🔒','err');
+    return;
+  }
   document.querySelectorAll('#pg-masterdata .ms').forEach(s=>s.classList.remove('on'));
   document.querySelectorAll('.master-tab').forEach(t=>t.classList.remove('on'));
   document.getElementById(secId)?.classList.add('on');
@@ -11484,11 +11975,27 @@ function swMaster(secId,el){
   };
   fns[secId]?.();
 }
-// Alias for navigation handler - activates first master tab
+// Alias for navigation handler - activates first permitted master tab
 function renderMasterData(){
-  const firstTab=document.querySelector('.master-tab');
-  const firstSec=firstTab?.dataset?.sec||'md-lab';
-  swMaster(firstSec,firstTab);
+  // ابحث عن أول تبويب مسموح بصلاحيته
+  const tabs = document.querySelectorAll('.master-tab');
+  for(const tab of tabs){
+    const secId = tab.dataset?.sec;
+    const _mdPermMap={
+      'md-lab':'masterdata.lab','md-clients':'masterdata.clients','md-prices':'masterdata.prices',
+      'md-tech':'masterdata.tech','md-delegates':'masterdata.delegates','md-employees':'masterdata.employees',
+      'md-users':'masterdata.users','md-perms':'masterdata.perms','md-backup':'masterdata.backup',
+      'md-actlog':'masterdata.actlog','md-trsetup':'masterdata.trsetup','md-notif-sets':'masterdata.notif_design',
+      'md-dept-map':'masterdata.dept_map','md-inv':'masterdata.inventory_md',
+    };
+    const perm = _mdPermMap[secId];
+    if(!perm || can(perm) || window._currentUser?.role==='admin'){
+      swMaster(secId, tab);
+      return;
+    }
+  }
+  // لا يوجد تبويب مسموح به
+  document.getElementById('pg-masterdata') && (document.getElementById('pg-masterdata').innerHTML='<div style="padding:40px;text-align:center;color:var(--text3)">🔒 ليس لديك صلاحية الوصول لأي قسم من البيانات الأساسية</div>');
 }
 
 // preview sample
@@ -11957,6 +12464,7 @@ function openSupplierModal(editId=null){
   openOv('ov-supplier');
 }
 function saveSupplier(){
+  if(!can('suppliers.add')){toast('ليس لديك صلاحية إضافة أو تعديل الموردين','err');return;}
   const name=document.getElementById('sup-name').value.trim();
   if(!name){toast('أدخل اسم المورد','err');return;}
   const sups=DB.get('suppliers')||[];
@@ -11978,7 +12486,9 @@ function saveSupplier(){
   closeOv('ov-supplier');renderSuppliers();fillSupSelects();toast(_editSupId?'تم التعديل':'تمت الإضافة');
 }
 function editSelSup(){const ids=getSel('suppliers-tb');if(ids.length!==1){toast('اختر مورداً واحداً','err');return;}openSupplierModal(ids[0]);}
-function delSelSup(){const ids=getSel('suppliers-tb');if(!ids.length){toast('اختر موردين أولاً','err');return;}
+function delSelSup(){
+  if(!can('suppliers.delete')){toast('ليس لديك صلاحية حذف الموردين','err');return;}
+  const ids=getSel('suppliers-tb');if(!ids.length){toast('اختر موردين أولاً','err');return;}
 const toDelete=(DB.get('suppliers')||[]).filter(x=>ids.includes(x.id));
 const supNames=toDelete.map(x=>x.name);
 const purCount=(DB.get('purchases')||[]).filter(x=>ids.includes(x.supId)).length;
@@ -12161,6 +12671,7 @@ function updateSupDebt(){
 
 
 function savePurchase(){
+  if(!can('purchases.add')){toast('ليس لديك صلاحية إضافة فواتير الشراء','err');return;}
   const supId=document.getElementById('pur-supplier').value;
   if(!supId){toast('اختر المورد','err');return;}
   if(_purItems.length===0){toast('أضف صنفاً واحداً على الأقل','err');return;}
@@ -12500,6 +13011,7 @@ function cancelInventoryCount(){
 }
 
 function saveInventoryCount(){
+  if(!can('inventory_report.view')){toast('ليس لديك صلاحية إجراء الجرد','err');return;}
   const from=document.getElementById('irc-from')?.value;
   const to=document.getElementById('irc-to')?.value;
   const notes=document.getElementById('irc-notes')?.value.trim()||'';
@@ -12619,6 +13131,7 @@ function renderInventoryHistory(){
 }
 
 function deleteInventoryCount(id){
+  if(!can('inventory_report.delete')){toast('ليس لديك صلاحية حذف سجلات الجرد','err');return;}
   if(!confirm('حذف هذا الجرد؟ لن يُعاد المخزون تلقائياً')) return;
   const list=(DB.get('inventory_reports')||[]).filter(r=>r.id!==id);
   DB.set('inventory_reports',list);
@@ -13195,6 +13708,7 @@ function openEmpModal(editId){
   openOv('ov-employee');
 }
 function saveEmployee(){
+  if(!can('masterdata.employees')){toast('ليس لديك صلاحية إدارة الموظفين','err');return;}
   const nameEl=document.getElementById('emp-name');
   const name=nameEl?nameEl.value.trim():'';
   if(!name){toast('يرجى إدخال الاسم','err');return;}
@@ -13266,6 +13780,7 @@ function renderEmployees(){
   }
 }
 function deleteEmployee(id){
+  if(!can('masterdata.employees')){toast('ليس لديك صلاحية حذف الموظفين','err');return;}
   confirm2('حذف موظف','هل تريد حذف هذا الموظف؟',()=>{
     DB.set('employees',(DB.get('employees')||[]).filter(x=>x.id!==id));
     renderEmployees();toast('تم الحذف');
@@ -13340,7 +13855,7 @@ function saveAttendance(){
       notes:'سلفة — '+month+(reason?' — '+reason:''),
       date:today(),createdAt:Date.now(),isAdvance:true,advAttId:attId
     });
-    DB.set('treasury',trs);
+    _saveTreasury(trs);
     toast('✅ تم تسجيل السلفة وخصمها من الخزنة النقدية');
   } else {
     toast('تم الحفظ ✅');
@@ -13356,7 +13871,7 @@ function deleteAttendance(id){
     const trs=DB.get('treasury')||[];
     const linked=trs.find(t=>t.advAttId===id);
     if(linked){
-      DB.set('treasury',trs.filter(t=>t.id!==linked.id));
+      _saveTreasury(trs.filter(t=>t.id!==linked.id));
     }
   }
   const att=(DB.get('attendance')||[]).filter(a=>a.id!==id);
@@ -13701,7 +14216,7 @@ function paySalariesFromReport(){
         });
         paidCount++;paidTotal+=net;
       });
-      DB.set('treasury',trs);
+      _saveTreasury(trs);
       renderSalaryReport();
       if(document.getElementById('pg-treasury')?.classList.contains('active'))renderTreasury();
       toast(`✅ تم صرف رواتب ${paidCount} موظف — إجمالي ${fmt(paidTotal)} ${c}`);
@@ -13776,7 +14291,8 @@ function paySingleSalary(empId,ym,net,personType,personName){
       notes:`راتب ${ym}${personType!=='employee'?' ('+(personType==='tech'?'فني':'مندوب')+' — مُرحَّل)':''}${advances>0?' (بعد خصم سلف '+fmt(advances)+' '+c+')':''}`,
       date:today(),createdAt:Date.now(),isSalary:true,salaryMonth:ym
     });
-    DB.set('treasury',trs);
+    _saveTreasury(trs);
+    // FIX: كتابة مباشرة لـ Firebase لضمان الظهور الفوري في الخزنة
     renderSalaryReport();
     if(document.getElementById('pg-treasury')?.classList.contains('active'))renderTreasury();
     toast(`✅ تم صرف راتب ${name} — ${fmt(net)} ${c}`);
@@ -14971,6 +15487,7 @@ function selectNoteColor(color){
 }
 
 function saveNote(){
+  if(!can('notes.add')){toast('ليس لديك صلاحية إضافة الملاحظات','err');return;}
   const title=document.getElementById('note-title').value.trim();
   if(!title){toast('أدخل عنوان الملاحظة','err');return;}
   const sel=document.getElementById('note-client');
@@ -15097,7 +15614,15 @@ function viewNote(id){
 }
 
 function deleteNote(id){
-  if(!can('notes.delete')){toast('ليس لديك صلاحية لحذف الملاحظات','err');return;}
+  if(!can('notes.delete_any') && !can('notes.delete')){toast('ليس لديك صلاحية لحذف الملاحظات','err');return;}
+  // التحقق من الملكية إذا كان لديه صلاحية حذف ملاحظاته فقط
+  if(!can('notes.delete_any')){
+    const note=(DB.get('notes')||[]).find(n=>n.id===id);
+    const myName=window._currentUser?.name||window._currentUser?.uname;
+    if(note && note.author && myName && note.author!==myName){
+      toast('يمكنك حذف ملاحظاتك فقط','err');return;
+    }
+  }
   confirm2('حذف الملاحظة','هل أنت متأكد من حذف هذه الملاحظة؟',()=>{
     const notes=(DB.get('notes')||[]).filter(n=>n.id!==id);
     DB.set('notes',notes);
@@ -15647,82 +16172,16 @@ function applySession(sess){
   const av=el('top-avatar');if(av)av.textContent=(sess.name||sess.email||'م')[0];
 
   if(sess.role && sess.role!=='admin'){
-    // ── صلاحيات الصفحات (القائمة الجانبية) ──
-    const legacyPerms=DB.get('perms')||{};
-    const advPerms=DB.get('perms_advanced')||{};
-    const advRolePerms=advPerms[sess.role]||[];
-    const legacyAllowed=legacyPerms[sess.role]||[];
-
-    // لو عنده صلاحيات في النظام الجديد استخدمها، وإلا أظهر كل حاجة
-    const hasAdvPerms = advRolePerms.length > 0;
-
+    // ── Layer 1: إخفاء عناصر nav بناءً على PAGE_PERM_MAP ──
     document.querySelectorAll('[data-page]').forEach(e=>{
-      const pg=e.dataset.page;
-      let show = true;
-      if(hasAdvPerms){
-        // استخدم النظام الجديد — اظهر الصفحة لو عنده أي صلاحية فيها
-        const pagePrefix = pg + '.';
-        show = advRolePerms.some(p=>p===pg||p.startsWith(pagePrefix));
-      } else if(legacyAllowed.length > 0){
-        // استخدم النظام القديم
-        show = legacyAllowed.includes(pg)||(pg==='dashboard');
-      }
-      // لو مفيش صلاحيات محددة خالص — أظهر كل حاجة (افتراضي آمن)
-      e.style.display=show?'':'none';
+      const pg = e.dataset.page;
+      const req = PAGE_PERM_MAP[pg];
+      // إذا لم تكن الصفحة في الخريطة — اظهرها دائماً
+      e.style.display = (!req || can(req)) ? '' : 'none';
     });
 
-    // ── إخفاء masterdata بناءً على الصلاحيات ──
-    if(hasAdvPerms && !can('masterdata.view')&&!['admin','supervisor'].includes(sess.role)){
-      document.querySelectorAll('[data-page="masterdata"]').forEach(e=>e.style.display='none');
-    }
-    // ── إخفاء prospects بناءً على الصلاحيات ──
-    if(!can('prospects.view')){
-      document.querySelectorAll('[data-page="prospects"]').forEach(e=>e.style.display='none');
-    }
-    // ── إخفاء صفحات المخزن الجديدة ──
-    if(hasAdvPerms){
-      ['dept-withdrawal','dept-inventory','fixed-assets','spare-parts'].forEach(pg=>{
-        const reqP=PAGE_PERM_MAP[pg];
-        if(reqP&&!can(reqP)) document.querySelectorAll('[data-page="'+pg+'"]').forEach(e=>e.style.display='none');
-      });
-    }
-
-    // ── أزرار الخزنة ──
-    setTimeout(()=>{
-      if(!can('treasury.add')){
-        document.querySelectorAll('#pg-treasury .btn-gold').forEach(b=>b.style.display='none');
-      }
-      // ── الأسعار في الدفتر ──
-      if(!can('dafter.price')){
-        document.querySelectorAll('.df-price-col, [data-hide="price"]').forEach(e=>e.style.display='none');
-        const priceEl=document.getElementById('df-price');if(priceEl)priceEl.closest('.fg')&&(priceEl.closest('.fg').style.display='none');
-      }
-      // ── حذف في الأرشيف ──
-      if(!can('archive.delete')){
-        document.querySelectorAll('[data-perm-hide="archive.delete"]').forEach(e=>e.style.display='none');
-      }
-      // ── أزرار الأرشيف ──
-      if(!can('archive.settle')){
-        document.querySelectorAll('[data-perm-hide="archive.settle"]').forEach(e=>e.style.display='none');
-      }
-      // ── الإحصاءات المالية في الداشبورد ──
-      if(!can('dashboard.stats')){
-        document.querySelectorAll('.stat-financial').forEach(e=>e.style.display='none');
-      }
-      // ── صرف الأقسام ──
-      if(!can('dept-withdrawal.add')){
-        document.querySelectorAll('#pg-dept-withdrawal .btn-gold').forEach(b=>b.style.display='none');
-      }
-      // ── الأصول الثابتة ──
-      if(!can('fixed-assets.add')){
-        document.querySelectorAll('#pg-fixed-assets .btn-gold').forEach(b=>b.style.display='none');
-      }
-      // ── قطع الغيار ──
-      if(!can('spare-parts.add')){
-        document.querySelectorAll('#pg-spare-parts .btn-gold').forEach(b=>b.style.display='none');
-      }
-      applyActionPerms();
-    },400);
+    // ── Layer 2: تطبيق صلاحيات الأزرار والبيانات بعد 350ms (بعد DOM) ──
+    setTimeout(()=>{ applyActionPerms(); }, 350);
   }
 
   // ── عرض بادج الدور ──
@@ -15773,6 +16232,7 @@ function getAllData(){
 }
 
 function exportBackup(){
+  if(!can('masterdata.backup') && window._currentUser?.role!=='admin'){toast('ليس لديك صلاحية تصدير النسخة الاحتياطية','err');return;}
   const data=getAllData();
   const json=JSON.stringify(data,null,2);
   const blob=new Blob([json],{type:'application/json'});
@@ -15785,6 +16245,7 @@ function exportBackup(){
 }
 
 function importBackup(input){
+  if(!can('masterdata.backup') && window._currentUser?.role!=='admin'){toast('ليس لديك صلاحية استيراد النسخة الاحتياطية','err');return;}
   const f=input.files[0];if(!f)return;
   const r=new FileReader();
   r.onload=e=>{
@@ -15971,105 +16432,303 @@ function renderBackup(){
   </div>
 </div>
 
-<button id="ai-fab" onclick="toggleAI()" title="المساعد الذكي">
-  <span class="ai-pulse"></span>🤖
+<button id="ai-fab" onclick="toggleAI()" title="المساعد الذكي 🤖">
+  <span class="ai-pulse"></span>
+  <span class="ai-fab-inner">🦷</span>
+  <span class="ai-badge" id="ai-alert-badge">!</span>
 </button>
 
 <div id="ai-panel">
+  <!-- Header -->
   <div class="ai-head">
-    <div class="ai-head-icon">✨</div>
+    <div class="ai-head-icon">🦷</div>
     <div class="ai-head-info">
-      <strong>المساعد الذكي</strong>
-      <small id="ai-status-txt">جاهز للمساعدة</small>
+      <strong>مساعد المختبر الذكي</strong>
+      <small id="ai-status-txt">● جاهز للمساعدة</small>
+    </div>
+    <div class="ai-head-actions">
+      <button class="ai-head-btn" onclick="generateDailyReport()" title="تقرير يومي">📊</button>
+      <button class="ai-head-btn" onclick="buildAISmartAlerts()" title="التنبيهات">🔔</button>
+      <button class="ai-head-btn" onclick="resetAIChat()" title="محادثة جديدة">🔄</button>
     </div>
     <div class="ai-close" onclick="toggleAI()">✕</div>
   </div>
 
-  <!-- API Key Setup (shown if no key) -->
+  <!-- Tabs -->
+  <div class="ai-tabs">
+    <div class="ai-tab on" onclick="switchAITab('chat',this)">💬 محادثة</div>
+    <div class="ai-tab" onclick="switchAITab('daily',this)">📊 تقرير يومي</div>
+    <div class="ai-tab" onclick="switchAITab('alerts',this)">🔔 تنبيهات</div>
+  </div>
+
   <div id="ai-setup" class="ai-api-setup" style="display:none">
-    <div style="font-size:28px;margin-bottom:8px">🔑</div>
-    <p>لتفعيل المساعد الذكي، أدخل مفتاح Anthropic API الخاص بك.<br><small style="color:var(--text3)">يُحفظ محلياً فقط على جهازك</small></p>
-    <input type="password" id="ai-key-input" placeholder="sk-ant-api03-..." autocomplete="off">
-    <button class="btn btn-purple" style="width:100%;justify-content:center" onclick="saveAIKey()">✅ حفظ وتفعيل</button>
-    <div style="margin-top:10px;font-size:10px;color:var(--text3)">
-      احصل على مفتاح مجاني من <a href="https://console.anthropic.com" target="_blank" style="color:#818cf8">console.anthropic.com</a>
+    <div style="font-size:36px;margin-bottom:10px">🔑</div>
+    <p>أدخل مفتاح <strong>OpenRouter</strong> المجاني<br>
+    <small style="color:var(--text3)">مجاني — يبدأ بـ sk-or — يُحفظ على جهازك فقط</small></p>
+    <input type="password" id="ai-key-input" placeholder="sk-or-v1-..." autocomplete="off">
+    <button class="btn btn-purple" style="width:100%;justify-content:center;margin-bottom:8px" onclick="saveAIKey()">✅ تفعيل المساعد</button>
+    <div style="font-size:10px;color:var(--text3)">
+      احصل على مفتاح مجاني من
+      <a href="https://openrouter.ai" target="_blank" style="color:#818cf8">openrouter.ai</a>
     </div>
   </div>
 
-  <!-- Chat Interface -->
-  <div id="ai-chat" style="display:flex;flex-direction:column;flex:1">
+  <!-- Tab: Chat -->
+  <div id="ai-tab-chat" style="display:flex;flex-direction:column;flex:1">
     <div class="ai-suggestions" id="ai-sugs">
       <span class="ai-sug" onclick="aiAsk('كم حالة لديّ اليوم؟')">📋 حالات اليوم</span>
       <span class="ai-sug" onclick="aiAsk('ما إجمالي الإيرادات هذا الشهر؟')">💰 إيرادات الشهر</span>
       <span class="ai-sug" onclick="aiAsk('من أكثر العملاء طلباً؟')">🏆 أفضل عميل</span>
       <span class="ai-sug" onclick="aiAsk('ما المنتجات الأكثر مبيعاً؟')">📊 أكثر المنتجات</span>
       <span class="ai-sug" onclick="aiAsk('ما الخامات المنخفضة في المخزن؟')">⚠️ تنبيه المخزن</span>
-      <span class="ai-sug" onclick="aiAsk('كم المبالغ غير المسددة؟')">📉 الديون</span>
+      <span class="ai-sug" onclick="aiAsk('كم المبالغ غير المسددة من العملاء؟')">💳 الديون</span>
+      <span class="ai-sug" onclick="aiAsk('اكتب رسالة واتساب لتذكير عميل متأخر بالسداد')">💬 رسالة تذكير</span>
+      <span class="ai-sug" onclick="aiAsk('قدم لي تحليلاً كاملاً لأداء المختبر هذا الشهر')">📈 تحليل الأداء</span>
     </div>
     <div class="ai-msgs" id="ai-msgs">
-      <div class="ai-msg bot">مرحباً! 👋 أنا مساعدك الذكي لمختبر الأسنان. يمكنني تحليل بياناتك والإجابة على أسئلتك بالعربي. كيف أساعدك؟</div>
+      <div class="ai-msg bot">مرحباً! 👋 أنا مساعدك الذكي لمختبر الأسنان.<br>يمكنني تحليل بياناتك، كتابة رسائل واتساب، وتقديم توصيات ذكية. كيف أساعدك؟</div>
     </div>
     <div class="ai-inp-row">
       <button class="ai-send" onclick="aiSend()">➤</button>
       <input type="text" id="ai-input" placeholder="اسألني عن بياناتك..." onkeydown="if(event.key==='Enter')aiSend()">
+      <button class="ai-voice-btn" id="ai-voice-btn" onclick="toggleVoiceInput()" title="إدخال صوتي">🎤</button>
+    </div>
+  </div>
+
+  <!-- Tab: Daily Report -->
+  <div id="ai-tab-daily" style="display:none;flex:1;overflow-y:auto" class="ai-daily">
+    <div style="text-align:center;padding:20px;color:var(--text3)">
+      <div style="font-size:36px;margin-bottom:8px">📊</div>
+      <p style="font-size:12px">اضغط لتوليد التقرير اليومي</p>
+      <button class="btn btn-purple" onclick="generateDailyReport()" style="margin-top:8px">توليد التقرير ✨</button>
+    </div>
+  </div>
+
+  <!-- Tab: Smart Alerts -->
+  <div id="ai-tab-alerts" style="display:none;flex:1" class="ai-alerts">
+    <div style="text-align:center;padding:20px;color:var(--text3)">
+      <div style="font-size:36px;margin-bottom:8px">🔔</div>
+      <p style="font-size:12px">اضغط لفحص التنبيهات الذكية</p>
+      <button class="btn btn-purple" onclick="buildAISmartAlerts()" style="margin-top:8px">فحص التنبيهات 🔍</button>
     </div>
   </div>
 </div>
 
 <script>
-// ===== AI ASSISTANT ENGINE =====
+// ===== AI ASSISTANT ENGINE v2 =====
 (function(){
-  const STORAGE_KEY='ai_api_key';
+  const STORAGE_KEY='ai_or_key';
   let aiOpen=false;
   let aiLoading=false;
   let chatHistory=[];
+  let _voiceRec=null;
+  let _voiceActive=false;
+  let _currentTab='chat';
 
+  // ── Toggle Panel ──
   window.toggleAI=function(){
     aiOpen=!aiOpen;
     const panel=document.getElementById('ai-panel');
     panel.classList.toggle('open',aiOpen);
-    if(aiOpen) checkAISetup();
+    if(aiOpen){
+      checkAISetup();
+      if(_currentTab==='chat') setTimeout(()=>document.getElementById('ai-input')?.focus(),300);
+    }
+  };
+
+  // ── Tab Switching ──
+  window.switchAITab=function(tab,el){
+    _currentTab=tab;
+    document.querySelectorAll('.ai-tab').forEach(t=>t.classList.remove('on'));
+    el?.classList.add('on');
+    document.getElementById('ai-tab-chat').style.display=tab==='chat'?'flex':'none';
+    document.getElementById('ai-tab-daily').style.display=tab==='daily'?'block':'none';
+    document.getElementById('ai-tab-alerts').style.display=tab==='alerts'?'block':'none';
+    if(tab==='daily') generateDailyReport();
+    if(tab==='alerts') buildAISmartAlerts();
   };
 
   function checkAISetup(){
     const key=localStorage.getItem(STORAGE_KEY);
     document.getElementById('ai-setup').style.display=key?'none':'block';
-    document.getElementById('ai-chat').style.display=key?'flex':'none';
+    document.getElementById('ai-tab-chat').style.display=key&&_currentTab==='chat'?'flex':'none';
+    document.getElementById('ai-tab-daily').style.display=key&&_currentTab==='daily'?'block':'none';
+    document.getElementById('ai-tab-alerts').style.display=key&&_currentTab==='alerts'?'block':'none';
+    if(!key){
+      document.getElementById('ai-tab-chat').style.display='none';
+      document.getElementById('ai-tab-daily').style.display='none';
+      document.getElementById('ai-tab-alerts').style.display='none';
+    }
   }
 
   window.saveAIKey=function(){
     const key=document.getElementById('ai-key-input').value.trim();
-    if(!key||!key.startsWith('sk-ant')){
-      toast('⚠️ مفتاح غير صحيح — يجب أن يبدأ بـ sk-ant','err');return;
-    }
+    if(!key||!key.startsWith('sk-or')){toast('⚠️ مفتاح غير صحيح — يجب أن يبدأ بـ sk-or','err');return;}
     localStorage.setItem(STORAGE_KEY,key);
     checkAISetup();
-    addBotMsg('✅ تم تفعيل المساعد الذكي! يمكنك الآن سؤالي عن بياناتك.');
+    addBotMsg('✅ تم تفعيل المساعد الذكي! 🦷\nيمكنك الآن سؤالي عن بياناتك أو طلب تقرير يومي أو فحص التنبيهات.');
+  };
+
+  window.resetAIChat=function(){
+    chatHistory=[];
+    const msgs=document.getElementById('ai-msgs');
+    if(msgs) msgs.innerHTML='<div class="ai-msg bot">محادثة جديدة 🔄 — كيف أساعدك؟</div>';
   };
 
   window.aiAsk=function(q){
+    switchAITab('chat',document.querySelector('.ai-tab'));
     document.getElementById('ai-input').value=q;
     aiSend();
   };
 
+  // ── Voice Input ──
+  window.toggleVoiceInput=function(){
+    if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){
+      toast('المتصفح لا يدعم الإدخال الصوتي','err');return;
+    }
+    const btn=document.getElementById('ai-voice-btn');
+    if(_voiceActive){
+      _voiceRec?.stop();_voiceActive=false;
+      btn.classList.remove('recording');btn.textContent='🎤';
+      return;
+    }
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    _voiceRec=new SR();
+    _voiceRec.lang='ar-SA';
+    _voiceRec.interimResults=false;
+    _voiceRec.maxAlternatives=1;
+    _voiceRec.onstart=()=>{_voiceActive=true;btn.classList.add('recording');btn.textContent='⏹';};
+    _voiceRec.onresult=e=>{
+      const txt=e.results[0][0].transcript;
+      document.getElementById('ai-input').value=txt;
+      _voiceActive=false;btn.classList.remove('recording');btn.textContent='🎤';
+      aiSend();
+    };
+    _voiceRec.onerror=()=>{_voiceActive=false;btn.classList.remove('recording');btn.textContent='🎤';toast('تعذر التعرف على الصوت','err');};
+    _voiceRec.onend=()=>{_voiceActive=false;btn.classList.remove('recording');btn.textContent='🎤';};
+    _voiceRec.start();
+  };
+
+  // ── Daily Report ──
+  window.generateDailyReport=function(){
+    const key=localStorage.getItem(STORAGE_KEY);if(!key){checkAISetup();return;}
+    const tab=document.getElementById('ai-tab-daily');
+    if(!tab)return;
+    tab.innerHTML='<div style="text-align:center;padding:30px;color:var(--text3)"><div style="font-size:28px">⏳</div><p style="font-size:12px;margin-top:8px">جاري توليد التقرير...</p></div>';
+    const snap=getDataSnapshot();
+    const today2=new Date().toISOString().slice(0,10);
+    const dafter=DB.get('dafter')||[];
+    const proof=DB.get('proof')||[];
+    const archive=DB.get('archive')||[];
+    const treasury=DB.get('treasury')||[];
+    const todayCases=[...dafter,...proof,...archive].filter(r=>(r.date||'')===today2||new Date(r.createdAt||0).toISOString().slice(0,10)===today2);
+    const todayIn=treasury.filter(t=>t.type==='in'&&(t.date===today2||new Date(t.createdAt||0).toISOString().slice(0,10)===today2)).reduce((s,t)=>s+(+t.amount||0),0);
+    const todayOut=treasury.filter(t=>t.type==='out'&&(t.date===today2||new Date(t.createdAt||0).toISOString().slice(0,10)===today2)).reduce((s,t)=>s+(+t.amount||0),0);
+    const thisMonth=today2.slice(0,7);
+    const monthArc=(archive||[]).filter(r=>(r.date||r.archivedAt||'').slice(0,7)===thisMonth);
+    const monthRev=monthArc.reduce((s,r)=>s+(+r.total||0),0);
+    const tIn=treasury.filter(t=>t.type==='in').reduce((s,t)=>s+(+t.amount||0),0);
+    const tOut=treasury.filter(t=>t.type==='out').reduce((s,t)=>s+(+t.amount||0),0);
+    const c=cur();
+    tab.innerHTML=`
+    <div class="ai-daily-card">
+      <h4>📅 اليوم — ${today2}</h4>
+      <div class="ai-daily-stat"><span class="lbl">حالات اليوم</span><span class="val gold">${todayCases.length} حالة</span></div>
+      <div class="ai-daily-stat"><span class="lbl">الدفتر الحالي</span><span class="val">${dafter.length} حالة</span></div>
+      <div class="ai-daily-stat"><span class="lbl">البروفه الحالية</span><span class="val">${proof.length} حالة</span></div>
+      <div class="ai-daily-stat"><span class="lbl">تحصيل اليوم</span><span class="val green">+${fmt(todayIn)} ${c}</span></div>
+      <div class="ai-daily-stat"><span class="lbl">صرف اليوم</span><span class="val red">-${fmt(todayOut)} ${c}</span></div>
+      <div class="ai-daily-stat"><span class="lbl">صافي اليوم</span><span class="val ${todayIn-todayOut>=0?'green':'red'}">${todayIn-todayOut>=0?'+':''}${fmt(todayIn-todayOut)} ${c}</span></div>
+    </div>
+    <div class="ai-daily-card">
+      <h4>📆 هذا الشهر — ${thisMonth}</h4>
+      <div class="ai-daily-stat"><span class="lbl">فواتير مؤرشفة</span><span class="val">${monthArc.length} فاتورة</span></div>
+      <div class="ai-daily-stat"><span class="lbl">إيرادات الشهر</span><span class="val green">${fmt(monthRev)} ${c}</span></div>
+    </div>
+    <div class="ai-daily-card">
+      <h4>🏦 الخزنة الكاملة</h4>
+      <div class="ai-daily-stat"><span class="lbl">إجمالي الوارد</span><span class="val green">${fmt(tIn)} ${c}</span></div>
+      <div class="ai-daily-stat"><span class="lbl">إجمالي الصادر</span><span class="val red">${fmt(tOut)} ${c}</span></div>
+      <div class="ai-daily-stat"><span class="lbl">الرصيد الحالي</span><span class="val gold">${fmt(tIn-tOut)} ${c}</span></div>
+    </div>
+    <button class="btn btn-purple" style="width:100%;justify-content:center;margin-top:4px" onclick="aiAsk('قدم لي تحليلاً ذكياً للتقرير اليومي مع توصيات للتحسين')">✨ تحليل ذكي بالـ AI</button>`;
+  };
+
+  // ── Smart Alerts ──
+  window.buildAISmartAlerts=function(){
+    const tab=document.getElementById('ai-tab-alerts');if(!tab)return;
+    const alerts=[];
+    const dafter=DB.get('dafter')||[];
+    const proof=DB.get('proof')||[];
+    const archive=DB.get('archive')||[];
+    const inventory=DB.get('inventory')||[];
+    const treasury=DB.get('treasury')||[];
+    const today2=new Date().toISOString().slice(0,10);
+    const c=cur();
+
+    // حالات متأخرة في الدفتر
+    const lateDafter=dafter.filter(r=>r.date&&r.date<today2);
+    if(lateDafter.length>0) alerts.push({type:'urgent',icon:'⏰',title:`${lateDafter.length} حالة متأخرة في الدفتر`,text:`أقدم حالة: ${lateDafter[0]?.client||lateDafter[0]?.clientName||'غير محدد'} — ${lateDafter[0]?.date}`,action:()=>goPage('dafter')});
+
+    // حالات في البروفه
+    if(proof.length>0) alerts.push({type:'warn',icon:'🔬',title:`${proof.length} حالة في البروفه`,text:'تحتاج مراجعة ومتابعة',action:()=>goPage('proof')});
+
+    // مخزون منخفض
+    const lowInv=inventory.filter(i=>(+i.qty||0)<=(+i.min||0)&&i.min);
+    if(lowInv.length>0) alerts.push({type:'urgent',icon:'📦',title:`${lowInv.length} خامة منخفضة في المخزن`,text:lowInv.slice(0,3).map(i=>i.name).join('، ')+(lowInv.length>3?'...':''),action:()=>goPage('inventory')});
+
+    // مديونيات كبيرة
+    const clients=DB.get('clients')||[];
+    let bigDebts=[];
+    clients.forEach(cl=>{const d=typeof _clientAccountSummary==='function'?_clientAccountSummary(cl.id||cl.name).totalDebt:0;if(d>500)bigDebts.push({name:cl.name,debt:d});});
+    bigDebts.sort((a,b)=>b.debt-a.debt);
+    if(bigDebts.length>0) alerts.push({type:'warn',icon:'💳',title:`${bigDebts.length} عميل عليه مديونية كبيرة`,text:bigDebts.slice(0,2).map(x=>x.name+': '+fmt(x.debt)+' '+c).join(' | '),action:()=>goPage('debts')});
+
+    // رصيد الخزنة
+    const tIn=treasury.filter(t=>t.type==='in').reduce((s,t)=>s+(+t.amount||0),0);
+    const tOut=treasury.filter(t=>t.type==='out').reduce((s,t)=>s+(+t.amount||0),0);
+    const bal=tIn-tOut;
+    if(bal<1000) alerts.push({type:'urgent',icon:'🏦',title:'رصيد الخزنة منخفض',text:`الرصيد الحالي: ${fmt(bal)} ${c}`,action:()=>goPage('treasury')});
+    else alerts.push({type:'good',icon:'✅',title:'رصيد الخزنة جيد',text:`${fmt(bal)} ${c}`,action:()=>goPage('treasury')});
+
+    // لو ما في تنبيهات حرجة
+    if(alerts.filter(a=>a.type==='urgent').length===0) alerts.unshift({type:'good',icon:'🎉',title:'كل شيء على ما يرام!',text:'لا توجد تنبيهات حرجة اليوم'});
+
+    // تحديث badge
+    const urgentCount=alerts.filter(a=>a.type==='urgent').length;
+    const badge=document.getElementById('ai-alert-badge');
+    const fab=document.getElementById('ai-fab');
+    if(badge&&fab){
+      badge.textContent=urgentCount||'';
+      fab.classList.toggle('has-alert',urgentCount>0);
+    }
+
+    tab.innerHTML=alerts.map(a=>`
+      <div class="ai-alert-item ${a.type}" onclick="(${a.action.toString()})()">
+        <span class="ai-alert-icon">${a.icon}</span>
+        <div class="ai-alert-text">
+          <strong>${a.title}</strong>
+          <span>${a.text}</span>
+        </div>
+      </div>`).join('')+
+      `<button class="btn btn-purple" style="width:100%;justify-content:center;margin-top:8px" onclick="aiAsk('بناءً على التنبيهات الحالية، ما هي أولوياتي اليوم؟')">✨ نصائح AI للأولويات</button>`;
+  };
+
+  // ── Send Message ──
   window.aiSend=function(){
     if(aiLoading)return;
     const inp=document.getElementById('ai-input');
-    const q=inp.value.trim();
-    if(!q)return;
+    const q=inp.value.trim();if(!q)return;
     inp.value='';
-    const key=localStorage.getItem(STORAGE_KEY);
-    if(!key){checkAISetup();return;}
+    const key=localStorage.getItem(STORAGE_KEY);if(!key){checkAISetup();return;}
     addUserMsg(q);
     aiLoading=true;
-    document.getElementById('ai-status-txt').textContent='يفكر...';
+    document.getElementById('ai-status-txt').textContent='⏳ يفكر...';
     const thinkId=addBotMsg('⏳ جاري التحليل...', true);
-    const snapshot=getDataSnapshot();
-    callClaude(key, q, snapshot, thinkId);
+    callClaude(key, q, getDataSnapshot(), thinkId);
   };
 
   function getDataSnapshot(){
-    // FIX #39: was reading from old localStorage keys — now reads from Firebase DB object
     const dafter=DB.get('dafter')||[];
     const proof=DB.get('proof')||[];
     const archive=DB.get('archive')||[];
@@ -16079,104 +16738,58 @@ function renderBackup(){
     const technicians=DB.get('technicians')||[];
     const delegates=DB.get('delegates')||[];
     const purchases=DB.get('purchases')||[];
-
-    const today=new Date().toISOString().slice(0,10);
-    const thisMonth=today.slice(0,7);
-
-    // Archive stats
+    const today2=new Date().toISOString().slice(0,10);
+    const thisMonth=today2.slice(0,7);
+    const c=cur();
     const arcTotal=archive.reduce((s,r)=>s+(+r.total||0),0);
-    const arcPaid=treasury.filter(t=>t.type==='in'&&!t.isTransfer&&(t.accType==='client'||t.accType==='archive')).reduce((s,t)=>s+(+t.amount||0),0);
-    const arcDebt=(()=>{const seen=new Set();let sum=0;archive.forEach(r=>{const key=r.clientId||r.client;if(seen.has(key))return;seen.add(key);sum+=Math.max(0,_clientAccountSummary(key).totalDebt);});return sum;})();
-    const arcThisMonth=archive.filter(r=>(r.date||r.archivedAt||'').slice(0,7)===thisMonth);
-    const arcMonthTotal=arcThisMonth.reduce((s,r)=>s+(+r.total||0),0);
-
-    // Treasury
     const tIn=treasury.filter(t=>t.type==='in').reduce((s,t)=>s+(+t.amount||0),0);
     const tOut=treasury.filter(t=>t.type==='out').reduce((s,t)=>s+(+t.amount||0),0);
-
-    // Top clients
-    const clientTotals={};
-    archive.forEach(r=>{clientTotals[r.client]=(clientTotals[r.client]||0)+(+r.total||0)});
-    const topClients=Object.entries(clientTotals).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([n,v])=>n+': '+v.toLocaleString()+' ج.م');
-
-    // Top products
-    const prodTotals={};
-    [...dafter,...proof,...archive].forEach(r=>{prodTotals[r.product]=(prodTotals[r.product]||0)+(+r.qty||0)});
+    const arcDebt=(()=>{const seen=new Set();let sum=0;archive.forEach(r=>{const key=r.clientId||r.client;if(seen.has(key))return;seen.add(key);if(typeof _clientAccountSummary==='function')sum+=Math.max(0,_clientAccountSummary(key).totalDebt);});return sum;})();
+    const arcThisMonth=archive.filter(r=>(r.date||r.archivedAt||'').slice(0,7)===thisMonth);
+    const clientTotals={};archive.forEach(r=>{clientTotals[r.client]=(clientTotals[r.client]||0)+(+r.total||0)});
+    const topClients=Object.entries(clientTotals).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([n,v])=>n+': '+v.toLocaleString()+' '+c);
+    const prodTotals={};[...dafter,...proof,...archive].forEach(r=>{prodTotals[r.product]=(prodTotals[r.product]||0)+(+r.qty||0)});
     const topProds=Object.entries(prodTotals).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([n,v])=>n+': '+v+' وحدة');
-
-    // Low inventory
     const lowInv=inventory.filter(i=>(+i.qty||0)<=(+i.min||0)).map(i=>i.name+' ('+i.qty+' '+i.unit+')');
-
-    // Today cases
-    const todayCases=[...dafter,...proof,...archive].filter(r=>(r.date||'')===today||new Date(r.createdAt||0).toISOString().slice(0,10)===today);
-
-    return `=== ملخص بيانات المختبر (${today}) ===
-
-📋 الحالات:
-- الدفتر: ${dafter.length} حالة
-- البروفه: ${proof.length} حالة  
-- الأرشيف: ${archive.length} حالة إجمالي
-- حالات اليوم (تقريبي): ${todayCases.length}
-
-💰 المالية:
-- إجمالي الأرشيف: ${arcTotal.toLocaleString()} ج.م
-- إجمالي المحصل: ${arcPaid.toLocaleString()} ج.م
-- إجمالي الديون: ${arcDebt.toLocaleString()} ج.م
-- إيرادات هذا الشهر (${thisMonth}): ${arcMonthTotal.toLocaleString()} ج.م
-- رصيد الخزنة (الوارد): ${tIn.toLocaleString()} ج.م
-- إجمالي الصرف: ${tOut.toLocaleString()} ج.م
-- صافي الخزنة: ${(tIn-tOut).toLocaleString()} ج.م
-
-👥 قاعدة البيانات:
-- العملاء: ${clients.length}
-- الفنيين: ${technicians.length}
-- المندوبين: ${delegates.length}
-
-🏆 أكثر العملاء (بالمبلغ):
-${topClients.join('\n') || 'لا يوجد بيانات'}
-
-📊 أكثر المنتجات طلباً:
-${topProds.join('\n') || 'لا يوجد بيانات'}
-
-⚠️ خامات منخفضة في المخزن:
-${lowInv.length?lowInv.join('، '):'لا يوجد خامات منخفضة ✅'}
-
-📦 حالات الأرشيف: ${archive.length} فاتورة بإجمالي ${archive.reduce((s,r)=>s+(+r.total||0),0).toLocaleString()} ج.م
-👥 عملاء عليهم مديونية: ${(()=>{const seen=new Set();let cnt=0,sum=0;archive.forEach(r=>{const key=r.clientId||r.client;if(seen.has(key))return;seen.add(key);const d=_clientAccountSummary(key).totalDebt;if(d>0){cnt++;sum+=d;}});return cnt+' عميل بإجمالي '+sum.toLocaleString()+' ج.م';})()}
-
-💸 سجلات جرد المخزن (تكلفة الإنتاج): ${(DB.get('inventory_reports')||[]).length} سجل جرد جديد | ${(DB.get('dept_inventory')||[]).length} سجل جرد قديم | إجمالي تكلفة: ${[...(DB.get('inventory_reports')||[]),...(DB.get('dept_inventory')||[])].reduce((s,r)=>s+(+r.grandTotal||+r.totalCost||0),0).toLocaleString()} ج.م
-🛒 فواتير الشراء: ${purchases.length} فاتورة`;
+    const lateDafter=dafter.filter(r=>r.date&&r.date<today2).length;
+    return `=== بيانات مختبر الأسنان (${today2}) ===
+📋 الحالات: دفتر ${dafter.length} | بروفه ${proof.length} | أرشيف ${archive.length} إجمالي
+⏰ متأخر في الدفتر: ${lateDafter} حالة
+📆 أرشيف هذا الشهر (${thisMonth}): ${arcThisMonth.length} فاتورة بإجمالي ${arcThisMonth.reduce((s,r)=>s+(+r.total||0),0).toLocaleString()} ${c}
+💰 المالية: إجمالي أرشيف ${arcTotal.toLocaleString()} | ديون ${arcDebt.toLocaleString()} | رصيد خزنة ${(tIn-tOut).toLocaleString()} ${c}
+👥 قاعدة البيانات: ${clients.length} عميل | ${technicians.length} فني | ${delegates.length} مندوب
+🏆 أكثر العملاء:\n${topClients.join('\n')||'لا يوجد'}
+📊 أكثر المنتجات:\n${topProds.join('\n')||'لا يوجد'}
+⚠️ مخزون منخفض: ${lowInv.length?lowInv.join('، '):'لا يوجد ✅'}
+🛒 فواتير شراء: ${purchases.length}`;
   }
 
   async function callClaude(key, question, snapshot, thinkId){
-    chatHistory.push({role:'user', content: question});
-    // Keep last 10 turns to save tokens
-    if(chatHistory.length>20) chatHistory=chatHistory.slice(-20);
-
-    const systemPrompt=`أنت مساعد ذكي متخصص في إدارة مختبرات الأسنان. تتحدث العربية بطلاقة وبأسلوب ودي ومهني.
-لديك وصول لبيانات المختبر الحالية:
-
-${snapshot}
-
-قواعد مهمة:
-- أجب بإيجاز ودقة بالعربية
-- استخدم الأرقام والإحصائيات المتاحة
-- إذا سُئلت عن شيء غير موجود في البيانات، قل ذلك بوضوح
-- استخدم emoji مناسبة للإجابات
-- لا تخترع بيانات غير موجودة
-- إذا طُلب منك تحليل، قدم توصيات عملية`;
-
+    chatHistory.push({role:'user',content:question});
+    if(chatHistory.length>10) chatHistory=chatHistory.slice(-10);
+    const systemPrompt=`أنت مساعد ذكي لمختبر أسنان. أجب بالعربية بإيجاز ودقة مع emoji مناسبة. لا تخترع بيانات.\nبيانات المختبر:\n${snapshot.slice(0,1000)}`;
     try{
-      const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      const controller=new AbortController();
+      const timeout=setTimeout(()=>controller.abort(),20000);
+      const resp=await fetch('https://openrouter.ai/api/v1/chat/completions',{
         method:'POST',
-        headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        signal:controller.signal,
+        headers:{
+          'Content-Type':'application/json',
+          'Authorization':'Bearer '+key,
+          'HTTP-Referer':'https://perfect-lab-pro.github.io',
+          'X-Title':'Perfect Lab Pro'
+        },
         body:JSON.stringify({
-          model:'claude-sonnet-4-20250514',
-          max_tokens:600,
-          system:systemPrompt,
-          messages:chatHistory
+          model:'google/gemini-2.0-flash-exp:free',
+          max_tokens:400,
+          messages:[
+            {role:'system',content:systemPrompt},
+            ...chatHistory
+          ]
         })
       });
+      clearTimeout(timeout);
       if(!resp.ok){
         const err=await resp.json().catch(()=>({}));
         const msg=err.error?.message||`خطأ ${resp.status}`;
@@ -16184,59 +16797,61 @@ ${snapshot}
         if(resp.status===401){localStorage.removeItem(STORAGE_KEY);checkAISetup();}
       } else {
         const data=await resp.json();
-        const answer=data.content?.map(c=>c.text||'').join('')||'لم أتمكن من الإجابة';
+        const answer=data.choices?.[0]?.message?.content||'لم أتمكن من الإجابة';
         updateBotMsg(thinkId,answer);
         chatHistory.push({role:'assistant',content:answer});
       }
     } catch(e){
-      updateBotMsg(thinkId,'❌ خطأ في الاتصال: '+e.message);
+      if(e.name==='AbortError') updateBotMsg(thinkId,'⏱️ انتهت مهلة الانتظار — حاول مرة أخرى');
+      else updateBotMsg(thinkId,'❌ خطأ: '+e.message);
     }
     aiLoading=false;
-    document.getElementById('ai-status-txt').textContent='جاهز للمساعدة';
+    document.getElementById('ai-status-txt').textContent='● جاهز للمساعدة';
   }
 
   function addUserMsg(text){
     const msgs=document.getElementById('ai-msgs');
     const div=document.createElement('div');
-    div.className='ai-msg user';
-    div.textContent=text;
-    msgs.appendChild(div);
-    msgs.scrollTop=msgs.scrollHeight;
+    div.className='ai-msg user';div.textContent=text;
+    msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
   }
-
-  function addBotMsg(text, thinking=false){
+  function addBotMsg(text,thinking=false){
     const msgs=document.getElementById('ai-msgs');
     const id='aim_'+Date.now();
     const div=document.createElement('div');
     div.className='ai-msg bot'+(thinking?' thinking':'');
-    div.id=id;
-    div.innerHTML=formatAIText(text);
-    msgs.appendChild(div);
-    msgs.scrollTop=msgs.scrollHeight;
+    div.id=id;div.innerHTML=formatAIText(text);
+    msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
     return id;
   }
-
   function updateBotMsg(id,text){
     const el=document.getElementById(id);
     if(el){el.className='ai-msg bot';el.innerHTML=formatAIText(text);}
     const msgs=document.getElementById('ai-msgs');
     if(msgs)msgs.scrollTop=msgs.scrollHeight;
   }
-
   function formatAIText(text){
-    // Basic formatting: newlines → <br>, bold **text**
     return text
       .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
       .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
       .replace(/\n/g,'<br>');
   }
 
-  // Add reset key option via long-press on fab
+  // ── Long-press FAB to reset key ──
   let fabTimer;
   const fab=document.getElementById('ai-fab');
-  fab.addEventListener('mousedown',()=>{fabTimer=setTimeout(()=>{confirm2('إعادة تعيين مفتاح API','سيتم حذف مفتاح Anthropic المحفوظ وستحتاج لإدخاله مجدداً.',()=>{localStorage.removeItem(STORAGE_KEY);if(aiOpen)checkAISetup();});},1500)});
-  fab.addEventListener('mouseup',()=>clearTimeout(fabTimer));
-  fab.addEventListener('mouseleave',()=>clearTimeout(fabTimer));
+  if(fab){
+    fab.addEventListener('mousedown',()=>{fabTimer=setTimeout(()=>{confirm2('إعادة تعيين المفتاح','سيتم حذف مفتاح API المحفوظ.',()=>{localStorage.removeItem(STORAGE_KEY);if(aiOpen)checkAISetup();});},1500)});
+    fab.addEventListener('mouseup',()=>clearTimeout(fabTimer));
+    fab.addEventListener('mouseleave',()=>clearTimeout(fabTimer));
+    fab.addEventListener('touchstart',()=>{fabTimer=setTimeout(()=>{confirm2('إعادة تعيين المفتاح','سيتم حذف مفتاح API المحفوظ.',()=>{localStorage.removeItem(STORAGE_KEY);if(aiOpen)checkAISetup();});},1500)},{passive:true});
+    fab.addEventListener('touchend',()=>clearTimeout(fabTimer));
+  }
+
+  // ── Auto check alerts on load ──
+  setTimeout(()=>{
+    if(localStorage.getItem(STORAGE_KEY)) buildAISmartAlerts();
+  },4000);
 })();
 </script>
 <!-- ===== FIREBASE AUTH ENGINE ===== -->
@@ -16298,10 +16913,12 @@ ${snapshot}
     applySession(window._currentUser);
     setTimeout(()=>{
       if(typeof init==='function')try{init();}catch(e){console.warn('init error',e);}
-      // FIX #LASTPAGE: استعادة الصفحة الأخيرة بعد التهيئة
+      // ── فتح الصفحة من الـ Hash أولاً، ثم آخر صفحة محفوظة ──
+      const hashPg = location.hash.replace('#','');
       const lastPg = localStorage.getItem('plp_last_page');
-      if(lastPg && lastPg !== 'dashboard'){
-        setTimeout(()=>{ try{ goPage(lastPg); }catch(e){} }, 200);
+      const targetPg = (hashPg && PAGE_PERM_MAP[hashPg] !== undefined) ? hashPg : lastPg;
+      if(targetPg && targetPg !== 'dashboard'){
+        setTimeout(()=>{ try{ goPage(targetPg); }catch(e){} }, 200);
       }
     },80);
     // FIX #REALTIME: تفعيل المستمع الفوري
@@ -16311,6 +16928,13 @@ ${snapshot}
     logActivity('login',{note:'تسجيل دخول ناجح'});
     toast('✅ مرحباً '+profile.name);
   }
+
+  // ── popstate: زر الرجوع / الأمام في المتصفح والموبايل ──
+  window.addEventListener('popstate', function(e){
+    if(!window._currentUser) return; // لو مش مسجل دخول لا تفعل شيء
+    const pg = e.state?.page || location.hash.replace('#','') || 'dashboard';
+    if(pg) try{ goPage(pg, true); }catch(err){}
+  });
 
   // session بدون كلمة مرور
   function saveSession(profile){
@@ -17584,6 +18208,7 @@ function calcDwTotal(){
 }
 
 function saveDeptWithdrawal(){
+  if(!can('dept-withdrawal.add')){toast('ليس لديك صلاحية إضافة صرف الأقسام','err');return;}
   const date=document.getElementById('dw-date').value;
   const dept=document.getElementById('dw-dept').value;
   if(!date||!dept){toast('التاريخ والقسم مطلوبان','err');return;}
@@ -17752,6 +18377,7 @@ function showDwDetails(id){
 }
 
 function delDeptWithdrawal(id){
+  if(!can('dept-withdrawal.delete')){toast('ليس لديك صلاحية حذف صرف الأقسام','err');return;}
   confirm2('حذف عملية الصرف #'+id+'؟',()=>{
     const list=(DB.get('dept_withdrawals')||[]);
     const rec=list.find(x=>x.id===id);
@@ -17879,6 +18505,7 @@ function calcDiTotals(){
 }
 
 function saveDeptInventory(){
+  if(!can('dept-inventory.add')){toast('ليس لديك صلاحية إضافة جرد الأقسام','err');return;}
   const dept=document.getElementById('di-dept').value;
   const from=document.getElementById('di-from').value;
   const to=document.getElementById('di-to').value;
@@ -18316,6 +18943,7 @@ function _calcBookValue(asset){
 }
 
 function saveFixedAsset(){
+  if(!can('fixed-assets.add')){toast('ليس لديك صلاحية إضافة الأصول الثابتة','err');return;}
   const name=document.getElementById('fa-name').value.trim();
   const cat=document.getElementById('fa-cat').value;
   const purchaseDate=document.getElementById('fa-purchase-date').value;
@@ -18387,6 +19015,7 @@ function renderFixedAssets(){
 }
 
 function delFixedAsset(id){
+  if(!can('fixed-assets.delete')){toast('ليس لديك صلاحية حذف الأصول الثابتة','err');return;}
   confirm2('حذف هذا الأصل؟',()=>{
     DB.set('fixed_assets',(DB.get('fixed_assets')||[]).filter(x=>x.id!==id));
     renderFixedAssets();toast('تم الحذف');
@@ -18486,6 +19115,7 @@ function calcSparePerUnit(){
 }
 
 function saveSpareSettlement(){
+  if(!can('spare-parts.add')){toast('ليس لديك صلاحية تسوية قطع الغيار','err');return;}
   const item=document.getElementById('sp-item').value;
   const dept=document.getElementById('sp-dept').value;
   const start=document.getElementById('sp-start').value;
@@ -18580,6 +19210,7 @@ function renderSpareParts(){
 }
 
 function delSparePart(id){
+  if(!can('spare-parts.add')){toast('ليس لديك صلاحية حذف قطع الغيار','err');return;}
   confirm2('حذف هذه التسوية وإلغاء تأثيرها الرجعي؟',()=>{
     const list=DB.get('spare_parts_consumption')||[];
     const rec=list.find(x=>x.id===id);
@@ -18987,6 +19618,7 @@ function addDoctorRow(data){
 }
 
 function saveProspect(){
+  if(!can('prospects.add') && !can('prospects.edit')){toast('ليس لديك صلاحية إضافة أو تعديل العملاء المحتملين','err');return;}
   const center=document.getElementById('pr-center').value.trim();
   const doctor=document.getElementById('pr-doctor').value.trim();
   if(!center||!doctor){toast('اسم المركز والدكتور مطلوبان','err');return;}
@@ -19038,6 +19670,7 @@ function saveProspect(){
 }
 
 function deleteProspect(id){
+  if(!can('prospects.delete')){toast('ليس لديك صلاحية حذف العملاء المحتملين','err');return;}
   confirm2('حذف','هل تريد حذف هذا العميل المحتمل؟',()=>{
     DB.set('prospects',(DB.get('prospects')||[]).filter(p=>p.id!==+id));
     renderProspects();toast('تم الحذف');
@@ -19082,6 +19715,7 @@ function fillDoctorsForProspect(pid){
 }
 
 function saveProspectVisit(){
+  if(!can('prospects.visit')){toast('ليس لديك صلاحية تسجيل الزيارات','err');return;}
   const delegate=document.getElementById('pv-delegate').value;
   const prospectId=+document.getElementById('pv-prospect').value;
   const doctor=document.getElementById('pv-doctor').value;
@@ -19106,6 +19740,7 @@ function saveProspectVisit(){
 }
 
 function deleteProspectVisit(id){
+  if(!can('prospects.visit')){toast('ليس لديك صلاحية حذف الزيارات','err');return;}
   confirm2('حذف','هل تريد حذف هذه الزيارة؟',()=>{
     DB.set('prospect_visits',(DB.get('prospect_visits')||[]).filter(v=>v.id!==+id));
     renderProspectVisits();toast('تم الحذف');
