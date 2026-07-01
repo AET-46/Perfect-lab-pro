@@ -1989,7 +1989,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
       </div>
       <div class="ns-stat" style="border-right:3px solid var(--green)">
         <div class="nsv" id="nqs-tr" style="color:var(--green)">0</div>
-        <div class="nsl">حركات مالية للعملاء</div>
+        <div class="nsl">حركات الخزنة اليوم</div>
       </div>
     </div>
 
@@ -2008,6 +2008,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
           <div class="btn-row">
             <button class="btn btn-ghost btn-sm" onclick="renderNotifLateSection()">🔄 تحديث</button>
             <button class="btn btn-gold btn-sm" onclick="testAlertNow()">🔔 اختبار البانر</button>
+            <button class="btn btn-orange btn-sm" onclick="sendLateAlertsToAdmin()">📤 إرسال للإدارة</button>
           </div>
         </div>
         <div id="notif-late-section" style="padding:4px"></div>
@@ -3171,24 +3172,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
           </div>
           <button class="btn btn-gold" onclick="saveNsSettings()" style="width:100%;margin-top:12px">💾 حفظ جميع الإعدادات</button>
         </div>
-        <div>
-          <div class="nset-card">
-            <h5>🔔 إعدادات إشعار البروفه</h5>
-            <div class="toggle-row"><label>إظهار اللوجو</label><label class="sw"><input type="checkbox" id="nset-pr-logo2" checked><span class="sl"></span></label></div>
-            <div class="toggle-row"><label>إظهار بيانات التواصل</label><label class="sw"><input type="checkbox" id="nset-pr-contact2" checked><span class="sl"></span></label></div>
-            <div class="toggle-row"><label>إظهار المديونية الحالية</label><label class="sw"><input type="checkbox" id="nset-pr-debt2" checked><span class="sl"></span></label></div>
-            <div class="toggle-row"><label>إظهار الحالات النشطة</label><label class="sw"><input type="checkbox" id="nset-pr-active2" checked><span class="sl"></span></label></div>
-          </div>
-          <div class="nset-card">
-            <h5>📤 معاينة الرسائل</h5>
-            <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
-              <button class="btn btn-ghost btn-sm" onclick="previewSample('invoice')">📋 فاتورة</button>
-              <button class="btn btn-ghost btn-sm" onclick="previewSample('proof')">🔬 بروفه</button>
-              <button class="btn btn-ghost btn-sm" onclick="previewSample('financial')">💰 مالي</button>
-            </div>
-            <div id="nset-preview2" class="preview-box" style="min-height:160px;font-size:11px">اضغط لمعاينة...</div>
-          </div>
-        </div>
+        <div></div>
       </div>
     </div>
 
@@ -4618,6 +4602,25 @@ const DB = {
             }
             return;
           }
+          // FIX #NOTIFLOG-SYNC: نفس دمج activityLog عند التحميل الأولي
+          if(k === 'notif_log'){
+            const remoteLog = data[k];
+            if(!Array.isArray(remoteLog)) return;
+            const localRaw = localStorage.getItem('plp_notif_log');
+            let localLog = null;
+            try { localLog = localRaw ? JSON.parse(localRaw) : null; } catch(e){}
+            if(Array.isArray(localLog) && localLog.length > 0){
+              const merged = [...localLog, ...remoteLog.filter(r=>!localLog.some(l=>l.id===r.id))];
+              merged.sort((a,b)=>(b.ts||0)-(a.ts||0));
+              if(merged.length>500)merged.splice(500);
+              this._c[k] = merged;
+              try { localStorage.setItem('plp_' + k, JSON.stringify(merged)); } catch(e) {}
+            } else {
+              this._c[k] = remoteLog;
+              try { localStorage.setItem('plp_' + k, JSON.stringify(remoteLog)); } catch(e) {}
+            }
+            return;
+          }
           this._c[k] = data[k];
           try { localStorage.setItem('plp_' + k, JSON.stringify(data[k])); } catch(e) {}
         });
@@ -4656,6 +4659,25 @@ const DB = {
             const merged = [...localLog, ...remoteLog.filter(r=>!localLog.some(l=>l.id===r.id))];
             merged.sort((a,b)=>(b.ts||0)-(a.ts||0));
             if(merged.length>1000)merged.splice(1000);
+            this._c[k] = merged;
+            try { localStorage.setItem('plp_' + k, JSON.stringify(merged)); } catch(e) {}
+          } else {
+            this._c[k] = remoteLog;
+            try { localStorage.setItem('plp_' + k, JSON.stringify(remoteLog)); } catch(e) {}
+          }
+          return;
+        }
+        // FIX #NOTIFLOG-MERGE: نفس مبدأ activityLog — كتابة جهاز تاني كانت تمسح
+        // سجل إشعارات الجهاز الأول لأن notif_log لم يكن له merge مثل activityLog.
+        // النتيجة: إشعارات مرسلة فعلاً تختفي من السجل بعد كتابة جهاز آخر للـ Firebase.
+        if(k === 'notif_log'){
+          const remoteLog = data[k];
+          if(!Array.isArray(remoteLog)) return;
+          const localLog = this._c['notif_log'];
+          if(Array.isArray(localLog) && localLog.length > 0){
+            const merged = [...localLog, ...remoteLog.filter(r=>!localLog.some(l=>l.id===r.id))];
+            merged.sort((a,b)=>(b.ts||0)-(a.ts||0));
+            if(merged.length>500)merged.splice(500);
             this._c[k] = merged;
             try { localStorage.setItem('plp_' + k, JSON.stringify(merged)); } catch(e) {}
           } else {
@@ -4780,14 +4802,15 @@ function onColorChange(sel){
 // يُستخدم في كل مسار يكتب للخزنة (رواتب، سلف، معاملات، تحويلات)
 // ══════════════════════════════════════════════════════════════
 function _saveTreasury(list){
-  // FIX #TREASURY-DOUBLE-WRITE: كانت الدالة بتعمل كتابة Firebase فورية يدوية
-  // بالإضافة لكتابة DB.set المؤجلة (800ms) لنفس المفتاح — يعني كتابتين فعليتين
-  // لكل عملية خزنة، مع احتمال وصول الكتابة الفورية لعملية لاحقة قبل الكتابة
-  // المؤجلة لعملية سابقة (ترتيب غير مضمون). DB.set وحدها كافية: تحفظ محلياً
-  // فوراً + تجدول كتابة فايربيز + تُسجّل _lastLocalWrite + محمية بالفعل من
-  // الـ realtime listener (FIX #PENDING-WRITE-RACE) ضد أي snapshot قديم وارد
-  // أثناء وجود كتابة مجدولة لنفس المفتاح.
   DB.set('treasury', list);
+  window._lastLocalWrite = Date.now();
+  if(window._fbRTDB){
+    try{
+      window._fbRTDB.ref('data/shared/treasury')
+        .set(list)
+        .catch(e=>console.warn('⚠️ treasury FB write:', e.code||e));
+    }catch(e){ console.warn('⚠️ treasury FB write ex:', e); }
+  }
 }
 
 function nid(t){
@@ -4835,9 +4858,10 @@ function wa(phone,text,meta){
     fellBack=true;clearTimeout(fallbackTimer);
     window.removeEventListener('blur',onBlur);
   },{once:true});
-  window.location.href=waUrl;
-  // Log the notification
+  // FIX #NOTIFLOG-ORDER: تسجيل الإشعار أولاً قبل التنقل — على بعض متصفحات أندرويد
+  // window.location.href لـ deep link يوقف تنفيذ JS بعده إذا تسببت في page navigation
   logWaNotif({phone:n,text,...(meta||{})});
+  window.location.href=waUrl;
 }
 function logWaNotif(opts){
   const logs=DB.get('notif_log')||[];
@@ -9286,12 +9310,12 @@ function renderDash(){
   const _showCounts = can('dashboard.counts');
   const _hiddenVal  = `<span style="filter:blur(5px);user-select:none;pointer-events:none">●●●●</span>`;
   document.getElementById('dash-stats').innerHTML=`
-    ${_showCounts?`<div class="stat" style="--c:var(--gold)"><label>📒 الدفتر</label><div class="val">${d.length}</div><div class="sub">قيد التنفيذ${lateDafter?` <span style="color:var(--orange)">⚠️${lateDafter}</span>`:''}</div></div>`:''}
-    ${_showCounts?`<div class="stat" style="--c:var(--orange)"><label>🔬 البروفه</label><div class="val">${pf.length}</div><div class="sub">جاهزة${lateProof?` <span style="color:var(--orange)">⚠️${lateProof}</span>`:''}</div></div>`:''}
-    ${_showCounts?`<div class="stat" style="--c:var(--blue)"><label>📁 الأرشيف</label><div class="val">${arcF.length}</div><div class="sub">في الفترة</div></div>`:''}
-    ${_showStats?`<div class="stat stat-financial" style="--c:var(--green)"><label>💰 الإيرادات</label><div class="val">${fmt(tRev)}</div><div class="sub">${c} — المحصّل ${fmt(tCol)}</div></div>`:''}
-    ${_showStats?`<div class="stat stat-financial" style="--c:var(--green)"><label>🏦 رصيد الخزنة</label><div class="val">${fmt(bI-bO)}</div><div class="sub">${c}</div></div>`:''}
-    ${_showStats?`<div class="stat stat-financial" style="--c:var(--red)"><label>💳 المديونيات</label><div class="val">${fmt(debts)}</div><div class="sub">${c}</div></div>`:''}
+    ${_showCounts?`<div class="stat" style="--c:var(--gold);cursor:pointer" onclick="goPage('dafter')"><label>📒 الدفتر</label><div class="val">${d.length}</div><div class="sub">قيد التنفيذ${lateDafter?` <span style="color:var(--orange)">⚠️${lateDafter}</span>`:''}</div></div>`:''}
+    ${_showCounts?`<div class="stat" style="--c:var(--orange);cursor:pointer" onclick="goPage('proof')"><label>🔬 البروفه</label><div class="val">${pf.length}</div><div class="sub">جاهزة${lateProof?` <span style="color:var(--orange)">⚠️${lateProof}</span>`:''}</div></div>`:''}
+    ${_showCounts?`<div class="stat" style="--c:var(--blue);cursor:pointer" onclick="goPage('archive')"><label>📁 الأرشيف</label><div class="val">${arcF.length}</div><div class="sub">في الفترة</div></div>`:''}
+    ${_showStats?`<div class="stat stat-financial" style="--c:var(--green);cursor:pointer" onclick="goPage('reports')"><label>💰 الإيرادات</label><div class="val">${fmt(tRev)}</div><div class="sub">${c} — المحصّل ${fmt(tCol)}</div></div>`:''}
+    ${_showStats?`<div class="stat stat-financial" style="--c:var(--green);cursor:pointer" onclick="goPage('treasury')"><label>🏦 رصيد الخزنة</label><div class="val">${fmt(bI-bO)}</div><div class="sub">${c}</div></div>`:''}
+    ${_showStats?`<div class="stat stat-financial" style="--c:var(--red);cursor:pointer" onclick="goPage('debts')"><label>💳 المديونيات</label><div class="val">${fmt(debts)}</div><div class="sub">${c}</div></div>`:''}
     ${(!_showStats&&!_showCounts)?`<div style="padding:20px;text-align:center;color:var(--text3);font-size:13px">🔒 ليس لديك صلاحية رؤية الإحصاءات</div>`:''}
   `;
 
@@ -9339,6 +9363,10 @@ function renderDash(){
       document.getElementById('chart-products-legend').innerHTML=prodSorted.map(([n,v],i)=>
         `<div style="display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:50%;background:${ChartEngine.colors[i%ChartEngine.colors.length]};flex-shrink:0;display:inline-block"></span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n}</span><span style="color:var(--text3);font-size:9px">${v}</span></div>`
       ).join('');
+    }else{
+      ChartEngine.destroy('chart-products');
+      const legend=document.getElementById('chart-products-legend');
+      if(legend)legend.innerHTML='<div style="color:var(--text3);text-align:center;padding:8px">لا توجد بيانات في هذه الفترة</div>';
     }
 
     // 3. Cases bar chart — last 6 months
@@ -9360,6 +9388,8 @@ function renderDash(){
     const topClients=Object.values(clM).sort((a,b)=>b.tot-a.tot).slice(0,6);
     if(topClients.length){
       ChartEngine.hbar('chart-clients',topClients.map(x=>x.name),topClients.map(x=>x.tot),'#c9a84c');
+    }else{
+      ChartEngine.destroy('chart-clients');
     }
   },50);
 
@@ -10337,7 +10367,8 @@ function openProofNotifModal(clients){
   if(msgs.length===1){
     const waBtn=document.getElementById('proof-wa-btn');
     const cpBtn=document.getElementById('proof-copy-btn');
-    if(waBtn)waBtn.onclick=()=>wa(msgs[0].client.phone,msgs[0].msg);
+    // FIX #NOTIFLOG-META: كان يستدعي wa() بدون meta فيُسجَّل الإشعار بدون اسم عميل ونوع
+    if(waBtn)waBtn.onclick=()=>wa(msgs[0].client.phone,msgs[0].msg,{client:msgs[0].client.name,type:'wa-proof',page:'البروفه'});
     if(cpBtn)cpBtn.onclick=()=>copyTxt(msgs[0].msg);
   }
   openOv('ov-proof-notif');
@@ -11547,8 +11578,13 @@ function sendDailyBriefing(){
     lines.push('*✅ لا توجد متأخرات أو تنبيهات*','');
   }
 
-  // ── 4. حركة الخزنة اليوم ──
+  // ── 4. حركة الخزنة اليوم + الرصيد الإجمالي ──
   const treasury=DB.get('treasury')||[];
+  const totalIn=treasury.filter(t=>t.type==='in').reduce((s,t)=>s+(+t.amount||0),0);
+  const totalOut=treasury.filter(t=>t.type==='out').reduce((s,t)=>s+(+t.amount||0),0);
+  lines.push('*🏦 رصيد الخزنة الإجمالي*');
+  lines.push(`   💼 الرصيد الحالي: ${fmt(totalIn-totalOut)} ${currency}`);
+  lines.push('');
   const todayTr=treasury.filter(t=>(t.date||'')===today&&!t.isTransfer);
   const todayIn=todayTr.filter(t=>t.type==='in').reduce((s,t)=>s+(+t.amount||0),0);
   const todayOut=todayTr.filter(t=>t.type==='out').reduce((s,t)=>s+(+t.amount||0),0);
@@ -11604,7 +11640,15 @@ function renderNotifLog(){
   const dateFrom=document.getElementById('notif-log-date-from')?.value||'';
   const dateTo=document.getElementById('notif-log-date-to')?.value||'';
   const filtered=logs.filter(l=>{
-    const matchType=!typeF||(l.type||'').includes(typeF.replace('wa-',''));
+    // FIX #FILTER-TYPE: كانت تستخدم includes() بدل مطابقة دقيقة — هش ويعطي نتائج غير صحيحة
+    // إذا أضفنا أنواعاً جديدة. نستبدل بخريطة تجميع صريحة لكل خيار فلتر.
+    const typeGroups={
+      'wa-inv':['wa-inv','inv'],
+      'wa-proof':['wa-proof','wa-pf','pf'],
+      'wa-fin':['wa-fin','fin'],
+      'whatsapp':['whatsapp']
+    };
+    const matchType=!typeF||(typeGroups[typeF]||[typeF]).includes(l.type||'');
     const matchQ=!q||l.client?.toLowerCase().includes(q)||l.phone?.includes(q)||l.preview?.toLowerCase().includes(q);
     const iso=arDateToISO(l.date||'')||'';
     const matchFrom=!dateFrom||iso>=dateFrom;
@@ -11714,15 +11758,16 @@ function closeAdminPick(){document.getElementById('admin-pick-ov').classList.rem
 
 function sendNotifReportToAdmin(){
   const li=DB.get('labinfo')||{};
-  // فلتر: واتساب فقط (استثناء system + alert + أي إدخال بدون رقم هاتف)
-  const logs=(DB.get('notif_log')||[]).filter(l=>l.type!=='system'&&l.type!=='alert'&&l.phone).slice(0,20);
+  const todayISO=today();
+  // فلتر: واتساب فقط (استثناء system + alert + أي إدخال بدون رقم هاتف) + تاريخ اليوم فقط
+  const logs=(DB.get('notif_log')||[]).filter(l=>l.type!=='system'&&l.type!=='alert'&&l.phone&&arDateToISO(l.date||'')===todayISO);
   const lines=[
-    '*📊 تقرير الإشعارات المرسلة*',
+    '*📊 تقرير إشعارات اليوم*',
     '━━━━━━━━━━━━━━━━━━━━━━━━',
     '*🦷 '+(li.name||'Perfect Lab Pro')+'*',
     '📅 '+new Date().toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'}),
     '',
-    `*إجمالي الإشعارات المرسلة: ${logs.length}*`,
+    `*إجمالي إشعارات اليوم: ${logs.length}*`,
     '━━━━━━━━━━━━━━━━━━━━━━━━'
   ];
   const typeLabel={'wa-inv':'📄 فاتورة','wa-proof':'🔍 بروفه','wa-pf':'🔍 بروفه','wa-fin':'💰 مالي','whatsapp':'💬 واتساب'};
@@ -11916,7 +11961,14 @@ function updateNotifBadges(){
   const a1=document.getElementById('nqs-arc');if(a1)a1.textContent=arcClients.size;
   const a2=document.getElementById('nqs-pf');if(a2)a2.textContent=pfClients.size;
   const tr=DB.get('treasury')||[];
-  const a3=document.getElementById('nqs-tr');if(a3)a3.textContent=new Set(tr.filter(t=>t.accType==='client').map(t=>t.accName)).size;
+  const a3=document.getElementById('nqs-tr');
+  // FIX #NQS-TR: كانت تعرض عدد العملاء الفريدين في الخزنة كلها (رقم ثابت وغير مفيد).
+  // نستبدله بعدد حركات الخزنة الفعلية اليوم فقط (مفيد أكثر على صفحة الإشعارات).
+  if(a3){
+    const today=new Date().toISOString().slice(0,10);
+    const todayTr=tr.filter(t=>t.date===today&&!t.isTransfer);
+    a3.textContent=todayTr.length;
+  }
 }
 
 // Run alert check every 5 minutes
@@ -12006,7 +12058,7 @@ function previewSample(type){
     financial:['✨ '+(li.name||'Perfect Lab')+' — إشعار مالي ✨','━━━━━━━━━━━━━━━━━━','👤 د. أحمد محمد','📅 '+dateAr(),'','💵 المبلغ المدفوع: '+fmtAr(500)+' '+c,'🔢 رقم الحركة: T-42','💰 إجمالي المدفوع: '+fmtAr(3000)+' '+c,'📌 المديونية الحالية: '+fmtAr(800)+' '+c,'','━━━━━━━━━━━━━━━━━━','📜 آخر المعاملات:','','✅ دفعة | '+fmtAr(500)+' '+c+' | اليوم','✅ دفعة | '+fmtAr(1000)+' '+c+' | الأسبوع الماضي','━━━━━━━━━━━━━━━━━━',getNsText('footer-fi','✅ تم تسجيل دفعتكم بنجاح'),getLabContactLine()].join('\n')
   };
   const txt=sampleMsgs[type]||'';
-  ['notif-preview','nset-preview'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=txt});
+  ['notif-preview-nset','nset-preview'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=txt});
 }
 
 
