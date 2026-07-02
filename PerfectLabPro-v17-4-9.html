@@ -41,6 +41,23 @@
 <style>
 :root{--bg:#0a0c10;--bg2:#111318;--bg3:#1a1d24;--bg4:#22252f;--border:#2a2e3a;--border2:#353a48;--text:#e8eaf0;--text2:#9aa0b4;--text3:#5c6278;--gold:#c9a84c;--gold2:#e8c96a;--blue:#3b82f6;--blue2:#60a5fa;--green:#22c55e;--red:#ef4444;--orange:#f97316;--purple:#a855f7;--teal:#14b8a6;--sidebar-w:250px;--top-h:56px}
 .theme-light{--bg:#f0f2f7;--bg2:#fff;--bg3:#f5f6fa;--bg4:#eaecf4;--border:#dde0ee;--border2:#c5c9e0;--text:#1a1d2e;--text2:#5c6280;--text3:#9aa0b8;--gold:#b8922a;--gold2:#c9a84c;--blue:#2563eb;--blue2:#3b82f6;--green:#16a34a;--red:#dc2626;--orange:#ea580c;--purple:#9333ea;--teal:#0d9488}
+.theme-qasetly{--bg:#eef1f7;--bg2:#ffffff;--bg3:#f4f6fb;--bg4:#e9edf5;--border:#e1e5f0;--border2:#c9cfe0;--text:#16213e;--text2:#5b6478;--text3:#98a1b5;--gold:#0f766e;--gold2:#14b8a6;--blue:#2563eb;--blue2:#3b82f6;--green:#20b358;--red:#dc2626;--orange:#ea580c;--purple:#9333ea;--teal:#0f766e}
+/* ===== نظام تصميم قشطلي — كروت وأزرار وحقول بروح التصميم المرجعي ===== */
+body.theme-qasetly .card{border:1px solid var(--border);border-radius:16px;box-shadow:0 1px 3px rgba(15,30,60,.06),0 1px 2px rgba(15,30,60,.04)}
+body.theme-qasetly .card-head::after{background:linear-gradient(to left,var(--teal),var(--green))}
+body.theme-qasetly .btn{border-radius:10px}
+body.theme-qasetly .btn-gold{background:linear-gradient(135deg,var(--green),#16a34a);color:#fff}
+body.theme-qasetly .btn-teal{background:linear-gradient(135deg,var(--teal),var(--gold2));color:#fff}
+body.theme-qasetly .ua{border-radius:10px;background:linear-gradient(135deg,var(--teal),var(--green));color:#fff}
+body.theme-qasetly .user-chip{border-radius:10px}
+body.theme-qasetly .search-box input{border-radius:20px;background:var(--bg2);border-color:var(--border2)}
+body.theme-qasetly input[type=text],body.theme-qasetly input[type=number],body.theme-qasetly input[type=date],body.theme-qasetly input[type=tel],body.theme-qasetly input[type=email],body.theme-qasetly input[type=password],body.theme-qasetly select,body.theme-qasetly textarea{border-radius:9px}
+body.theme-qasetly .badge{border-radius:20px;font-weight:800}
+body.theme-qasetly tr:hover td{background:rgba(15,118,110,.05)}
+body.theme-qasetly .dg-subtab.on,body.theme-qasetly .tab.on{color:var(--teal);border-bottom-color:var(--green)}
+body.theme-qasetly .master-tab.on{background:linear-gradient(135deg,rgba(15,118,110,.1),transparent);border-color:var(--teal);color:var(--teal)}
+body.theme-qasetly .sidebar-cover-ph{background:linear-gradient(135deg,#0f766e 0%,#134e6f 50%,#0d3b52 100%)}
+body.theme-qasetly .empty .ei{filter:grayscale(.2) opacity(.7)}
 /* ===== ROW DETAIL MODAL ===== */
 #row-detail-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);z-index:2000;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .2s}
 #row-detail-modal.open{opacity:1;pointer-events:all}
@@ -234,6 +251,18 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 .tabs{display:flex;gap:3px;border-bottom:1px solid var(--border);margin-bottom:16px}
 .tab{padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
 .tab:hover{color:var(--text)}.tab.on{color:var(--gold);border-bottom-color:var(--gold)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.dg-subtabs{display:flex;gap:3px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.dg-subtab{padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;transition:.15s}
+.dg-subtab.on{color:var(--gold2);border-bottom-color:var(--gold)}
+.dg-sub{display:none}
+.dg-sub.on{display:block}
+.stat-pill{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--text2);font-weight:400}
+.stat-pill b{color:var(--gold2)}
+.dg-sel{padding:5px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-family:Cairo,sans-serif;font-size:12px;min-width:130px}
+.rate-input{width:64px;padding:4px 6px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-family:Cairo,sans-serif;font-size:12px;text-align:center}
+.rate-default{color:var(--text3);font-size:10px}
+.rate-custom{color:var(--gold2);font-size:10px}
 .cat-tabs{margin:0 0 10px;padding:0 2px;flex-wrap:wrap}
 .cat-tabs .tab{padding:6px 11px;font-size:11.5px}
 .cat-tabs .cat-cnt{font-size:9.5px;color:var(--text3);margin-right:3px}
@@ -971,6 +1000,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
       <div class="theme-dots">
         <div class="td on" style="background:#c9a84c" onclick="setTheme('')"></div>
         <div class="td" style="background:#e8eaf0;border:1px solid #ccc" onclick="setTheme('theme-light')"></div>
+        <div class="td" style="background:linear-gradient(135deg,#0f766e,#20b358);border:1px solid #0f766e" onclick="setTheme('theme-qasetly')" title="قشطلي"></div>
       </div>
       <div class="user-chip" tabindex="0">
         <div class="ua" id="top-avatar">م</div><span style="font-size:12px;font-weight:600" id="top-uname">المدير</span>
@@ -1280,7 +1310,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
         <div class="tbl-wrap"><table><thead><tr>
           <th>المندوب</th><th>العملاء المرتبطون</th><th>الحالات</th>
           <th>المبيعات</th><th>العمولة</th>
-          <th>الراتب الثابت</th><th style="color:var(--gold2)">الإجمالي المستحق</th><th></th>
+          <th>الراتب الثابت</th><th style="color:var(--gold2)">الإجمالي المستحق</th>
         </tr></thead><tbody id="rep-del"></tbody></table></div>
       </div>
 
@@ -2063,7 +2093,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
           <div style="color:var(--gold);font-weight:900;font-size:15px">⚙️ إعدادات الإشعارات والرسائل</div>
           <div style="color:rgba(255,255,255,.55);font-size:11px;margin-top:3px">تحكم كامل في محتوى ومظهر رسائل واتساب والإشعارات</div>
         </div>
-        <button class="btn btn-gold btn-sm" onclick="goPage('masterdata');setTimeout(()=>swMaster('md-notif-sets',document.querySelector('[onclick*=md-notif-sets]')),300)">🎨 الإعدادات التفصيلية (ألوان وقوالب) ←</button>
+        <button class="btn btn-gold btn-sm" onclick="goPage('masterdata');setTimeout(()=>swMaster('md-design',document.querySelector('[onclick*=md-design]')),300)">🎨 تصميم الفاتورة والرسائل (ألوان وقوالب) ←</button>
       </div>
 
       <div class="two-col">
@@ -2138,15 +2168,83 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
             <h4>⏰ حدود التأخر والاستحقاق</h4>
             <div class="fg">
               <label style="font-size:10px">🗂️ تأخر حالة الدفتر (أيام)</label>
-              <input type="number" id="nset-dafter-late-q" min="1" max="365" value="7" style="width:80px" oninput="saveNsSettings()">
+              <input type="number" id="nset-dafter-late" min="1" max="365" value="7" style="width:80px" oninput="saveNsSettings()">
             </div>
             <div class="fg" style="margin-top:8px">
               <label style="font-size:10px">🔬 تأخر حالة البروفه (أيام)</label>
-              <input type="number" id="nset-proof-late-q" min="1" max="365" value="5" style="width:80px" oninput="saveNsSettings()">
+              <input type="number" id="nset-proof-late" min="1" max="365" value="5" style="width:80px" oninput="saveNsSettings()">
             </div>
             <div class="fg" style="margin-top:8px">
               <label style="font-size:10px">💸 تأخر الدين (أيام)</label>
-              <input type="number" id="nset-debt-late-q" min="1" max="365" value="30" style="width:80px" oninput="saveNsSettings()">
+              <input type="number" id="nset-debt-late" min="1" max="365" value="30" style="width:80px" oninput="saveNsSettings()">
+            </div>
+          </div>
+
+          <!-- محرك التنبيهات الداخلية -->
+          <div class="notif-card">
+            <h4>🔔 أوقات وتنبيهات التطبيق</h4>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:10px">يمكنك ضبط حتى 4 أوقات تنبيه يومية — التنبيه يظهر عند فتح التطبيق في الوقت المحدد أو بعده</div>
+            <div id="alert-times-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px"></div>
+            <button class="btn btn-ghost btn-sm" onclick="addAlertTime()" style="width:100%;justify-content:center;margin-bottom:12px">➕ إضافة وقت تنبيه</button>
+
+            <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:10px">
+              <div style="font-size:12px;font-weight:700;margin-bottom:8px;color:var(--gold2)">🔊 صوت التنبيه</div>
+              <div class="fgrid" style="grid-template-columns:1fr 1fr;gap:8px">
+                <div class="fg">
+                  <label style="font-size:10px">نوع الصوت</label>
+                  <select id="nset-alert-sound" onchange="saveNsSettings();previewAlertSound()">
+                    <option value="beep">تنبيه بسيط (beep)</option>
+                    <option value="bell">جرس (bell)</option>
+                    <option value="chime">نغمة (chime)</option>
+                    <option value="urgent">عاجل (urgent)</option>
+                    <option value="none">بدون صوت</option>
+                  </select>
+                </div>
+                <div class="fg">
+                  <label style="font-size:10px">مستوى الصوت</label>
+                  <input type="range" id="nset-alert-volume" min="0" max="100" value="70" oninput="saveNsSettings()" style="width:100%;margin-top:6px">
+                </div>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="previewAlertSound()" style="margin-top:6px">▶️ معاينة الصوت</button>
+            </div>
+
+            <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:10px">
+              <div style="font-size:12px;font-weight:700;margin-bottom:8px;color:var(--gold2)">🎨 مظهر التنبيه</div>
+              <div class="fg" style="margin-bottom:8px">
+                <label style="font-size:10px">لون التنبيه</label>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px" id="alert-color-picker">
+                  <div onclick="setAlertColor('red')" data-color="red" style="width:28px;height:28px;border-radius:50%;background:#ef4444;cursor:pointer;border:3px solid transparent" title="أحمر"></div>
+                  <div onclick="setAlertColor('orange')" data-color="orange" style="width:28px;height:28px;border-radius:50%;background:#f97316;cursor:pointer;border:3px solid transparent" title="برتقالي"></div>
+                  <div onclick="setAlertColor('gold')" data-color="gold" style="width:28px;height:28px;border-radius:50%;background:#e8c96a;cursor:pointer;border:3px solid transparent" title="ذهبي"></div>
+                  <div onclick="setAlertColor('blue')" data-color="blue" style="width:28px;height:28px;border-radius:50%;background:#3b82f6;cursor:pointer;border:3px solid transparent" title="أزرق"></div>
+                  <div onclick="setAlertColor('green')" data-color="green" style="width:28px;height:28px;border-radius:50%;background:#22c55e;cursor:pointer;border:3px solid transparent" title="أخضر"></div>
+                </div>
+                <input type="hidden" id="nset-alert-color" value="red">
+              </div>
+              <div class="fg" style="margin-bottom:8px">
+                <label style="font-size:10px">مدة عرض التنبيه</label>
+                <select id="nset-alert-duration" onchange="saveNsSettings()">
+                  <option value="10">10 ثوانٍ</option>
+                  <option value="15" selected>15 ثانية</option>
+                  <option value="30">30 ثانية</option>
+                  <option value="60">دقيقة كاملة</option>
+                  <option value="0">حتى الإغلاق اليدوي</option>
+                </select>
+              </div>
+              <div class="toggle-row"><label>🫨 اهتزاز الشاشة عند التنبيه</label><label class="sw"><input type="checkbox" id="nset-alert-shake" checked onchange="saveNsSettings()"><span class="sl"></span></label></div>
+              <div class="toggle-row" style="margin-top:6px"><label>🔁 تكرار التنبيه كل 5 دقائق لو لم يُغلق</label><label class="sw"><input type="checkbox" id="nset-alert-repeat" onchange="saveNsSettings()"><span class="sl"></span></label></div>
+            </div>
+
+            <div style="border-top:1px solid var(--border);padding-top:12px">
+              <div style="font-size:12px;font-weight:700;margin-bottom:8px;color:var(--gold2)">📋 أنواع التنبيهات</div>
+              <div class="toggle-row"><label>🗂️ تنبيه الحالات المتأخرة</label><label class="sw"><input type="checkbox" id="nset-alert-late" checked onchange="saveNsSettings()"><span class="sl"></span></label></div>
+              <div class="toggle-row" style="margin-top:6px"><label>💸 تنبيه الديون المتأخرة</label><label class="sw"><input type="checkbox" id="nset-alert-debt" checked onchange="saveNsSettings()"><span class="sl"></span></label></div>
+              <div class="toggle-row" style="margin-top:6px"><label>📦 تنبيه انخفاض المخزون</label><label class="sw"><input type="checkbox" id="nset-alert-inv" checked onchange="saveNsSettings()"><span class="sl"></span></label></div>
+            </div>
+
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <button class="btn btn-ghost btn-sm" onclick="testAlertNow()" style="flex:1;justify-content:center">🔔 اختبار التنبيه</button>
+              <button class="btn btn-gold btn-sm" onclick="saveNsSettings()" style="flex:1;justify-content:center">💾 حفظ</button>
             </div>
           </div>
 
@@ -2718,7 +2816,6 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
       <div class="master-tab" onclick="swMaster('md-perms',this)">🔐 الصلاحيات</div>
       <div class="master-tab" onclick="swMaster('md-inv',this)">📦 المخزون</div>
       <div class="master-tab" onclick="swMaster('md-trsetup',this)">💰 الخزائن</div>
-      <div class="master-tab" onclick="swMaster('md-notif-sets',this)">🔔 إعدادات الإشعارات</div>
       <div class="master-tab" onclick="swMaster('md-design',this);loadDesignPanel()">🎨 تصميم الإشعارات</div>
       <div class="master-tab" onclick="swMaster('md-employees',this)">👔 الموظفون</div>
       <div class="master-tab" onclick="swMaster('md-backup',this);renderBackup()">💾 النسخ الاحتياطي</div>
@@ -2842,17 +2939,63 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 
     <!-- DELEGATES -->
     <div id="md-delegates" class="ms">
-      <div class="ph" style="margin-bottom:12px"><div></div>
-        <div class="btn-row">
-          <button class="btn btn-gold" onclick="openDelegateModal()">+ إضافة مندوب</button>
-          <button class="btn btn-ghost" onclick="editSelDelegate()">تعديل</button>
-          <button class="btn btn-ghost" onclick="delSelDelegate()">حذف</button>
+      <div class="dg-subtabs">
+        <div class="dg-subtab on" onclick="swDgSub('dg-sub-list',this)">📋 قائمة المناديب</div>
+        <div class="dg-subtab" onclick="swDgSub('dg-sub-clients',this);renderDgClientsAssign()">👥 عملاء المناديب</div>
+      </div>
+
+      <!-- قائمة المناديب -->
+      <div id="dg-sub-list" class="dg-sub on">
+        <div class="ph" style="margin-bottom:12px"><div></div>
+          <div class="btn-row">
+            <button class="btn btn-gold" onclick="openDelegateModal()">+ إضافة مندوب</button>
+            <button class="btn btn-ghost" onclick="editSelDelegate()">تعديل</button>
+            <button class="btn btn-ghost" onclick="delSelDelegate()">حذف</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>قائمة المناديب (<span id="dg-count">0</span>)</h3></div>
+          <div class="tbl-wrap"><table><thead><tr><th class="chk-col"></th><th>صورة</th><th>الاسم</th><th>الهاتف</th><th>تاريخ التعيين</th><th>نسبة العمولة</th><th>الحالة</th><th>مستندات</th></tr></thead><tbody id="delegates-tb"></tbody></table></div>
+          <div id="delegates-empty" class="empty" style="display:none"><div class="ei">🚗</div><p>لا يوجد مناديب</p></div>
         </div>
       </div>
-      <div class="card">
-        <div class="card-head"><h3>قائمة المناديب (<span id="dg-count">0</span>)</h3></div>
-        <div class="tbl-wrap"><table><thead><tr><th class="chk-col"></th><th>صورة</th><th>الاسم</th><th>الهاتف</th><th>تاريخ التعيين</th><th>نسبة العمولة</th><th>الحالة</th><th>مستندات</th></tr></thead><tbody id="delegates-tb"></tbody></table></div>
-        <div id="delegates-empty" class="empty" style="display:none"><div class="ei">🚗</div><p>لا يوجد مناديب</p></div>
+
+      <!-- عملاء المناديب (ربط + نسب + نقل) -->
+      <div id="dg-sub-clients" class="dg-sub">
+        <div class="card">
+          <div class="card-head">
+            <h3>ربط العملاء بالمناديب <span class="stat-pill" id="dgcl-stats" style="margin-right:8px"></span></h3>
+            <div class="toolbar">
+              <div class="search-box"><input type="text" id="dgcl-search" placeholder="بحث بالاسم أو الهاتف..." oninput="renderDgClientsAssign()"><span class="search-icon">🔍</span></div>
+              <select id="dgcl-filter" onchange="renderDgClientsAssign()">
+                <option value="">الكل</option>
+                <option value="__unassigned__">غير مسوّى</option>
+              </select>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--text2);background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 12px;margin-bottom:14px;border-right:3px solid var(--teal)">
+            📊 النسبة تُملأ تلقائياً من نسبة المندوب العامة عند التسوية — ويمكن تخصيصها لكل عميل بشكل مستقل.
+          </div>
+          <div class="tbl-wrap"><table><thead><tr>
+            <th>اسم العميل</th><th>الهاتف</th><th>المندوب</th><th>نسبة العمولة</th><th>مفعّلة</th><th></th>
+          </tr></thead><tbody id="dgcl-tb"></tbody></table></div>
+          <div id="dgcl-empty" class="empty" style="display:none"><div class="ei">👥</div><p>لا يوجد عملاء</p></div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <div class="card-head"><h3>🔄 نقل كل عملاء مندوب إلى مندوب آخر</h3></div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <select id="dgcl-bulk-from" onchange="fillDgBulkTransferSel()" style="flex:1;min-width:160px;padding:7px 10px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-family:Cairo,sans-serif;font-size:12px">
+              <option value="">-- من مندوب --</option>
+            </select>
+            <span style="color:var(--text3);font-size:11px">←</span>
+            <select id="dgcl-bulk-to" style="flex:1;min-width:160px;padding:7px 10px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-family:Cairo,sans-serif;font-size:12px">
+              <option value="">-- إلى مندوب --</option>
+            </select>
+            <button class="btn btn-sm" style="background:var(--orange);color:#fff" onclick="bulkTransferDgClients()">⚡ نقل الكل</button>
+          </div>
+          <div id="dgcl-bulk-hint" style="font-size:11px;color:var(--text3);margin-top:8px"></div>
+        </div>
       </div>
     </div>
 
@@ -2942,237 +3085,6 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
             <div id="extra-boxes-list" style="display:flex;flex-direction:column;gap:8px"></div>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- NOTIFICATION SETTINGS in MASTERDATA -->
-    <div id="md-notif-sets" class="ms">
-      <div class="two-col">
-        <div>
-          <div class="nset-card">
-            <h5>⏰ إعدادات التأخر والاستحقاق</h5>
-            <div class="fgrid" style="grid-template-columns:1fr">
-              <div class="fg">
-                <label>🗂️ بعد كم يوم تُعتبر حالة الدفتر متأخرة؟</label>
-                <div style="display:flex;align-items:center;gap:8px">
-                  <input type="number" id="nset-dafter-late" min="1" max="365" value="7" style="width:80px" oninput="saveNsSettings()">
-                  <span style="font-size:11px;color:var(--text3)">يوم من تاريخ الإدخال</span>
-                </div>
-              </div>
-              <div class="fg">
-                <label>🔬 بعد كم يوم تُعتبر حالة البروفه متأخرة؟</label>
-                <div style="display:flex;align-items:center;gap:8px">
-                  <input type="number" id="nset-proof-late" min="1" max="365" value="5" style="width:80px" oninput="saveNsSettings()">
-                  <span style="font-size:11px;color:var(--text3)">يوم من تاريخ الإدخال</span>
-                </div>
-              </div>
-              <div class="fg">
-                <label>💸 بعد كم يوم يُعتبر الدين متأخراً؟</label>
-                <div style="display:flex;align-items:center;gap:8px">
-                  <input type="number" id="nset-debt-late" min="1" max="365" value="30" style="width:80px" oninput="saveNsSettings()">
-                  <span style="font-size:11px;color:var(--text3)">يوم من تاريخ الأرشفة</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="nset-card">
-            <h5>🔔 أوقات التنبيه اليومي</h5>
-            <div style="font-size:11px;color:var(--text3);margin-bottom:10px">يمكنك ضبط حتى 4 أوقات تنبيه يومية — التنبيه يظهر عند فتح التطبيق في الوقت المحدد أو بعده</div>
-            <div id="alert-times-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px"></div>
-            <button class="btn btn-ghost btn-sm" onclick="addAlertTime()" style="width:100%;justify-content:center;margin-bottom:12px">➕ إضافة وقت تنبيه</button>
-
-            <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:10px">
-              <div style="font-size:12px;font-weight:700;margin-bottom:8px;color:var(--gold2)">🔊 صوت التنبيه</div>
-              <div class="fgrid" style="grid-template-columns:1fr 1fr;gap:8px">
-                <div class="fg">
-                  <label>نوع الصوت</label>
-                  <select id="nset-alert-sound" onchange="saveNsSettings();previewAlertSound()">
-                    <option value="beep">تنبيه بسيط (beep)</option>
-                    <option value="bell">جرس (bell)</option>
-                    <option value="chime">نغمة (chime)</option>
-                    <option value="urgent">عاجل (urgent)</option>
-                    <option value="none">بدون صوت</option>
-                  </select>
-                </div>
-                <div class="fg">
-                  <label>مستوى الصوت</label>
-                  <input type="range" id="nset-alert-volume" min="0" max="100" value="70" oninput="saveNsSettings()" style="width:100%;margin-top:6px">
-                </div>
-              </div>
-              <button class="btn btn-ghost btn-sm" onclick="previewAlertSound()" style="margin-top:6px">▶️ معاينة الصوت</button>
-            </div>
-
-            <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:10px">
-              <div style="font-size:12px;font-weight:700;margin-bottom:8px;color:var(--gold2)">🎨 مظهر التنبيه</div>
-              <div class="fg" style="margin-bottom:8px">
-                <label>لون التنبيه</label>
-                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px" id="alert-color-picker">
-                  <div onclick="setAlertColor('red')" data-color="red" style="width:28px;height:28px;border-radius:50%;background:#ef4444;cursor:pointer;border:3px solid transparent" title="أحمر"></div>
-                  <div onclick="setAlertColor('orange')" data-color="orange" style="width:28px;height:28px;border-radius:50%;background:#f97316;cursor:pointer;border:3px solid transparent" title="برتقالي"></div>
-                  <div onclick="setAlertColor('gold')" data-color="gold" style="width:28px;height:28px;border-radius:50%;background:#e8c96a;cursor:pointer;border:3px solid transparent" title="ذهبي"></div>
-                  <div onclick="setAlertColor('blue')" data-color="blue" style="width:28px;height:28px;border-radius:50%;background:#3b82f6;cursor:pointer;border:3px solid transparent" title="أزرق"></div>
-                  <div onclick="setAlertColor('green')" data-color="green" style="width:28px;height:28px;border-radius:50%;background:#22c55e;cursor:pointer;border:3px solid transparent" title="أخضر"></div>
-                </div>
-                <input type="hidden" id="nset-alert-color" value="red">
-              </div>
-              <div class="fg" style="margin-bottom:8px">
-                <label>مدة عرض التنبيه</label>
-                <select id="nset-alert-duration" onchange="saveNsSettings()">
-                  <option value="10">10 ثوانٍ</option>
-                  <option value="15" selected>15 ثانية</option>
-                  <option value="30">30 ثانية</option>
-                  <option value="60">دقيقة كاملة</option>
-                  <option value="0">حتى الإغلاق اليدوي</option>
-                </select>
-              </div>
-              <div class="toggle-row"><label>🫨 اهتزاز الشاشة عند التنبيه</label><label class="sw"><input type="checkbox" id="nset-alert-shake" checked onchange="saveNsSettings()"><span class="sl"></span></label></div>
-              <div class="toggle-row" style="margin-top:6px"><label>🔁 تكرار التنبيه كل 5 دقائق لو لم يُغلق</label><label class="sw"><input type="checkbox" id="nset-alert-repeat" onchange="saveNsSettings()"><span class="sl"></span></label></div>
-            </div>
-
-            <div style="border-top:1px solid var(--border);padding-top:12px">
-              <div style="font-size:12px;font-weight:700;margin-bottom:8px;color:var(--gold2)">📋 أنواع التنبيهات</div>
-              <div class="toggle-row"><label>🗂️ تنبيه الحالات المتأخرة</label><label class="sw"><input type="checkbox" id="nset-alert-late" checked onchange="saveNsSettings()"><span class="sl"></span></label></div>
-              <div class="toggle-row" style="margin-top:6px"><label>💸 تنبيه الديون المتأخرة</label><label class="sw"><input type="checkbox" id="nset-alert-debt" checked onchange="saveNsSettings()"><span class="sl"></span></label></div>
-              <div class="toggle-row" style="margin-top:6px"><label>📦 تنبيه انخفاض المخزون</label><label class="sw"><input type="checkbox" id="nset-alert-inv" checked onchange="saveNsSettings()"><span class="sl"></span></label></div>
-            </div>
-
-            <div style="display:flex;gap:8px;margin-top:12px">
-              <button class="btn btn-ghost btn-sm" onclick="testAlertNow()" style="flex:1;justify-content:center">🔔 اختبار التنبيه</button>
-              <button class="btn btn-gold btn-sm" onclick="saveNsSettings()" style="flex:1;justify-content:center">💾 حفظ</button>
-            </div>
-          </div>
-          <div class="nset-card">
-            <h5>🔔 رأس وتذييل رسائل الإشعارات</h5>
-            <div class="fgrid" style="grid-template-columns:1fr">
-              <div class="fg"><label>تذييل رسالة الفاتورة</label><textarea id="nset-footer-inv" style="min-height:55px">✨ شكراً لثقتكم ✨</textarea></div>
-              <div class="fg"><label>تذييل رسالة البروفه</label><textarea id="nset-footer-pr" style="min-height:55px">🕐 يرجى التنسيق لموعد البروفه</textarea></div>
-              <div class="fg"><label>تذييل رسالة الإشعار المالي</label><textarea id="nset-footer-fi" style="min-height:55px">✅ تم تسجيل دفعتكم بنجاح</textarea></div>
-            </div>
-          </div>
-          <div class="nset-card">
-            <h5>📋 محتوى إشعار الفاتورة</h5>
-            <div class="toggle-row"><label>إظهار اللوجو</label><label class="sw"><input type="checkbox" id="nset-inv-logo" checked><span class="sl"></span></label></div>
-            <div class="toggle-row"><label>إظهار بيانات التواصل</label><label class="sw"><input type="checkbox" id="nset-inv-contact" checked><span class="sl"></span></label></div>
-            <div class="toggle-row"><label>إظهار المديونية السابقة</label><label class="sw"><input type="checkbox" id="nset-inv-debt" checked><span class="sl"></span></label></div>
-            <div class="toggle-row"><label>إظهار حالات البروفه</label><label class="sw"><input type="checkbox" id="nset-inv-proof" checked><span class="sl"></span></label></div>
-            <div class="toggle-row"><label>إظهار حالات الدفتر</label><label class="sw"><input type="checkbox" id="nset-inv-active" checked><span class="sl"></span></label></div>
-          </div>
-          <div class="nset-card">
-            <h5>🔬 محتوى إشعار البروفه</h5>
-            <div class="toggle-row"><label>إظهار اللوجو</label><label class="sw"><input type="checkbox" id="nset-pr-logo" checked><span class="sl"></span></label></div>
-            <div class="toggle-row"><label>إظهار بيانات التواصل</label><label class="sw"><input type="checkbox" id="nset-pr-contact" checked><span class="sl"></span></label></div>
-            <div class="toggle-row"><label>إظهار المديونية</label><label class="sw"><input type="checkbox" id="nset-pr-debt" checked><span class="sl"></span></label></div>
-            <div class="toggle-row"><label>إظهار الحالات النشطة</label><label class="sw"><input type="checkbox" id="nset-pr-active" checked><span class="sl"></span></label></div>
-          </div>
-          <div class="nset-card">
-            <h5>💰 محتوى الإشعار المالي</h5>
-            <div class="toggle-row"><label>إظهار اللوجو</label><label class="sw"><input type="checkbox" id="nset-fi-logo" checked><span class="sl"></span></label></div>
-            <div class="toggle-row"><label>إظهار بيانات التواصل</label><label class="sw"><input type="checkbox" id="nset-fi-contact" checked><span class="sl"></span></label></div>
-            <div class="toggle-row"><label>إظهار آخر 5 معاملات</label><label class="sw"><input type="checkbox" id="nset-fi-history" checked><span class="sl"></span></label></div>
-            <div class="toggle-row"><label>إظهار المديونية بعد الدفع</label><label class="sw"><input type="checkbox" id="nset-fi-debt" checked><span class="sl"></span></label></div>
-          </div>
-        </div>
-        <div>
-          <div class="nset-card">
-            <h5>🖨️ إعدادات الفاتورة المطبوعة</h5>
-            <div class="toggle-row"><label>إظهار اللوجو</label><label class="sw"><input type="checkbox" id="nset-prt-logo" checked><span class="sl"></span></label></div>
-            <div class="toggle-row"><label>إظهار المديونية السابقة</label><label class="sw"><input type="checkbox" id="nset-prt-debt" checked><span class="sl"></span></label></div>
-            <div class="toggle-row"><label>إظهار حالات البروفه</label><label class="sw"><input type="checkbox" id="nset-prt-proof" checked><span class="sl"></span></label></div>
-            <div class="toggle-row"><label>إظهار الحالات النشطة</label><label class="sw"><input type="checkbox" id="nset-prt-active" checked><span class="sl"></span></label></div>
-            <div class="toggle-row"><label>إظهار بيانات التواصل</label><label class="sw"><input type="checkbox" id="nset-prt-contact" checked><span class="sl"></span></label></div>
-            <div class="fg" style="margin-top:10px"><label>رسالة ختامية في الفاتورة</label>
-              <textarea id="nset-prt-msg" style="min-height:50px">شكراً لثقتكم في خدماتنا — نتطلع لخدمتكم دائماً</textarea>
-            </div>
-          </div>
-
-          <!-- ===== لوحة تصميم الفاتورة ===== -->
-          <div class="nset-card" style="border-color:rgba(201,168,76,.4)">
-            <h5>🎨 تصميم الفاتورة — تحكم كامل</h5>
-
-            <!-- الرأس -->
-            <div style="margin-bottom:12px">
-              <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;border-bottom:1px solid var(--border);padding-bottom:5px">📐 رأس الفاتورة</div>
-              <div class="fgrid" style="grid-template-columns:1fr 1fr;gap:8px">
-                <div class="fg"><label style="font-size:10px">لون الخلفية (رأس)</label><input type="color" id="inv-color-header-bg" value="#0d1b2a" oninput="applyInvDesign()" style="width:100%;height:36px;border:1px solid var(--border);border-radius:7px;cursor:pointer;padding:2px"></div>
-                <div class="fg"><label style="font-size:10px">لون النص الرئيسي</label><input type="color" id="inv-color-header-text" value="#e8c96a" oninput="applyInvDesign()" style="width:100%;height:36px;border:1px solid var(--border);border-radius:7px;cursor:pointer;padding:2px"></div>
-                <div class="fg"><label style="font-size:10px">لون الخلفية (ثانوي)</label><input type="color" id="inv-color-header-bg2" value="#1a2e4a" oninput="applyInvDesign()" style="width:100%;height:36px;border:1px solid var(--border);border-radius:7px;cursor:pointer;padding:2px"></div>
-                <div class="fg"><label style="font-size:10px">لون النص الفرعي</label><input type="color" id="inv-color-header-sub" value="#b0c4de" oninput="applyInvDesign()" style="width:100%;height:36px;border:1px solid var(--border);border-radius:7px;cursor:pointer;padding:2px"></div>
-              </div>
-            </div>
-
-            <!-- جدول الأصناف -->
-            <div style="margin-bottom:12px">
-              <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;border-bottom:1px solid var(--border);padding-bottom:5px">📋 جدول الأصناف</div>
-              <div class="fgrid" style="grid-template-columns:1fr 1fr;gap:8px">
-                <div class="fg"><label style="font-size:10px">خلفية رأس الجدول</label><input type="color" id="inv-color-table-head" value="#0d1b2a" oninput="applyInvDesign()" style="width:100%;height:36px;border:1px solid var(--border);border-radius:7px;cursor:pointer;padding:2px"></div>
-                <div class="fg"><label style="font-size:10px">نص رأس الجدول</label><input type="color" id="inv-color-table-head-text" value="#e8c96a" oninput="applyInvDesign()" style="width:100%;height:36px;border:1px solid var(--border);border-radius:7px;cursor:pointer;padding:2px"></div>
-                <div class="fg"><label style="font-size:10px">خلفية الصف الزوجي</label><input type="color" id="inv-color-table-even" value="#f6f7fc" oninput="applyInvDesign()" style="width:100%;height:36px;border:1px solid var(--border);border-radius:7px;cursor:pointer;padding:2px"></div>
-                <div class="fg"><label style="font-size:10px">لون فاصل الصفوف</label><input type="color" id="inv-color-table-border" value="#eceff7" oninput="applyInvDesign()" style="width:100%;height:36px;border:1px solid var(--border);border-radius:7px;cursor:pointer;padding:2px"></div>
-              </div>
-            </div>
-
-            <!-- الإجماليات -->
-            <div style="margin-bottom:12px">
-              <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;border-bottom:1px solid var(--border);padding-bottom:5px">💰 قسم الإجماليات</div>
-              <div class="fgrid" style="grid-template-columns:1fr 1fr;gap:8px">
-                <div class="fg"><label style="font-size:10px">خلفية الإجماليات</label><input type="color" id="inv-color-totals-bg" value="#eef1ff" oninput="applyInvDesign()" style="width:100%;height:36px;border:1px solid var(--border);border-radius:7px;cursor:pointer;padding:2px"></div>
-                <div class="fg"><label style="font-size:10px">حدود الإجماليات</label><input type="color" id="inv-color-totals-border" value="#ced5ee" oninput="applyInvDesign()" style="width:100%;height:36px;border:1px solid var(--border);border-radius:7px;cursor:pointer;padding:2px"></div>
-                <div class="fg"><label style="font-size:10px">لون الإجمالي الكبير</label><input type="color" id="inv-color-totals-grand" value="#0d1b2a" oninput="applyInvDesign()" style="width:100%;height:36px;border:1px solid var(--border);border-radius:7px;cursor:pointer;padding:2px"></div>
-                <div class="fg"><label style="font-size:10px">لون المديونية</label><input type="color" id="inv-color-debt" value="#f97316" oninput="applyInvDesign()" style="width:100%;height:36px;border:1px solid var(--border);border-radius:7px;cursor:pointer;padding:2px"></div>
-              </div>
-            </div>
-
-            <!-- التذييل -->
-            <div style="margin-bottom:12px">
-              <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;border-bottom:1px solid var(--border);padding-bottom:5px">📌 تذييل الفاتورة</div>
-              <div class="fgrid" style="grid-template-columns:1fr 1fr;gap:8px">
-                <div class="fg"><label style="font-size:10px">خلفية التذييل</label><input type="color" id="inv-color-foot-bg" value="#0d1b2a" oninput="applyInvDesign()" style="width:100%;height:36px;border:1px solid var(--border);border-radius:7px;cursor:pointer;padding:2px"></div>
-                <div class="fg"><label style="font-size:10px">لون نص التذييل</label><input type="color" id="inv-color-foot-text" value="#cccccc" oninput="applyInvDesign()" style="width:100%;height:36px;border:1px solid var(--border);border-radius:7px;cursor:pointer;padding:2px"></div>
-              </div>
-            </div>
-
-            <!-- عنوان الفاتورة -->
-            <div style="margin-bottom:12px">
-              <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;border-bottom:1px solid var(--border);padding-bottom:5px">✏️ نصوص الفاتورة</div>
-              <div class="fgrid" style="grid-template-columns:1fr;gap:8px">
-                <div class="fg"><label style="font-size:10px">عنوان الفاتورة (البادج)</label><input type="text" id="inv-text-title" value="🧾 فاتورة مبيعات" oninput="applyInvDesign()" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:7px;font-family:Cairo,sans-serif;font-size:12px;width:100%"></div>
-                <div class="fg"><label style="font-size:10px">تسمية عمود المريض</label><input type="text" id="inv-text-col-patient" value="المريض / رقم الحالة" oninput="applyInvDesign()" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:7px;font-family:Cairo,sans-serif;font-size:12px;width:100%"></div>
-                <div class="fg"><label style="font-size:10px">تسمية عمود النوع</label><input type="text" id="inv-text-col-type" value="النوع" oninput="applyInvDesign()" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:7px;font-family:Cairo,sans-serif;font-size:12px;width:100%"></div>
-              </div>
-            </div>
-
-            <!-- قوالب جاهزة -->
-            <div style="margin-bottom:10px">
-              <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;border-bottom:1px solid var(--border);padding-bottom:5px">🎭 قوالب جاهزة</div>
-              <div style="display:flex;gap:6px;flex-wrap:wrap">
-                <button class="btn btn-sm" onclick="applyInvTheme('classic')" style="background:linear-gradient(135deg,#0d1b2a,#1a2e4a);color:#e8c96a;border:none">🏛️ كلاسيك</button>
-                <button class="btn btn-sm" onclick="applyInvTheme('green')" style="background:linear-gradient(135deg,#064e3b,#065f46);color:#6ee7b7;border:none">🌿 أخضر</button>
-                <button class="btn btn-sm" onclick="applyInvTheme('purple')" style="background:linear-gradient(135deg,#3b0764,#581c87);color:#d8b4fe;border:none">💜 بنفسجي</button>
-                <button class="btn btn-sm" onclick="applyInvTheme('red')" style="background:linear-gradient(135deg,#450a0a,#7f1d1d);color:#fca5a5;border:none">❤️ أحمر</button>
-                <button class="btn btn-sm" onclick="applyInvTheme('teal')" style="background:linear-gradient(135deg,#042f2e,#134e4a);color:#5eead4;border:none">🩵 تيل</button>
-                <button class="btn btn-sm" onclick="applyInvTheme('minimal')" style="background:#f8f9fa;color:#1a1d2e;border:1px solid #dee2e6">⬜ مينمال</button>
-              </div>
-            </div>
-
-            <div style="display:flex;gap:8px;margin-top:8px">
-              <button class="btn btn-gold btn-sm" onclick="saveInvDesign()" style="flex:1">💾 حفظ التصميم</button>
-              <button class="btn btn-ghost btn-sm" onclick="resetInvDesign()">↩️ إعادة تعيين</button>
-              <button class="btn btn-blue btn-sm" onclick="previewInvDesign()">👁️ معاينة</button>
-            </div>
-          </div>
-
-          <div class="nset-card">
-            <h5>📤 معاينة الرسائل</h5>
-            <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
-              <button class="btn btn-ghost btn-sm" onclick="previewSample('invoice')">📋 فاتورة</button>
-              <button class="btn btn-ghost btn-sm" onclick="previewSample('proof')">🔬 بروفه</button>
-              <button class="btn btn-ghost btn-sm" onclick="previewSample('financial')">💰 مالي</button>
-            </div>
-            <div id="nset-preview" class="preview-box" style="min-height:160px;font-size:11px">اضغط لمعاينة...</div>
-          </div>
-          <button class="btn btn-gold" onclick="saveNsSettings()" style="width:100%;margin-top:12px">💾 حفظ جميع الإعدادات</button>
-        </div>
-        <div></div>
       </div>
     </div>
 
@@ -3281,7 +3193,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
                     <div id="mp-foot-msg" style="color:#cccccc;font-size:9px">شكراً لثقتكم</div>
                   </div>
                 </div>
-                <button class="btn btn-blue btn-sm" onclick="previewInvDesign()" style="width:100%;margin-top:10px">🔍 فتح فاتورة كاملة</button>
+                <button class="btn btn-blue btn-sm" onclick="previewFullInvoiceDesign()" style="width:100%;margin-top:10px">🔍 فتح فاتورة كاملة</button>
               </div>
             </div>
           </div>
@@ -4526,6 +4438,14 @@ function _startFbMonitor() {
 }
 _startFbMonitor();
 
+// FIX #TREASURY-KEYED: تطبيع بيانات الخزنة القادمة من فايربيز — تدعم الشكل القديم
+// (array واحدة تُستبدل بالكامل عند كل حفظ) والشكل الجديد (object مفتاحه id كل حركة
+// عقدة مستقلة، فكتابة حركة جديدة من جهاز لا تمسح حركة جهاز آخر أُضيفت في نفس اللحظة).
+function _treasuryValToArray(v){
+  if(Array.isArray(v)) return v.filter(Boolean);
+  if(v && typeof v==='object') return Object.values(v).filter(Boolean);
+  return [];
+}
 // ===== DB — Firebase Realtime Database + localStorage cache =====
 const DB = {
   _c: {},
@@ -4621,6 +4541,41 @@ const DB = {
             }
             return;
           }
+          // FIX #TREASURY-SYNC: دمج الخزنة عند التزامن الأولي بدل الاستبدال —
+          // كتابة جهاز تاني كانت تمسح حركات خزنة أضافها جهاز أول لحظياً قبل ما تتزامن.
+          // يدعم الآن شكلي التخزين: array قديمة أو object مفتاحه id (بعد الترحيل).
+          if(k === 'treasury'){
+            const rawVal = data[k];
+            const remoteTr = _treasuryValToArray(rawVal);
+            const wasArrayForm = Array.isArray(rawVal);
+            const localRaw = localStorage.getItem('plp_treasury');
+            let localTr = null;
+            try { localTr = localRaw ? JSON.parse(localRaw) : null; } catch(e){}
+            let merged;
+            // FIX #TREASURY-TRUST-REMOTE: فايربيز مصدر الحقيقة لأي id موجود عنده —
+            // يحل مشكلة بقاء نسخة قديمة من حركة اتعدّلت أو اتحذفت على جهاز تاني.
+            // نحتفظ فقط بحركات محلية *جديدة* لسه معندهاش id في remoteTr (يعني لسه
+            // ما وصلتش فايربيز)، عشان حركة مُدخلة حديثًا وهي أوفلاين ماتختفيش.
+            if(Array.isArray(localTr) && localTr.length > 0){
+              const remoteIds = new Set(remoteTr.map(r=>r.id));
+              merged = [...remoteTr, ...localTr.filter(l=>!remoteIds.has(l.id))];
+            } else {
+              merged = remoteTr;
+            }
+            this._c[k] = merged;
+            try { localStorage.setItem('plp_' + k, JSON.stringify(merged)); } catch(e) {}
+            // ترحيل تلقائي وآمن للشكل الجديد (object بمفاتيح id) — يضيف كل حركة بمفتاح
+            // id الخاص بها، ويحذف صراحةً المفاتيح الرقمية القديمة (0،1،2...) في نفس
+            // عملية update() الواحدة، وإلا كانت كل حركة تتكرر بمفتاحين (رقمي + id)
+            // فتتضاعف كل المبالغ في رصيد الخزنة — تم اكتشاف هذا وإصلاحه أثناء المراجعة.
+            if(wasArrayForm && merged.length && _fbRTDB){
+              const keyed={};
+              merged.forEach(rec=>{ if(rec&&rec.id) keyed[rec.id]=rec; });
+              Object.keys(rawVal).forEach(oldKey=>{ if(!(oldKey in keyed)) keyed[oldKey]=null; });
+              try{ _fbRTDB.ref('data/shared/treasury').update(keyed).catch(e=>console.warn('treasury migrate:',e.code||e)); }catch(e){}
+            }
+            return;
+          }
           this._c[k] = data[k];
           try { localStorage.setItem('plp_' + k, JSON.stringify(data[k])); } catch(e) {}
         });
@@ -4684,6 +4639,24 @@ const DB = {
             this._c[k] = remoteLog;
             try { localStorage.setItem('plp_' + k, JSON.stringify(remoteLog)); } catch(e) {}
           }
+          return;
+        }
+        // FIX #TREASURY-MERGE: نفس مبدأ activityLog/notif_log — جهازان يكتبان حركة
+        // خزنة تقريباً في نفس اللحظة كانا يمسحان حركة بعض لأن treasury كانت تُستبدل
+        // بالكامل (.set()) بدل الدمج. النتيجة: الحركة تظهر لحظياً ثم تختفي والرصيد
+        // يرجع كأنها لم تُدخل، رغم بقاء أثرها في سجل النشاط (المحمي بالدمج بالفعل).
+        // يدعم الآن شكلي التخزين: array قديمة أو object مفتاحه id (بعد الترحيل لكتابة
+        // جراحية لكل حركة على حدة — راجع _saveTreasury).
+        if(k === 'treasury'){
+          // FIX #TREASURY-TRUST-REMOTE: بعد التحويل للكتابة الجراحية (update() لكل
+          // حركة بمفردها في _saveTreasury)، فايربيز أصبح مصدر الحقيقة الموثوق لكل
+          // حركة — بما فيها كتابة هذا الجهاز نفسه (SDK فايربيز يعكس كتابته محليًا
+          // فورًا حتى قبل تأكيد السيرفر، ونافذة الـ 800ms فوق أصلاً بتمنع صدى كتابة
+          // هذا الجهاز من التسبب في وميض). الدمج القديم (إضافة فقط بدون حذف) كان
+          // يمنع وصول حذف/تعديل حركات من أجهزة تانية للأبد إلى أن يُمسح الكاش يدويًا.
+          const remoteTr = _treasuryValToArray(data[k]);
+          this._c[k] = remoteTr;
+          try { localStorage.setItem('plp_' + k, JSON.stringify(remoteTr)); } catch(e) {}
           return;
         }
         this._c[k] = data[k];
@@ -4801,16 +4774,40 @@ function onColorChange(sel){
 // _saveTreasury — حفظ آمن للخزنة: localStorage + Firebase معاً
 // يُستخدم في كل مسار يكتب للخزنة (رواتب، سلف، معاملات، تحويلات)
 // ══════════════════════════════════════════════════════════════
+// FIX #TREASURY-SURGICAL-WRITE: كتابة جراحية — نحدّث في فايربيز فقط السجلات التي
+// أُضيفت/تغيّرت/حُذفت فعلياً (عبر ref.update بمسارات متعددة على مستوى الحركة الواحدة)
+// بدل استبدال عقدة treasury بالكامل. هذا يقفل مشكلة اختفاء الحركات جذرياً: حتى لو
+// كتب جهازان حركتين مختلفتين في نفس الثانية، كل واحد يكتب فقط حركته في مكانها
+// الخاص (data/shared/treasury/{id})، فلا يمحو أحدهما حركة الآخر أبداً.
 function _saveTreasury(list){
-  DB.set('treasury', list);
+  const prevList = DB._c['treasury'] || [];
+  const prevMap = new Map(prevList.map(r=>[r.id,r]));
+  const newMap = new Map(list.map(r=>[r.id,r]));
+
+  // تحديث الكاش المحلي فوراً بشكل array — للتوافق الكامل مع كل الكود الحالي
+  // (عشرات الأماكن) اللي بيقرأ DB.get('treasury') ويتوقعها array عادية.
+  DB._c['treasury'] = list;
+  try{ localStorage.setItem('plp_treasury', JSON.stringify(list)); }catch(e){}
+  // إلغاء أي كتابة استبدال-كامل قديمة كانت مجدولة (لو أي كود قديم استخدم DB.set
+  // مباشرة على 'treasury' قبل هذا التعديل)، حتى لا تُطبَّق لاحقاً فوق كتابتنا الجراحية.
+  if(DB._wt && DB._wt['treasury']){ clearTimeout(DB._wt['treasury']); delete DB._wt['treasury']; }
   window._lastLocalWrite = Date.now();
-  if(window._fbRTDB){
-    try{
-      window._fbRTDB.ref('data/shared/treasury')
-        .set(list)
-        .catch(e=>console.warn('⚠️ treasury FB write:', e.code||e));
-    }catch(e){ console.warn('⚠️ treasury FB write ex:', e); }
-  }
+
+  if(!_fbRTDB) return;
+  const updates={};
+  let hasChanges=false;
+  newMap.forEach((rec,id)=>{
+    const prev=prevMap.get(id);
+    if(!prev || JSON.stringify(prev)!==JSON.stringify(rec)){ updates[id]=rec; hasChanges=true; }
+  });
+  prevMap.forEach((rec,id)=>{
+    if(!newMap.has(id)){ updates[id]=null; hasChanges=true; } // null = حذف هذه الحركة فقط
+  });
+  if(!hasChanges) return;
+  try{
+    _fbRTDB.ref('data/shared/treasury').update(updates)
+      .catch(e=>{ console.warn('⚠️ treasury FB write:', e.code||e); DB._notifySyncFail(); });
+  }catch(e){ console.warn('⚠️ treasury FB write ex:', e); }
 }
 
 function nid(t){
@@ -4903,9 +4900,45 @@ function getCurrentPageName(){
   return m[pg]||pg||'—';
 }
 function copyTxt(t){navigator.clipboard?.writeText(t).then(()=>toast('تم النسخ')).catch(()=>toast('فشل النسخ','err'))}
-function filterTbl(id,q){const qq=q.toLowerCase();let vis=0;document.querySelectorAll('#'+id+' tr').forEach(tr=>{if(tr.closest('thead'))return;const show=!q||tr.textContent.toLowerCase().includes(qq);tr.style.display=show?'':'none';if(show)vis++;});
+// ---- بحث مرن عن التاريخ: يقبل أي فاصل (/ - _ . مسافة) أو بدون فاصل، وأرقام عربية أو إنجليزية ----
+function _normDigitsAr(s){return (s||'').replace(/[٠-٩]/g,d=>'0123456789'['٠١٢٣٤٥٦٧٨٩'.indexOf(d)]);}
+function _dateQueryDigits(q){return _normDigitsAr(q).replace(/[^0-9]/g,'');}
+function _dateFuzzyMatch(rowText,qDigits){
+  if(!qDigits)return false;
+  const norm=_normDigitsAr(rowText);
+  const re=/\d{1,4}[\/\-_.]\d{1,2}[\/\-_.]\d{1,4}/g;
+  let m;
+  while((m=re.exec(norm))){
+    const parts=m[0].split(/[\/\-_.]/);
+    const stripped=parts.map(p=>String(+p)).join(''); // بدون أصفار بادئة (يوم/شهر بدون صفر)
+    const padded=parts.join(''); // بالأصفار كما هي مكتوبة
+    if(stripped.includes(qDigits)||padded.includes(qDigits)||qDigits.includes(stripped)||qDigits.includes(padded))return true;
+  }
+  return false;
+}
+function filterTbl(id,q){const qq=q.toLowerCase();
+const qDigits=_dateQueryDigits(q);
+const isDateLikeQuery=q&&qDigits.length>=2&&/^[0-9٠-٩\/\-_.\s]+$/.test(q.trim());
+let vis=0;document.querySelectorAll('#'+id+' tr').forEach(tr=>{if(tr.closest('thead'))return;
+let show=!q||tr.textContent.toLowerCase().includes(qq);
+if(!show&&isDateLikeQuery)show=_dateFuzzyMatch(tr.textContent,qDigits);
+tr.style.display=show?'':'none';if(show)vis++;});
 // Show/hide the empty state element tied to this table if available
 const emId=id.replace('-tb','-empty');const emEl=document.getElementById(emId);if(emEl&&q){emEl.style.display=vis===0?'block':'none';}}
+
+// FIX #TOGGLE-ALL-SEL: تحديد/إلغاء تحديد كل صفوف الجدول دفعة واحدة (زرار الهيدر في
+// جداول الخزنة والعملاء المحتملين وغيرها) — كانت الدالة مستخدمة في onchange بدون أن
+// تكون معرّفة أصلاً، فالتحديد الجماعي مكنش بيعمل حاجة إطلاقاً.
+function toggleAllSel(tbId,el){
+  const tb=document.getElementById(tbId);
+  if(!tb)return;
+  tb.querySelectorAll('input[type=checkbox].row-chk').forEach(cb=>{
+    // ما تحددش الصفوف المخفية حالياً بالفلتر
+    const tr=cb.closest('tr');
+    if(tr&&tr.style.display==='none')return;
+    cb.checked=el.checked;
+  });
+}
 
 // ---- Combined date+text filters ----
 // ── فلتر الفئة (دفتر/بروفه/أرشيف) — حالة التاب النشط لكل صفحة ──
@@ -6715,7 +6748,6 @@ function renderDelegates(){
     <td>${badge((d.comm||0)+'%','bg-gold')}</td>
     <td>${d.status==='active'?badge('نشط','bg-green'):d.status==='archived'?badge('متوقف (أُرشف)','bg-red'):badge('غير نشط','bg-gray')}</td>
     <td>${(d.docs||[]).length?badge((d.docs||[]).length+' مستند','bg-blue'):'—'}</td>
-    <td><button class="btn btn-sm" style="padding:3px 10px;font-size:11px;background:var(--teal);color:#fff" onclick="event.stopPropagation();openDgClientsModal('${d.id}')">👥 عملاء (${(d.clients||[]).length})</button></td>
   </tr>`).join('');
 }
 function openDelegateModal(editId=null){
@@ -6769,141 +6801,169 @@ function fillDgSel(selId){
   if(cur)sel.value=cur;
 }
 
-// ======== DELEGATE CLIENTS MANAGEMENT ========
-let _dgClientsId = null;
-
-function openDgClientsModal(dgId){
-  _dgClientsId = dgId;
-  const dg = (DB.get('delegates')||[]).find(x=>x.id===dgId);
-  if(!dg){toast('مندوب غير موجود','err');return;}
-  document.getElementById('dgcl-title').textContent = '👥 عملاء المندوب: '+dg.name;
-  document.getElementById('dgcl-default-rate').textContent = dg.comm||0;
-  renderDgClientsList();
-  openOv('ov-dg-clients');
+// ======== DELEGATE CLIENTS ASSIGNMENT (تبويب عملاء المناديب) ========
+function swDgSub(id,el){
+  document.querySelectorAll('.dg-sub').forEach(s=>s.classList.remove('on'));
+  const target=document.getElementById(id);if(target)target.classList.add('on');
+  document.querySelectorAll('.dg-subtab').forEach(t=>t.classList.remove('on'));
+  if(el)el.classList.add('on');
 }
 
-function renderDgClientsList(){
-  const dg = (DB.get('delegates')||[]).find(x=>x.id===_dgClientsId);
-  if(!dg){return;}
-  const dgClients = dg.clients||[];
-  const allClients = DB.get('clients')||[];
-  const linkedIds = dgClients.map(c=>c.clientId);
-  const el = document.getElementById('dgcl-list');
-  if(!dgClients.length){
-    el.innerHTML='<div style="text-align:center;color:var(--text3);padding:20px">لا يوجد عملاء مرتبطون — استخدم الزر أدناه لإضافة عميل</div>';
-    return;
-  }
-  el.innerHTML = dgClients.map((c,i)=>{
-    const cl = allClients.find(x=>x.id===c.clientId)||{name:c.clientName||c.clientId};
-    const rate = c.commRate!==null&&c.commRate!==undefined ? c.commRate : dg.comm||0;
-    const isCustom = c.commRate!==null&&c.commRate!==undefined;
-    return `<div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border-radius:8px;margin-bottom:8px;border:1px solid var(--border)">
-      <div style="flex:1">
-        <strong style="font-size:13px">${esc(cl.name)}</strong>
-        <div style="font-size:11px;color:var(--text3);margin-top:2px">${cl.phone||''}</div>
-      </div>
-      <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer">
-        <input type="checkbox" ${c.commEnabled!==false?'checked':''} onchange="toggleDgClientComm('${c.clientId}',this.checked)" style="width:15px;height:15px">
-        عمولة مفعّلة
-      </label>
-      <div style="display:flex;align-items:center;gap:4px;font-size:12px">
-        <span style="color:var(--text3)">نسبة:</span>
-        <input type="number" min="0" max="100" step="0.5" value="${c.commRate!==null&&c.commRate!==undefined?c.commRate:''}" placeholder="${dg.comm||0}% (افتراضي)" 
-          onchange="setDgClientRate('${c.clientId}',this.value)"
-          style="width:90px;padding:4px 7px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:12px;font-family:Cairo,sans-serif;text-align:center">
-        <span style="color:var(--text3)">%</span>
-        ${isCustom?'<span style="color:var(--gold);font-size:10px">مخصص</span>':'<span style="color:var(--text3);font-size:10px">افتراضي</span>'}
-      </div>
-      <button onclick="removeDgClient('${c.clientId}')" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--red)" title="إزالة الارتباط">✕</button>
-    </div>`;
-  }).join('');
-}
-
-function addDgClient(){
-  const sel = document.getElementById('dgcl-add-sel');
-  const clientId = sel.value;
-  if(!clientId){toast('اختر عميلاً','err');return;}
-  const dgs = DB.get('delegates')||[];
-  const dg = dgs.find(x=>x.id===_dgClientsId);
-  if(!dg){return;}
-  if((dg.clients||[]).find(c=>c.clientId===clientId)){toast('العميل مرتبط بالفعل','err');return;}
+function renderDgClientsAssign(){
+  const allDgs = DB.get('delegates')||[];
+  const activeDgs = allDgs.filter(d=>d.status!=='archived');
   const clients = DB.get('clients')||[];
-  const cl = clients.find(x=>x.id===clientId)||{};
-  if(!dg.clients)dg.clients=[];
-  dg.clients.push({clientId,clientName:cl.name||clientId,commEnabled:true,commRate:null});
-  DB.set('delegates',dgs);
-  // FIX #DGCLIENT-LINK: تحديث delegateId على سجل العميل حتى يظهر في linkedClients بتقرير المناديب
-  if(cl.id){
-    const updClients=clients.map(x=>x.id===cl.id?{...x,delegateId:dg.id,delegateName:dg.name}:x);
-    DB.set('clients',updClients);
+  const searchEl = document.getElementById('dgcl-search');
+  const filterEl = document.getElementById('dgcl-filter');
+  const q = (searchEl?.value||'').trim().toLowerCase();
+  const curFilter = filterEl?filterEl.value:'';
+  if(filterEl){
+    filterEl.innerHTML = '<option value="">الكل</option><option value="__unassigned__">غير مسوّى</option>'
+      +activeDgs.map(d=>`<option value="${d.id}">${esc(d.name)}</option>`).join('');
+    filterEl.value = curFilter;
   }
-  sel.value='';
-  renderDgClientsList();
-  renderDelegates();
-  toast('تم إضافة العميل للمندوب');
+  let list = clients.slice();
+  if(q) list = list.filter(cl=>(cl.name||'').toLowerCase().includes(q)||(cl.phone||'').includes(q));
+  if(curFilter==='__unassigned__') list = list.filter(cl=>!cl.delegateId);
+  else if(curFilter) list = list.filter(cl=>cl.delegateId===curFilter);
+
+  const assignedCount = clients.filter(cl=>cl.delegateId).length;
+  const statsEl = document.getElementById('dgcl-stats');
+  if(statsEl) statsEl.innerHTML = `إجمالي: <b>${clients.length}</b> عميل — مسوّى: <b>${assignedCount}</b> — غير مسوّى: <b>${clients.length-assignedCount}</b>`;
+
+  const tb = document.getElementById('dgcl-tb');
+  const em = document.getElementById('dgcl-empty');
+  if(tb){
+    if(!list.length){
+      tb.innerHTML='';
+      if(em)em.style.display='block';
+    } else {
+      if(em)em.style.display='none';
+      tb.innerHTML = list.map(cl=>{
+        const dg = allDgs.find(d=>d.id===cl.delegateId);
+        const entry = dg ? (dg.clients||[]).find(c=>c.clientId===cl.id) : null;
+        const hasRate = entry && entry.commRate!==null && entry.commRate!==undefined;
+        const rateVal = hasRate ? entry.commRate : '';
+        const commEnabled = entry ? entry.commEnabled!==false : true;
+        return `<tr>
+          <td><strong>${esc(cl.name)}</strong></td>
+          <td>${cl.phone||'-'}</td>
+          <td><select class="dg-sel" onchange="assignClientDg('${cl.id}',this.value)">
+            <option value="">-- بدون مندوب --</option>
+            ${activeDgs.map(d=>`<option value="${d.id}" ${cl.delegateId===d.id?'selected':''}>${esc(d.name)}</option>`).join('')}
+          </select></td>
+          <td>${dg?`<input type="number" min="0" max="100" step="0.5" class="rate-input" value="${rateVal}" placeholder="${dg.comm||0}" onchange="setAssignRate('${cl.id}',this.value)">% <span class="${hasRate?'rate-custom':'rate-default'}">${hasRate?'(مخصص)':'(افتراضي)'}</span>`:'<span style="color:var(--text3);font-size:11px">—</span>'}</td>
+          <td style="text-align:center">${dg?`<input type="checkbox" class="comm-chk" ${commEnabled?'checked':''} onchange="toggleAssignComm('${cl.id}',this.checked)">`:'<input type="checkbox" disabled>'}</td>
+          <td>${dg?`<button class="rm-btn" style="background:none;border:none;cursor:pointer;font-size:15px;color:var(--red)" onclick="removeClientAssign('${cl.id}')" title="إزالة الربط">✕</button>`:''}</td>
+        </tr>`;
+      }).join('');
+    }
+  }
+  fillDgBulkTransferSel(true);
 }
 
-function removeDgClient(clientId){
+function assignClientDg(clientId, newDgId){
+  if(!can('masterdata.delegates')){toast('ليس لديك صلاحية إدارة المناديب','err');renderDgClientsAssign();return;}
   const dgs = DB.get('delegates')||[];
-  const dg = dgs.find(x=>x.id===_dgClientsId);
-  if(!dg){return;}
-  dg.clients=(dg.clients||[]).filter(c=>c.clientId!==clientId);
-  DB.set('delegates',dgs);
-  // FIX #DGCLIENT-UNLINK: مسح delegateId من سجل العميل عند إزالة الارتباط
-  const clients=DB.get('clients')||[];
-  const cl=clients.find(x=>x.id===clientId);
-  if(cl&&cl.delegateId===dg.id){
+  const clients = DB.get('clients')||[];
+  const cl = clients.find(x=>x.id===clientId);
+  if(!cl)return;
+  if(cl.delegateId){
+    const oldDg = dgs.find(d=>d.id===cl.delegateId);
+    if(oldDg) oldDg.clients=(oldDg.clients||[]).filter(c=>c.clientId!==clientId);
+  }
+  if(newDgId){
+    const newDg = dgs.find(d=>d.id===newDgId);
+    if(newDg){
+      if(!newDg.clients)newDg.clients=[];
+      if(!newDg.clients.find(c=>c.clientId===clientId)) newDg.clients.push({clientId,clientName:cl.name,commEnabled:true,commRate:null});
+      DB.set('clients',clients.map(x=>x.id===clientId?{...x,delegateId:newDg.id,delegateName:newDg.name}:x));
+    }
+  } else {
     DB.set('clients',clients.map(x=>x.id===clientId?{...x,delegateId:'',delegateName:''}:x));
   }
-  renderDgClientsList();
+  DB.set('delegates',dgs);
+  renderDgClientsAssign();
   renderDelegates();
-  toast('تم إزالة الارتباط');
+  toast(newDgId?'تم تسوية العميل':'تم إلغاء التسوية');
 }
 
-function toggleDgClientComm(clientId, enabled){
+function setAssignRate(clientId, val){
+  const clients = DB.get('clients')||[];
+  const cl = clients.find(x=>x.id===clientId);
+  if(!cl||!cl.delegateId)return;
   const dgs = DB.get('delegates')||[];
-  const dg = dgs.find(x=>x.id===_dgClientsId);
-  if(!dg){return;}
-  const cl = (dg.clients||[]).find(c=>c.clientId===clientId);
-  if(cl)cl.commEnabled=enabled;
+  const dg = dgs.find(d=>d.id===cl.delegateId);
+  if(!dg)return;
+  const entry = (dg.clients||[]).find(c=>c.clientId===clientId);
+  if(entry) entry.commRate = val===''||val===null?null:Math.max(0,Math.min(100,+val||0));
+  DB.set('delegates',dgs);
+  renderDgClientsAssign();
+  toast('تم تحديث نسبة العمولة');
+}
+
+function toggleAssignComm(clientId, enabled){
+  const clients = DB.get('clients')||[];
+  const cl = clients.find(x=>x.id===clientId);
+  if(!cl||!cl.delegateId)return;
+  const dgs = DB.get('delegates')||[];
+  const dg = dgs.find(d=>d.id===cl.delegateId);
+  if(!dg)return;
+  const entry = (dg.clients||[]).find(c=>c.clientId===clientId);
+  if(entry) entry.commEnabled = enabled;
   DB.set('delegates',dgs);
   toast(enabled?'العمولة مفعّلة':'العمولة معطّلة');
 }
 
-function setDgClientRate(clientId, val){
-  const dgs = DB.get('delegates')||[];
-  const dg = dgs.find(x=>x.id===_dgClientsId);
-  if(!dg){return;}
-  const cl = (dg.clients||[]).find(c=>c.clientId===clientId);
-  if(cl){
-    cl.commRate = val===''||val===null?null:+val;
-  }
-  DB.set('delegates',dgs);
-  renderDgClientsList();
-  toast('تم تحديث نسبة العمولة');
+function removeClientAssign(clientId){
+  assignClientDg(clientId,'');
 }
 
-function transferDgClient(){
-  const fromDg = _dgClientsId;
-  const toSel = document.getElementById('dgcl-transfer-to');
-  const clSel = document.getElementById('dgcl-transfer-client');
-  const toDgId = toSel?.value;
-  const clientId = clSel?.value;
-  if(!toDgId||!clientId){toast('اختر المندوب المستلم والعميل','err');return;}
-  if(toDgId===fromDg){toast('المندوب المستلم نفس المرسل','err');return;}
+function fillDgBulkTransferSel(keepSelection){
+  const fromSel = document.getElementById('dgcl-bulk-from');
+  const toSel = document.getElementById('dgcl-bulk-to');
+  if(!fromSel||!toSel)return;
   const dgs = DB.get('delegates')||[];
-  const from = dgs.find(x=>x.id===fromDg);
-  const to   = dgs.find(x=>x.id===toDgId);
-  if(!from||!to){return;}
-  const entry = (from.clients||[]).find(c=>c.clientId===clientId);
-  if(!entry){toast('العميل غير موجود في قائمة هذا المندوب','err');return;}
-  from.clients = (from.clients||[]).filter(c=>c.clientId!==clientId);
-  if(!to.clients)to.clients=[];
-  if(!to.clients.find(c=>c.clientId===clientId)) to.clients.push({...entry,commRate:null});
-  DB.set('delegates',dgs);
-  renderDgClientsList();
-  renderDelegates();
-  toast('تم نقل العميل للمندوب '+to.name);
+  const curFrom = keepSelection?fromSel.value:'';
+  fromSel.innerHTML = '<option value="">-- من مندوب --</option>'+dgs.map(d=>`<option value="${d.id}">${esc(d.name)} (${(d.clients||[]).length})</option>`).join('');
+  fromSel.value = curFrom;
+  const curTo = toSel.value;
+  toSel.innerHTML = '<option value="">-- إلى مندوب --</option>'+dgs.filter(d=>d.id!==curFrom&&d.status==='active').map(d=>`<option value="${d.id}">${esc(d.name)}</option>`).join('');
+  if([...toSel.options].some(o=>o.value===curTo)) toSel.value=curTo;
+  const hint=document.getElementById('dgcl-bulk-hint');
+  if(hint){
+    const fromDg=dgs.find(d=>d.id===curFrom);
+    hint.textContent = fromDg?`سيتم نقل ${(fromDg.clients||[]).length} عميل، وستُستخدم النسبة الافتراضية للمندوب المستلم (يمكن تخصيصها لاحقاً).`:'';
+  }
+}
+
+function bulkTransferDgClients(){
+  if(!can('masterdata.delegates')){toast('ليس لديك صلاحية إدارة المناديب','err');return;}
+  const fromId = document.getElementById('dgcl-bulk-from')?.value;
+  const toId = document.getElementById('dgcl-bulk-to')?.value;
+  if(!fromId||!toId){toast('اختر المندوب المرسل والمستلم','err');return;}
+  if(fromId===toId){toast('لا يمكن النقل لنفس المندوب','err');return;}
+  const dgs = DB.get('delegates')||[];
+  const from = dgs.find(d=>d.id===fromId);
+  const to = dgs.find(d=>d.id===toId);
+  if(!from||!to)return;
+  const count=(from.clients||[]).length;
+  if(!count){toast('لا يوجد عملاء لنقلهم','err');return;}
+  confirm2('⚡ نقل كل العملاء',`نقل ${count} عميل من "${from.name}" إلى "${to.name}"؟ ستُستخدم النسبة الافتراضية لـ"${to.name}" لكل عميل (يمكن تخصيصها لاحقاً).`,()=>{
+    if(!to.clients)to.clients=[];
+    const clients = DB.get('clients')||[];
+    let updated = clients;
+    (from.clients||[]).forEach(entry=>{
+      if(!to.clients.find(c=>c.clientId===entry.clientId)) to.clients.push({...entry,commRate:null});
+      updated = updated.map(x=>x.id===entry.clientId?{...x,delegateId:to.id,delegateName:to.name}:x);
+    });
+    from.clients=[];
+    DB.set('clients',updated);
+    DB.set('delegates',dgs);
+    renderDgClientsAssign();
+    renderDelegates();
+    toast(`تم نقل ${count} عميل إلى ${to.name}`);
+  });
 }
 
 // ======== DELEGATE CLIENTS — أكورديون (واجهة جديدة، مستقلة عن النافذة المنبثقة القديمة) ========
@@ -7087,27 +7147,6 @@ function dgAccTransferAll(dgId){
     renderDgAccordion();renderDelegates();
     toast(`تم نقل ${count} عميل إلى ${to.name}`);
   });
-}
-
-function fillDgClientsAddSel(){
-  const sel = document.getElementById('dgcl-add-sel');
-  if(!sel)return;
-  const dg = (DB.get('delegates')||[]).find(x=>x.id===_dgClientsId);
-  const linked = (dg?.clients||[]).map(c=>c.clientId);
-  const allCl = DB.get('clients')||[];
-  sel.innerHTML='<option value="">-- اختر عميلاً --</option>'+allCl.map(c=>
-    linked.includes(c.id)?'':`<option value="${c.id}">${esc(c.name)}</option>`
-  ).join('');
-}
-
-function fillDgTransferSel(){
-  const toCl = document.getElementById('dgcl-transfer-client');
-  const toDg = document.getElementById('dgcl-transfer-to');
-  if(!toCl||!toDg)return;
-  const dg = (DB.get('delegates')||[]).find(x=>x.id===_dgClientsId);
-  toCl.innerHTML='<option value="">-- اختر العميل --</option>'+(dg?.clients||[]).map(c=>`<option value="${c.clientId}">${esc(c.clientName||c.clientId)}</option>`).join('');
-  const otherDgs = (DB.get('delegates')||[]).filter(x=>x.id!==_dgClientsId&&x.status==='active');
-  toDg.innerHTML='<option value="">-- اختر المندوب --</option>'+otherDgs.map(d=>`<option value="${d.id}">${esc(d.name)}</option>`).join('');
 }
 
 // حساب عمولة المندوب الفعلية للحالة (مع مراعاة إعدادات العميل)
@@ -9108,7 +9147,7 @@ const ChartEngine={
     if(c){const ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);}
   },
   colors:['#c9a84c','#6366f1','#22c55e','#ef4444','#f59e0b','#06b6d4','#8b5cf6','#ec4899','#14b8a6','#f97316'],
-  isDark(){return !document.body.classList.contains('theme-light')},
+  isDark(){return !document.body.classList.contains('theme-light')&&!document.body.classList.contains('theme-qasetly')},
   textColor(){return this.isDark()?'#9ca3af':'#6b7280'},
   gridColor(){return this.isDark()?'rgba(255,255,255,.06)':'rgba(0,0,0,.07)'},
 
@@ -9554,7 +9593,7 @@ function renderDelReport(){
   if(!tb)return;
 
   if(!Object.keys(delMap).length){
-    tb.innerHTML=`<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:30px">لا توجد بيانات للمناديب</td></tr>`;
+    tb.innerHTML=`<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:30px">لا توجد بيانات للمناديب</td></tr>`;
     renderDgAccordion();
     return;
   }
@@ -9598,7 +9637,7 @@ function renderDelReport(){
         <td style="color:var(--text3)">${cv.cnt} حالة</td>
         <td style="color:var(--text2)">${fmt(cv.tot)} ${c}</td>
         <td style="color:var(--gold2)">${fmt(cv.comm)} ${c}</td>
-        <td colspan="3"></td>
+        <td colspan="2"></td>
       </tr>`).join('');
 
     return `<tr style="cursor:pointer" onclick="toggleDgDetail('${dgRowId}')">
@@ -9615,9 +9654,8 @@ function renderDelReport(){
       <td style="color:var(--gold2);font-weight:700">${fmt(totalComm)} ${c}</td>
       <td style="color:var(--green);font-weight:700">${salary>0?fmt(salary)+' '+c:'—'}</td>
       <td style="color:var(--gold2);font-weight:900;font-size:14px">${fmt(totalDue)} ${c}</td>
-      <td><button class="btn btn-sm btn-teal" onclick="event.stopPropagation();openDgClientsModal('${info.id||''}')" title="إدارة عملاء المندوب">👥</button></td>
     </tr>
-    <tr id="${dgRowId}" style="display:none">${clientRows?`<td colspan="8" style="padding:0"><table style="width:100%;border-collapse:collapse">${clientRows}</table></td>`:`<td colspan="8" style="text-align:center;color:var(--text3);padding:8px;font-size:11px">لا توجد حالات في هذه الفترة</td>`}</tr>`;
+    <tr id="${dgRowId}" style="display:none">${clientRows?`<td colspan="7" style="padding:0"><table style="width:100%;border-collapse:collapse">${clientRows}</table></td>`:`<td colspan="7" style="text-align:center;color:var(--text3);padding:8px;font-size:11px">لا توجد حالات في هذه الفترة</td>`}</tr>`;
   }).join('');
   renderDgAccordion();
   renderDelCasesReport(allCases,degs,c,(from||today()).slice(0,7));
@@ -9707,7 +9745,8 @@ function toggleDgDetail(id){
 }
 
 // THEME & INIT
-function setTheme(cls){document.body.className=cls;document.querySelectorAll('.td').forEach((d,i)=>d.classList.toggle('on',i===(cls===''?0:1)));localStorage.setItem('plp_theme',cls);
+const _themeOrder=['','theme-light','theme-qasetly'];
+function setTheme(cls){document.body.className=cls;const idx=_themeOrder.indexOf(cls);document.querySelectorAll('.td').forEach((d,i)=>d.classList.toggle('on',i===idx));localStorage.setItem('plp_theme',cls);
   // Redraw charts on theme change
   setTimeout(()=>{if(document.getElementById('pg-dashboard')?.classList.contains('active') && can('dashboard.view'))renderDash();},100);
 }
@@ -10584,7 +10623,6 @@ function openInvDoc(clientName,selectedIds=null){
   _invDocCtx={clientName,selectedIds};
 
   // Open modal
-  loadInvDesign();
   document.getElementById('ov-inv-doc').classList.add('open');
   document.body.style.overflow='hidden';
 }
@@ -10801,10 +10839,6 @@ function insertTpl(fieldId, token){
 }
 
 function saveNsSettings(){
-  // Sync quick-access duplicates to canonical IDs
-  [['nset-dafter-late-q','nset-dafter-late'],['nset-proof-late-q','nset-proof-late'],['nset-debt-late-q','nset-debt-late']].forEach(([src,dst])=>{
-    const s=document.getElementById(src),d=document.getElementById(dst);if(s&&d&&s!==d)d.value=s.value;
-  });
   const s={};
   ['inv-logo','inv-contact','inv-debt','inv-proof','inv-active',
    'pr-logo','pr-contact','pr-debt','pr-active',
@@ -10849,14 +10883,6 @@ function loadNsSettings(){
       else el.value=v;
     });
   });
-  // FIX #NSET-QUICK-SYNC: الحقول المختصرة (نسخة سريعة في لوحة التنبيهات) لها أسماء id
-  // مختلفة (...-q) عن الحقول الأساسية، فحلقة التحميل أعلاه لا تطالها. بدون هذه المزامنة
-  // الصريحة، أي رفرش كان يُرجِع هذه الحقول لقيمتها الافتراضية في HTML، وأي لمسة بعدها
-  // كانت تكتب فوق القيمة المحفوظة الصحيحة بالقيمة القديمة عبر saveNsSettings.
-  [['nset-dafter-late-q','dafter-late'],['nset-proof-late-q','proof-late'],['nset-debt-late-q','debt-late']].forEach(([qid,key])=>{
-    const el=document.getElementById(qid);
-    if(el&&s[key]!==undefined)el.value=s[key];
-  });
   // Load alert times
   const times = s['alert-times']||(s['alert-time']?[s['alert-time']]:['09:00']);
   _renderAlertTimesList(times);
@@ -10883,6 +10909,13 @@ function swDesignTab(tab){
   if(tab==='wa-inv')livePreviewWaInv();
   if(tab==='wa-pf')livePreviewWaPf();
   if(tab==='wa-fi')livePreviewWaFi();
+}
+
+function previewFullInvoiceDesign(){
+  const arc=DB.get('archive')||[];
+  const firstClient=arc[0]?.client;
+  if(firstClient){openInvDoc(firstClient);}
+  else{toast('أضف بيانات في الأرشيف أولاً لمعاينة الفاتورة','err');}
 }
 
 function loadDesignPanel(){
@@ -11085,120 +11118,6 @@ function resetAllDesign(){
   toast('تم إعادة تعيين كل التصميم');
 }
 
-
-// ======== INVOICE DESIGN ENGINE ========
-const INV_DESIGN_DEFAULTS = {
-  'header-bg':'#0d1b2a','header-text':'#e8c96a','header-bg2':'#1a2e4a','header-sub':'#b0c4de',
-  'table-head':'#0d1b2a','table-head-text':'#e8c96a','table-even':'#f6f7fc','table-border':'#eceff7',
-  'totals-bg':'#eef1ff','totals-border':'#ced5ee','totals-grand':'#0d1b2a','debt':'#f97316',
-  'foot-bg':'#0d1b2a','foot-text':'#cccccc',
-  'text-title':'🧾 فاتورة مبيعات','text-col-patient':'المريض / رقم الحالة','text-col-type':'النوع'
-};
-
-const INV_THEMES = {
-  classic:{'header-bg':'#0d1b2a','header-text':'#e8c96a','header-bg2':'#1a2e4a','header-sub':'#b0c4de','table-head':'#0d1b2a','table-head-text':'#e8c96a','table-even':'#f6f7fc','table-border':'#eceff7','totals-bg':'#eef1ff','totals-border':'#ced5ee','totals-grand':'#0d1b2a','debt':'#f97316','foot-bg':'#0d1b2a','foot-text':'#cccccc'},
-  green:{'header-bg':'#064e3b','header-text':'#6ee7b7','header-bg2':'#065f46','header-sub':'#a7f3d0','table-head':'#064e3b','table-head-text':'#6ee7b7','table-even':'#f0fdf4','table-border':'#bbf7d0','totals-bg':'#ecfdf5','totals-border':'#6ee7b7','totals-grand':'#064e3b','debt':'#dc2626','foot-bg':'#064e3b','foot-text':'#a7f3d0'},
-  purple:{'header-bg':'#3b0764','header-text':'#d8b4fe','header-bg2':'#581c87','header-sub':'#e9d5ff','table-head':'#3b0764','table-head-text':'#d8b4fe','table-even':'#faf5ff','table-border':'#e9d5ff','totals-bg':'#f5f3ff','totals-border':'#c4b5fd','totals-grand':'#3b0764','debt':'#dc2626','foot-bg':'#3b0764','foot-text':'#e9d5ff'},
-  red:{'header-bg':'#450a0a','header-text':'#fca5a5','header-bg2':'#7f1d1d','header-sub':'#fecaca','table-head':'#450a0a','table-head-text':'#fca5a5','table-even':'#fff5f5','table-border':'#fecaca','totals-bg':'#fef2f2','totals-border':'#fca5a5','totals-grand':'#450a0a','debt':'#f97316','foot-bg':'#450a0a','foot-text':'#fecaca'},
-  teal:{'header-bg':'#042f2e','header-text':'#5eead4','header-bg2':'#134e4a','header-sub':'#99f6e4','table-head':'#042f2e','table-head-text':'#5eead4','table-even':'#f0fdfa','table-border':'#99f6e4','totals-bg':'#f0fdfa','totals-border':'#5eead4','totals-grand':'#042f2e','debt':'#f97316','foot-bg':'#042f2e','foot-text':'#99f6e4'},
-  minimal:{'header-bg':'#f8f9fa','header-text':'#1a1d2e','header-bg2':'#e9ecef','header-sub':'#6c757d','table-head':'#dee2e6','table-head-text':'#1a1d2e','table-even':'#f8f9fa','table-border':'#dee2e6','totals-bg':'#f8f9fa','totals-border':'#dee2e6','totals-grand':'#1a1d2e','debt':'#dc2626','foot-bg':'#e9ecef','foot-text':'#495057'}
-};
-
-function applyInvDesign(){
-  const d=getInvDesignValues();
-  const head=document.querySelector('.inv-head');
-  const foot=document.querySelector('.inv-foot');
-  if(head)head.style.background=`linear-gradient(135deg,${d['header-bg']} 0%,${d['header-bg2']} 55%,${d['header-bg']} 100%)`;
-  const labName=document.getElementById('inv-lab-name');
-  if(labName)labName.style.color=d['header-text'];
-  if(foot){foot.style.background=`linear-gradient(135deg,${d['foot-bg']},${d['foot-bg2']||d['foot-bg']})`;
-    const msg=document.getElementById('inv-foot-msg');if(msg)msg.style.color=d['foot-text'];
-    const contacts=document.getElementById('inv-foot-contacts');if(contacts)contacts.style.color=d['foot-text'];}
-  // table
-  const style=document.getElementById('inv-design-style')||createInvStyleEl();
-  style.textContent=`
-    .inv-head{background:linear-gradient(135deg,${d['header-bg']} 0%,${d['header-bg2']} 55%,${d['header-bg']} 100%)!important}
-    .inv-head-info h2{color:${d['header-text']}!important}
-    .inv-head-info p{color:${d['header-sub']}!important}
-    .inv-head-logo-ph{background:linear-gradient(135deg,${d['header-text']},${d['header-sub']})!important}
-    .inv-table thead th{background:${d['table-head']}!important;color:${d['table-head-text']}!important}
-    .inv-table tbody td{border-bottom:1px solid ${d['table-border']}!important}
-    .inv-table tbody tr:nth-child(even) td{background:${d['table-even']}!important}
-    .inv-totals{background:${d['totals-bg']}!important;border-color:${d['totals-border']}!important}
-    .inv-tot-row:last-child{color:${d['totals-grand']}!important}
-    .inv-foot{background:linear-gradient(135deg,${d['foot-bg']},${d['foot-bg']})!important}
-    .inv-foot-msg{color:${d['foot-text']}!important}
-    .inv-foot-contacts span{color:${d['foot-text']}!important}
-    
-    
-  `;
-  // texts
-  const titleBadge=document.querySelector('#ov-inv-doc .inv-body-wrap span[style*="فاتورة"]');
-  if(titleBadge)titleBadge.textContent=d['text-title']||'🧾 فاتورة مبيعات';
-  const th1=document.querySelector('#ov-inv-doc thead th:nth-child(2)');
-  if(th1)th1.textContent=d['text-col-patient']||'المريض / رقم الحالة';
-  const th2=document.querySelector('#ov-inv-doc thead th:nth-child(3)');
-  if(th2)th2.textContent=d['text-col-type']||'النوع';
-}
-
-function createInvStyleEl(){
-  const s=document.createElement('style');s.id='inv-design-style';document.head.appendChild(s);return s;
-}
-
-function getInvDesignValues(){
-  const d={};
-  Object.keys(INV_DESIGN_DEFAULTS).forEach(k=>{
-    const el=document.getElementById('inv-color-'+k)||document.getElementById('inv-text-'+k);
-    d[k]=el?el.value:INV_DESIGN_DEFAULTS[k];
-  });
-  return d;
-}
-
-function applyInvTheme(name){
-  const theme=INV_THEMES[name];if(!theme)return;
-  Object.entries(theme).forEach(([k,v])=>{
-    const el=document.getElementById('inv-color-'+k);
-    if(el)el.value=v;
-  });
-  applyInvDesign();
-  toast('✅ تم تطبيق القالب');
-}
-
-function saveInvDesign(){
-  const d=getInvDesignValues();
-  DB.set('invDesign',d);
-  applyInvDesign();
-  toast('✅ تم حفظ تصميم الفاتورة');
-}
-
-function resetInvDesign(){
-  Object.entries(INV_DESIGN_DEFAULTS).forEach(([k,v])=>{
-    const el=document.getElementById('inv-color-'+k)||document.getElementById('inv-text-'+k);
-    if(el)el.value=v;
-  });
-  DB.set('invDesign',INV_DESIGN_DEFAULTS);
-  applyInvDesign();
-  toast('تم إعادة تعيين التصميم');
-}
-
-function loadInvDesign(){
-  const saved=DB.get('invDesign');
-  if(!saved)return;
-  Object.entries(saved).forEach(([k,v])=>{
-    const el=document.getElementById('inv-color-'+k)||document.getElementById('inv-text-'+k);
-    if(el)el.value=v;
-  });
-  applyInvDesign();
-}
-
-function previewInvDesign(){
-  applyInvDesign();
-  // open with sample data
-  const arc=DB.get('archive')||[];
-  const firstClient=arc[0]?.client;
-  if(firstClient){openInvDoc(firstClient);}
-  else{toast('أضف بيانات في الأرشيف أولاً لمعاينة الفاتورة','err');}
-}
 
 // ======== ALERT ENGINE ========
 
@@ -12003,7 +11922,7 @@ function swMaster(secId,el){
     'md-backup':    'masterdata.backup',
     'md-actlog':    'masterdata.actlog',
     'md-trsetup':   'masterdata.trsetup',
-    'md-notif-sets':'masterdata.notif_design',
+    'md-design':    'masterdata.notif_design',
     'md-dept-map':  'masterdata.dept_map',
     'md-inv':       'masterdata.inventory_md',
   };
@@ -12020,7 +11939,7 @@ function swMaster(secId,el){
     'md-lab':loadLabInfo,'md-clients':renderClients,'md-prices':renderPrices,
     'md-tech':renderTechList,'md-delegates':renderDelegates,'md-users':renderUsers,
     'md-perms':renderPerms,'md-inv':()=>renderInvTb('md-inv-tb','md-inv-empty'),
-    'md-trsetup':loadTrSetup,'md-notif-sets':()=>{loadNsSettings();loadTechRates();},
+    'md-trsetup':loadTrSetup,
     'md-employees':renderEmployees,'md-backup':renderBackup,
     'md-dept-map':renderDeptProdCatMap
   };
@@ -12036,7 +11955,7 @@ function renderMasterData(){
       'md-lab':'masterdata.lab','md-clients':'masterdata.clients','md-prices':'masterdata.prices',
       'md-tech':'masterdata.tech','md-delegates':'masterdata.delegates','md-employees':'masterdata.employees',
       'md-users':'masterdata.users','md-perms':'masterdata.perms','md-backup':'masterdata.backup',
-      'md-actlog':'masterdata.actlog','md-trsetup':'masterdata.trsetup','md-notif-sets':'masterdata.notif_design',
+      'md-actlog':'masterdata.actlog','md-trsetup':'masterdata.trsetup','md-design':'masterdata.notif_design',
       'md-dept-map':'masterdata.dept_map','md-inv':'masterdata.inventory_md',
     };
     const perm = _mdPermMap[secId];
@@ -12424,7 +12343,7 @@ function exportTechReportCSV(){
 
 // Init
 // Staggered startup — prevent Android main thread freeze
-setTimeout(()=>{loadNsSettings();loadInvDesign();},100);
+setTimeout(()=>{loadNsSettings();},100);
 setTimeout(()=>{updateNotifBadges();initTechRepFilters();updateErpBadges();},300);
 setTimeout(()=>{loadTechRates();initPermsIfEmpty();},500);
 setTimeout(()=>{if(typeof scheduleAllNoteReminders==='function')scheduleAllNoteReminders();if(typeof checkOverdueNotes==='function')checkOverdueNotes();},1200);
@@ -20010,55 +19929,6 @@ window._goPage_prospects=function(p){if(p==='prospects')renderProspects();};
     <div class="mf" style="gap:8px">
       <button class="btn btn-ghost" onclick="closeOv('ov-report-datepicker')">إلغاء</button>
       <button class="btn btn-gold" onclick="rdpSend()">📤 إرسال للإدارة</button>
-    </div>
-  </div>
-</div>
-
-<!-- ====== DELEGATE CLIENTS MODAL ====== -->
-<div class="overlay" id="ov-dg-clients">
-  <div class="mc" style="max-width:680px;width:95%">
-    <div class="mh">
-      <h3 id="dgcl-title">👥 عملاء المندوب</h3>
-      <div class="mc-btn" onclick="closeOv('ov-dg-clients')">✕</div>
-    </div>
-    <div style="padding:16px;overflow-y:auto;max-height:70vh">
-      <!-- معلومات النسبة الافتراضية -->
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--text2)">
-        📊 النسبة الافتراضية للمندوب: <strong id="dgcl-default-rate" style="color:var(--gold)">0</strong>% — تُطبّق على العملاء الذين لم تُحدَّد لهم نسبة مخصصة
-      </div>
-
-      <!-- قائمة العملاء المرتبطين -->
-      <div class="sec-title" style="margin-bottom:10px">العملاء المرتبطون</div>
-      <div id="dgcl-list" style="margin-bottom:14px"></div>
-
-      <!-- إضافة عميل جديد -->
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:14px">
-        <div class="sec-title" style="margin-bottom:8px">➕ إضافة عميل للمندوب</div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <select id="dgcl-add-sel" onclick="fillDgClientsAddSel()" style="flex:1;padding:7px 10px;border-radius:7px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-family:Cairo,sans-serif;font-size:12px">
-            <option value="">-- اختر عميلاً --</option>
-          </select>
-          <button class="btn btn-gold btn-sm" onclick="addDgClient()">إضافة</button>
-        </div>
-      </div>
-
-      <!-- نقل عميل لمندوب آخر -->
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px">
-        <div class="sec-title" style="margin-bottom:8px">🔄 نقل عميل لمندوب آخر</div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <select id="dgcl-transfer-client" onclick="fillDgTransferSel()" style="flex:1;min-width:140px;padding:7px 10px;border-radius:7px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-family:Cairo,sans-serif;font-size:12px">
-            <option value="">-- اختر العميل --</option>
-          </select>
-          <span style="color:var(--text3);font-size:11px">← إلى →</span>
-          <select id="dgcl-transfer-to" style="flex:1;min-width:140px;padding:7px 10px;border-radius:7px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-family:Cairo,sans-serif;font-size:12px">
-            <option value="">-- اختر المندوب --</option>
-          </select>
-          <button class="btn btn-teal btn-sm" onclick="transferDgClient()">نقل</button>
-        </div>
-      </div>
-    </div>
-    <div class="mf">
-      <button class="btn btn-ghost" onclick="closeOv('ov-dg-clients')">إغلاق</button>
     </div>
   </div>
 </div>
