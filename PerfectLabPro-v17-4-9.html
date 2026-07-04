@@ -189,8 +189,14 @@ body{font-family:"Cairo",sans-serif;background:var(--bg);color:var(--text);min-h
 .card-head::after{content:'';position:absolute;bottom:0;right:0;width:60px;height:2px;background:linear-gradient(to left,var(--gold),transparent);border-radius:2px}
 .card-head h3{font-size:14px;font-weight:700}
 .search-box{position:relative}
-.search-box input{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:6px 30px 6px 10px;border-radius:7px;font-family:"Cairo",sans-serif;font-size:12px;outline:none;width:190px;transition:border-color .15s}
-.search-box input:focus{border-color:var(--gold)}
+.search-box input{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:7px 32px 7px 12px;border-radius:20px;font-family:"Cairo",sans-serif;font-size:12px;outline:none;width:190px;transition:all .18s}
+.search-box input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.12)}
+/* FIX #DATE-INPUT-REDESIGN: شكل موحّد وأنعم لكل حقول التاريخ في النظام (فلاتر التقارير،
+   المشتريات، الفواتير...) — تحسين CSS عام آمن من غير تعديل أي بنية HTML لصفحة بعينها */
+input[type=date]{border-radius:9px;transition:all .18s}
+input[type=date]:focus{border-color:var(--gold)!important;box-shadow:0 0 0 3px rgba(201,168,76,.12)}
+input[type=date]::-webkit-calendar-picker-indicator{cursor:pointer;border-radius:4px;padding:2px;transition:background .15s}
+input[type=date]::-webkit-calendar-picker-indicator:hover{background:rgba(201,168,76,.15)}
 .search-icon{position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:12px;pointer-events:none}
 .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;/* FIX #TOUCH-SCROLL: السماح للمستخدم بالتمرير العمودي للصفحة حتى عند لمس الجدول */touch-action:pan-y pan-x}
 table{width:100%;border-collapse:collapse;touch-action:pan-y pan-x}
@@ -248,13 +254,18 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 .selbar a{cursor:pointer;color:var(--gold);font-weight:600}.selbar a:hover{text-decoration:underline}
 .empty{text-align:center;padding:50px 20px;color:var(--text3)}
 .empty .ei{font-size:40px;margin-bottom:10px}.empty p{font-size:13px}
-.tabs{display:flex;gap:3px;border-bottom:1px solid var(--border);margin-bottom:16px}
-.tab{padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
-.tab:hover{color:var(--text)}.tab.on{color:var(--gold);border-bottom-color:var(--gold)}
+/* FIX #TABS-REDESIGN: تصميم تبويبات موحّد (pill/segmented) بدل خط سفلي بسيط —
+   بيتطبق تلقائياً على كل صفحات النظام (تقارير، بيانات أساسية، عملاء محتملين...)
+   لأنها كلها بتستخدم نفس كلاس .tabs/.tab، من غير ما نلمس أي HTML لصفحة بعينها. */
+.tabs{display:flex;gap:5px;background:var(--bg2);border:1px solid var(--border);border-radius:13px;padding:5px;margin-bottom:16px;flex-wrap:wrap}
+.tab{padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;color:var(--text3);border-radius:9px;transition:all .18s ease;border-bottom:none;margin-bottom:0}
+.tab:hover{color:var(--text);background:rgba(255,255,255,.05)}
+.tab.on{color:#000;background:linear-gradient(135deg,var(--gold),var(--gold2));box-shadow:0 3px 12px rgba(201,168,76,.35)}
+.dg-subtabs{display:flex;gap:5px;background:var(--bg2);border:1px solid var(--border);border-radius:13px;padding:5px;margin-bottom:16px;flex-wrap:wrap;border-bottom:1px solid var(--border)}
+.dg-subtab{padding:9px 18px;font-size:12.5px;font-weight:700;cursor:pointer;color:var(--text3);border-radius:9px;transition:all .18s ease;border-bottom:none;margin-bottom:0}
+.dg-subtab:hover{color:var(--text);background:rgba(255,255,255,.05)}
+.dg-subtab.on{color:#000;background:linear-gradient(135deg,var(--gold),var(--gold2));box-shadow:0 3px 12px rgba(201,168,76,.35)}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.dg-subtabs{display:flex;gap:3px;border-bottom:1px solid var(--border);margin-bottom:16px}
-.dg-subtab{padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;transition:.15s}
-.dg-subtab.on{color:var(--gold2);border-bottom-color:var(--gold)}
 .dg-sub{display:none}
 .dg-sub.on{display:block}
 .stat-pill{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--text2);font-weight:400}
@@ -983,6 +994,11 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
       <span class="ni">⚙️</span>البيانات الأساسية
     </div>
 
+    <!-- سجل النشاط - اختصار مباشر لتبويب "سجل النشاط" داخل البيانات الأساسية -->
+    <div class="nav-standalone" data-page="masterdata" data-subtab="md-actlog">
+      <span class="ni">📋</span>سجل النشاط
+    </div>
+
   </nav>
 </aside>
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
@@ -1246,7 +1262,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
     <div class="stats" id="tr-stats"></div>
     <div class="card">
       <div class="card-head"><h3>سجل الحركات</h3><div class="search-box"><input type="text" placeholder="بحث..." oninput="filterTbl('tr-tb',this.value)"><span class="search-icon">&#x1F50D;</span></div></div>
-      <div class="tbl-wrap"><table><thead><tr><th class="chk-col"><input type="checkbox" onchange="toggleAllSel('tr-tb',this)"></th><th>رقم</th><th>التاريخ</th><th>النوع</th><th>الخزنة</th><th>الحساب</th><th>المبلغ</th><th>المستلم</th><th>ملاحظات</th><th></th></tr></thead><tbody id="tr-tb"></tbody></table></div>
+      <div class="tbl-wrap"><table><thead><tr><th class="chk-col"><input type="checkbox" onchange="toggleAllSel('tr-tb',this)"></th><th style="min-width:70px">رقم</th><th style="min-width:100px">التاريخ</th><th>النوع</th><th>الخزنة</th><th>الحساب</th><th>المبلغ</th><th>المستلم</th><th>ملاحظات</th><th></th></tr></thead><tbody id="tr-tb"></tbody></table></div>
       <div id="tr-empty" class="empty" style="display:none"><div class="ei">💰</div><p>لا توجد حركات</p></div>
     </div>
   </div>
@@ -1261,9 +1277,9 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
       <div class="tab" onclick="toggleReport('reps-cl',this);renderReports()">👥 العملاء</div>
       <div class="tab" onclick="toggleReport('reps-tech',this);renderTechReport()" data-perm-hide="reports.view_tech_report">👨‍🔧 الفنيين</div>
       <div class="tab" onclick="toggleReport('reps-salary',this);renderSalaryReport()" data-perm-hide="reports.view_salary">💰 الرواتب</div>
-      <div class="tab" onclick="toggleReport('reps-client-card',this);initClientCardSelects();initRepDates('cc-from','cc-to')" data-perm-hide="reports.view_client_card">🃏 كارت عميل</div>
-      <div class="tab" onclick="toggleReport('reps-sup-card',this);initSupCardSelects();initRepDates('sc-from','sc-to')">🏢 كارت مورد</div>
-      <div class="tab" onclick="toggleReport('reps-treasury',this);initRepDates('trep-from','trep-to');renderTreasuryReport()" data-perm-hide="reports.view_treasury_rep">🏦 تقرير الخزنة</div>
+      <div class="tab" onclick="toggleReport('reps-client-card',this);initClientCardSelects();initRepDates('cc-from','cc-to','renderClientCard')" data-perm-hide="reports.view_client_card">🃏 كارت عميل</div>
+      <div class="tab" onclick="toggleReport('reps-sup-card',this);initSupCardSelects();initRepDates('sc-from','sc-to','renderSupCard')">🏢 كارت مورد</div>
+      <div class="tab" onclick="toggleReport('reps-treasury',this);initRepDates('trep-from','trep-to','renderTreasuryReport');renderTreasuryReport()" data-perm-hide="reports.view_treasury_rep">🏦 تقرير الخزنة</div>
     </div>
 
     <!-- نظرة عامة -->
@@ -1301,6 +1317,13 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
         <div class="card-head">
           <h3>أداء المناديب</h3>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <div class="qdr-bar" style="display:flex;gap:5px;flex-wrap:wrap">
+              <button class="btn btn-ghost btn-sm" onclick="qdrApply('del-rep-from','del-rep-to','thisMonth',renderDelReport)">📅 الشهر الحالي</button>
+              <button class="btn btn-ghost btn-sm" onclick="qdrApply('del-rep-from','del-rep-to','prevMonth',renderDelReport)">⏮️ الشهر السابق</button>
+              <select id="del-rep-month-sel" onchange="if(this.value){qdrApplyMonth('del-rep-from','del-rep-to',this.value,renderDelReport);this.value=''}" style="font-size:11px;padding:4px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;color:var(--text)">
+                <option value="">🗓️ اختر شهر...</option>
+              </select>
+            </div>
             <input id="del-rep-from" type="date" style="font-size:11px;padding:4px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;color:var(--text)">
             <span style="color:var(--text3);font-size:11px">إلى</span>
             <input id="del-rep-to" type="date" style="font-size:11px;padding:4px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;color:var(--text)">
@@ -1552,7 +1575,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
   <div class="page" id="pg-inventory">
     <div class="ph"><h2>المخزون</h2><div class="btn-row"><button class="btn btn-gold" onclick="openInvModal()">+ إضافة صنف</button><button class="btn btn-ghost" onclick="editSelInv('inv-tb')">تعديل</button><button class="btn btn-ghost" onclick="delSelInv('inv-tb')">حذف</button><button class="btn btn-teal" onclick="fixMissingOpeningBatches()" title="ينشئ دفعة افتتاحية في FIFO لأي خامة عندها رصيد بدون دفعة، حتى تظهر في الجرد">🔧 إصلاح الأرصدة الناقصة من الجرد</button></div></div>
     <div class="card"><div class="card-head"><h3>قائمة المخزون</h3></div>
-      <div class="tbl-wrap"><table><thead><tr><th class="chk-col"></th><th>صورة</th><th>اسم الصنف</th><th>نوع الصنف</th><th>الفئة</th><th>الرصيد</th><th>الوحدة</th><th>الحد الأدنى</th><th>الحالة</th></tr></thead><tbody id="inv-tb"></tbody></table></div>
+      <div class="tbl-wrap"><table><thead><tr><th class="chk-col"></th><th>صورة</th><th>اسم الصنف</th><th>نوع الصنف</th><th>الفئة</th><th title="آخر رصيد مسجّل من الشراء أو الجرد الدوري">الرصيد (آخر جرد)</th><th>الوحدة</th><th>الحد الأدنى</th><th>الحالة</th></tr></thead><tbody id="inv-tb"></tbody></table></div>
       <div id="inv-empty" class="empty" style="display:none"><div class="ei">📦</div><p>لا يوجد مخزون</p></div>
     </div>
   </div>
@@ -1584,7 +1607,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
           <div class="search-box"><input type="text" id="pur-search" placeholder="بحث..." oninput="filterPurchasesCombined()"><span class="search-icon">🔍</span></div>
         </div>
       </div>
-      <div class="tbl-wrap"><table><thead><tr><th>رقم الفاتورة</th><th>التاريخ</th><th>المورد</th><th>الأصناف</th><th>الكمية</th><th>الإجمالي</th><th>الحالة</th><th></th></tr></thead><tbody id="purchases-tb"></tbody></table></div>
+      <div class="tbl-wrap"><table><thead><tr><th>رقم الفاتورة</th><th style="min-width:110px">التاريخ</th><th>المورد</th><th>الكمية</th><th>الإجمالي</th><th></th></tr></thead><tbody id="purchases-tb"></tbody></table></div>
       <div id="purchases-empty" class="empty" style="display:none"><div class="ei">🛒</div><p>لا توجد فواتير</p></div>
     </div>
   </div>
@@ -1849,6 +1872,12 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
         <div class="fg"><label>📅 إلى تاريخ</label><input type="date" id="pnl-to"></div>
         <button class="btn btn-teal" onclick="renderProfitability()">عرض التقرير</button>
         <button class="btn btn-ghost" onclick="setPnlCurrentMonth()">الشهر الحالي</button>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+        <button class="btn btn-ghost btn-sm" onclick="qdrApply('pnl-from','pnl-to','prevMonth',renderProfitability)">⏮️ الشهر السابق</button>
+        <select id="qdr-sel-pnl-from" onchange="if(this.value){qdrApplyMonth('pnl-from','pnl-to',this.value,renderProfitability)}this.value=''" style="font-size:11px;padding:4px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;color:var(--text)">
+          <option value="">🗓️ اختر شهر...</option>
+        </select>
       </div>
       <!-- مقارنة بفترة سابقة -->
       <div style="border-top:1px solid var(--border);padding-top:10px">
@@ -2819,7 +2848,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
       <div class="master-tab" onclick="swMaster('md-design',this);loadDesignPanel()">🎨 تصميم الإشعارات</div>
       <div class="master-tab" onclick="swMaster('md-employees',this)">👔 الموظفون</div>
       <div class="master-tab" onclick="swMaster('md-backup',this);renderBackup()">💾 النسخ الاحتياطي</div>
-      <div class="master-tab" onclick="swMaster('md-actlog',this);renderActivityLog()">📋 سجل النشاط</div>
+      <div class="master-tab" id="mtab-actlog" onclick="swMaster('md-actlog',this);renderActivityLog()">📋 سجل النشاط</div>
       <div class="master-tab" onclick="swMaster('md-dept-map',this);renderDeptProdCatMap();renderDeptInvMap()">🏭 ربط الأقسام</div>
     </div>
 
@@ -2877,6 +2906,16 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
                 <button class="btn btn-ghost btn-sm" onclick="resetWelcomeMsg()">↩️ استعادة الافتراضية</button>
               </div>
               <div id="li-welcome-preview" style="display:none;margin-top:10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:12px;line-height:2;white-space:pre-wrap;color:var(--text);direction:rtl"></div>
+              <div class="sec-title" style="margin-top:12px">💰 رسالة تذكير المديونية (واتساب)</div>
+              <div style="font-size:11px;color:var(--text3);margin-bottom:8px;background:var(--bg3);border-radius:7px;padding:8px 12px;border-right:3px solid var(--gold)">
+                هذه الرسالة تُرسل عند الضغط على "تذكير" في صفحة المديونيات — استخدم <code style="background:var(--bg4);padding:1px 5px;border-radius:4px;color:var(--gold2)">{اسم_العميل}</code> و <code style="background:var(--bg4);padding:1px 5px;border-radius:4px;color:var(--gold2)">{المبلغ}</code> و <code style="background:var(--bg4);padding:1px 5px;border-radius:4px;color:var(--gold2)">{العملة}</code>
+              </div>
+              <div class="fg"><textarea id="li-debt-msg" style="min-height:110px;font-family:'Cairo',sans-serif;font-size:12px;line-height:2;direction:rtl" placeholder="عزيزي {اسم_العميل}، يرجى سداد المبلغ المستحق {المبلغ} {العملة}. شكراً"></textarea></div>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <button class="btn btn-teal btn-sm" onclick="previewDebtMsg()">👁️ معاينة</button>
+                <button class="btn btn-ghost btn-sm" onclick="resetDebtMsg()">↩️ استعادة الافتراضية</button>
+              </div>
+              <div id="li-debt-preview" style="display:none;margin-top:10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:12px;line-height:2;white-space:pre-wrap;color:var(--text);direction:rtl"></div>
             </div>
           </div>
         </div>
@@ -4106,8 +4145,9 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
             </select>
           </div>
           <div class="fg"><label>الفئة</label><select id="iv-cat"></select></div>
-          <div class="fg"><label>الرصيد الابتدائي</label><input id="iv-qty" type="number" value="0" min="0"></div>
+          <div class="fg"><label>الرصيد الابتدائي</label><input id="iv-qty" type="number" value="0" min="0" oninput="toggleIvPriceReq()"></div>
           <div class="fg"><label>الوحدة</label><select id="iv-unit"><option>جرام</option><option>كيلو</option><option>مل</option><option>لتر</option><option>قطعة</option></select></div>
+          <div class="fg" id="iv-price-wrap"><label>متوسط سعر الوحدة (لتقييم الرصيد الابتدائي) <span class="req" id="iv-price-req" style="display:none">*</span></label><input id="iv-price" type="number" min="0" step="0.01" placeholder="0.00"></div>
           <div class="fg"><label>الحد الأدنى للتنبيه</label><input id="iv-min" type="number" value="20" min="0"></div>
         </div>
       </div>
@@ -4497,7 +4537,7 @@ const DB = {
     // Wait for Firebase to be ready (up to 3s)
     let waited = 0;
     while (!_fbRTDB && waited < 30) { await new Promise(r=>setTimeout(r,100)); waited++; }
-    if (!_fbRTDB) { console.warn('Firebase not available, using localStorage only'); return; }
+    if (!_fbRTDB) { console.warn('Firebase not available, using localStorage only'); this._syncOK=false; return; }
     try {
       const snap = await _fbRTDB.ref('data/shared').get();
       if (snap.exists()) {
@@ -4581,7 +4621,11 @@ const DB = {
         });
         console.log('✅ Firebase sync: ' + Object.keys(data).length + ' keys');
       }
-    } catch(e) { console.warn('Firebase sync error:', e.message); }
+      // FIX #MIGRATION-SYNC-GUARD: نعلّم نجاح المزامنة فقط لو وصلنا هنا بدون استثناء —
+      // الميجريشنز (migrateTreasuryClientId وأخواتها) هتتأجل لو المزامنة فشلت، بدل ما
+      // تشتغل على كاش محلي قديم ممكن يكون فيه سجلات محذوفة/متغيرة من جهاز تاني.
+      this._syncOK = true;
+    } catch(e) { console.warn('Firebase sync error:', e.message); this._syncOK=false; }
   },
 
   // FIX #REALTIME: مستمع مستمر للتغييرات من Firebase
@@ -4648,15 +4692,27 @@ const DB = {
         // يدعم الآن شكلي التخزين: array قديمة أو object مفتاحه id (بعد الترحيل لكتابة
         // جراحية لكل حركة على حدة — راجع _saveTreasury).
         if(k === 'treasury'){
-          // FIX #TREASURY-TRUST-REMOTE: بعد التحويل للكتابة الجراحية (update() لكل
-          // حركة بمفردها في _saveTreasury)، فايربيز أصبح مصدر الحقيقة الموثوق لكل
-          // حركة — بما فيها كتابة هذا الجهاز نفسه (SDK فايربيز يعكس كتابته محليًا
-          // فورًا حتى قبل تأكيد السيرفر، ونافذة الـ 800ms فوق أصلاً بتمنع صدى كتابة
-          // هذا الجهاز من التسبب في وميض). الدمج القديم (إضافة فقط بدون حذف) كان
-          // يمنع وصول حذف/تعديل حركات من أجهزة تانية للأبد إلى أن يُمسح الكاش يدويًا.
+          // FIX #TREASURY-TRUST-REMOTE-RACE-V2: المحاولة الأولى حطّت مهلة دقيقتين
+          // لحماية حركة لسه بتتزامن — لكن المستخدم أكّد إن الحركة اختفت *بعد* الدقيقتين
+          // بالظبط، يعني الكتابة الفعلية لفايربيز كانت متأخرة أو متعطّلة لفترة أطول من
+          // كده على نته. الحل الصحيح: مفيش حذف فعلي لحركات الخزنة في التطبيق أصلاً —
+          // أي "حذف" بيتم عن طريق نظام التسوية العكسية (قيد إلغاء) مش مسح حقيقي (راجع
+          // تعليق "delTr/deleteTr: replaced by reversal system"). يعني معندناش أي داعي
+          // نثق في "غياب" حركة من السناپشوت البعيد كدليل حذف — ده دايماً معناه إنها لسه
+          // في الطريق. فبدل مهلة زمنية اعتباطية، نحافظ دايماً على أي حركة محلية مش موجودة
+          // بعد، بالضبط زي نفس منطق المزامنة الأولية الآمن (راجع FIX #TREASURY-SYNC فوق).
           const remoteTr = _treasuryValToArray(data[k]);
-          this._c[k] = remoteTr;
-          try { localStorage.setItem('plp_' + k, JSON.stringify(remoteTr)); } catch(e) {}
+          const localTr = this._c['treasury'];
+          let merged;
+          if(Array.isArray(localTr) && localTr.length){
+            const remoteIds = new Set(remoteTr.map(r=>r&&r.id));
+            const keepLocal = localTr.filter(l=>l && !remoteIds.has(l.id));
+            merged = keepLocal.length ? [...remoteTr, ...keepLocal] : remoteTr;
+          } else {
+            merged = remoteTr;
+          }
+          this._c[k] = merged;
+          try { localStorage.setItem('plp_' + k, JSON.stringify(merged)); } catch(e) {}
           return;
         }
         this._c[k] = data[k];
@@ -4810,12 +4866,83 @@ function _saveTreasury(list){
   }catch(e){ console.warn('⚠️ treasury FB write ex:', e); }
 }
 
+// FIX #BOX-BAL-SHARED: دالة موحّدة لحساب رصيد أي خزنة (أساسية أو إضافية) — كانت
+// معادلة "مقبوضات - مدفوعات" مكررة يدوياً في 6 أماكن مختلفة (renderTreasury,
+// openTrModal, openTrTransferModal, onTrfChange, saveTrTransfer, renderExtraBoxesList)
+// وده كان بيخلق خطر إن تعديل المعادلة في مكان يتنسى في مكان تاني فتختلف الأرقام.
+function _getBoxBalance(list, boxId){
+  return list.filter(t=>t.box===boxId&&t.type==='in').reduce((s,t)=>s+(+t.amount||0),0)
+       - list.filter(t=>t.box===boxId&&t.type==='out').reduce((s,t)=>s+(+t.amount||0),0);
+}
+// FIX #BOX-ORPHAN-SAFETY: صافي رصيد كل الحركات المرتبطة بخزائن لم تعد موجودة في
+// extra_boxes (خزنة اتحذفت قديماً وفيها حركات) — عشان الإجمالي في صفحة الخزنة ما
+// يفضلش يسقط رصيد حقيقي بصمت لمجرد إن الخزنة اتشالت من القائمة.
+function _getOrphanBoxesBalance(list, knownBoxIds){
+  const orphanIds=[...new Set(list.map(t=>t.box).filter(b=>b&&!knownBoxIds.includes(b)))];
+  return orphanIds.reduce((s,id)=>s+_getBoxBalance(list,id),0);
+}
+// FIX #NID-ATOMIC: العداد المحلي بيتزاد فوراً (عشان الواجهة تاخد رقم فوراً بدون
+// انتظار الشبكة)، لكن دلوقتي كمان بنبعت transaction ذرية لفايربيز فوراً (مش مؤجلة
+// 800ms زي DB.set العادية) على مفتاح العداد بالذات. الفايربيز transaction بتضمن إن
+// السيرفر هو اللي بيحسم القيمة النهائية حتى لو جهازين ضغطوا في نفس اللحظة، وبترجع
+// تصحح الكاش المحلي فوراً لو كان متأخر عن السيرفر. ده بيقلل نافذة تصادم الأرقام
+// (T-رقم مكرر) جداً لكنه مش يضمنها 100% لحظة الضغط المتزامن الفعلي على نفس الميلي
+// ثانية بالظبط — إصلاح جذري كامل يحتاج تحويل nid() لدالة async وتعديل كل نقاط
+// الاستخدام (أرشيف، دفعات، حالات، فواتير، مشتريات، خزنة)، وده تغيير معماري أكبر
+// مؤجل لمرحلة لاحقة لو حبيتوا.
+// FIX #KEYED-SAVE-GENERIC: نفس أسلوب _saveTreasury الجراحي (كتابة بالمفتاح لكل
+// سجل بدل استبدال العقدة كاملة) لكن كدالة عامة تصلح لأي مجموعة (key) عندها سجلات
+// بـ id. مستخدمة الآن لـ sup_payments و purchases لسد نفس ثغرة فقدان البيانات
+// اللي كانت الخزنة بتعاني منها قبل الإصلاح الجراحي بتاعها.
+function _saveKeyedList(key, list){
+  const prevList = DB._c[key] || [];
+  const prevMap = new Map(prevList.map(r=>[r.id,r]));
+  const newMap = new Map(list.map(r=>[r.id,r]));
+
+  DB._c[key] = list;
+  try{ localStorage.setItem('plp_'+key, JSON.stringify(list)); }catch(e){}
+  if(DB._wt && DB._wt[key]){ clearTimeout(DB._wt[key]); delete DB._wt[key]; }
+  window._lastLocalWrite = Date.now();
+
+  if(!_fbRTDB) return;
+  const updates={};
+  let hasChanges=false;
+  newMap.forEach((rec,id)=>{
+    const prev=prevMap.get(id);
+    if(!prev || JSON.stringify(prev)!==JSON.stringify(rec)){ updates[id]=rec; hasChanges=true; }
+  });
+  prevMap.forEach((rec,id)=>{
+    if(!newMap.has(id)){ updates[id]=null; hasChanges=true; }
+  });
+  if(!hasChanges) return;
+  try{
+    _fbRTDB.ref('data/shared/'+key).update(updates)
+      .catch(e=>{ console.warn('⚠️ '+key+' FB write:', e.code||e); DB._notifySyncFail(); });
+  }catch(e){ console.warn('⚠️ '+key+' FB write ex:', e); }
+}
 function nid(t){
-  // FIX #37: add random suffix to prevent duplicate sequence numbers with concurrent users
   const c=DB.get('ctr')||{};
   if(c[t]===undefined)c[t]=0;
   c[t]=(c[t]||0)+1;
   DB.set('ctr',c);
+  try{
+    if(_fbRTDB){
+      _fbRTDB.ref('data/shared/ctr/'+t).transaction(cur=>{
+        const localVal=(DB._c['ctr']||{})[t]||0;
+        return Math.max((cur||0),localVal);
+      }).then(res=>{
+        if(res && res.committed && res.snapshot){
+          const serverVal=res.snapshot.val();
+          const cc=DB._c['ctr']||{};
+          if(typeof serverVal==='number' && serverVal>(cc[t]||0)){
+            cc[t]=serverVal;
+            DB._c['ctr']=cc;
+            try{ localStorage.setItem('plp_ctr', JSON.stringify(cc)); }catch(e){}
+          }
+        }
+      }).catch(e=>console.warn('nid transaction:',t,e.code||e));
+    }
+  }catch(e){ console.warn('nid transaction ex:',t,e); }
   return c[t];
 }
 // FIX #4: use crypto random IDs instead of Date.now() to prevent duplicate IDs
@@ -5322,9 +5449,23 @@ document.getElementById('sidebar-nav').addEventListener('click',function(e){
   if(item.classList.contains('nav-group-header'))return;
   e.stopPropagation();
   const pg=item.dataset.page;
+  const subtab=item.dataset.subtab; // FIX #ACTLOG-SHORTCUT: اختصار مباشر لتبويب فرعي داخل البيانات الأساسية
   closeSidebar();
   // تأخير بسيط عشان الـ sidebar يتقفل أولاً ثم تنتقل الصفحة
-  setTimeout(()=>goPage(pg),50);
+  setTimeout(()=>{
+    goPage(pg);
+    if(subtab){
+      setTimeout(()=>{
+        const tabEl=document.getElementById('mtab-'+subtab.replace('md-',''));
+        swMaster(subtab, tabEl);
+        if(subtab==='md-actlog') renderActivityLog();
+        // تمييز عنصر الاختصار نفسه في القائمة الجانبية بدل "البيانات الأساسية" العادي
+        document.querySelectorAll('.nav-item,.nav-standalone').forEach(x=>x.classList.remove('active'));
+        item.classList.add('active');
+        document.getElementById('ptitle').textContent=item.textContent.trim();
+      },80);
+    }
+  },50);
 });
 window.goPage=goPage;
 
@@ -5370,8 +5511,11 @@ function _doUpdateBadges(){
   const purs=DB.get('purchases')||[];
   const unpaidPur=purs.filter(p=>(+p.remain||0)>0).length;
   _set('nb-pur',unpaidPur||'0');
-  const bats=DB.get('batches')||[];
-  const lowBat=bats.filter(b=>(+b.qty||0)<=(+b.minQty||0)&&b.minQty).length;
+  // FIX #BADGE-LOWSTOCK: كان بيقرأ b.qty/b.minQty من الدفعات (batches) — دي حقول مش موجودة
+  // أصلاً في كائن الدفعة (اللي فيه qtyRemaining/unitCost بس)، فالعداد كان دايماً صفر.
+  // المرجع الصح هو جدول الأصناف (inventory) بعد مزامنته من آخر جرد.
+  const invForBadge=DB.get('inventory')||[];
+  const lowBat=invForBadge.filter(i=>(+i.qty||0)<=(+i.min||0)).length;
   _set('nb-bat',lowBat||'0');
   const notifs=DB.get('notifications')||[];
   const unread=notifs.filter(n=>!n.read).length;
@@ -5389,6 +5533,8 @@ function loadLabInfo(){
   // رسالة الترحيب — تحميل المحفوظة أو الافتراضية
   const wmEl=document.getElementById('li-welcome-msg');
   if(wmEl) wmEl.value=li.welcomeMsg||_defaultWelcomeMsg(li.name||'');
+  const dmEl=document.getElementById('li-debt-msg');
+  if(dmEl) dmEl.value=li.debtMsg||_defaultDebtMsg();
   const img=document.getElementById('lab-logo-img');const ph=document.getElementById('lab-logo-ph');
   if(li.logo){if(img){img.src=li.logo;img.style.display='block'}if(ph)ph.style.display='none'}
   else{if(img)img.style.display='none';if(ph)ph.style.display='flex'}
@@ -5397,7 +5543,7 @@ function loadLabInfo(){
 function saveLabInfo(){
   const gv=id=>document.getElementById(id)?.value||'';
   const li=DB.get('labinfo')||{};
-  Object.assign(li,{name:gv('li-name'),ph1:gv('li-ph1'),ph2:gv('li-ph2'),ph3:gv('li-ph3'),wa:gv('li-wa'),email:gv('li-email'),web:gv('li-web'),fb:gv('li-fb'),ig:gv('li-ig'),addr:gv('li-addr'),map:gv('li-map'),reg:gv('li-reg'),tax:gv('li-tax'),msg:gv('li-msg'),welcomeMsg:gv('li-welcome-msg'),admin1:gv('li-admin1'),admin2:gv('li-admin2')});
+  Object.assign(li,{name:gv('li-name'),ph1:gv('li-ph1'),ph2:gv('li-ph2'),ph3:gv('li-ph3'),wa:gv('li-wa'),email:gv('li-email'),web:gv('li-web'),fb:gv('li-fb'),ig:gv('li-ig'),addr:gv('li-addr'),map:gv('li-map'),reg:gv('li-reg'),tax:gv('li-tax'),msg:gv('li-msg'),welcomeMsg:gv('li-welcome-msg'),debtMsg:gv('li-debt-msg'),admin1:gv('li-admin1'),admin2:gv('li-admin2')});
   DB.set('labinfo',li);
   document.getElementById('s-lab-name').textContent=li.name||'Perfect Lab Pro';
   _applySidebarLogo(li.logo||'');
@@ -5434,8 +5580,7 @@ function renderExtraBoxesList(){
   const ts=DB.get('trSetup')||{};
   const c=ts.cur||'ج.م';
   const list=DB.get('treasury')||[];
-  const bal=id=>list.filter(t=>t.box===id&&t.type==='in').reduce((s,t)=>s+(+t.amount||0),0)
-                 -list.filter(t=>t.box===id&&t.type==='out').reduce((s,t)=>s+(+t.amount||0),0);
+  const bal=id=>_getBoxBalance(list,id);
   if(!boxes.length){
     cont.innerHTML='<div style="color:var(--text3);font-size:12px;padding:8px">لا توجد خزائن إضافية بعد</div>';
     return;
@@ -5494,11 +5639,17 @@ function saveExtraBox(){
 function deleteExtraBox(id){
   const b=getExtraBoxes().find(x=>x.id===id);
   if(!b)return;
+  // FIX #BOX-DELETE-GUARD: منع حذف خزنة فيها حركات فعلياً — الحذف السابق كان بيسيب
+  // الحركات موجودة لكن بيسقط رصيدها بصمت من "الإجمالي" في صفحة الخزنة (ويعمل تعارض
+  // مع التقرير اليومي اللي بيحسب كل الحركات بدون فلترة). لازم تصفير رصيد الخزنة
+  // (تحويلها لخزنة تانية) قبل حذفها.
   const hasTransactions=(DB.get('treasury')||[]).some(t=>t.box===id);
-  const msg=hasTransactions
-    ?'⚠️ هذه الخزنة بها حركات مالية. حذفها لن يؤثر على الحركات الموجودة لكن لن تظهر في القوائم.\nهل تريد المتابعة؟'
-    :'حذف خزنة "'+b.name+'"؟';
-  confirm2('حذف خزنة',msg,()=>{
+  if(hasTransactions){
+    const bal=_getBoxBalance(DB.get('treasury')||[],id);
+    toast('⚠️ لا يمكن حذف "'+b.name+'" — بها حركات فعلية (الرصيد الحالي: '+fmt(bal)+' '+cur()+'). حوّل الرصيد لخزنة أخرى أولاً ثم أعد المحاولة.','err');
+    return;
+  }
+  confirm2('حذف خزنة','حذف خزنة "'+b.name+'"؟',()=>{
     DB.set('extra_boxes',getExtraBoxes().filter(x=>x.id!==id));
     renderExtraBoxesList();
     toast('تم الحذف');
@@ -6443,6 +6594,36 @@ function resetWelcomeMsg(){
   if(prev)prev.style.display='none';
   toast('تم استعادة الرسالة الافتراضية');
 }
+// FIX #DEBT-MSG-TEMPLATE: رسالة تذكير المديونية كانت Hardcoded داخل الكود في مكانين
+// (زر "تذكير" في صفحة المديونيات + دالة إرسال تذكير الفاتورة)، من غير أي تحكم من الإعدادات.
+// أضفنا نفس نمط "رسالة الترحيب" بالظبط: قالب قابل للتعديل من إعدادات المعمل، بمتغيرات
+// {اسم_العميل} {المبلغ} {العملة}، مع قيمة افتراضية تطابق النص القديم تماماً حتى لا ينكسر شيء.
+function _defaultDebtMsg(){
+  return 'عزيزي {اسم_العميل}، يرجى سداد المبلغ المستحق {المبلغ} {العملة}. شكراً';
+}
+function buildDebtMsg(clientName,amount,currency){
+  const li=DB.get('labinfo')||{};
+  let tpl=li.debtMsg||_defaultDebtMsg();
+  tpl=tpl.replace(/\{اسم_العميل\}/g,clientName||'');
+  tpl=tpl.replace(/\{المبلغ\}/g,fmt(amount||0));
+  tpl=tpl.replace(/\{العملة\}/g,currency||cur());
+  return tpl;
+}
+function previewDebtMsg(){
+  const tpl=document.getElementById('li-debt-msg')?.value||_defaultDebtMsg();
+  let preview=tpl.replace(/\{اسم_العميل\}/g,'د. محمد أحمد (مثال)');
+  preview=preview.replace(/\{المبلغ\}/g,'1,250');
+  preview=preview.replace(/\{العملة\}/g,cur());
+  const el=document.getElementById('li-debt-preview');
+  if(el){el.textContent=preview;el.style.display='block';}
+}
+function resetDebtMsg(){
+  const el=document.getElementById('li-debt-msg');
+  if(el)el.value=_defaultDebtMsg();
+  const prev=document.getElementById('li-debt-preview');
+  if(prev)prev.style.display='none';
+  toast('تم استعادة الرسالة الافتراضية');
+}
 let _newClientWAData=null;
 function openNewClientWA(clientData){
   _newClientWAData=clientData;
@@ -7281,15 +7462,32 @@ function openInvModal(editId=null){
   rmImg('iv-img-prev','iv-img-ph','iv-img-data');
   document.getElementById('iv-name').value='';document.getElementById('iv-qty').value='0';document.getElementById('iv-min').value='20';
   document.getElementById('iv-type').value='';
-  if(editId){const i=(DB.get('inventory')||[]).find(x=>x.id===editId);if(i){document.getElementById('iv-name').value=i.name;fillCatSel('iv-cat','inv_cats',i.cat);document.getElementById('iv-qty').value=i.qty;document.getElementById('iv-unit').value=i.unit||'جرام';document.getElementById('iv-min').value=i.min;document.getElementById('iv-type').value=i.type||'';if(i.img)showImg('iv-img-prev','iv-img-ph','iv-img-data',i.img)}}
+  const ivPriceEl=document.getElementById('iv-price');if(ivPriceEl)ivPriceEl.value='';
+  if(editId){const i=(DB.get('inventory')||[]).find(x=>x.id===editId);if(i){document.getElementById('iv-name').value=i.name;fillCatSel('iv-cat','inv_cats',i.cat);document.getElementById('iv-qty').value=i.qty;document.getElementById('iv-unit').value=i.unit||'جرام';document.getElementById('iv-min').value=i.min;document.getElementById('iv-type').value=i.type||'';if(ivPriceEl)ivPriceEl.value=i.lastPrice||'';if(i.img)showImg('iv-img-prev','iv-img-ph','iv-img-data',i.img)}}
+  toggleIvPriceReq();
   openOv('ov-inv');
+}
+// FIX #INV-OPENING-PRICE: حقل "متوسط سعر الوحدة" يظهر إلزامياً فقط لو فيه رصيد ابتدائي (qty>0)
+// بدونه كانت دفعة FIFO الافتتاحية بتتسجل بتكلفة صفر دايماً، فالجرد والربحية كانوا بيطلعوا غلط
+// لأي صنف رصيده مسجل يدوياً (مش عن طريق المشتريات).
+function toggleIvPriceReq(){
+  const qty=+document.getElementById('iv-qty')?.value||0;
+  const req=document.getElementById('iv-price-req');
+  if(req)req.style.display=qty>0?'inline':'none';
 }
 function saveInv(){
   if(!can('inventory.add')){toast('ليس لديك صلاحية إضافة أو تعديل المخزون','err');return;}
   const name=document.getElementById('iv-name').value.trim();if(!name){toast('يرجى إدخال الاسم','err');return}
   const type=document.getElementById('iv-type').value;if(!type){toast('يرجى اختيار نوع الصنف','err');return}
   const qty=+document.getElementById('iv-qty').value||0;
-  const data={id:_ivId||('i_'+Date.now()),name,type,cat:document.getElementById('iv-cat').value,qty,unit:document.getElementById('iv-unit').value,min:+document.getElementById('iv-min').value,img:document.getElementById('iv-img-data').value};
+  const priceEl=document.getElementById('iv-price');
+  const price=priceEl?(+priceEl.value||0):0;
+  // لو فيه رصيد ابتدائي ولا يوجد دفعة سابقة للصنف، لازم نعرف السعر عشان الجرد يحسب القيمة صح
+  if(qty>0){
+    const existingBatch=(DB.get('batches')||[]).some(b=>b.material===name);
+    if(!existingBatch&&price<=0){toast('يرجى إدخال متوسط سعر الوحدة لتقييم الرصيد الابتدائي','err');return}
+  }
+  const data={id:_ivId||('i_'+Date.now()),name,type,cat:document.getElementById('iv-cat').value,qty,unit:document.getElementById('iv-unit').value,min:+document.getElementById('iv-min').value,lastPrice:price,img:document.getElementById('iv-img-data').value};
   let list=DB.get('inventory')||[];
   if(_ivId)list=list.map(x=>x.id===_ivId?data:x);else list.push(data);
   DB.set('inventory',list);
@@ -7441,6 +7639,7 @@ function saveDafter(){
   closeOv('ov-dafter');renderDafter();updateBadges();toast(_dfId?'تم التعديل ✅':'تمت الإضافة ✅');
 }
 function renderDafter(){
+  qdrInjectBar('dafter-date-from','dafter-date-to','filterDafterCombined');
   // Layer 3: فلترة البيانات — المندوب/الموظف بصلاحية "يرى حالاته فقط"
   const _myName = window._currentUser?.name;
   const _ownOnly = can('dafter.view_own_only') && !can('dafter.view') ? false : // view بدون own_only = يرى الكل
@@ -7748,6 +7947,7 @@ function renderPage2(pg){({dafter:renderDafter,proof:renderProof})[pg]?.()}
 // ARCHIVE
 let _arcF='all';
 function renderArchive(bypassLimit){
+  qdrInjectBar('arc-date-from','arc-date-to','filterArchiveCombined');
   // Layer 3: المندوب يرى أرشيف حالاته فقط
   const _arcMyName = window._currentUser?.name;
   const _arcOwnOnly = can('archive.view_own_only') && _arcMyName && !['admin','supervisor','accountant'].includes(window._currentUser?.role);
@@ -7849,15 +8049,20 @@ function doSettle(){
 function renderTreasury(){
   const list=DB.get('treasury')||[];const ts=DB.get('trSetup')||{cash:'نقدي',net:'شبكة',bank:'بنكي',cur:'ج.م'};
   const extraBoxes=getExtraBoxes();
-  const bal=box=>list.filter(t=>t.box===box&&t.type==='in').reduce((s,t)=>s+ +t.amount,0)-list.filter(t=>t.box===box&&t.type==='out').reduce((s,t)=>s+ +t.amount,0);
+  const bal=box=>_getBoxBalance(list,box);
   const c=ts.cur||'ج.م';
   const extraTotal=extraBoxes.reduce((s,b)=>s+bal(b.id),0);
-  const grandTotal=bal('cash')+bal('net')+bal('bank')+extraTotal;
+  // FIX #BOX-ORPHAN-SAFETY: خزائن اتحذفت قديماً من extra_boxes لكن لسه فيها حركات —
+  // رصيدها بيتحسب هنا بدل ما يختفي بصمت من الإجمالي (راجع _getOrphanBoxesBalance)
+  const knownBoxIds=['cash','net','bank',...extraBoxes.map(b=>b.id)];
+  const orphanTotal=_getOrphanBoxesBalance(list,knownBoxIds);
+  const grandTotal=bal('cash')+bal('net')+bal('bank')+extraTotal+orphanTotal;
   document.getElementById('tr-stats').innerHTML=`
     <div class="stat" style="--c:var(--green)"><label>💵 ${ts.cash}</label><div class="val">${fmt(bal('cash'))}</div><div class="sub">${c}</div></div>
     <div class="stat" style="--c:var(--blue)"><label>💳 ${ts.net}</label><div class="val">${fmt(bal('net'))}</div><div class="sub">${c}</div></div>
     <div class="stat" style="--c:var(--gold)"><label>🏦 ${ts.bank}</label><div class="val">${fmt(bal('bank'))}</div><div class="sub">${c}</div></div>
     ${extraBoxes.map(b=>`<div class="stat" style="--c:var(--teal)"><label>${b.icon||'💼'} ${esc(b.name)}</label><div class="val">${fmt(bal(b.id))}</div><div class="sub">${c}</div></div>`).join('')}
+    ${orphanTotal?`<div class="stat" style="--c:var(--orange)"><label>⚠️ خزائن محذوفة (لها رصيد)</label><div class="val">${fmt(orphanTotal)}</div><div class="sub">${c}</div></div>`:''}
     <div class="stat" style="--c:var(--purple)"><label>الإجمالي</label><div class="val">${fmt(grandTotal)}</div><div class="sub">${c}</div></div>`;
   const tb=document.getElementById('tr-tb');const em=document.getElementById('tr-empty');
   if(!list.length){if(tb)tb.innerHTML='';if(em)em.style.display='block';return}
@@ -8393,7 +8598,7 @@ function openTrTransferModal(){
   if(!can('treasury.add')){toast('ليس لديك صلاحية','err');return;}
   const ts=DB.get('trSetup')||{cash:'نقدي',net:'شبكة',bank:'بنكي',cur:'ج.م'};
   const list=DB.get('treasury')||[];
-  const bal=box=>list.filter(t=>t.box===box&&t.type==='in').reduce((s,t)=>s+ +t.amount,0)-list.filter(t=>t.box===box&&t.type==='out').reduce((s,t)=>s+ +t.amount,0);
+  const bal=box=>_getBoxBalance(list,box);
   const c=ts.cur||'ج.م';
   // Update box names in selects
   const fromSel=document.getElementById('trf-from');
@@ -8424,7 +8629,7 @@ function onTrfChange(){
   if(fromBox===toBox){warnEl.style.display='block';warnMsg.textContent='لا يمكن التحويل من وإلى نفس الخزنة';return;}
   if(amt>0){
     const list=DB.get('treasury')||[];
-    const bal=box=>list.filter(t=>t.box===box&&t.type==='in').reduce((s,t)=>s+ +t.amount,0)-list.filter(t=>t.box===box&&t.type==='out').reduce((s,t)=>s+ +t.amount,0);
+    const bal=box=>_getBoxBalance(list,box);
     const srcBal=bal(fromBox);
     if(amt>srcBal){warnEl.style.display='block';warnMsg.textContent='المبلغ أكبر من رصيد الخزنة المصدر ('+fmt(srcBal)+')';return;}
   }
@@ -8443,7 +8648,7 @@ function saveTrTransfer(){
   const ts=DB.get('trSetup')||{cash:'نقدي',net:'شبكة',bank:'بنكي',cur:'ج.م'};
   const bxL={cash:ts.cash||'نقدي',net:ts.net||'شبكة',bank:ts.bank||'بنكي',...Object.fromEntries(getExtraBoxes().map(b=>[b.id,(b.icon||'💼')+' '+b.name]))};
   const list=DB.get('treasury')||[];
-  const bal=box=>list.filter(t=>t.box===box&&t.type==='in').reduce((s,t)=>s+ +t.amount,0)-list.filter(t=>t.box===box&&t.type==='out').reduce((s,t)=>s+ +t.amount,0);
+  const bal=box=>_getBoxBalance(list,box);
   if(amt>bal(fromBox)){toast('المبلغ أكبر من رصيد الخزنة المصدر','err');return;}
   const transferRef='TRF-'+Date.now();
   const noteText='🔄 تحويل '+(notes?'| '+notes:'');
@@ -8460,7 +8665,7 @@ function saveTrTransfer(){
 }function openTrModal(){
   if(!can('treasury.add')){toast('ليس لديك صلاحية إضافة معاملات','err');return;}
   const list=DB.get('treasury')||[];const ts=DB.get('trSetup')||{cash:'نقدي',net:'شبكة',bank:'بنكي',cur:'ج.م'};
-  const bal=box=>list.filter(t=>t.box===box&&t.type==='in').reduce((s,t)=>s+ +t.amount,0)-list.filter(t=>t.box===box&&t.type==='out').reduce((s,t)=>s+ +t.amount,0);
+  const bal=box=>_getBoxBalance(list,box);
   const c=ts.cur||'ج.م';
   document.getElementById('tr-bals').innerHTML=`
     <div style="display:flex;flex-direction:column;gap:8px">
@@ -9132,7 +9337,7 @@ function renderDebts(){
   const tb=document.getElementById('debts-tb');const em=document.getElementById('debts-empty');
   if(!list.length){if(tb)tb.innerHTML='';if(em)em.style.display='block';return}
   if(em)em.style.display='none';
-  tb.innerHTML=list.map(d=>`<tr><td><strong>${esc(d.client)}</strong></td><td>${esc(d.phone||'-')}</td><td>${d.invoices}</td><td style="color:var(--red);font-weight:700">${fmt(d.total)} ${esc(c)}</td><td><button class="btn btn-green btn-sm" onclick="wa('${esc(d.phone)}','عزيزي ${esc(d.client)}، يرجى سداد المبلغ المستحق ${fmt(d.total)} ${c}. شكراً')">💬 تذكير</button></td></tr>`).join('');
+  tb.innerHTML=list.map(d=>`<tr><td><strong>${esc(d.client)}</strong></td><td>${esc(d.phone||'-')}</td><td>${d.invoices}</td><td style="color:var(--red);font-weight:700">${fmt(d.total)} ${esc(c)}</td><td><button class="btn btn-green btn-sm" onclick="wa('${esc(d.phone)}','${esc(buildDebtMsg(d.client,d.total,c))}')">💬 تذكير</button></td></tr>`).join('');
 }
 
 // DASHBOARD
@@ -9443,7 +9648,7 @@ function renderDash(){
 }
 
 // REPORTS
-function initRepDates(fromId,toId){
+function initRepDates(fromId,toId,renderFn){
   // Auto-initialize date filters: from = first day of current month, to = today
   const toEl=document.getElementById(toId);
   const fromEl=document.getElementById(fromId);
@@ -9452,10 +9657,37 @@ function initRepDates(fromId,toId){
     const d=new Date();d.setDate(1);
     fromEl.value=d.toISOString().split('T')[0];
   }
+  if(renderFn)qdrInjectBar(fromId,toId,renderFn);
+}
+// FIX #QDR-GENERALIZE: تعميم أزرار "الشهر الحالي/السابق/اختيار شهر" على كل صفحات التقارير
+// اللي عندها فلتر فترة (من-إلى)، من غير ما نكرر HTML يدوي في كل صفحة — الشريط بيتحقن مرة واحدة
+// فوق حقل "من تاريخ" مباشرة، ويشتغل مع أي دالة تحديث نمررها.
+function qdrInjectBar(fromId,toId,renderFn){
+  const fromEl=document.getElementById(fromId);
+  if(!fromEl)return;
+  // نطلع لآخر حاوية صف (grid/flex) بتحتوي حقول الفلتر كلها، مش نحقن جوه الـgrid نفسه
+  // (لو حقنّا جوه، هنبقى عنصر إضافي في grid-template-columns ثابت العدد وده هيكسر التنسيق)
+  const fg=fromEl.closest('.fg');
+  const row=fg?fg.parentNode:fromEl.parentNode;
+  if(!row||!row.parentNode)return;
+  if(row.dataset.qdrDone)return; // اتحقنت قبل كده لنفس الصف، منكررش
+  row.dataset.qdrDone='1';
+  const selId='qdr-sel-'+fromId;
+  const bar=document.createElement('div');
+  bar.className='qdr-bar';
+  bar.style.cssText='display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px';
+  bar.innerHTML=`
+    <button type="button" class="btn btn-ghost btn-sm" onclick="qdrApply('${fromId}','${toId}','thisMonth',${renderFn})">📅 الشهر الحالي</button>
+    <button type="button" class="btn btn-ghost btn-sm" onclick="qdrApply('${fromId}','${toId}','prevMonth',${renderFn})">⏮️ الشهر السابق</button>
+    <select id="${selId}" onchange="if(this.value){qdrApplyMonth('${fromId}','${toId}',this.value,${renderFn})}this.value=''" style="font-size:11px;padding:4px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;color:var(--text)">
+      <option value="">🗓️ اختر شهر...</option>
+    </select>`;
+  row.parentNode.insertBefore(bar,row);
+  qdrFillMonthSelect(selId);
 }
 function renderReports(){
   // Auto-init overview dates
-  initRepDates('ov-from','ov-to');
+  initRepDates('ov-from','ov-to','renderReports');
   initRepDates('del-rep-from','del-rep-to');
   const ovFrom=document.getElementById('ov-from')?.value||'';
   const ovTo=document.getElementById('ov-to')?.value||today();
@@ -9542,7 +9774,7 @@ function renderReports(){
   document.getElementById('rep-cl').innerHTML=clList.map(([,v])=>{
     const ph=v.phone||'';
     const dispName=v.name||'';
-    const waMsg=encodeURIComponent('عزيزي '+dispName+'، يرجى سداد المبلغ المستحق '+fmt(v.rem)+' '+c+'. شكراً');
+    const waMsg=encodeURIComponent(buildDebtMsg(dispName,v.rem,c));
     return`<tr>
       <td><strong>${esc(dispName)}</strong>${v.cnt===0&&v.rem>0?`<br><span style="font-size:9px;color:var(--text3)">رصيد افتتاحي — بدون حالات أرشيف</span>`:''}</td>
       <td style="color:var(--text2)">${esc(ph)||'—'}</td>
@@ -9555,8 +9787,54 @@ function renderReports(){
   }).join('')||`<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:20px">لا توجد بيانات</td></tr>`;
 }
 
+// ===== FIX #QUICK-DATE-RANGE: أزرار اختصار للفترة (الشهر الحالي/السابق/اختيار شهر) =====
+// دوال عامة قابلة لإعادة الاستخدام في أي تقرير عنده حقلي تاريخ (from/to)
+function qdrApply(fromId,toId,type,cb){
+  const now=new Date();
+  let from,to;
+  if(type==='thisMonth'){
+    from=new Date(now.getFullYear(),now.getMonth(),1);
+    to=new Date(now.getFullYear(),now.getMonth()+1,0);
+  } else if(type==='prevMonth'){
+    from=new Date(now.getFullYear(),now.getMonth()-1,1);
+    to=new Date(now.getFullYear(),now.getMonth(),0);
+  } else return;
+  const fmt2=x=>x.toISOString().slice(0,10);
+  const fEl=document.getElementById(fromId),tEl=document.getElementById(toId);
+  if(fEl)fEl.value=fmt2(from);
+  if(tEl)tEl.value=fmt2(to);
+  if(typeof cb==='function')cb();
+}
+function qdrApplyMonth(fromId,toId,ym,cb){
+  // ym بصيغة "2026-07"
+  const[y,m]=ym.split('-').map(Number);
+  const from=new Date(y,m-1,1);
+  const to=new Date(y,m,0);
+  const fmt2=x=>x.toISOString().slice(0,10);
+  const fEl=document.getElementById(fromId),tEl=document.getElementById(toId);
+  if(fEl)fEl.value=fmt2(from);
+  if(tEl)tEl.value=fmt2(to);
+  if(typeof cb==='function')cb();
+}
+// بيملأ Select بآخر 12 شهر بأسماء عربية، للاستخدام مع qdrApplyMonth
+function qdrFillMonthSelect(selId){
+  const sel=document.getElementById(selId);
+  if(!sel||sel.dataset.filled)return; // اتملى قبل كده، منعيدش
+  const names=['يناير','فبراير','مارس','إبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  const now=new Date();
+  let opts='<option value="">🗓️ اختر شهر...</option>';
+  for(let i=0;i<12;i++){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    const ym=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    opts+=`<option value="${ym}">${names[d.getMonth()]} ${d.getFullYear()}</option>`;
+  }
+  sel.innerHTML=opts;
+  sel.dataset.filled='1';
+}
+
 // ===== تقرير المناديب المستقل =====
 function renderDelReport(){
+  qdrFillMonthSelect('del-rep-month-sel');
   const c=cur();
   const degs=DB.get('delegates')||[];
   const clients=DB.get('clients')||[];
@@ -9944,9 +10222,17 @@ function migrateTreasuryClientId(){
   }
 }
 function init(){
-  migratePatientName();
-  migrateTreasuryClientId();
-  migrateProductId();
+  // FIX #MIGRATION-SYNC-GUARD: الميجريشنز دي بتقرأ مجموعة كاملة وتكتبها تاني لو
+  // لقت تغيير — لو المزامنة الأولى مع فايربيز فشلت (نت ضعيف مثلاً) والكاش المحلي
+  // قديم، تشغيلها هنا ممكن يرجّع سجلات محذوفة أو يكتب بيانات قديمة فوق تعديلات
+  // جهاز تاني. لو فشلت المزامنة، نأجّل الميجريشن للمرة الجاية اللي هتنجح فيها.
+  if(DB._syncOK===false){
+    console.warn('⚠️ تم تأجيل ميجريشن البيانات (clientId/productId/patientName) لأن المزامنة الأولى مع فايربيز فشلت — هتتم تلقائياً في أول دخول ناجح.');
+  } else {
+    migratePatientName();
+    migrateTreasuryClientId();
+    migrateProductId();
+  }
   setTimeout(refreshDeptDropdowns,100); // ربط الأقسام عند بدء التطبيق
   const li=DB.get('labinfo')||{};
   if(li.name)document.getElementById('s-lab-name').textContent=li.name;
@@ -10673,15 +10959,28 @@ function saveTr(){
     if(!supId){toast('يرجى اختيار المورد','err');return;}
     linkedId=supId; linkedType='supplier';
     // Also record as supplier payment
+    // FIX #SAVTR-KEYED-WRITE: كتابة جراحية بدل استبدال العقدة كاملة — كانت هنا نفس
+    // ثغرة فقدان البيانات اللي كانت في الخزنة قبل إصلاحها (جهازان يسجلان دفعات
+    // موردين في نفس اللحظة، وآخر كتابة تمسح تعديلات الجهاز التاني).
     const pays=DB.get('sup_payments')||[];
     pays.push({id:'SPY-'+Date.now(),supId,supName:accName,date:document.getElementById('tr-date').value||today(),amount:amt,method:document.getElementById('tr-box').value,receipt:'',notes:document.getElementById('tr-notes').value,fromTreasury:true});
-    DB.set('sup_payments',pays);
-    // FIX #SAVTR-SUP-FIFO: apply FIFO on purchases.paid/remain (same as saveSupPayment)
-    {const pursFifo=DB.get('purchases')||[];
-    const unpaidFifo=pursFifo.filter(p=>p.supId===supId&&Number(p.remain||0)>0).sort((a,b)=>a.date.localeCompare(b.date));
-    let leftFifo=amt;
-    unpaidFifo.forEach(p=>{if(leftFifo<=0)return;const apply=Math.min(leftFifo,Number(p.remain||0));p.paid=(Number(p.paid||0)+apply);p.remain=Math.max(0,Number(p.remain||0)-apply);leftFifo-=apply;});
-    DB.set('purchases',pursFifo);}
+    _saveKeyedList('sup_payments',pays);
+    // FIX #SAVTR-SUP-FIFO-CRASH: كانت `.sort((a,b)=>a.date.localeCompare(b.date))`
+    // بتنهار (TypeError) لو أي فاتورة شراء غير مسددة لنفس المورد من غير حقل تاريخ
+    // (بيانات قديمة/مستوردة). الانهيار كان بيحصل قبل `list.push(...)` و`_saveTreasury(list)`
+    // تحت في الكود، يعني الحركة كلها كانت "تختفي" بصمت من غير أي رسالة خطأ للمستخدم —
+    // ده بالظبط اللي كان بيحصل مع دفعات الموردين. الحل: تأمين المقارنة ضد undefined،
+    // ولف كل الحساب الإضافي (FIFO على المشتريات) في try/catch منفصل حتى لو فشل لأي
+    // سبب تاني مستقبلاً، الحركة الأساسية في الخزنة تتسجل دايماً ولا تضيع صامتة.
+    try{
+      const pursFifo=DB.get('purchases')||[];
+      const unpaidFifo=pursFifo.filter(p=>p.supId===supId&&Number(p.remain||0)>0).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+      let leftFifo=amt;
+      unpaidFifo.forEach(p=>{if(leftFifo<=0)return;const apply=Math.min(leftFifo,Number(p.remain||0));p.paid=(Number(p.paid||0)+apply);p.remain=Math.max(0,Number(p.remain||0)-apply);leftFifo-=apply;});
+      _saveKeyedList('purchases',pursFifo);
+    }catch(e){
+      console.warn('⚠️ SAVTR-SUP-FIFO error (تجاهلناها والحركة اتسجلت عادي):',e.message);
+    }
   } else if(accType==='other'){
     let cat=document.getElementById('tr-other-cat').value;
     if(cat==='__new__'||!cat){
@@ -12046,6 +12345,7 @@ function buildTechMap(filtered, filterTech){
 
 function renderTechReport(){
   initTechRepFilters();
+  initRepDates('tr-rep-from','tr-rep-to','renderTechReport');
   const arc=DB.get('archive')||[];
   const fromVal=document.getElementById('tr-rep-from')?.value||'';
   const toVal=document.getElementById('tr-rep-to')?.value||'';
@@ -12522,7 +12822,7 @@ function addPurItemRow(mat='',detail='',qty='',unit='كجم',price='',notes='',i
           onfocus="onPurMatSearch('${id}')"
           onblur="setTimeout(()=>hidePurMatDrop('${id}'),200)"
           style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:6px;font-family:Cairo,sans-serif;font-size:12px">
-        <div id="pmat-drop-${id}" style="display:none;position:absolute;top:100%;right:0;left:0;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;z-index:999;max-height:180px;overflow-y:auto;box-shadow:0 4px 20px rgba(0,0,0,.3)"></div>
+        <div id="pmat-drop-${id}" style="display:none;position:fixed;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;z-index:99999;max-height:180px;overflow-y:auto;box-shadow:0 4px 20px rgba(0,0,0,.5)"></div>
         <input type="hidden" id="pmat-${id}" value="${mat}">
       </div>
     </td>
@@ -12538,9 +12838,28 @@ function addPurItemRow(mat='',detail='',qty='',unit='كجم',price='',notes='',i
   calcPurRowTotal(id);
 }
 
+// FIX #PUR-DROP-CLIP: القايمة كانت position:absolute جوه حاوية عندها overflow-x:auto
+// (اللي بيخلي overflow-y يتحول تلقائياً لـ auto حسب سلوك المتصفح)، فالقايمة كانت بتتقص/تتخبى
+// وتحتاج سكرول تدوي عشان تظهر. الحل: نخليها position:fixed ونحسب مكانها من مكان حقل البحث
+// نفسه في الشاشة (getBoundingClientRect) كل مرة تتفتح، فتظهر دايماً فوق كل حاجة تحت الحقل مباشرة.
+function positionPurMatDrop(id){
+  const inp=document.getElementById('pmat-search-'+id);
+  const drop=document.getElementById('pmat-drop-'+id);
+  if(!inp||!drop)return;
+  const r=inp.getBoundingClientRect();
+  drop.style.left=r.left+'px';
+  drop.style.width=r.width+'px';
+  const spaceBelow=window.innerHeight-r.bottom;
+  if(spaceBelow<190&&r.top>190){
+    drop.style.top='';drop.style.bottom=(window.innerHeight-r.top+2)+'px';
+  } else {
+    drop.style.bottom='';drop.style.top=(r.bottom+2)+'px';
+  }
+}
 function onPurMatSearch(id){
   const inp=document.getElementById('pmat-search-'+id);
   const drop=document.getElementById('pmat-drop-'+id);
+  positionPurMatDrop(id);
   const q=(inp.value||'').trim().toLowerCase();
   const inv=DB.get('inventory')||[];
   let results=q.length>=1?inv.filter(x=>x.name.toLowerCase().includes(q)):inv;
@@ -12584,6 +12903,16 @@ function selectPurMat(id,name,rawInput){
 function hidePurMatDrop(id){
   const drop=document.getElementById('pmat-drop-'+id);
   if(drop)drop.style.display='none';
+}
+// لو المستخدم سكرول جوه مودال الفاتورة والقايمة مفتوحة (position:fixed)، نقفلها بدل ما تفضل
+// في مكانها القديم وتبقى مش فوق الحقل الصح.
+if(!window._purDropScrollBound){
+  window._purDropScrollBound=true;
+  document.addEventListener('scroll',e=>{
+    if(!e.target||!e.target.closest)return;
+    if(!e.target.closest('#ov-purchase'))return;
+    document.querySelectorAll('[id^="pmat-drop-"]').forEach(d=>{if(d.style.display!=='none')d.style.display='none';});
+  },true);
 }
 
 
@@ -12741,6 +13070,7 @@ function renderPurStats(){
     <div class="stat" style="--c:var(--green)"><label>عدد الأصناف</label><div class="val">${purs.length}</div></div>`;
 }
 function renderPurchases(){
+  qdrInjectBar('pur-date-from','pur-date-to','filterPurchasesByDate');
   let purs=DB.get('purchases')||[];
   const tb=document.getElementById('purchases-tb');
   if(!purs.length){document.getElementById('purchases-empty').style.display='';tb.innerHTML='';return;}
@@ -12754,16 +13084,12 @@ function renderPurchases(){
     if(!masters[mid].total&&p.grandTotal)masters[mid].total=p.grandTotal;
   });
   tb.innerHTML=Object.values(masters).sort((a,b)=>b.date.localeCompare(a.date)).map(m=>{
-    const itemsSummary=m.items.slice(0,3).map(i=>`<span class="badge bg-blue" style="margin:1px;font-size:9px">${esc(i.material)}</span>`).join('')+(m.items.length>3?`<span style="font-size:10px;color:var(--text3)"> +${m.items.length-3}</span>`:'');
-    const qtySum=m.items.reduce((s,i)=>s+Number(i.qty||0),0);
     return`<tr>
       <td><strong>${esc(m.invNo)}</strong></td>
-      <td>${m.date}</td>
+      <td style="min-width:110px">${m.date}</td>
       <td>${esc(m.supName)}</td>
-      <td>${itemsSummary}</td>
       <td>${m.items.length} صنف</td>
       <td><strong>${fmt(m.total)}</strong> ج.م</td>
-      <td>${badge('مسجل','bg-green')}</td>
       <td><button class="btn btn-ghost btn-sm" onclick="viewPurchaseDetail('${m.id}')">تفاصيل</button></td>
     </tr>`;
   }).join('');
@@ -13018,6 +13344,19 @@ function saveInventoryCount(){
   items.forEach(i=>_applyFIFOConsume(i.material,i.consumed,batchesCopy));
   DB.set('batches',batchesCopy);
 
+  // FIX #LOW-STOCK-SYNC: بعد إلغاء صرف الأقسام، مفيش حاجة تانية بتنقّص inventory[].qty —
+  // الحقل ده كان بيتزود بس عند الشراء وميتلمسش تاني، فتنبيه "المخزون المنخفض" وعمود "الرصيد"
+  // في صفحة المخزون كانوا بيفضلوا زي ما هما (أو بيزيدوا بس) حتى لو الخامة خلصت فعلياً.
+  // الحل: أي صنف اتجرد في العملية دي، رصيده في جدول الأصناف (inventory) يتحدّث فوراً بالرقم
+  // الفعلي المعدود، عشان يبقى "آخر جرد" هو مرجع التنبيه والعرض لحد الجرد الجاي.
+  const invList=DB.get('inventory')||[];
+  let invChanged=false;
+  items.forEach(i=>{
+    const idx=invList.findIndex(x=>x.name===i.material);
+    if(idx>=0&&(+invList[idx].qty||0)!==i.actual){invList[idx].qty=i.actual;invChanged=true;}
+  });
+  if(invChanged)DB.set('inventory',invList);
+
   // build dept cost allocation
   const deptCosts={};
   const map=getDeptMap();
@@ -13124,6 +13463,7 @@ function prSetCurrentMonth(){
 }
 
 function renderProductionReport(){
+  qdrInjectBar('pr-from','pr-to','renderProductionReport');
   const from=document.getElementById('pr-from')?.value||'';
   const to=document.getElementById('pr-to')?.value||'';
   const statsEl=document.getElementById('pr-stats');
@@ -13386,6 +13726,7 @@ function saveFixedCosts(){
 }
 
 function renderProfitability(){
+  qdrFillMonthSelect('qdr-sel-pnl-from');
   // ── قراءة الفترة ──
   const fromEl=document.getElementById('pnl-from');
   const toEl=document.getElementById('pnl-to');
@@ -13836,18 +14177,87 @@ function saveAttendance(){
 }
 function deleteAttendance(id){
   const attRec=(DB.get('attendance')||[]).find(a=>a.id===id);
-  // لو سلفة: أعد الحركة في الخزنة (عكسي)
+  // FIX #ADVANCE-NO-HARD-DELETE: لا نحذف حركة الخزنة الخاصة بالسلفة أبداً — القاعدة
+  // الذهبية للخزنة (لا حذف أبداً) تنطبق هنا زي أي حركة تانية. بدل الحذف، نسجّل حركة
+  // عكسية موثقة (isReversal) ونضع reversedBy على الحركة الأصلية، بنفس أسلوب saveTrReversal.
   if(attRec&&attRec.type==='advance'){
     const trs=DB.get('treasury')||[];
     const linked=trs.find(t=>t.advAttId===id);
     if(linked){
-      _saveTreasury(trs.filter(t=>t.id!==linked.id));
+      // منع الحذف لو راتب هذا الموظف عن نفس الشهر تم صرفه بالفعل — لأن السلفة غالباً
+      // خُصمت بالفعل من صافي الراتب المصروف، وحذفها هنا بدون تصحيح الراتب يُفسد الحسابين معاً.
+      if(getSalaryPaidRecord(attRec.empId,attRec.month)){
+        toast('⚠️ لا يمكن حذف هذه السلفة — راتب '+(attRec.month||'')+' تم صرفه بالفعل وخُصمت منه. سجّل تسوية عكسية يدوية من صفحة الخزنة إذا لزم الأمر.','err');
+        return;
+      }
+      if(!linked.reversedBy){
+        const revId='t_rev_'+Date.now();
+        const reversal={
+          id:revId,
+          num:nid('tr'),
+          type:linked.type==='in'?'out':'in',
+          box:linked.box,
+          accType:linked.accType,
+          accName:linked.accName,
+          linkedId:linked.linkedId||'',
+          linkedType:linked.linkedType||'',
+          clientId:linked.clientId,
+          amount:linked.amount,
+          receiver:'تسوية عكسية',
+          notes:'↩️ تسوية لحذف سلفة T-'+(linked.num||linked.id)+' (حذف من صفحة الحضور)',
+          date:today(),
+          isReversal:true,
+          reversalOf:linked.id,
+          createdAt:Date.now()
+        };
+        const idx=trs.findIndex(t=>t.id===linked.id);
+        if(idx>=0) trs[idx].reversedBy=revId;
+        trs.push(reversal);
+        _saveTreasury(trs);
+      }
     }
   }
   const att=(DB.get('attendance')||[]).filter(a=>a.id!==id);
   DB.set('attendance',att);
   renderAttList();
   toast('تم الحذف');
+}
+// FIX #ADVANCE-EDIT: تعديل مبلغ/سبب سلفة قائمة بدون حذفها — يقلل الحاجة لاستخدام
+// الحذف (اللي بقى الآن محمي ومحدود) لمجرد تصحيح خطأ بسيط في المبلغ.
+function editAdvanceAmount(id){
+  const attRec=(DB.get('attendance')||[]).find(a=>a.id===id);
+  if(!attRec||attRec.type!=='advance'){toast('سجل غير موجود','err');return;}
+  if(getSalaryPaidRecord(attRec.empId,attRec.month)){
+    toast('⚠️ لا يمكن تعديل هذه السلفة — راتب '+(attRec.month||'')+' تم صرفه بالفعل.','err');
+    return;
+  }
+  const inp=document.createElement('input');
+  inp.type='number';inp.min='0';inp.step='0.01';inp.value=attRec.value;
+  inp.style.cssText='width:100%;padding:7px 11px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-family:Cairo,sans-serif;font-size:13px;margin-top:6px';
+  document.getElementById('conf-msg').textContent='المبلغ الجديد للسلفة:';
+  document.getElementById('conf-msg').appendChild(inp);
+  document.getElementById('conf-ttl').textContent='تعديل مبلغ السلفة';
+  const origCb=_cb;
+  _cb={fn:()=>{
+    const newVal=+inp.value;
+    if(!newVal||newVal<=0){_cb=origCb;toast('مبلغ غير صحيح','err');return;}
+    const att=DB.get('attendance')||[];
+    const idx=att.findIndex(a=>a.id===id);
+    if(idx>=0)att[idx]={...att[idx],value:newVal};
+    DB.set('attendance',att);
+    // تحديث حركة الخزنة المرتبطة جراحياً (نفس السجل، فقط المبلغ والملاحظة)
+    const trs=DB.get('treasury')||[];
+    const tIdx=trs.findIndex(t=>t.advAttId===id);
+    if(tIdx>=0){
+      trs[tIdx]={...trs[tIdx],amount:newVal,notes:'سلفة — '+(attRec.month||'')+(attRec.reason?' — '+attRec.reason:'')+' (مُعدَّلة)'};
+      _saveTreasury(trs);
+    }
+    renderAttList();
+    toast('✅ تم تعديل مبلغ السلفة');
+    _cb=origCb;
+  },id:++_cbId};
+  document.getElementById('conf-ov').classList.add('open');
+  setTimeout(()=>inp.focus(),100);
 }
 function renderAttList(){
   const empId=document.getElementById('att-emp')?.value;
@@ -13865,7 +14275,7 @@ function renderAttList(){
       <td style="color:${typeColor[a.type]||'var(--text)'};font-weight:700">${typeLabel[a.type]||a.type}${a.type==='advance'?' 💳':''}</td>
       <td>${a.type==='absence'?a.value+' يوم':a.type==='late'?a.value+' دقيقة':fmt(a.value)+' '+c}</td>
       <td style="color:var(--text3)">${a.reason||'—'}</td>
-      <td><button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="deleteAttendance('${a.id}')">🗑️</button></td>
+      <td style="display:flex;gap:4px">${a.type==='advance'?`<button class="btn btn-ghost btn-sm" onclick="editAdvanceAmount('${a.id}')" title="تعديل المبلغ">✏️</button>`:''}<button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="deleteAttendance('${a.id}')">🗑️</button></td>
     </tr>`).join('')}</tbody>
   </table></div>`;
 }
@@ -13904,7 +14314,7 @@ function getAttSummary(empId, from, to){
 function renderSalaryReport(){
   renderEmployees();
   // Auto-init dates if empty
-  initRepDates('sal-from','sal-to');
+  initRepDates('sal-from','sal-to','renderSalaryReport');
   // Populate employee select
   const salEmpSel=document.getElementById('sal-emp');
   if(salEmpSel&&salEmpSel.options.length<=1){
@@ -14279,7 +14689,7 @@ function renderTreasuryReport(){
     if(_saved)_trepBoxSel.value=_saved;
   }
   // Auto-init dates if empty
-  initRepDates('trep-from','trep-to');
+  initRepDates('trep-from','trep-to','renderTreasuryReport');
   const from=document.getElementById('trep-from')?.value||'';
   const to=document.getElementById('trep-to')?.value||today();
   const boxFilter=document.getElementById('trep-box')?.value||'';
@@ -14496,7 +14906,7 @@ function initClientCardSelects(){
   sel.innerHTML='<option value="">-- اختر عميلاً --</option>'+
     opts.map(o=>`<option value="${esc(o.value)}"${o.value===saved?' selected':''}>${esc(o.label)}</option>`).join('');
   // Auto-init dates if empty
-  initRepDates('cc-from','cc-to');
+  initRepDates('cc-from','cc-to','renderClientCard');
   // تفعيل البحث بحروف
   setTimeout(()=>makeSearchableSelect('cc-client','🔍 ابحث باسم العميل...'),50);
 }
@@ -14653,7 +15063,7 @@ function initSupCardSelects(){
   sel.innerHTML='<option value="">-- اختر مورداً --</option>'+
     sups.map(s=>`<option value="${s.id}"${s.id===saved?' selected':''}>${esc(s.name)}</option>`).join('');
   // Auto-init dates if empty
-  initRepDates('sc-from','sc-to');
+  initRepDates('sc-from','sc-to','renderSupCard');
 }
 function _getSupplierOpeningBalance(supId){
   const sups=DB.get('suppliers')||[];
@@ -16924,7 +17334,7 @@ function renderBackup(){
       // نظّف كلمة المرور القديمة لو موجودة
       if(profile.pass){delete profile.pass;localStorage.setItem('plp_session',JSON.stringify(profile));}
       // تزامن البيانات من Firebase — الفشل لا يُخرج المستخدم، يستمر بالـ localStorage
-      try{ await DB.syncFromFirebase('shared'); }catch(e){ console.warn('Firebase sync skipped:',e.message); }
+      try{ await DB.syncFromFirebase('shared'); }catch(e){ console.warn('Firebase sync skipped:',e.message); DB._syncOK=false; }
       ensureDefaults();
       setTimeout(()=>startApp(profile),100);
     } else {
@@ -18550,6 +18960,7 @@ function saveDeptInventory(){
 }
 
 function renderDeptInventory(){
+  qdrInjectBar('di-filter-from','di-filter-to','renderDeptInventory');
   // تحديث قائمة الأقسام من الـ map
   const _dif=document.getElementById('di-filter-dept');
   if(_dif){const _sv=_dif.value;_dif.innerHTML='<option value="">الكل</option>';getDeptNames().forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;_dif.appendChild(o);});if(_sv)_dif.value=_sv;}
@@ -19420,6 +19831,7 @@ function renderProspectAnalytics(){
     return `<tr style="border-bottom:1px solid var(--border)">
       <td style="padding:8px 10px;font-weight:700">${medal} ${esc(d.name)}</td>
       <td style="padding:8px 10px;text-align:center;font-size:11px;color:var(--text2)">${esc(d.line)}</td>
+      <td style="padding:8px 10px;text-align:center"><span style="color:var(--teal);font-weight:700">${d.prospects}</span></td>
       <td style="padding:8px 10px">
         <div style="display:flex;align-items:center;gap:6px">
           <div style="flex:1;background:var(--bg3);border-radius:4px;height:8px;overflow:hidden">
@@ -19433,7 +19845,7 @@ function renderProspectAnalytics(){
       <td style="padding:8px 10px;text-align:center"><span style="color:var(--gold);font-weight:900">${d.contracted}</span></td>
       <td style="padding:8px 10px;text-align:center;font-weight:900;color:${convColor}">${conv}%</td>
     </tr>`;
-  }).join(''):`<tr><td colspan="7" style="padding:20px;text-align:center;color:var(--text3)">لا توجد بيانات زيارات بعد</td></tr>`;
+  }).join(''):`<tr><td colspan="8" style="padding:20px;text-align:center;color:var(--text3)">لا توجد بيانات زيارات بعد</td></tr>`;
 
   // --- Line rows ---
   const lineRows=lineArr.length?lineArr.map(l=>{
@@ -19459,6 +19871,7 @@ function renderProspectAnalytics(){
           <thead><tr style="background:var(--bg3)">
             <th style="padding:9px 10px;text-align:right">المندوب</th>
             <th style="padding:9px 10px;text-align:center">الخط</th>
+            <th style="padding:9px 10px;text-align:center">الإضافات</th>
             <th style="padding:9px 10px;text-align:right">الزيارات</th>
             <th style="padding:9px 10px;text-align:center">مهتم</th>
             <th style="padding:9px 10px;text-align:center">متابعة</th>
