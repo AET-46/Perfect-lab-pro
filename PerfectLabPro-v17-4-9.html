@@ -3121,10 +3121,23 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
               <div style="font-size:12px;font-weight:700;color:var(--text2)">💼 خزائن إضافية</div>
               <button class="btn btn-ghost btn-sm" onclick="openExtraBoxModal()">➕ إضافة خزنة</button>
             </div>
-            <div id="extra-boxes-list" style="display:flex;flex-direction:column;gap:8px"></div>
+          <div style="display:flex;flex-direction:column;gap:8px" id="extra-boxes-list"></div>
+        </div>
+        <!-- FIX #TREASURY-FORCE-RESYNC: زر إعادة مزامنة يدوية — يعيد إرسال كل حركات
+             الخزنة (وسجلات sup_payments/purchases) الموجودة في الكاش المحلي لفايربيز،
+             بدون فرق ذكي (كل سجل يُعتبر "يحتاج إعادة إرسال"). مفيد كإجراء احترازي بعد
+             تحديث الكود لسد ثغرة #TREASURY-SELF-DIFF-BUG، للتأكد إن أي حركات كانت
+             محفوظة محلياً فقط بسبب البَگ القديم فعلاً وصلت لفايربيز الآن. -->
+        <div style="margin-top:18px;border-top:1px solid var(--border);padding-top:14px">
+          <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px">🔄 مزامنة يدوية</div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.6">
+            لو عندك شك إن بعض حركات الخزنة أو دفعات الموردين محفوظة على الجهاز ده بس ولسه ما وصلتش لفايربيز، اضغط الزر ده لإعادة إرسالها بالكامل. الإجراء آمن ولا يكرر أو يحذف أي بيانات.
           </div>
+          <button class="btn btn-orange btn-sm" onclick="forceSyncTreasury()">🔄 إعادة مزامنة الخزنة الآن</button>
+          <div id="tr-resync-status" style="font-size:11px;color:var(--text3);margin-top:8px"></div>
         </div>
       </div>
+    </div>
     </div>
 
     <!-- DESIGN PANEL -->
@@ -4604,6 +4617,7 @@ const DB = {
             }
             this._c[k] = merged;
             try { localStorage.setItem('plp_' + k, JSON.stringify(merged)); } catch(e) {}
+            try { _trPrevSnapshot = merged.map(r=>r?{...r}:r); } catch(e) {}
             // ترحيل تلقائي وآمن للشكل الجديد (object بمفاتيح id) — يضيف كل حركة بمفتاح
             // id الخاص بها، ويحذف صراحةً المفاتيح الرقمية القديمة (0،1،2...) في نفس
             // عملية update() الواحدة، وإلا كانت كل حركة تتكرر بمفتاحين (رقمي + id)
@@ -4713,6 +4727,7 @@ const DB = {
           }
           this._c[k] = merged;
           try { localStorage.setItem('plp_' + k, JSON.stringify(merged)); } catch(e) {}
+          try { _trPrevSnapshot = merged.map(r=>r?{...r}:r); } catch(e) {}
           return;
         }
         this._c[k] = data[k];
@@ -4835,8 +4850,20 @@ function onColorChange(sel){
 // بدل استبدال عقدة treasury بالكامل. هذا يقفل مشكلة اختفاء الحركات جذرياً: حتى لو
 // كتب جهازان حركتين مختلفتين في نفس الثانية، كل واحد يكتب فقط حركته في مكانها
 // الخاص (data/shared/treasury/{id})، فلا يمحو أحدهما حركة الآخر أبداً.
+// FIX #TREASURY-SELF-DIFF-BUG: كل أماكن الاستدعاء (saveTr, saveTrReversal,
+// saveTrTransfer, الرواتب، السلف...) بتعمل `const list=DB.get('treasury')` ثم
+// `list.push(...)` أو تعدّل حقل مباشرة على عنصر موجود. بما إن DB.get() بترجّع
+// نفس الـ reference المخزّن فعلاً في DB._c['treasury'] (مش نسخة)، فالتعديل ده كان
+// بيغيّر DB._c['treasury'] *قبل* ما هذه الدالة حتى تتنفذ. النتيجة: `prevList` (اللي
+// كانت بتتقرأ من DB._c['treasury']) و`list` بيبقوا نفس الـ object بالظبط، فأي سجل
+// جديد/معدَّل بيتقارن بنفسه ويُعتبر "بدون تغيير" ولا يتبعت لفايربيز أبداً — رغم إنه
+// بيفضل ظاهر في الواجهة والكاش المحلي لحد ما حاجة تعيد بناء الحالة من فايربيز
+// فتختفي الحركة فجأة. الحل: لقطة مستقلة (_trPrevSnapshot) بتتحدّث فقط من جوه هذه
+// الدالة نفسها (بنسخ منفصل)، مش من DB._c مباشرة، فتفضل تمثّل "آخر حالة اتقورنت
+// فعلاً" بغض النظر عمّا فعله الكولر بالـ array قبل الاستدعاء.
+let _trPrevSnapshot = null;
 function _saveTreasury(list){
-  const prevList = DB._c['treasury'] || [];
+  const prevList = _trPrevSnapshot || [];
   const prevMap = new Map(prevList.map(r=>[r.id,r]));
   const newMap = new Map(list.map(r=>[r.id,r]));
 
@@ -4849,7 +4876,7 @@ function _saveTreasury(list){
   if(DB._wt && DB._wt['treasury']){ clearTimeout(DB._wt['treasury']); delete DB._wt['treasury']; }
   window._lastLocalWrite = Date.now();
 
-  if(!_fbRTDB) return;
+  if(!_fbRTDB){ _trPrevSnapshot = list.map(r=>({...r})); return; }
   const updates={};
   let hasChanges=false;
   newMap.forEach((rec,id)=>{
@@ -4859,6 +4886,9 @@ function _saveTreasury(list){
   prevMap.forEach((rec,id)=>{
     if(!newMap.has(id)){ updates[id]=null; hasChanges=true; } // null = حذف هذه الحركة فقط
   });
+  // تحديث اللقطة دايماً (حتى لو hasChanges=false) عشان تفضل مطابقة لآخر حالة فعلية
+  // بغض النظر عن أي mutation تحصل على list بعد كده من نفس الكولر أو غيره.
+  _trPrevSnapshot = list.map(r=>({...r}));
   if(!hasChanges) return;
   try{
     _fbRTDB.ref('data/shared/treasury').update(updates)
@@ -4894,8 +4924,13 @@ function _getOrphanBoxesBalance(list, knownBoxIds){
 // سجل بدل استبدال العقدة كاملة) لكن كدالة عامة تصلح لأي مجموعة (key) عندها سجلات
 // بـ id. مستخدمة الآن لـ sup_payments و purchases لسد نفس ثغرة فقدان البيانات
 // اللي كانت الخزنة بتعاني منها قبل الإصلاح الجراحي بتاعها.
+// FIX #KEYEDLIST-SELF-DIFF-BUG: نفس علة _saveTreasury بالظبط (راجع الشرح فوقها) —
+// كولرز زي saveTr (دفعات موردين sup_payments، وتحديث remain/paid في purchases) بتاخد
+// list=DB.get(key) وتعدّل عليه مباشرة (push أو تغيير حقل) قبل النداء هنا. عشان
+// نفس السبب، لازم لقطة مستقلة لكل مفتاح مش معتمدة على DB._c[key] وقت الاستدعاء.
+let _keyedPrevSnapshot = {};
 function _saveKeyedList(key, list){
-  const prevList = DB._c[key] || [];
+  const prevList = _keyedPrevSnapshot[key] || [];
   const prevMap = new Map(prevList.map(r=>[r.id,r]));
   const newMap = new Map(list.map(r=>[r.id,r]));
 
@@ -4904,7 +4939,7 @@ function _saveKeyedList(key, list){
   if(DB._wt && DB._wt[key]){ clearTimeout(DB._wt[key]); delete DB._wt[key]; }
   window._lastLocalWrite = Date.now();
 
-  if(!_fbRTDB) return;
+  if(!_fbRTDB){ _keyedPrevSnapshot[key] = list.map(r=>({...r})); return; }
   const updates={};
   let hasChanges=false;
   newMap.forEach((rec,id)=>{
@@ -4914,11 +4949,63 @@ function _saveKeyedList(key, list){
   prevMap.forEach((rec,id)=>{
     if(!newMap.has(id)){ updates[id]=null; hasChanges=true; }
   });
+  _keyedPrevSnapshot[key] = list.map(r=>({...r}));
   if(!hasChanges) return;
   try{
     _fbRTDB.ref('data/shared/'+key).update(updates)
       .catch(e=>{ console.warn('⚠️ '+key+' FB write:', e.code||e); DB._notifySyncFail(); });
   }catch(e){ console.warn('⚠️ '+key+' FB write ex:', e); }
+}
+
+// ══════════════════════════════════════════════════════════════
+// FIX #TREASURY-FORCE-RESYNC: إعادة مزامنة يدوية — تُعيد إرسال كل سجلات treasury،
+// sup_payments، وpurchases الموجودة حالياً في الكاش المحلي إلى فايربيز، بدون أي
+// مقارنة "قديم/جديد" (كل سجل يُرسل كأنه تغيّر). هذا إجراء احترازي بعد إصلاح
+// #TREASURY-SELF-DIFF-BUG، للتأكد إن أي حركات كانت اتحفظت محلياً فقط بسبب البَگ
+// القديم (ولسه موجودة في localStorage/الكاش على هذا الجهاز) توصل فعلياً لفايربيز.
+// آمن تماماً: استخدام .update() بمفتاح id لكل سجل — لا يكرر ولا يحذف أي بيانات،
+// فقط يعيد كتابة نفس القيم الموجودة بالفعل (idempotent).
+// ══════════════════════════════════════════════════════════════
+function _forceResendKeyedList(key){
+  const list = DB.get(key)||[];
+  if(!list.length) return Promise.resolve(0);
+  const updates={};
+  list.forEach(r=>{ if(r && r.id) updates[r.id]=r; });
+  return _fbRTDB.ref('data/shared/'+key).update(updates).then(()=>list.length);
+}
+async function _forceSyncTreasuryNow(){
+  const statusEl=document.getElementById('tr-resync-status');
+  if(statusEl)statusEl.textContent='⏳ جاري إعادة المزامنة...';
+  try{
+    const trCount = await _forceResendKeyedList('treasury');
+    const supCount = await _forceResendKeyedList('sup_payments');
+    const purCount = await _forceResendKeyedList('purchases');
+    // تحديث اللقطات الداخلية عشان تفضل مطابقة للحالة المُرسلة فعلاً الآن
+    _trPrevSnapshot = (DB.get('treasury')||[]).map(r=>({...r}));
+    _keyedPrevSnapshot['sup_payments'] = (DB.get('sup_payments')||[]).map(r=>({...r}));
+    _keyedPrevSnapshot['purchases'] = (DB.get('purchases')||[]).map(r=>({...r}));
+    const msg=`✅ تمت إعادة المزامنة: ${trCount} حركة خزنة، ${supCount} دفعة مورد، ${purCount} فاتورة شراء`;
+    if(statusEl)statusEl.textContent=msg;
+    toast('✅ تمت إعادة المزامنة بنجاح');
+  }catch(e){
+    console.warn('force resync error:', e);
+    if(statusEl)statusEl.textContent='❌ حدث خطأ أثناء المزامنة: '+(e.message||e);
+    toast('❌ فشلت إعادة المزامنة','err');
+  }
+}
+function forceSyncTreasury(){
+  if(!can('treasury.add')){toast('ليس لديك صلاحية','err');return;}
+  const statusEl=document.getElementById('tr-resync-status');
+  if(!_fbRTDB){
+    if(statusEl)statusEl.textContent='⚠️ لا يوجد اتصال بفايربيز الآن.';
+    toast('لا يوجد اتصال بفايربيز الآن','err');
+    return;
+  }
+  confirm2(
+    '🔄 إعادة مزامنة الخزنة',
+    'هيتم إعادة إرسال كل حركات الخزنة، دفعات الموردين، وتحديثات فواتير الشراء الموجودة على هذا الجهاز إلى فايربيز، حتى لو كانت متطابقة بالفعل. الإجراء آمن تماماً ولا يحذف أو يكرر أي بيانات. متابعة؟',
+    ()=>{ _forceSyncTreasuryNow(); }
+  );
 }
 function nid(t){
   const c=DB.get('ctr')||{};
