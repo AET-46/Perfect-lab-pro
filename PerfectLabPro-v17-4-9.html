@@ -4624,7 +4624,7 @@ const DB = {
             // فتتضاعف كل المبالغ في رصيد الخزنة — تم اكتشاف هذا وإصلاحه أثناء المراجعة.
             if(wasArrayForm && merged.length && _fbRTDB){
               const keyed={};
-              merged.forEach(rec=>{ if(rec&&rec.id) keyed[rec.id]=rec; });
+              merged.forEach(rec=>{ if(rec&&rec.id) keyed[rec.id]=_sanitizeForFB(rec); });
               Object.keys(rawVal).forEach(oldKey=>{ if(!(oldKey in keyed)) keyed[oldKey]=null; });
               try{ _fbRTDB.ref('data/shared/treasury').update(keyed).catch(e=>console.warn('treasury migrate:',e.code||e)); }catch(e){}
             }
@@ -4861,6 +4861,13 @@ function onColorChange(sel){
 // فتختفي الحركة فجأة. الحل: لقطة مستقلة (_trPrevSnapshot) بتتحدّث فقط من جوه هذه
 // الدالة نفسها (بنسخ منفصل)، مش من DB._c مباشرة، فتفضل تمثّل "آخر حالة اتقورنت
 // فعلاً" بغض النظر عمّا فعله الكولر بالـ array قبل الاستدعاء.
+// FIX #FB-UNDEFINED-REJECT: فايربيز بيرفض تماماً أي .set()/.update() لو الـ object فيه
+// حقل قيمته undefined (مثال حقيقي: saveTr بتسجّل clientId:undefined لأي حركة مش من نوع
+// "عميل"). بدل ما نمنع الكتابة كلها بصمت، نحذف أي حقل undefined قبل الإرسال فقط —
+// JSON.stringify/parse بيحذف مفاتيح الـ undefined تلقائياً وبيسيب الباقي زي ما هو.
+function _sanitizeForFB(rec){
+  try{ return JSON.parse(JSON.stringify(rec)); }catch(e){ return rec; }
+}
 let _trPrevSnapshot = null;
 function _saveTreasury(list){
   const prevList = _trPrevSnapshot || [];
@@ -4881,7 +4888,7 @@ function _saveTreasury(list){
   let hasChanges=false;
   newMap.forEach((rec,id)=>{
     const prev=prevMap.get(id);
-    if(!prev || JSON.stringify(prev)!==JSON.stringify(rec)){ updates[id]=rec; hasChanges=true; }
+    if(!prev || JSON.stringify(prev)!==JSON.stringify(rec)){ updates[id]=_sanitizeForFB(rec); hasChanges=true; }
   });
   prevMap.forEach((rec,id)=>{
     if(!newMap.has(id)){ updates[id]=null; hasChanges=true; } // null = حذف هذه الحركة فقط
@@ -4944,7 +4951,7 @@ function _saveKeyedList(key, list){
   let hasChanges=false;
   newMap.forEach((rec,id)=>{
     const prev=prevMap.get(id);
-    if(!prev || JSON.stringify(prev)!==JSON.stringify(rec)){ updates[id]=rec; hasChanges=true; }
+    if(!prev || JSON.stringify(prev)!==JSON.stringify(rec)){ updates[id]=_sanitizeForFB(rec); hasChanges=true; }
   });
   prevMap.forEach((rec,id)=>{
     if(!newMap.has(id)){ updates[id]=null; hasChanges=true; }
@@ -4970,7 +4977,7 @@ function _forceResendKeyedList(key){
   const list = DB.get(key)||[];
   if(!list.length) return Promise.resolve(0);
   const updates={};
-  list.forEach(r=>{ if(r && r.id) updates[r.id]=r; });
+  list.forEach(r=>{ if(r && r.id) updates[r.id]=_sanitizeForFB(r); });
   return _fbRTDB.ref('data/shared/'+key).update(updates).then(()=>list.length);
 }
 async function _forceSyncTreasuryNow(){
