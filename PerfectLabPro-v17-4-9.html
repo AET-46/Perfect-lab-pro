@@ -1163,7 +1163,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
         <a onclick="toggleAll('dafter-tb',true)">تحديد الكل</a> | <a onclick="toggleAll('dafter-tb',false)">إلغاء</a>
         <span style="margin-right:auto">المحدد: <strong id="dafter-sel">0</strong></span>
       </div>
-      <div class="tbl-wrap"><table><thead><tr><th class="chk-col"></th><th>رقم الحالة / المريض</th><th>الهاتف</th><th>المنتج</th><th>اللون</th><th>العدد</th><th>الإجمالي</th><th>المندوب</th><th>تاريخ الاستلام</th><th>ملاحظات</th><th style="width:36px"></th></tr></thead><tbody id="dafter-tb"></tbody></table></div>
+      <div class="tbl-wrap"><table><thead><tr><th class="chk-col"></th><th>رقم الحالة / المريض</th><th style="width:120px;min-width:120px">الهاتف</th><th style="width:170px;min-width:170px">المنتج</th><th>اللون</th><th>العدد</th><th>الإجمالي</th><th>المندوب</th><th style="width:110px;min-width:110px">تاريخ الاستلام</th><th>ملاحظات</th><th style="width:36px"></th></tr></thead><tbody id="dafter-tb"></tbody></table></div>
       <div id="dafter-empty" class="empty" style="display:none"><div class="ei">📒</div><p>لا توجد حالات — اضغط إضافة</p></div>
     </div>
   </div>
@@ -8028,9 +8028,18 @@ function renderProof(){
   if(!list.length){if(tb)tb.innerHTML='';if(em)em.style.display='block';return}
   if(em)em.style.display='none';
   const allNotes=DB.get('notes')||[];
+  // FIX #DUPLICATE-CASE-ALERT-PROOF: نفس منطق الدفتر بالظبط — كشف الحالات المكررة
+  // (نفس اسم العميل + نفس اسم المريض) مع تنبيه toast فعلي مرة واحدة لكل مجموعة تكرار
+  // جديدة، بدل ما كان التلوين/الشارة بس من غير أي تنبيه فعلي من السيستم.
   const _dupKey=r=>(r.client||'').trim().toLowerCase()+'|'+(r.noteName||'').trim().toLowerCase();
   const _dupCount={};
   list.forEach(r=>{ if(!r.client||!r.noteName)return; const k=_dupKey(r); _dupCount[k]=(_dupCount[k]||0)+1; });
+  const _dupKeysNow=Object.entries(_dupCount).filter(([,n])=>n>1).map(([k])=>k).sort().join(',');
+  if(_dupKeysNow && _dupKeysNow!==window._lastDupAlertSigProof){
+    window._lastDupAlertSigProof=_dupKeysNow;
+    const dupCasesCount=Object.values(_dupCount).filter(n=>n>1).length;
+    toast(`⚠️ يوجد ${dupCasesCount} حالة بنفس اسم العميل والمريض في البروفه — تأكد إنها مش مكررة بالغلط`,'err');
+  }
   tb.innerHTML=list.map(r=>{
     const rowNoteCount=allNotes.filter(n=>n.rowId===r.id||n.caseNo===String(r.caseId)).length;
     const isRetFromArchive=r.returnedFrom==='archive';
@@ -8220,11 +8229,25 @@ function renderArchive(bypassLimit){
   if(!list.length){if(tb)tb.innerHTML='';if(em)em.style.display='block';refreshCatTabs('archive',[]);return}
   if(em)em.style.display='none';
   const allNotes=DB.get('notes')||[];
+  // FIX #DUPLICATE-CASE-ALERT-ARCHIVE: نفس منطق الدفتر/البروفه — كشف الحالات المكررة
+  // (نفس اسم العميل + نفس اسم المريض) مع تلوين الصف وشارة "⚠️ مكرر" وتنبيه toast مرة
+  // واحدة لكل مجموعة تكرار جديدة. مهم بالذات هنا لأن الأرشيف هو آخر محطة قبل الفوترة.
+  const _dupKey=r=>(r.client||'').trim().toLowerCase()+'|'+(r.noteName||'').trim().toLowerCase();
+  const _dupCount={};
+  list.forEach(r=>{ if(!r.client||!r.noteName)return; const k=_dupKey(r); _dupCount[k]=(_dupCount[k]||0)+1; });
+  const _dupKeysNow=Object.entries(_dupCount).filter(([,n])=>n>1).map(([k])=>k).sort().join(',');
+  if(_dupKeysNow && _dupKeysNow!==window._lastDupAlertSigArchive){
+    window._lastDupAlertSigArchive=_dupKeysNow;
+    const dupCasesCount=Object.values(_dupCount).filter(n=>n>1).length;
+    toast(`⚠️ يوجد ${dupCasesCount} حالة بنفس اسم العميل والمريض في الأرشيف — تأكد إنها مش مكررة بالغلط`,'err');
+  }
   tb.innerHTML=list.map(r=>{
     const techs=Object.entries(r.technicians||{}).filter(([,v])=>v).map(([k,v])=>esc(k)+':'+esc(v)).join(' | ')||'-';
-    return`<tr data-id="${esc(r.id)}" data-cat="${getProductionCat(r.product)}" onclick="rowClick(this)">
+    const isDup=r.client&&r.noteName&&_dupCount[_dupKey(r)]>1;
+    const dupBadge=isDup?`<span class="return-badge" style="background:rgba(234,179,8,.18);color:#eab308" title="نفس اسم العميل واسم المريض مكرر في ${_dupCount[_dupKey(r)]} حالات">⚠️ مكرر</span>`:'';
+    return`<tr data-id="${esc(r.id)}" data-cat="${getProductionCat(r.product)}" class="${isDup?'row-duplicate':''}" onclick="rowClick(this)">
       <td class="chk-col"><input type="checkbox" onclick="event.stopPropagation()"></td>
-      <td><span style="font-size:11px;color:var(--text3)">#${esc(String(r.caseId||'-'))}</span><br><strong style="font-size:12px">${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:10px;color:var(--teal)">${esc(r.noteName)}</span>`:''}</td>
+      <td><span style="font-size:11px;color:var(--text3)">#${esc(String(r.caseId||'-'))}</span><br><strong style="font-size:12px">${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:10px;color:var(--teal)">${esc(r.noteName)}</span>`:''}${dupBadge}</td>
       <td>${r.delegate?badge(esc(r.delegate),'bg-teal'):'—'}</td>
       <td><strong>${fmt(r.total)}</strong></td>
       <td><span title="تاريخ الدفتر: ${esc(r.date||'-')}">${r.archivedAt?new Date(r.archivedAt).toISOString().split('T')[0]:esc(r.date||'-')}</span></td>
