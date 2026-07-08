@@ -72,9 +72,23 @@ tr.row-returned-from-proof{background:rgba(249,115,22,.08)!important;border-righ
 tr.row-returned-from-proof:hover{background:rgba(249,115,22,.14)!important}
 tr.row-returned-from-archive{background:rgba(168,85,247,.08)!important;border-right:3px solid var(--purple)}
 tr.row-returned-from-archive:hover{background:rgba(168,85,247,.14)!important}
+/* FIX #DUPLICATE-CASE-ALERT: تمييز الصفوف المكررة (نفس العميل + نفس المريض) بلون أصفر مميز */
+tr.row-duplicate{background:rgba(234,179,8,.10)!important;border-right:3px solid #eab308}
+tr.row-duplicate:hover{background:rgba(234,179,8,.16)!important}
 .return-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;margin-right:4px}
 .return-badge.from-proof{background:rgba(249,115,22,.18);color:var(--orange)}
 .return-badge.from-archive{background:rgba(168,85,247,.18);color:var(--purple)}
+/* FIX #TECH-PROGRESS-CHIP: شكل شارة تقدم خطوات الفنيين — بستايل الـ chips
+   (نقطة ملوّنة + نص + شريط تقدم مقسّم صغير) بنفس هوية أداة "خطوات الفنيين". */
+/* FIX #TECH-PROGRESS-CHIP: مسار نقاط متصلة بخط لخطوات الفنيين — كل نقطة تمثل
+   خطوة، والخط بينها يتلوّن كل ما الخطوة تخلص، بيانات من node تقدم الفنيين
+   (tech_progress) اللي بتكتبه أداة "خطوات الفنيين" المستقلة. */
+.tp-dots{display:inline-flex;align-items:center;margin-top:6px;cursor:help;vertical-align:middle}
+.tp-dot2{width:9px;height:9px;border-radius:50%;background:var(--bg4);border:2px solid var(--border2);flex-shrink:0}
+.tp-dot2.tp-on{background:var(--teal);border-color:var(--teal)}
+.tp-dot2.tp-mid{background:var(--orange);border-color:var(--orange)}
+.tp-line{height:2px;width:14px;background:var(--bg4)}
+.tp-line.tp-on{background:var(--teal)}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:"Cairo",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
@@ -1367,7 +1381,22 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
           </div>
         </div>
       </div>
-      <div class="card"><div class="card-head"><h3>أداء المنتجات</h3></div><div class="tbl-wrap"><table><thead><tr><th>المنتج</th><th>الحالات</th><th>اليونت</th><th>الإيرادات</th><th>النسبة</th></tr></thead><tbody id="rep-prod"></tbody></table></div></div>
+      <div class="card"><div class="card-head">
+          <h3>أداء المنتجات</h3>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <div class="qdr-bar" style="display:flex;gap:5px;flex-wrap:wrap">
+              <button class="btn btn-ghost btn-sm" onclick="qdrApply('prod-rep-from','prod-rep-to','thisMonth',renderProdReport)">📅 الشهر الحالي</button>
+              <button class="btn btn-ghost btn-sm" onclick="qdrApply('prod-rep-from','prod-rep-to','prevMonth',renderProdReport)">⏮️ الشهر السابق</button>
+              <select id="prod-rep-month-sel" onchange="if(this.value){qdrApplyMonth('prod-rep-from','prod-rep-to',this.value,renderProdReport);this.value=''}" style="font-size:11px;padding:4px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;color:var(--text)">
+                <option value="">🗓️ اختر شهر...</option>
+              </select>
+            </div>
+            <input id="prod-rep-from" type="date" style="font-size:11px;padding:4px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;color:var(--text)">
+            <span style="color:var(--text3);font-size:11px">إلى</span>
+            <input id="prod-rep-to" type="date" style="font-size:11px;padding:4px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;color:var(--text)">
+            <button class="btn btn-gold btn-sm" onclick="renderProdReport()">📊 تحديث</button>
+          </div>
+        </div><div class="tbl-wrap"><table><thead><tr><th>المنتج</th><th>الحالات</th><th>اليونت</th><th>الإيرادات</th><th>النسبة</th></tr></thead><tbody id="rep-prod"></tbody></table></div></div>
     </div>
 
     <!-- العملاء (دمج مع المديونيات) -->
@@ -4067,6 +4096,13 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
         <div class="fg"><label>تقويم</label><input id="tc-rate-تقويم" type="number" min="0" value="0"></div>
         <div class="fg"><label>متحرك</label><input id="tc-rate-متحرك" type="number" min="0" value="0"></div>
       </div>
+      <!-- FIX #TECH-PRODUCT-RATE-OVERRIDE: أسعار مختلفة لنفس المرحلة حسب اسم المنتج
+           تحديدًا (مثلاً بورسلين عادي = 40 وبورسلين زراعة = 45 في نفس مرحلة التفنيش)،
+           بالإضافة للسعر الافتراضي حسب المرحلة فوق. الاستثناء له الأولوية دايمًا. -->
+      <div class="sec-title">🎯 استثناءات أسعار حسب المنتج (اختياري)</div>
+      <div style="font-size:10px;color:var(--text3);margin:-6px 0 10px;padding:0 2px">لو منتج معيّن له سعر مختلف عن السعر الافتراضي للمرحلة (مثلاً "بورسلين زراعة" أغلى من "بورسلين")، ضيفه هنا — وله الأولوية دايماً على السعر العام فوق</div>
+      <div id="tc-prod-rates"></div>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="addTcProductRateRow()" style="margin-top:6px">+ إضافة استثناء سعر</button>
     </div>
     <div class="mf"><button class="btn btn-gold" onclick="saveTech()">💾 حفظ</button><button class="btn btn-ghost" onclick="closeOv('ov-tech')">إلغاء</button></div>
   </div>
@@ -4499,15 +4535,36 @@ function _treasuryValToArray(v){
   if(v && typeof v==='object') return Object.values(v).filter(Boolean);
   return [];
 }
+// FIX #KEYEDLIST-OBJECT-SHAPE-BUG: نفس علة الخزنة بالظبط لكن لـ sup_payments و
+// purchases — من ساعة ما _saveKeyedList بقت تكتبهم لفايربيز كـ object مفتاحه id
+// (كتابة جراحية بدل استبدال كامل)، أي كود بيستقبلهم من فايربيز (المزامنة الأولية
+// أو المستمع اللحظي) كان بياخدهم "زي ما هم" (object) بدل ما يحوّلهم array، فأي مكان
+// بيستخدم .map()/.forEach()/.filter() عليهم بعدها كان بينفجر (مثال حقيقي: زرار
+// إعادة المزامنة اليدوية بيرمي "map is not a function"). الحل: نفس دالة التطبيع
+// المستخدمة للخزنة (_treasuryValToArray منطقها عام أصلاً رغم اسمها)، مطبَّقة الآن
+// على أي مفتاح مخزَّن بنفس الأسلوب الجراحي.
+const KEYED_LIST_KEYS = ['sup_payments','purchases'];
 // ===== DB — Firebase Realtime Database + localStorage cache =====
 const DB = {
   _c: {},
   _uid: 'shared',
   get(k) {
-    if (k in this._c) return this._c[k];
+    // FIX #KEYEDLIST-OBJECT-SHAPE-BUG: تصحيح ذاتي — لو الكاش (محلي أو localStorage)
+    // كان اتلخبط لـ object قبل الإصلاح (بدل array) لمفاتيح زي sup_payments/purchases،
+    // نطبّعه تلقائياً هنا مرة واحدة بدل ما يفضل يكسر أي كود بيتوقع array.
+    if (k in this._c) {
+      const cached = this._c[k];
+      if (typeof KEYED_LIST_KEYS !== 'undefined' && KEYED_LIST_KEYS.includes(k) && cached && !Array.isArray(cached)) {
+        this._c[k] = _treasuryValToArray(cached);
+      }
+      return this._c[k];
+    }
     try {
       const v = localStorage.getItem('plp_' + k);
-      const p = v !== null ? JSON.parse(v) : null;
+      let p = v !== null ? JSON.parse(v) : null;
+      if (typeof KEYED_LIST_KEYS !== 'undefined' && KEYED_LIST_KEYS.includes(k) && p && !Array.isArray(p)) {
+        p = _treasuryValToArray(p);
+      }
       this._c[k] = p;
       return p;
     } catch(e) { return null; }
@@ -4531,7 +4588,12 @@ const DB = {
     this._wt[k] = setTimeout(()=>{
       if (_fbRTDB) {
         try {
-          _fbRTDB.ref('data/shared/' + k).set(this._c[k]).catch(e=>{
+          // FIX #GENERIC-SET-UNDEFINED-REJECT: نفس علة "الخزنة والموردين" بالظبط، لكن هنا
+          // في نقطة الحفظ العامة اللي بتستخدمها كل صفحات النظام تقريبًا (الأصول الثابتة،
+          // الموظفين، الأسعار، إلخ). أي حقل undefined في أي مكان كان بيخلي .set() بالكامل
+          // يفشل صامتًا في الخلفية، فيظهر تنبيه "راجع الاتصال بالإنترنت" المضلِّل حتى
+          // والنت شغال تمام — لأن السبب فايربيز رافض القيمة، مش مشكلة اتصال فعلاً.
+          _fbRTDB.ref('data/shared/' + k).set(_sanitizeForFB(this._c[k])).catch(e=>{
             console.warn('Firebase write:', k, e.code);
             this._notifySyncFail();
           });
@@ -4630,8 +4692,11 @@ const DB = {
             }
             return;
           }
-          this._c[k] = data[k];
-          try { localStorage.setItem('plp_' + k, JSON.stringify(data[k])); } catch(e) {}
+          // FIX #KEYEDLIST-OBJECT-SHAPE-BUG: تطبيع sup_payments/purchases لـ array
+          // دايماً، حتى لو فايربيز راجعها object (شكل الكتابة الجراحية الجديد).
+          const v = KEYED_LIST_KEYS.includes(k) ? _treasuryValToArray(data[k]) : data[k];
+          this._c[k] = v;
+          try { localStorage.setItem('plp_' + k, JSON.stringify(v)); } catch(e) {}
         });
         console.log('✅ Firebase sync: ' + Object.keys(data).length + ' keys');
       }
@@ -4730,8 +4795,12 @@ const DB = {
           try { _trPrevSnapshot = merged.map(r=>r?{...r}:r); } catch(e) {}
           return;
         }
-        this._c[k] = data[k];
-        try { localStorage.setItem('plp_' + k, JSON.stringify(data[k])); } catch(e) {}
+        // FIX #KEYEDLIST-OBJECT-SHAPE-BUG: نفس التطبيع هنا كمان — المستمع اللحظي
+        // كان بيستقبل sup_payments/purchases كـ object لو جهاز تاني حفظها بالشكل
+        // الجراحي، فيتحول الكاش المحلي لـ object فجأة أثناء الاستخدام العادي.
+        const v = KEYED_LIST_KEYS.includes(k) ? _treasuryValToArray(data[k]) : data[k];
+        this._c[k] = v;
+        try { localStorage.setItem('plp_' + k, JSON.stringify(v)); } catch(e) {}
       });
       // إعادة render الصفحة الحالية إن كانت مفتوحة
       // FIX #TOUCH-DEFER: لو المستخدم ماسك بيسحب دلوقتي، نأجل الريندر لحد ما يسيب إصبعه
@@ -4974,7 +5043,9 @@ function _saveKeyedList(key, list){
 // فقط يعيد كتابة نفس القيم الموجودة بالفعل (idempotent).
 // ══════════════════════════════════════════════════════════════
 function _forceResendKeyedList(key){
-  const list = DB.get(key)||[];
+  // FIX #KEYEDLIST-OBJECT-SHAPE-BUG: حماية دفاعية — حتى لو الكاش المحلي كان بشكل
+  // object (بسبب البَگ القديم) بدل array، نطبّعه هنا قبل .forEach() بدل ما ننفجر.
+  const list = _treasuryValToArray(DB.get(key));
   if(!list.length) return Promise.resolve(0);
   const updates={};
   list.forEach(r=>{ if(r && r.id) updates[r.id]=_sanitizeForFB(r); });
@@ -4988,9 +5059,9 @@ async function _forceSyncTreasuryNow(){
     const supCount = await _forceResendKeyedList('sup_payments');
     const purCount = await _forceResendKeyedList('purchases');
     // تحديث اللقطات الداخلية عشان تفضل مطابقة للحالة المُرسلة فعلاً الآن
-    _trPrevSnapshot = (DB.get('treasury')||[]).map(r=>({...r}));
-    _keyedPrevSnapshot['sup_payments'] = (DB.get('sup_payments')||[]).map(r=>({...r}));
-    _keyedPrevSnapshot['purchases'] = (DB.get('purchases')||[]).map(r=>({...r}));
+    _trPrevSnapshot = _treasuryValToArray(DB.get('treasury')).map(r=>({...r}));
+    _keyedPrevSnapshot['sup_payments'] = _treasuryValToArray(DB.get('sup_payments')).map(r=>({...r}));
+    _keyedPrevSnapshot['purchases'] = _treasuryValToArray(DB.get('purchases')).map(r=>({...r}));
     const msg=`✅ تمت إعادة المزامنة: ${trCount} حركة خزنة، ${supCount} دفعة مورد، ${purCount} فاتورة شراء`;
     if(statusEl)statusEl.textContent=msg;
     toast('✅ تمت إعادة المزامنة بنجاح');
@@ -6973,6 +7044,7 @@ function openTechModal(editId=null){
   _tcId=editId;document.getElementById('tc-ttl').textContent=editId?'تعديل فني':'إضافة فني';
   ['tc-name','tc-phone'].forEach(id=>document.getElementById(id).value='');
   _TECH_STAGES.forEach(s=>{const el=document.getElementById('tc-rate-'+s);if(el)el.value=0;});
+  _tcProdRates=[];
   if(editId){
     const t=(DB.get('technicians')||[]).find(x=>x.id===editId);
     if(t){
@@ -6980,10 +7052,29 @@ function openTechModal(editId=null){
       document.getElementById('tc-spec').value=t.spec||'عام';
       document.getElementById('tc-phone').value=t.phone||'';
       _TECH_STAGES.forEach(s=>{const el=document.getElementById('tc-rate-'+s);if(el)el.value=(t.rates&&t.rates[s])||0;});
+      _tcProdRates=(t.productRates||[]).map(r=>({...r}));
     }
   }
+  renderTcProductRates();
   openOv('ov-tech');
 }
+// FIX #TECH-PRODUCT-RATE-OVERRIDE: إدارة صفوف استثناءات الأسعار حسب المنتج (مؤقتة
+// وقت فتح المودال، بتتحفظ في tech.productRates وقت الحفظ)
+let _tcProdRates=[];
+function renderTcProductRates(){
+  const el=document.getElementById('tc-prod-rates');if(!el)return;
+  if(!_tcProdRates.length){el.innerHTML=`<div style="font-size:11px;color:var(--text3);padding:6px 2px">لا توجد استثناءات مضافة</div>`;return;}
+  el.innerHTML=_tcProdRates.map((r,i)=>`
+    <div style="display:flex;gap:6px;margin-bottom:6px;align-items:center">
+      <select style="flex:1.2" onchange="_tcProdRates[${i}].stage=this.value">
+        ${_TECH_STAGES.map(s=>`<option value="${s}" ${r.stage===s?'selected':''}>${s}</option>`).join('')}
+      </select>
+      <input style="flex:1.4" type="text" placeholder="اسم المنتج (مثلاً: بورسلين زراعة)" value="${esc(r.product||'')}" oninput="_tcProdRates[${i}].product=this.value">
+      <input style="flex:.7" type="number" min="0" placeholder="السعر" value="${r.rate||0}" oninput="_tcProdRates[${i}].rate=+this.value">
+      <button type="button" class="btn btn-ghost btn-sm" onclick="_tcProdRates.splice(${i},1);renderTcProductRates()">✕</button>
+    </div>`).join('');
+}
+function addTcProductRateRow(){_tcProdRates.push({stage:_TECH_STAGES[0],product:'',rate:0});renderTcProductRates();}
 function saveTech(){
   if(!can('masterdata.tech')){toast('ليس لديك صلاحية إدارة الفنيين','err');return;}
   const name=document.getElementById('tc-name').value.trim();if(!name){toast('يرجى إدخال الاسم','err');return}
@@ -6999,7 +7090,11 @@ function saveTech(){
     toast('⚠️ يجب إدخال سعر أكبر من صفر في مرحلة واحدة على الأقل','err');
     return;
   }
-  const data={id:_tcId||('tc_'+Date.now()),name,spec:document.getElementById('tc-spec').value,phone:document.getElementById('tc-phone').value,rates};
+  // FIX #TECH-PRODUCT-RATE-OVERRIDE: تجاهل صفوف الاستثناءات الفاضية (بدون اسم منتج
+  // أو سعر صفر) قبل الحفظ
+  const productRates=_tcProdRates.filter(r=>r.product&&r.product.trim()&&r.rate>0)
+    .map(r=>({stage:r.stage,product:r.product.trim(),rate:r.rate}));
+  const data={id:_tcId||('tc_'+Date.now()),name,spec:document.getElementById('tc-spec').value,phone:document.getElementById('tc-phone').value,rates,productRates};
   let list=DB.get('technicians')||[];
   if(_tcId)list=list.map(x=>x.id===_tcId?data:x);else list.push(data);
   DB.set('technicians',list);closeOv('ov-tech');renderTechList();toast(_tcId?'تم التعديل':'تمت الإضافة');
@@ -7724,8 +7819,24 @@ function saveDafter(){
   DB._c['dafter']=list;
   try{localStorage.setItem('plp_dafter',JSON.stringify(list));}catch(e){}
   window._lastLocalWrite=Date.now();
+  // FIX #DAFTER-SILENT-SAVE-FAIL: هذا المسار كان بيكتب مباشرة لفايربيز من غير ما يمر
+  // على _sanitizeForFB (فيفشل صامتًا لو أي حقل undefined، بالظبط زي علة الخزنة/الموردين
+  // القديمة)، وكان بيسجّل الخطأ في console.warn بس من غير أي تنبيه ظاهر للمستخدم ولا أي
+  // إعادة محاولة — فالحالة تفضل "محفوظة محليًا" بصمت من غير ما حد يعرف إنها ماوصلتش
+  // للسيرفر. الحل: تعقيم قبل الإرسال + تنبيه فعلي + إعادة محاولة تلقائية مرة واحدة.
   if(_fbRTDB){
-    try{_fbRTDB.ref('data/shared/dafter').set(list).catch(e=>console.warn('dafter write:',e.code));}catch(e){}
+    try{
+      _fbRTDB.ref('data/shared/dafter').set(_sanitizeForFB(list)).catch(e=>{
+        console.warn('dafter write:',e.code||e);
+        // إعادة محاولة تلقائية واحدة بعد ثانيتين قبل ما نعتبرها فشلت فعلاً
+        setTimeout(()=>{
+          _fbRTDB.ref('data/shared/dafter').set(_sanitizeForFB(DB._c['dafter'])).catch(e2=>{
+            console.warn('dafter write retry failed:',e2.code||e2);
+            DB._notifySyncFail();
+          });
+        },2000);
+      });
+    }catch(e){ console.warn('dafter write error:',e); DB._notifySyncFail(); }
   } else {
     DB.set('dafter',list);
   }
@@ -7751,16 +7862,34 @@ function renderDafter(){
   if(!list.length){if(tb)tb.innerHTML='';if(em)em.style.display='block';return}
   if(em)em.style.display='none';
   const allNotes=DB.get('notes')||[];
+  // FIX #DUPLICATE-CASE-ALERT: كشف الحالات المكررة — نفس اسم العميل + نفس اسم المريض
+  // ظاهرين أكتر من مرة في الدفتر، غالبًا يدل على إدخال الحالة مرتين بالغلط. لا يُحتسب
+  // تكرارًا إلا لو الاسمين (العميل والمريض) موجودين فعليًا، لتجنب التنبيه الكاذب على
+  // الحالات اللي مالهاش اسم مريض مسجَّل.
+  const _dupKey=r=>(r.client||'').trim().toLowerCase()+'|'+(r.noteName||'').trim().toLowerCase();
+  const _dupCount={};
+  list.forEach(r=>{ if(!r.client||!r.noteName)return; const k=_dupKey(r); _dupCount[k]=(_dupCount[k]||0)+1; });
+  // تنبيه فعلي من السيستم (مش بس تلوين الصف) — مرة واحدة لكل مجموعة تكرار مختلفة
+  const _dupKeysNow=Object.entries(_dupCount).filter(([,n])=>n>1).map(([k])=>k).sort().join(',');
+  if(_dupKeysNow && _dupKeysNow!==window._lastDupAlertSig){
+    window._lastDupAlertSig=_dupKeysNow;
+    const dupCasesCount=Object.values(_dupCount).filter(n=>n>1).length;
+    toast(`⚠️ يوجد ${dupCasesCount} حالة بنفس اسم العميل والمريض — تأكد إنها مش مكررة بالغلط`,'err');
+  }
   tb.innerHTML=list.map(r=>{
     const rowNoteCount=allNotes.filter(n=>n.rowId===r.id||n.caseNo===String(r.caseId)).length;
     const isRetFromProof=r.returnedFrom==='proof';
     const isRetFromArchive=r.returnedFrom==='archive';
-    const rowCls=isRetFromProof?'row-returned-from-proof':isRetFromArchive?'row-returned-from-archive':'';
-    const retBadge=isRetFromProof?`<span class="return-badge from-proof" title="أُرجع من البروفه بتاريخ ${esc(r.returnedAt||'')}">↩ بروفه ${esc(r.returnedAt||'')}</span>`
-                  :isRetFromArchive?`<span class="return-badge from-archive" title="أُرجع من الأرشيف بتاريخ ${esc(r.returnedAt||'')}">↩ أرشيف ${esc(r.returnedAt||'')}</span>`:'';
+    const isDup=r.client&&r.noteName&&_dupCount[_dupKey(r)]>1;
+    const rowCls=(isRetFromProof?'row-returned-from-proof':isRetFromArchive?'row-returned-from-archive':'')+(isDup?' row-duplicate':'');
+    const dupBadge=isDup?`<span class="return-badge" style="background:rgba(234,179,8,.18);color:#eab308" title="نفس اسم العميل واسم المريض مكرر في ${_dupCount[_dupKey(r)]} حالات — تأكد إنها مش نفس الحالة اتسجلت غلط مرتين">⚠️ مكرر</span>`:'';
+    // FIX #REDO-PAY-FACTOR: عرض نسبة أجر الفنيين (كامل/نص الثمن) جنب شارة الإعادة
+    const pfBadge=(r.payFactor===0.5)?` <span class="return-badge" style="background:rgba(239,68,68,.15);color:var(--red)" title="أجر الفنيين على هذه الحالة نص الثمن">½ نص الثمن</span>`:'';
+    const retBadge=(isRetFromProof?`<span class="return-badge from-proof" title="أُرجع من البروفه بتاريخ ${esc(r.returnedAt||'')}">↩ بروفه ${esc(r.returnedAt||'')}</span>${pfBadge}`
+                  :isRetFromArchive?`<span class="return-badge from-archive" title="أُرجع من الأرشيف بتاريخ ${esc(r.returnedAt||'')}">↩ أرشيف ${esc(r.returnedAt||'')}</span>${pfBadge}`:'')+dupBadge;
     return`<tr data-id="${esc(r.id)}" data-cat="${getProductionCat(r.product)}" class="${rowCls}" onclick="rowClick(this)">
     <td class="chk-col"><input type="checkbox" onclick="event.stopPropagation()"></td>
-    <td><span style="font-size:11px;color:var(--text3)">#${esc(String(r.caseId))}</span><br><strong>${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:10px;color:var(--teal)">${esc(r.noteName)}</span>`:''}</td><td>${esc(r.phone||'-')}</td>
+    <td><span style="font-size:11px;color:var(--text3)">#${esc(String(r.caseId))}</span><br><strong>${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:10px;color:var(--teal)">${esc(r.noteName)}</span>`:''}${techProgressBadge(r)}</td><td>${esc(r.phone||'-')}</td>
     <td>${esc(r.product)}</td><td>${esc(r.color||'-')}</td><td>${esc(String(r.qty))}</td>
     <td><strong style="color:var(--gold2)">${fmt(r.total)}</strong></td>
     <td>${r.delegate?badge(esc(r.delegate),'bg-teal'):'—'}</td>
@@ -7899,14 +8028,20 @@ function renderProof(){
   if(!list.length){if(tb)tb.innerHTML='';if(em)em.style.display='block';return}
   if(em)em.style.display='none';
   const allNotes=DB.get('notes')||[];
+  const _dupKey=r=>(r.client||'').trim().toLowerCase()+'|'+(r.noteName||'').trim().toLowerCase();
+  const _dupCount={};
+  list.forEach(r=>{ if(!r.client||!r.noteName)return; const k=_dupKey(r); _dupCount[k]=(_dupCount[k]||0)+1; });
   tb.innerHTML=list.map(r=>{
     const rowNoteCount=allNotes.filter(n=>n.rowId===r.id||n.caseNo===String(r.caseId)).length;
     const isRetFromArchive=r.returnedFrom==='archive';
-    const rowCls=isRetFromArchive?'row-returned-from-archive':'';
-    const retBadge=isRetFromArchive?`<span class="return-badge from-archive" title="أُرجع من الأرشيف بتاريخ ${esc(r.returnedAt||'')}">↩ أرشيف ${esc(r.returnedAt||'')}</span>`:'';
+    const isDup=r.client&&r.noteName&&_dupCount[_dupKey(r)]>1;
+    const rowCls=(isRetFromArchive?'row-returned-from-archive':'')+(isDup?' row-duplicate':'');
+    const dupBadge=isDup?`<span class="return-badge" style="background:rgba(234,179,8,.18);color:#eab308" title="نفس اسم العميل واسم المريض مكرر في ${_dupCount[_dupKey(r)]} حالات">⚠️ مكرر</span>`:'';
+    const pfBadge=(r.payFactor===0.5)?` <span class="return-badge" style="background:rgba(239,68,68,.15);color:var(--red)" title="أجر الفنيين على هذه الحالة نص الثمن">½ نص الثمن</span>`:'';
+    const retBadge=(isRetFromArchive?`<span class="return-badge from-archive" title="أُرجع من الأرشيف بتاريخ ${esc(r.returnedAt||'')}">↩ أرشيف ${esc(r.returnedAt||'')}</span>${pfBadge}`:'')+dupBadge;
     return`<tr data-id="${esc(r.id)}" data-cat="${getProductionCat(r.product)}" class="${rowCls}" onclick="rowClick(this)">
     <td class="chk-col"><input type="checkbox" onclick="event.stopPropagation()"></td>
-    <td><span style="font-size:11px;color:var(--text3)">#${esc(String(r.caseId))}</span><br><strong>${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:10px;color:var(--teal)">${esc(r.noteName)}</span>`:''}</td>
+    <td><span style="font-size:11px;color:var(--text3)">#${esc(String(r.caseId))}</span><br><strong>${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:10px;color:var(--teal)">${esc(r.noteName)}</span>`:''}${techProgressBadge(r)}</td>
     <td>${esc(r.product)}</td><td>${esc(r.color||'-')}</td><td>${esc(String(r.qty))}</td>
     <td><strong style="color:var(--gold2)">${fmt(r.total)}</strong></td>
     <td>${r.delegate?badge(esc(r.delegate),'bg-teal'):'—'}</td>
@@ -7922,6 +8057,12 @@ function renderProof(){
 function returnToDafter(){
   if(!can('proof.back')){toast('ليس لديك صلاحية الإرجاع للدفتر','err');return;}
   const ids=getSel('proof-tb');if(!ids.length){toast('اختر حالة أولاً','err');return}
+  // FIX #REDO-PAY-FACTOR: عند إرجاع حالة (إعادة عمل)، الإدارة تحدد هل الفنيين
+  // ياخدوا يوناتها بكامل الثمن أو نص الثمن — قرار يدوي لكل عملية إرجاع، ويتخزن على
+  // كل حالة كـ payFactor (يُستخدم لاحقاً في حساب يونتات الفني وأرباحه).
+  const pfIn=prompt('نسبة أجر الفنيين لهذه الإعادة:\nاكتب 1 لكامل الثمن، أو 0.5 لنص الثمن','1');
+  if(pfIn===null)return;
+  const payFactor=(pfIn.trim()==='0.5')?0.5:1;
   // FIX: invalidate cache before reading to avoid stale data
   delete DB._c['proof']; delete DB._c['dafter'];
   let pf=DB.get('proof')||[];let d=DB.get('dafter')||[];
@@ -7929,7 +8070,8 @@ function returnToDafter(){
   d.push(...pf.filter(x=>ids.includes(x.id)).map(({movedAt,...r})=>({
     ...r,
     returnedFrom:'proof',
-    returnedAt:_retAt
+    returnedAt:_retAt,
+    payFactor
   })));
   const newPf=pf.filter(x=>!ids.includes(x.id));
   DB.set('proof',newPf);DB.set('dafter',d);
@@ -7970,6 +8112,27 @@ function getTechStagesForProduct(productName){
   if(cat==='removable'||cat==='orthodontic') return []; // بدون فنيين
   // unknown → كل المراحل
   return ['تصميم زيركون','خراطة','بناء زيركون','تفنيش زيركون','تصميم معدن','ليزر','تفنيش معدن','بناء بورسلين'];
+}
+// FIX #TECH-PROGRESS-BADGE: عرض تقدم خطوات الفنيين (المُدخلة من أداة "خطوات
+// الفنيين" المستقلة tech-steps-tracker.html) كشارة صغيرة جوه صفوف دفتر/بروفه.
+// البيانات جايه من نفس node فايربيز (tech_progress) اللي بتكتبه الأداة، والتطبيق
+// الأساسي هنا للقراءة فقط — ما بيعدّلش عليها.
+function techProgressBadge(r){
+  const stages=getTechStagesForProduct(r.product);
+  if(!stages.length)return '';
+  const prog=(DB.get('tech_progress')||{})[r.id]||{};
+  const statuses=stages.map(s=>(prog[encodeURIComponent(s)]||prog[s]||{}).status||0);
+  const tip=stages.map((s,i)=>s+': '+(['لم يبدأ','جاري','تم'][statuses[i]])).join(' | ');
+  let html='';
+  statuses.forEach((st,i)=>{
+    if(i>0){
+      const lineOn=statuses[i-1]===2;
+      html+=`<div class="tp-line ${lineOn?'tp-on':''}"></div>`;
+    }
+    const dotCls=st===2?'tp-on':st===1?'tp-mid':'';
+    html+=`<div class="tp-dot2 ${dotCls}"></div>`;
+  });
+  return `<div class="tp-dots" title="${esc(tip)}">${html}</div>`;
 }
 
 let _taSrc='dafter',_taIds=[];
@@ -8079,6 +8242,10 @@ function arcF(f,el){_arcF=f;renderArchive()}
 function returnToProof(){
   if(!can('archive.back')){toast('ليس لديك صلاحية الإرجاع للبروفه','err');return;}
   const ids=getSel('archive-tb');if(!ids.length){toast('اختر حالة أولاً','err');return}
+  // FIX #REDO-PAY-FACTOR: نفس منطق إرجاع الدفتر — قرار يدوي لكامل/نص الثمن لكل عملية إرجاع.
+  const pfIn=prompt('نسبة أجر الفنيين لهذه الإعادة:\nاكتب 1 لكامل الثمن، أو 0.5 لنص الثمن','1');
+  if(pfIn===null)return;
+  const payFactor=(pfIn.trim()==='0.5')?0.5:1;
   // FIX: invalidate cache before reading to avoid stale data
   delete DB._c['archive']; delete DB._c['proof'];
   let arc=DB.get('archive')||[];let pf=DB.get('proof')||[];
@@ -8087,7 +8254,7 @@ function returnToProof(){
   // Strip ALL archive-specific fields when returning to proof
   pf.push(...moving.map(r=>{
     const {movedAt,invId,technicians,paid,remaining,status,archivedAt,archNotes,settleReason,...clean}=r;
-    return {...clean, returnedFrom:'archive', returnedAt:_retAt};
+    return {...clean, returnedFrom:'archive', returnedAt:_retAt, payFactor};
   }));
   const newArc=arc.filter(x=>!ids.includes(x.id));
   DB.set('archive',newArc);DB.set('proof',pf);
@@ -9783,6 +9950,7 @@ function renderReports(){
   // Auto-init overview dates
   initRepDates('ov-from','ov-to','renderReports');
   initRepDates('del-rep-from','del-rep-to');
+  initRepDates('prod-rep-from','prod-rep-to');
   const ovFrom=document.getElementById('ov-from')?.value||'';
   const ovTo=document.getElementById('ov-to')?.value||today();
   const arc=DB.get('archive')||[];const d=DB.get('dafter')||[];const pf=DB.get('proof')||[];
@@ -9821,6 +9989,24 @@ function renderReports(){
   });
   document.getElementById('rep-mon').innerHTML=Object.entries(mon).sort((a,b)=>b[0].localeCompare(a[0])).map(([k,v])=>{const[yr,mo]=k.split('-');return`<tr><td>${mN[+mo-1]} ${yr}</td><td>${v.cnt}</td><td>${fmt(v.rev)} ${c}</td><td style="color:var(--green)">${fmt(v.col)} ${c}</td></tr>`}).join('')||`<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:20px">لا توجد بيانات</td></tr>`;
   renderDelReport();
+  renderProdReport();
+  // FIX #PROD-REPORT-DATE-FILTER: تقرير المنتجات بقى له فلتر تاريخ مستقل خاص بيه (زي
+  // تقرير المناديب بالظبط)، بدل ما كان معتمد بصمت على فلتر تبويب "نظرة عامة" فقط من
+  // غير أي عناصر تحكم ظاهرة في تبويب المنتجات نفسه.
+}
+function renderProdReport(){
+  qdrFillMonthSelect('prod-rep-month-sel');
+  const c=cur();
+  const arc=DB.get('archive')||[];
+  const from=document.getElementById('prod-rep-from')?.value||'';
+  const to=document.getElementById('prod-rep-to')?.value||today();
+  const arcF=arc.filter(r=>{
+    let dt;
+    if(r.archivedAt){dt=new Date(r.archivedAt).toISOString().split('T')[0];}
+    else if(r.date){dt=r.date;}
+    else return false;
+    return(!from||dt>=from)&&(!to||dt<=to);
+  });
   // FIX #UNIT-COL: إضافة عمود "اليونت" (إجمالي عدد الوحدات qty) بجانب عدد الحالات —
   // حالة واحدة ممكن تحتوي أكثر من وحدة (مثلاً 3 يونت بنفس الحالة)، فعدد الحالات
   // لا يعكس الكمية الفعلية المُصنَّعة من كل منتج.
@@ -9883,6 +10069,14 @@ function renderReports(){
 
 // ===== FIX #QUICK-DATE-RANGE: أزرار اختصار للفترة (الشهر الحالي/السابق/اختيار شهر) =====
 // دوال عامة قابلة لإعادة الاستخدام في أي تقرير عنده حقلي تاريخ (from/to)
+// FIX #TIMEZONE-DATE-SHIFT: toISOString() بتحوّل التاريخ لتوقيت UTC، فمنتصف الليل
+// بالتوقيت المحلي (مصر UTC+2/+3) كان بيترجم ليوم سابق في UTC ("الشهر السابق" كان
+// بيرجع من 31 مايو لـ 29 يونيو بدل 1-30 يونيو). الحل: تنسيق التاريخ بالتوقيت
+// المحلي مباشرة (getFullYear/getMonth/getDate) من غير أي تحويل UTC.
+function _fmtLocalDate(x){
+  const y=x.getFullYear(),m=String(x.getMonth()+1).padStart(2,'0'),d=String(x.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+}
 function qdrApply(fromId,toId,type,cb){
   const now=new Date();
   let from,to;
@@ -9893,7 +10087,7 @@ function qdrApply(fromId,toId,type,cb){
     from=new Date(now.getFullYear(),now.getMonth()-1,1);
     to=new Date(now.getFullYear(),now.getMonth(),0);
   } else return;
-  const fmt2=x=>x.toISOString().slice(0,10);
+  const fmt2=_fmtLocalDate;
   const fEl=document.getElementById(fromId),tEl=document.getElementById(toId);
   if(fEl)fEl.value=fmt2(from);
   if(tEl)tEl.value=fmt2(to);
@@ -9904,7 +10098,7 @@ function qdrApplyMonth(fromId,toId,ym,cb){
   const[y,m]=ym.split('-').map(Number);
   const from=new Date(y,m-1,1);
   const to=new Date(y,m,0);
-  const fmt2=x=>x.toISOString().slice(0,10);
+  const fmt2=_fmtLocalDate;
   const fEl=document.getElementById(fromId),tEl=document.getElementById(toId);
   if(fEl)fEl.value=fmt2(from);
   if(tEl)tEl.value=fmt2(to);
@@ -10160,7 +10354,7 @@ function logActivity(action, details={}){
     if(_fbRTDB){
       try{
         window._lastLocalWrite = Date.now(); // منع realtime listener من الكتابة فوق السجل
-        _fbRTDB.ref('data/shared/activityLog').set(log).catch(e=>{
+        _fbRTDB.ref('data/shared/activityLog').set(_sanitizeForFB(log)).catch(e=>{
           console.warn('logActivity Firebase write failed:',e.code);
         });
       }catch(e){console.warn('logActivity Firebase error:',e);}
@@ -12397,7 +12591,7 @@ function initTechRepFilters(){
 }
 
 const _TECH_STAGES=['تصميم زيركون','خراطة','بناء زيركون','تفنيش زيركون','تصميم معدن','ليزر','تفنيش معدن','بناء بورسلين','تقويم','متحرك'];
-function getRate(stage,techName){
+function getRate(stage,techName,productName){
   // FIX #TECH-PERSONAL-RATES: السعر الشخصي لكل فني له الأولوية المطلقة. السعر العام (techRates)
   // يُستخدم فقط كحل احتياطي لفنيين قدامى لسه معندهمش جدول أسعار شخصي مُسجَّل (توافقية مع بيانات قديمة).
   // FIX #TECH-STAGE-ZERO-NO-FALLBACK: لو الفني عنده جدول أسعار شخصي مسجَّل، وسعر مرحلة معيّنة
@@ -12405,6 +12599,12 @@ function getRate(stage,techName){
   // عليها، لأن ده كان بيخليه يتقاضى أجراً عن شغل لا يقوم به فعليًا.
   if(techName){
     const tech=(DB.get('technicians')||[]).find(t=>t.name===techName);
+    // FIX #TECH-PRODUCT-RATE-OVERRIDE: استثناء السعر حسب المنتج (لو موجود) له الأولوية
+    // المطلقة على سعر المرحلة العام لهذا الفني — مطابقة اسم المنتج نفسه أو احتواء جزئي.
+    if(tech&&productName&&Array.isArray(tech.productRates)){
+      const ov=tech.productRates.find(r=>r.stage===stage&&r.product&&(r.product===productName||productName.includes(r.product)||r.product.includes(productName)));
+      if(ov)return ov.rate>0?ov.rate:0;
+    }
     if(tech&&tech.rates) return tech.rates[stage]>0?tech.rates[stage]:0;
   }
   const el=document.getElementById('rate-'+stage);
@@ -12424,6 +12624,11 @@ function buildTechMap(filtered, filterTech){
   const techMap={};
   filtered.forEach(r=>{
     const qty=+r.qty||0;
+    // FIX #REDO-PAY-FACTOR: لو الحالة إعادة (returnedFrom) ومعاها payFactor (كامل=1 أو
+    // نص الثمن=0.5 حسب قرار الإدارة وقت الإرجاع)، بيتضرب في الكمية هنا مركزياً — بينتشر
+    // تلقائياً لكل تقارير الفنيين اللي بتعتمد على buildTechMap من غير ما نلمسها واحدة واحدة.
+    const payFactor=(r.payFactor===0.5)?0.5:1;
+    const effQty=qty*payFactor;
     const techs=r.technicians||{};
     Object.entries(techs).forEach(([stage,tName])=>{
       if(!tName)return;
@@ -12431,7 +12636,7 @@ function buildTechMap(filtered, filterTech){
       if(!techMap[tName])techMap[tName]={};
       if(!techMap[tName][stage])techMap[tName][stage]={cases:new Set(),units:0};
       techMap[tName][stage].cases.add(r.id);
-      techMap[tName][stage].units+=qty;
+      techMap[tName][stage].units+=effQty;
     });
   });
   return techMap;
@@ -12860,7 +13065,7 @@ const payCount=(DB.get('sup_payments')||[]).filter(x=>ids.includes(x.supId)).len
 confirm2('حذف الموردين',`حذف ${ids.length} مورد وكل بياناته (${purCount} فاتورة شراء، ${payCount} دفعة)؟`,()=>{
   // ===== تتبع: تسجيل حذف مورد كامل مع كل بياناته المالية (حذف خطير) =====
   logActivity('supplier.delete',{count:toDelete.length,note:supNames.join(', ')+` — شملت ${purCount} فاتورة شراء و${payCount} دفعة`,before:toDelete.map(s=>snapshotFields(s,['name','phone']))});
-  DB.set('suppliers',(DB.get('suppliers')||[]).filter(x=>!ids.includes(x.id)));DB.set('purchases',(DB.get('purchases')||[]).filter(x=>!ids.includes(x.supId)));DB.set('sup_payments',(DB.get('sup_payments')||[]).filter(x=>!ids.includes(x.supId)));DB.set('batches',(DB.get('batches')||[]).filter(x=>!ids.includes(x.supId)));renderSuppliers();toast('تم الحذف مع كل بيانات المورد');});}
+  DB.set('suppliers',(DB.get('suppliers')||[]).filter(x=>!ids.includes(x.id)));_saveKeyedList('purchases',(DB.get('purchases')||[]).filter(x=>!ids.includes(x.supId)));_saveKeyedList('sup_payments',(DB.get('sup_payments')||[]).filter(x=>!ids.includes(x.supId)));DB.set('batches',(DB.get('batches')||[]).filter(x=>!ids.includes(x.supId)));renderSuppliers();toast('تم الحذف مع كل بيانات المورد');});}
 function sendSupWA(id){
   const s=(DB.get('suppliers')||[]).find(x=>x.id===id);if(!s?.wa&&!s?.phone){toast('لا يوجد رقم واتساب','err');return;}
   const d=getSupDebt(id);
@@ -13147,7 +13352,7 @@ function savePurchase(){
     batches.push({id:'BAT-'+(Date.now()+idx),batchNo:bNo,purchaseId:purId,supId,supName:sup?.name||'',material:item.mat,matType:item.type,unit:item.unit,entryDate:date,qtyOriginal:item.qty,qtyRemaining:item.qty,qtyUsed:0,unitCost:item.price,status:'active'});
   });
 
-  DB.set('purchases',purs);
+  _saveKeyedList('purchases',purs);
   DB.set('batches',batches);
   closeOv('ov-purchase');
   renderPurchases();renderPurStats();updateErpBadges();
@@ -14538,6 +14743,7 @@ function renderSalaryReport(){
         <td style="white-space:nowrap">
           <button class="btn btn-ghost btn-sm" onclick="openAttendanceModal('${emp.id}')" title="تسجيل غياب/تأخير/جزاء/سلفة">📋</button>
           <button class="btn btn-ghost btn-sm" style="color:var(--green)" onclick="openAttendanceModal('${emp.id}','bonus')" title="مكافأة سريعة">🎁</button>
+          <button class="btn btn-blue btn-sm" onclick="printEmpSalaryCardPaged('${emp.id}','${ym}')" title="طباعة كارت راتب تفصيلي">🖨️</button>
           ${paidRecord
             ?`<span class="badge bg-green" title="تم الصرف بتاريخ ${paidRecord.date} — ${fmt(paidRecord.amount)} ${c}">✅ مدفوع</span>`
             :(net>0?`<button class="btn btn-green btn-sm" onclick="paySingleSalary('${emp.id}','${ym}',${net})" title="صرف راتب ${emp.name}">💸</button>`:'')}
@@ -14553,6 +14759,104 @@ function exportSalaryCSV(){
   rows.forEach(tr=>{csv+=[...tr.querySelectorAll('td')].map(td=>'"'+td.textContent.trim().replace(/,/g,';')+'"').join(',')+' \n';});
   const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='salary_report.csv';a.click();
+}
+
+// FIX #EMP-SALARY-CARD-PRINT: بطاقة راتب تفصيلية لموظف واحد بنفس الأسلوب الاحترافي
+// المستخدم في "كارت العميل" و"كارت المورد" (printClientCardPaged/printSupCardPaged)
+// — بدل صف واحد في جدول طويل، مستند مستقل قابل للطباعة/الحفظ وتسليمه للموظف.
+function printEmpSalaryCardPaged(empId,ym){
+  const emp=(DB.get('employees')||[]).find(e=>e.id===empId);
+  if(!emp){toast('الموظف غير موجود','err');return;}
+  const c=cur();
+  const li=DB.get('labinfo')||{};
+  const from=ym+'-01',to=ym+'-31';
+  const arc=DB.get('archive')||[];
+  const empArc=arc.filter(r=>{
+    const d=r.archivedAt?new Date(r.archivedAt).toISOString().split('T')[0]:(r.date||'');
+    const inRange=d>=from&&d<=to;
+    const assigned=r.technicians&&Object.values(r.technicians).includes(emp.name);
+    return inRange&&assigned;
+  });
+  const prod=empArc.reduce((s,r)=>{
+    const stages=r.technicians?Object.values(r.technicians).filter(v=>v===emp.name).length:0;
+    const totalStages=r.technicians?Object.values(r.technicians).filter(Boolean).length:1;
+    return s+(+r.total)*(stages/(totalStages||1));
+  },0);
+  const prodBonus=Math.round(prod*(emp.rate||0)/100);
+  const att=getAttSummary(emp.id,from,to);
+  const baseSalary=getEmpSalaryForMonth(emp,ym);
+  const gross=baseSalary+prodBonus+att.bonuses+att.allowances;
+  const advances=getEmpAdvances(emp.id,ym);
+  const net=Math.max(0,gross-att.totalDeduct-advances);
+  const paidRecord=getSalaryPaidRecord(emp.id,ym);
+  const mN=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  const[yy,mm]=ym.split('-');
+  const monthLabel=mN[+mm-1]+' '+yy;
+  const logo=li.logo?'<img src="'+li.logo+'" style="height:50px;object-fit:contain;border-radius:6px">':'<div style="font-size:36px">🦷</div>';
+  const contact=[li.ph1?'📞 '+li.ph1:'',li.wa?'💬 '+li.wa:'',li.addr?'📍 '+li.addr:''].filter(Boolean).join(' | ');
+  const typeLabel={absence:'غياب',late:'تأخير',deduct:'جزاء',bonus:'مكافأة',allowance:'بدل',advance:'سلفة'};
+  const typeColor={absence:'#ef4444',late:'#f97316',deduct:'#ef4444',bonus:'#22c55e',allowance:'#3b82f6',advance:'#a855f7'};
+  const attRows=(att.att||[]).slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(a=>
+    '<tr><td style="padding:7px 8px;border-bottom:1px solid #e5e7eb;font-size:10.5px">'+(a.date||'—')+'</td>'
+    +'<td style="padding:7px 8px;border-bottom:1px solid #e5e7eb;font-size:10.5px"><span style="color:'+(typeColor[a.type]||'#6b7280')+';font-weight:700">'+(typeLabel[a.type]||a.type)+'</span></td>'
+    +'<td style="padding:7px 8px;border-bottom:1px solid #e5e7eb;font-size:10.5px;color:#6b7280">'+esc(a.note||'—')+'</td>'
+    +'<td style="padding:7px 8px;border-bottom:1px solid #e5e7eb;font-size:10.5px;font-weight:700">'+(a.type==='absence'?a.value+' يوم':a.type==='late'?a.value+' د':fmt(a.value)+' '+c)+'</td></tr>'
+  ).join('')||'<tr><td colspan="4" style="text-align:center;padding:16px;color:#9ca3af;font-size:11px">لا توجد حركات حضور/خصومات مسجّلة هذا الشهر</td></tr>';
+  const html='<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">'
+    +'<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap">'
+    +'<style>*{margin:0;padding:0;box-sizing:border-box;font-family:"Cairo",sans-serif}body{background:#e8edf5;padding:20px}.pp{background:#fff;max-width:210mm;margin:0 auto;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.15)}@media print{body{background:#fff;padding:0}.pp{box-shadow:none;border-radius:0}@page{size:A4;margin:10mm}}</style>'
+    +'</head><body><div class="pp">'
+    +'<div style="background:linear-gradient(135deg,#0d1b3e 0%,#1a3a6b 50%,#0f2a52 100%);padding:0;position:relative;overflow:hidden">'
+    +'<div style="position:absolute;top:-20px;left:-20px;width:120px;height:120px;border-radius:50%;background:rgba(201,168,76,.08)"></div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:16px 24px;position:relative">'
+    +'<div style="display:flex;align-items:center;gap:14px">'+logo+'<div>'
+    +'<div style="font-size:17px;font-weight:900;color:#fff">'+(li.name||'Perfect Lab Pro')+'</div>'
+    +'<div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:2px">'+contact+'</div>'
+    +'</div></div>'
+    +'<div style="text-align:left">'
+    +'<div style="font-size:11px;color:rgba(255,255,255,.5);letter-spacing:2px;text-transform:uppercase">SALARY SLIP</div>'
+    +'<div style="font-size:13px;font-weight:700;color:#e8c96a;margin-top:2px">بطاقة راتب موظف</div>'
+    +'</div></div>'
+    +'<div style="background:rgba(0,0,0,.25);padding:12px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;position:relative">'
+    +'<div><div style="font-size:10px;color:rgba(255,255,255,.4);letter-spacing:1px">الموظف</div>'
+    +'<div style="font-size:20px;font-weight:900;color:#e8c96a">'+esc(emp.name)+'</div>'
+    +'<div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:2px">'+esc(emp.role||'—')+(emp.phone?' | 📞 '+esc(emp.phone):'')+'</div></div>'
+    +'<div style="background:rgba(255,255,255,.08);border-radius:10px;padding:10px 18px;text-align:center">'
+    +'<div style="font-size:10px;color:rgba(255,255,255,.4)">الشهر</div>'
+    +'<div style="font-size:14px;font-weight:700;color:#e8c96a;margin-top:2px">📅 '+monthLabel+'</div>'
+    +(paidRecord?'<div style="font-size:9px;color:#86efac;margin-top:3px">✅ مصروف بتاريخ '+paidRecord.date+'</div>':'<div style="font-size:9px;color:#fca5a5;margin-top:3px">لم يُصرف بعد</div>')
+    +'</div></div>'
+    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);background:#0a1628;position:relative">'
+    +'<div style="padding:12px 10px;text-align:center;border-left:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)">'
+    +'<div style="font-size:9px;color:rgba(255,255,255,.4)">الراتب الأساسي</div><div style="font-size:14px;font-weight:900;color:#e8c96a;margin-top:3px">'+fmt(baseSalary)+' '+c+'</div></div>'
+    +'<div style="padding:12px 10px;text-align:center;border-left:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)">'
+    +'<div style="font-size:9px;color:rgba(255,255,255,.4)">بونص إنتاج</div><div style="font-size:14px;font-weight:900;color:#86efac;margin-top:3px">'+fmt(prodBonus)+' '+c+'</div></div>'
+    +'<div style="padding:12px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,.08)">'
+    +'<div style="font-size:9px;color:rgba(255,255,255,.4)">مكافآت وبدلات</div><div style="font-size:14px;font-weight:900;color:#93c5fd;margin-top:3px">'+fmt(att.bonuses+att.allowances)+' '+c+'</div></div>'
+    +'<div style="padding:12px 10px;text-align:center;border-left:1px solid rgba(255,255,255,.08)">'
+    +'<div style="font-size:9px;color:rgba(255,255,255,.4)">إجمالي الخصومات</div><div style="font-size:14px;font-weight:900;color:#fca5a5;margin-top:3px">'+fmt(att.totalDeduct)+' '+c+'</div></div>'
+    +'<div style="padding:12px 10px;text-align:center;border-left:1px solid rgba(255,255,255,.08)">'
+    +'<div style="font-size:9px;color:rgba(255,255,255,.4)">سلف مخصومة</div><div style="font-size:14px;font-weight:900;color:#d8b4fe;margin-top:3px">'+fmt(advances)+' '+c+'</div></div>'
+    +'<div style="padding:12px 10px;text-align:center">'
+    +'<div style="font-size:9px;color:rgba(255,255,255,.4)">صافي الراتب</div><div style="font-size:16px;font-weight:900;color:#e8c96a;margin-top:3px">'+fmt(net)+' '+c+'</div></div>'
+    +'</div><div style="height:4px;background:linear-gradient(90deg,#c9a84c,#e8c96a,#c9a84c)"></div></div>'
+    +'<div style="padding:16px 20px">'
+    +'<div style="font-size:11px;font-weight:800;color:#1a3a6b;border-right:4px solid #c9a84c;padding-right:10px;margin-bottom:10px">📋 تفاصيل الحضور والخصومات والمكافآت ('+(att.att||[]).length+' حركة)</div>'
+    +'<table style="width:100%;border-collapse:collapse">'
+    +'<thead><tr style="background:linear-gradient(90deg,#1a3a6b,#0f2a52);color:#fff">'
+    +'<th style="padding:7px 8px;text-align:right;font-size:10.5px;font-weight:700">التاريخ</th>'
+    +'<th style="padding:7px 8px;text-align:right;font-size:10.5px;font-weight:700">النوع</th>'
+    +'<th style="padding:7px 8px;text-align:right;font-size:10.5px;font-weight:700">ملاحظة</th>'
+    +'<th style="padding:7px 8px;text-align:right;font-size:10.5px;font-weight:700">القيمة</th>'
+    +'</tr></thead><tbody>'+attRows+'</tbody></table>'
+    +'<div style="margin-top:20px;padding-top:14px;border-top:2px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#9ca3af">'
+    +'<span>🦷 '+(li.name||'Perfect Lab Pro')+(li.ph1?' | '+li.ph1:'')+'</span>'
+    +'<span>طُبع: '+new Date().toLocaleDateString('ar-EG')+'</span>'
+    +'<div style="border:1px dashed #d1d5db;padding:6px 24px;border-radius:6px;text-align:center;min-width:120px">'
+    +'<div style="height:28px"></div><div style="font-size:10px">توقيع الاستلام</div></div>'
+    +'</div></div></div>'
+    +'\x3cscript>window.onload=function(){setTimeout(function(){window.print();},800);}<\/script></body></html>';
+  _doPrint(html);
 }
 
 // ── سلف الموظف المتبقية في شهر معين ──
