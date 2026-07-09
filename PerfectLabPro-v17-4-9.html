@@ -2588,6 +2588,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
       <div class="btn-row">
         <button class="btn btn-gold" onclick="openProspectModal()">+ إضافة عميل محتمل</button>
         <button class="btn btn-green btn-sm" onclick="openProspectVisitModal()">📋 + تسجيل زيارة</button>
+        <button class="btn btn-orange btn-sm" onclick="sendDelegateDailyReportToAdmin()">📤 تقرير اليوم للإدارة</button>
         <button class="btn btn-ghost btn-sm" onclick="renderProspects()">🔄</button>
       </div>
     </div>
@@ -2928,7 +2929,13 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
               <div class="fgrid" style="grid-template-columns:1fr">
                 <div class="fg"><label>رقم الإدارة 1</label><input id="li-admin1" type="text" placeholder="01xxxxxxxxx"></div>
                 <div class="fg"><label>رقم الإدارة 2</label><input id="li-admin2" type="text" placeholder="01xxxxxxxxx (اختياري)"></div>
+                <div class="fg"><label>رقم الإدارة 3</label><input id="li-admin3" type="text" placeholder="01xxxxxxxxx (اختياري)"></div>
               </div>
+              <div class="sec-title" style="margin-top:12px">👥 جروب الموزعين (واتساب)</div>
+              <div class="fgrid" style="grid-template-columns:1fr">
+                <div class="fg"><label>رابط جروب الموزعين</label><input id="li-distgroup" type="text" placeholder="https://chat.whatsapp.com/..."></div>
+              </div>
+              <div style="font-size:11px;color:var(--text3);margin-top:-4px;margin-bottom:4px">💡 سيظهر زر "👥 إرسال لجروب الموزعين" بجانب أرقام الإدارة عند إرسال التقارير — روابط الجروبات لا تدعم إرفاق نص تلقائيًا، فسيتم نسخ الرسالة وفتح الجروب لتلصقها يدويًا.</div>
               <div class="sec-title" style="margin-top:12px">رسالة الفاتورة</div>
               <div class="fg"><textarea id="li-msg" style="min-height:70px" placeholder="شكراً لثقتكم..."></textarea></div>
               <div class="sec-title" style="margin-top:12px">💬 رسالة ترحيب العميل الجديد (واتساب)</div>
@@ -3674,7 +3681,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 
 <div class="toast" id="toast"></div>
 <div class="conf-ov" id="conf-ov"><div class="conf-box"><h4 id="conf-ttl">تأكيد</h4><p id="conf-msg"></p><div class="conf-btns"><button class="btn btn-red" id="conf-ok">تأكيد</button><button class="btn btn-ghost" onclick="closeConf()">إلغاء</button></div></div></div>
-<div class="conf-ov" id="admin-pick-ov"><div class="conf-box"><h4>📤 إرسال التقرير إلى</h4><p style="font-size:12px;color:var(--text3);margin-bottom:10px">اختر رقم الإدارة المطلوب إرسال التقرير عليه</p><div id="admin-pick-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px"></div><div class="conf-btns"><button class="btn btn-ghost" onclick="closeAdminPick()">إلغاء</button></div></div></div>
+<div class="conf-ov" id="admin-pick-ov"><div class="conf-box"><h4>📤 إرسال التقرير إلى</h4><p style="font-size:12px;color:var(--text3);margin-bottom:10px">اختر رقم الإدارة أو الجروب المطلوب إرسال التقرير عليه</p><div id="admin-pick-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px"></div><div class="conf-btns"><button class="btn btn-ghost" onclick="closeAdminPick()">إلغاء</button></div></div></div>
 
 <!-- DAFTER MODAL -->
 <div class="overlay" id="ov-dafter">
@@ -5134,6 +5141,19 @@ document.getElementById('conf-ok').onclick=()=>{if(_cb&&typeof _cb.fn==='functio
 function badge(txt,cls){return`<span class="badge ${cls}">${txt}</span>`}
 // FIX #CLEANUP-DEAD-FEATURE: حُذفت stBadge — بقايا مفهوم "حالة الفاتورة
 // الفردية" (unpaid/partial/settled/done) الملغى لصالح _clientAccountSummary.
+// FIX #DISTGROUP: الرابط الافتراضي لجروب الموزعين على واتساب (يمكن تغييره من البيانات الأساسية)
+const _DEFAULT_DIST_GROUP_LINK='https://chat.whatsapp.com/Be6eVJyUVOkKSmZ3ebcT3x?s=sh&p=a&ilr=0';
+// فتح جروب واتساب عبر رابط دعوة — روابط الجروبات (chat.whatsapp.com) لا تدعم إرفاق نص
+// جاهز مثل wa.me، فبننسخ الرسالة للحافظة أولاً ثم نفتح الجروب ليلصقها المستخدم يدويًا
+function openWaGroup(url,text,meta){
+  const link=(url||'').trim();
+  if(!link){toast('لا يوجد رابط جروب مسجّل — أضفه من البيانات الأساسية للمختبر','err');return}
+  if(text){
+    navigator.clipboard?.writeText(text).then(()=>toast('✅ تم نسخ الرسالة — الصقها داخل الجروب')).catch(()=>{});
+    logWaNotif({phone:'',text,client:(meta&&meta.client)||'جروب الموزعين',...(meta||{})});
+  }
+  window.open(link,'_blank');
+}
 function wa(phone,text,meta){
   let n=(phone||'').replace(/[\s\-()]/g,'');
   if(!n){toast('لا يوجد رقم هاتف','err');return}
@@ -5703,7 +5723,9 @@ function loadLabInfo(){
   sv('li-name',li.name);sv('li-ph1',li.ph1);sv('li-ph2',li.ph2);sv('li-ph3',li.ph3);
   sv('li-wa',li.wa);sv('li-email',li.email);sv('li-web',li.web);sv('li-fb',li.fb);sv('li-ig',li.ig);
   sv('li-addr',li.addr);sv('li-map',li.map);sv('li-reg',li.reg);sv('li-tax',li.tax);sv('li-msg',li.msg);
-  sv('li-admin1',li.admin1);sv('li-admin2',li.admin2);
+  sv('li-admin1',li.admin1);sv('li-admin2',li.admin2);sv('li-admin3',li.admin3);
+  // FIX #DISTGROUP: رابط جروب الموزعين — لو المستخدم متسجّلش رابط بعد، نعرض الرابط الافتراضي المُعطى
+  sv('li-distgroup',li.distgroup||_DEFAULT_DIST_GROUP_LINK);
   // رسالة الترحيب — تحميل المحفوظة أو الافتراضية
   const wmEl=document.getElementById('li-welcome-msg');
   if(wmEl) wmEl.value=li.welcomeMsg||_defaultWelcomeMsg(li.name||'');
@@ -5717,7 +5739,7 @@ function loadLabInfo(){
 function saveLabInfo(){
   const gv=id=>document.getElementById(id)?.value||'';
   const li=DB.get('labinfo')||{};
-  Object.assign(li,{name:gv('li-name'),ph1:gv('li-ph1'),ph2:gv('li-ph2'),ph3:gv('li-ph3'),wa:gv('li-wa'),email:gv('li-email'),web:gv('li-web'),fb:gv('li-fb'),ig:gv('li-ig'),addr:gv('li-addr'),map:gv('li-map'),reg:gv('li-reg'),tax:gv('li-tax'),msg:gv('li-msg'),welcomeMsg:gv('li-welcome-msg'),debtMsg:gv('li-debt-msg'),admin1:gv('li-admin1'),admin2:gv('li-admin2')});
+  Object.assign(li,{name:gv('li-name'),ph1:gv('li-ph1'),ph2:gv('li-ph2'),ph3:gv('li-ph3'),wa:gv('li-wa'),email:gv('li-email'),web:gv('li-web'),fb:gv('li-fb'),ig:gv('li-ig'),addr:gv('li-addr'),map:gv('li-map'),reg:gv('li-reg'),tax:gv('li-tax'),msg:gv('li-msg'),welcomeMsg:gv('li-welcome-msg'),debtMsg:gv('li-debt-msg'),admin1:gv('li-admin1'),admin2:gv('li-admin2'),admin3:gv('li-admin3'),distgroup:gv('li-distgroup')});
   DB.set('labinfo',li);
   document.getElementById('s-lab-name').textContent=li.name||'Perfect Lab Pro';
   _applySidebarLogo(li.logo||'');
@@ -12412,25 +12434,37 @@ function _sendToAdminWithPicker(msg,meta){
   const li=DB.get('labinfo')||{};
   const numbers=[
     {label:'رقم الإدارة 1',phone:li.admin1||''},
-    {label:'رقم الإدارة 2',phone:li.admin2||''}
+    {label:'رقم الإدارة 2',phone:li.admin2||''},
+    {label:'رقم الإدارة 3',phone:li.admin3||''}
   ].filter(n=>n.phone);
+  // FIX #DISTGROUP: زر إرسال لجروب الموزعين يظهر دائماً بجانب أرقام الإدارة
+  const groupLink=li.distgroup||_DEFAULT_DIST_GROUP_LINK;
+  const groupBtn={label:'👥 جروب الموزعين',group:groupLink};
 
-  if(!numbers.length){toast('أضف رقم إدارة واحداً على الأقل في البيانات الأساسية للمختبر','err');return;}
+  if(!numbers.length&&!groupLink){toast('أضف رقم إدارة واحداً على الأقل في البيانات الأساسية للمختبر','err');return;}
 
-  if(numbers.length===1){
+  if(numbers.length===1&&!groupLink){
     wa(numbers[0].phone,msg,meta||{});
     return;
   }
-  // فيه رقمين: نعرض قائمة اختيار
+  // فيه أكتر من خيار (رقمين+ أو رقم+جروب): نعرض قائمة اختيار
   _adminSendMsg=msg;
   _adminSendMeta=meta||{};
+  const all=[...numbers,...(groupLink?[groupBtn]:[])];
   const list=document.getElementById('admin-pick-list');
-  list.innerHTML=numbers.map(n=>`<button class="btn btn-gold" onclick="_sendAdminMsgTo('${esc(n.phone)}')">${esc(n.label)} — ${esc(n.phone)}</button>`).join('');
+  list.innerHTML=all.map(n=>n.group
+    ?`<button class="btn btn-ghost" onclick="_sendAdminMsgToGroup('${esc(n.group)}')">${esc(n.label)}</button>`
+    :`<button class="btn btn-gold" onclick="_sendAdminMsgTo('${esc(n.phone)}')">${esc(n.label)} — ${esc(n.phone)}</button>`
+  ).join('');
   document.getElementById('admin-pick-ov').classList.add('open');
 }
 function _sendAdminMsgTo(phone){
   closeAdminPick();
   wa(phone,_adminSendMsg,_adminSendMeta);
+}
+function _sendAdminMsgToGroup(link){
+  closeAdminPick();
+  openWaGroup(link,_adminSendMsg,_adminSendMeta);
 }
 function closeAdminPick(){document.getElementById('admin-pick-ov').classList.remove('open');}
 
@@ -18825,6 +18859,10 @@ function waOrCopy(text,opts){
   // Always add admin numbers if available (رقمي الإدارة المسجلين في البيانات الأساسية)
   if(li.admin1) recipients.push({label:'⚙️ الإدارة 1: '+li.admin1, phone:li.admin1});
   if(li.admin2) recipients.push({label:'⚙️ الإدارة 2: '+li.admin2, phone:li.admin2});
+  if(li.admin3) recipients.push({label:'⚙️ الإدارة 3: '+li.admin3, phone:li.admin3});
+  // FIX #DISTGROUP: زر جروب الموزعين
+  const _distLink=li.distgroup||_DEFAULT_DIST_GROUP_LINK;
+  if(_distLink) recipients.push({label:'👥 جروب الموزعين', phone:null, group:_distLink});
   // Copy button always available
   recipients.push({label:'📋 نسخ النص فقط', phone:null});
 
@@ -18855,6 +18893,8 @@ function _showWaPickModal(text, recipients){
   const btns=recipients.map((r,i)=>
     r.phone
       ? `<button onclick="window._waPick(${i})" style="display:block;width:100%;margin-bottom:8px;padding:10px 14px;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;border:none;border-radius:9px;font-family:Cairo,sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-align:right">💬 ${r.label}</button>`
+      : r.group
+      ? `<button onclick="window._waPick(${i})" style="display:block;width:100%;margin-bottom:8px;padding:10px 14px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;border:none;border-radius:9px;font-family:Cairo,sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-align:right">👥 ${r.label}</button>`
       : `<button onclick="window._waPick(${i})" style="display:block;width:100%;margin-bottom:8px;padding:10px 14px;background:var(--bg4);color:var(--text);border:1px solid var(--border2);border-radius:9px;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer;text-align:right">📋 ${r.label}</button>`
   ).join('');
   const modal=document.createElement('div');
@@ -18880,6 +18920,7 @@ window._waPick=function(i){
   if(!recipients||!text)return;
   const r=recipients[i];
   if(r&&r.phone) wa(r.phone,text);
+  else if(r&&r.group) openWaGroup(r.group,text);
   else _waCopyOnly(text);
 };
 // ===== END SMART WHATSAPP SEND =====
@@ -20684,6 +20725,56 @@ function saveProspectVisit(){
   const idx=pros.findIndex(p=>p.id===prospectId);
   if(idx>=0){pros[idx].status=result;DB.set('prospects',pros);}
   closeOv('ov-prospect-visit');renderProspects();toast('✅ تم حفظ الزيارة');
+}
+
+// FIX #DELEGATE-DAILY-REPORT: تقرير يومي يُرسل للإدارة بعمل المندوب اليوم —
+// العملاء المحتملون الجدد اللي اتسجلوا اليوم + الزيارات الميدانية اللي اتسجلت اليوم.
+// لو المستخدم الحالي مندوب، التقرير يقتصر على شغله فقط. لو مدير/مشرف، يشمل كل المناديب.
+function sendDelegateDailyReportToAdmin(){
+  const li=DB.get('labinfo')||{};
+  const todayISO=today();
+  const myName=window._currentUser?.name||'';
+  const isDelegateUser=window._currentUser?.role==='delegate';
+
+  let newProspects=(DB.get('prospects')||[]).filter(p=>{
+    const d=new Date(p.createdAt||0).toISOString().split('T')[0];
+    return d===todayISO;
+  });
+  let visits=(DB.get('prospect_visits')||[]).filter(v=>v.date===todayISO);
+
+  if(isDelegateUser&&myName){
+    newProspects=newProspects.filter(p=>p.delegate===myName);
+    visits=visits.filter(v=>v.delegate===myName);
+  }
+
+  if(!newProspects.length&&!visits.length){toast('لا يوجد نشاط مسجَّل اليوم لإرساله','err');return;}
+
+  const resultLabel={new:'جديد',interested:'مهتم',follow:'متابعة',contracted:'تم التعاقد',not_interested:'غير مهتم'};
+  const lines=[
+    '*🚗 تقرير المندوب اليومي*',
+    '━━━━━━━━━━━━━━━━━━━━━━━━',
+    '*🦷 '+(li.name||'Perfect Lab Pro')+'*',
+    (isDelegateUser&&myName?'👤 المندوب: '+myName:''),
+    '📅 '+new Date().toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'}),
+    '━━━━━━━━━━━━━━━━━━━━━━━━'
+  ].filter(Boolean);
+
+  lines.push(`*🏥 عملاء محتملون جدد اليوم: ${newProspects.length}*`);
+  newProspects.forEach((p,i)=>{
+    lines.push(`${i+1}. ${p.center} — د. ${p.doctor}${p.delegate&&!isDelegateUser?' (مندوب: '+p.delegate+')':''}`);
+  });
+
+  lines.push('','━━━━━━━━━━━━━━━━━━━━━━━━');
+  lines.push(`*📋 زيارات ميدانية اليوم: ${visits.length}*`);
+  const prList=DB.get('prospects')||[];
+  visits.forEach((v,i)=>{
+    const pr=prList.find(p=>p.id===v.prospectId);
+    lines.push(`${i+1}. ${pr?pr.center:'—'}${v.doctor?' — د. '+v.doctor:''} — ${resultLabel[v.result]||v.result}${v.delegate&&!isDelegateUser?' (مندوب: '+v.delegate+')':''}`);
+    if(v.notes)lines.push('   💬 '+v.notes);
+  });
+
+  lines.push('','━━━━━━━━━━━━━━━━━━━━━━━━','📤 تم إرسال التقرير من صفحة العملاء المحتملين');
+  _sendToAdminWithPicker(lines.join('\n'),{type:'system',page:'العملاء المحتملون',client:'الإدارة'});
 }
 
 function deleteProspectVisit(id){
