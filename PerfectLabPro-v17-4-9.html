@@ -89,7 +89,7 @@ tr.row-duplicate:hover{background:rgba(234,179,8,.16)!important}
 .tp-dot2.tp-mid{background:var(--orange);border-color:var(--orange)}
 .tp-line{height:2px;width:14px;background:var(--bg4)}
 .tp-line.tp-on{background:var(--teal)}
-*{margin:0;padding:0;box-sizing:border-box}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
 body{font-family:"Cairo",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
 /* FIX-LAYOUT: main must offset by sidebar width on desktop */
@@ -377,23 +377,28 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 .inv-ov{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .2s}
 .inv-ov.open{opacity:1;pointer-events:all}
 .inv-doc{background:#fff;color:#1a1d2e;width:100%;max-width:700px;max-height:93vh;overflow-y:auto;border-radius:14px;box-shadow:0 40px 100px rgba(0,0,0,.7);font-family:"Cairo",sans-serif;direction:rtl;position:relative}
-.inv-head{background:linear-gradient(135deg,#0d1b2a 0%,#1a2e4a 55%,#0a1628 100%);color:#fff;padding:22px 26px;display:flex;align-items:center;gap:14px;border-radius:14px 14px 0 0}
-.inv-head-logo{width:70px;height:70px;border-radius:12px;object-fit:cover;border:2px solid rgba(201,168,76,.5);flex-shrink:0}
+.inv-head{background:#fff;border-bottom:3px solid #c9a84c;color:#1a1d2e;padding:22px 26px;display:flex;align-items:center;gap:14px;border-radius:14px 14px 0 0}
+.inv-head-logo{width:70px;height:70px;border-radius:12px;object-fit:cover;border:2px solid #c9a84c;flex-shrink:0}
 .inv-head-logo-ph{width:70px;height:70px;background:linear-gradient(135deg,#c9a84c,#e8c96a);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:30px;flex-shrink:0}
 .inv-head-info{flex:1}
-.inv-head-info h2{font-size:20px;font-weight:900;color:#e8c96a;margin-bottom:4px}
-.inv-head-info p{font-size:11px;color:rgba(255,255,255,.72);line-height:1.8}
-.inv-head-badge{background:rgba(201,168,76,.18);border:1px solid rgba(201,168,76,.4);border-radius:10px;padding:10px 16px;text-align:center;min-width:120px}
-.inv-head-badge .inv-no{font-size:17px;font-weight:900;color:#e8c96a}
-.inv-head-badge small{font-size:10px;color:rgba(255,255,255,.55);display:block;margin-top:3px}
+.inv-head-info h2{font-size:20px;font-weight:900;color:#1a1d2e;margin-bottom:4px}
+.inv-head-info p{font-size:11px;color:#6b7280;line-height:1.8}
+.inv-head-badge{background:#f8f4e8;border:1px solid #d9c48a;border-radius:10px;padding:10px 16px;text-align:center;min-width:120px}
+.inv-head-badge .inv-no{font-size:17px;font-weight:900;color:#8a6520}
+.inv-head-badge small{font-size:10px;color:#9a8a5a;display:block;margin-top:3px}
 .inv-toolbar{padding:10px 22px;background:#f0f2fa;border-bottom:1px solid #dde1f0;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .inv-body-wrap{padding:18px 24px}
-.inv-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
-.inv-meta-cell{background:#f6f7fc;border:1px solid #e3e6f3;border-radius:9px;padding:10px 13px}
-.inv-meta-cell label{font-size:9px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:3px}
-.inv-meta-cell span{font-size:14px;font-weight:700;color:#1a1d2e}
-.inv-table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:12px}
-.inv-table thead th{background:#0d1b2a;color:#e8c96a;padding:9px 11px;text-align:right;font-size:11px;font-weight:700}
+.inv-meta-name{background:#f6f7fc;border:1px solid #e3e6f3;border-radius:9px;padding:9px 14px;margin-bottom:10px}
+.inv-meta-name label{display:block;font-size:9.5px;color:#999;font-weight:700;margin-bottom:3px}
+.inv-meta-name span{font-size:15px;font-weight:900;color:#1a1d2e}
+.inv-meta-box{background:#f6f7fc;border:1px solid #e3e6f3;border-radius:9px;padding:2px 14px;margin-bottom:14px}
+.inv-meta-row{display:flex;justify-content:space-between;gap:14px;padding:6px 0;font-size:12px;line-height:1.3}
+.inv-meta-row+.inv-meta-row{border-top:1px solid #eceff7}
+.inv-meta-row label{font-size:9.5px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.6px;white-space:nowrap;padding-top:1px}
+.inv-meta-row span{font-weight:700;color:#1a1d2e;text-align:left}
+.inv-table-wrap{overflow-x:auto;margin-bottom:14px}
+.inv-table{width:100%;min-width:520px;border-collapse:collapse;font-size:12px}
+.inv-table thead th{background:#0d1b2a;color:#e8c96a;padding:9px 11px;text-align:right;font-size:11px;font-weight:700;white-space:nowrap}
 .inv-table thead th:first-child{border-radius:0 7px 7px 0}
 .inv-table thead th:last-child{border-radius:7px 0 0 7px}
 .inv-table tbody td{padding:9px 11px;border-bottom:1px solid #eceff7}
@@ -408,10 +413,10 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 .inv-extra-box.active-bg{background:#fffbeb;border:1px solid #fcd34d}
 .inv-extra-box h5{font-size:11px;font-weight:700;color:#444;margin-bottom:7px;display:flex;align-items:center;gap:5px}
 .inv-extra-row{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;color:#444}
-.inv-foot{background:linear-gradient(135deg,#0d1b2a,#1a2e4a);padding:13px 24px;border-radius:0 0 14px 14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
-.inv-foot-msg{color:rgba(255,255,255,.8);font-size:11px;font-style:italic}
+.inv-foot{background:#f8f9fc;border-top:2px solid #c9a84c;padding:13px 24px;border-radius:0 0 14px 14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.inv-foot-msg{color:#4b5563;font-size:11px;font-style:italic}
 .inv-foot-contacts{display:flex;gap:14px;flex-wrap:wrap}
-.inv-foot-contacts span{font-size:11px;color:rgba(255,255,255,.75);display:flex;align-items:center;gap:4px}
+.inv-foot-contacts span{font-size:11px;color:#4b5563;display:flex;align-items:center;gap:4px}
 .ibtn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-family:"Cairo",sans-serif;font-size:12px;font-weight:700;transition:all .15s}
 .ibtn:hover{transform:translateY(-1px);opacity:.9}
 .ibtn-green{background:#22c55e;color:#fff}
@@ -690,6 +695,8 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
   .inv-table{page-break-inside:avoid}
   .inv-table tr{page-break-inside:avoid;page-break-after:auto}
   .inv-totals,.inv-extra-box{page-break-inside:avoid}
+  .inv-table-wrap{overflow:visible!important}
+  .inv-table{min-width:0!important}
   @page{margin:1cm;size:A4}
 }
 
@@ -802,6 +809,9 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 .sel-search-icon{position:absolute;top:9px;left:10px;color:var(--text3);font-size:13px;pointer-events:none}
 .sel-search-wrap select{border-radius:0 0 9px 9px!important}
 </style>
+<!-- FIX #PDF-EXPORT: مكتبة تحويل أي مستند HTML مطبوع (فاتورة/تقرير/بطاقة) لملف PDF
+     حقيقي قابل للتنزيل مباشرة، بدل الاعتماد على "طباعة → حفظ كـ PDF" اليدوي فقط. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 <!-- ===== LOGIN SCREEN ===== -->
@@ -1129,6 +1139,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
           <button class="btn btn-ghost" onclick="togglePrintMenu('pm-dafter')">🖨️ طباعة ▾</button>
           <div id="pm-dafter" style="display:none;position:absolute;left:0;top:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;z-index:999;min-width:180px;padding:4px;box-shadow:0 8px 24px rgba(0,0,0,.3)">
             <div onclick="printPageRows('dafter-tb','الدفتر','dafter');closePrintMenus()" style="padding:8px 12px;cursor:pointer;border-radius:6px;font-size:12px" onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">📄 طباعة الصفحة كاملة</div>
+            <div onclick="window._nextExportAsPDF=true;window._nextExportFilename='الدفتر';printPageRows('dafter-tb','الدفتر','dafter');closePrintMenus()" style="padding:8px 12px;cursor:pointer;border-radius:6px;font-size:12px" onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">📥 تنزيل PDF</div>
             <div onclick="printRowsAsPRInvoice('dafter-tb','dafter');closePrintMenus()" style="padding:8px 12px;cursor:pointer;border-radius:6px;font-size:12px" onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">🧾 فاتورة احترافية (PR)</div>
             <div onclick="openPRTemplatePicker('dafter-tb','dafter');closePrintMenus()" style="padding:5px 12px 7px;cursor:pointer;border-radius:6px;font-size:10.5px;color:var(--text3)" onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">🎨 تغيير قالب PR</div>
             <div style="border-top:1px solid var(--border);margin:4px 0;padding:4px 12px;font-size:10px;color:var(--text3)">حجم الورق</div>
@@ -1181,6 +1192,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
           <button class="btn btn-ghost" onclick="togglePrintMenu('pm-proof')">🖨️ طباعة ▾</button>
           <div id="pm-proof" style="display:none;position:absolute;left:0;top:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;z-index:999;min-width:180px;padding:4px;box-shadow:0 8px 24px rgba(0,0,0,.3)">
             <div onclick="printPageRows('proof-tb','البروفه','proof');closePrintMenus()" style="padding:8px 12px;cursor:pointer;border-radius:6px;font-size:12px" onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">📄 طباعة الصفحة كاملة</div>
+            <div onclick="window._nextExportAsPDF=true;window._nextExportFilename='البروفه';printPageRows('proof-tb','البروفه','proof');closePrintMenus()" style="padding:8px 12px;cursor:pointer;border-radius:6px;font-size:12px" onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">📥 تنزيل PDF</div>
             <div onclick="printRowsAsPRInvoice('proof-tb','proof');closePrintMenus()" style="padding:8px 12px;cursor:pointer;border-radius:6px;font-size:12px" onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">🧾 فاتورة احترافية (PR)</div>
             <div onclick="openPRTemplatePicker('proof-tb','proof');closePrintMenus()" style="padding:5px 12px 7px;cursor:pointer;border-radius:6px;font-size:10.5px;color:var(--text3)" onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">🎨 تغيير قالب PR</div>
             <div style="border-top:1px solid var(--border);margin:4px 0;padding:4px 12px;font-size:10px;color:var(--text3)">حجم الورق</div>
@@ -1221,6 +1233,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
           <button class="btn btn-ghost" onclick="togglePrintMenu('pm-archive')">🖨️ طباعة ▾</button>
           <div id="pm-archive" style="display:none;position:absolute;left:0;top:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;z-index:999;min-width:180px;padding:4px;box-shadow:0 8px 24px rgba(0,0,0,.3)">
             <div onclick="printPageRows('archive-tb','الأرشيف','archive');closePrintMenus()" style="padding:8px 12px;cursor:pointer;border-radius:6px;font-size:12px" onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">📄 طباعة الصفحة كاملة</div>
+            <div onclick="window._nextExportAsPDF=true;window._nextExportFilename='الأرشيف';printPageRows('archive-tb','الأرشيف','archive');closePrintMenus()" style="padding:8px 12px;cursor:pointer;border-radius:6px;font-size:12px" onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">📥 تنزيل PDF</div>
             <div onclick="printRowsAsPRInvoice('archive-tb','archive');closePrintMenus()" style="padding:8px 12px;cursor:pointer;border-radius:6px;font-size:12px" onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">🧾 فاتورة احترافية (PR)</div>
             <div onclick="openPRTemplatePicker('archive-tb','archive');closePrintMenus()" style="padding:5px 12px 7px;cursor:pointer;border-radius:6px;font-size:10.5px;color:var(--text3)" onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background=''">🎨 تغيير قالب PR</div>
             <div style="border-top:1px solid var(--border);margin:4px 0;padding:4px 12px;font-size:10px;color:var(--text3)">حجم الورق</div>
@@ -1270,6 +1283,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
         <button class="btn btn-gold" onclick="openTrModal()" data-perm-hide="treasury.add">➕ حركة جديدة</button>
         <button class="btn btn-teal" onclick="openTrTransferModal()" data-perm-hide="treasury.add">🔄 تحويل بين الخزائن</button>
         <button class="btn btn-ghost btn-sm" onclick="printSelRows('tr-tb','treasury')">🖨️ طباعة مختارة</button>
+        <button class="btn btn-ghost btn-sm" onclick="window._nextExportAsPDF=true;window._nextExportFilename='حركات_الخزنة';printSelRows('tr-tb','treasury')" title="تنزيل PDF">📥 PDF</button>
         <button class="btn btn-ghost" onclick="window.print()">🖨️ طباعة الكل</button>
       </div>
     </div>
@@ -1441,6 +1455,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
           <div class="mf" style="padding:12px 0 0;border:none;gap:8px">
             <button class="btn btn-gold" onclick="renderTechReport()">📊 إنشاء التقرير</button>
             <button class="btn btn-blue btn-sm" onclick="printTechReportPaged()">🖨️ طباعة / PDF</button>
+            <button class="btn btn-ghost btn-sm" onclick="window._nextExportAsPDF=true;window._nextExportFilename='تقرير_الفنيين';printTechReportPaged()" title="تنزيل PDF">📥 PDF</button>
             <button class="btn btn-green btn-sm" onclick="sendTechReportWA()">💬 واتساب</button>
             <button class="btn btn-teal btn-sm" onclick="copyReportSummary('tech')">📋 نسخ</button>
             <button class="btn btn-ghost btn-sm" onclick="exportTechReportCSV()">📥 تصدير Excel</button>
@@ -1521,6 +1536,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
           <div class="mf" style="padding:10px 0 0;border:none;flex-wrap:wrap;gap:8px">
             <button class="btn btn-gold" onclick="renderClientCard()">📊 عرض الكارت</button>
             <button class="btn btn-blue btn-sm" onclick="printClientCardPaged()">🖨️ طباعة / PDF</button>
+            <button class="btn btn-ghost btn-sm" onclick="window._nextExportAsPDF=true;window._nextExportFilename='كارت_عميل';printClientCardPaged()" title="تنزيل PDF">📥 PDF</button>
             <button class="btn btn-green btn-sm" onclick="sendClientCardWA()">💬 واتساب ملخص</button>
           </div>
         </div>
@@ -1541,6 +1557,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
           <div class="mf" style="padding:10px 0 0;border:none;flex-wrap:wrap;gap:8px">
             <button class="btn btn-gold" onclick="renderSupCard()">📊 عرض الكارت</button>
             <button class="btn btn-blue btn-sm" onclick="printSupCardPaged()">🖨️ طباعة / PDF</button>
+            <button class="btn btn-ghost btn-sm" onclick="window._nextExportAsPDF=true;window._nextExportFilename='كارت_مورد';printSupCardPaged()" title="تنزيل PDF">📥 PDF</button>
             <button class="btn btn-green btn-sm" onclick="sendSupCardWA()">💬 واتساب ملخص</button>
           </div>
         </div>
@@ -3240,11 +3257,11 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
               <div class="nset-card" style="border-color:rgba(201,168,76,.3)">
                 <h5>🎭 قوالب جاهزة</h5>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
-                  <button onclick="applyDocTheme('classic')" style="padding:10px;border-radius:8px;border:none;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;background:linear-gradient(135deg,#0d1b2a,#1a2e4a);color:#e8c96a">🏛️ كلاسيك</button>
-                  <button onclick="applyDocTheme('green')" style="padding:10px;border-radius:8px;border:none;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;background:linear-gradient(135deg,#064e3b,#065f46);color:#6ee7b7">🌿 أخضر</button>
-                  <button onclick="applyDocTheme('purple')" style="padding:10px;border-radius:8px;border:none;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;background:linear-gradient(135deg,#3b0764,#581c87);color:#d8b4fe">💜 بنفسجي</button>
-                  <button onclick="applyDocTheme('red')" style="padding:10px;border-radius:8px;border:none;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;background:linear-gradient(135deg,#450a0a,#7f1d1d);color:#fca5a5">❤️ أحمر</button>
-                  <button onclick="applyDocTheme('teal')" style="padding:10px;border-radius:8px;border:none;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;background:linear-gradient(135deg,#042f2e,#134e4a);color:#5eead4">🩵 تيل</button>
+                  <button onclick="applyDocTheme('classic')" style="padding:10px;border-radius:8px;border:2px solid #c9a84c;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;background:linear-gradient(135deg,#ffffff,#f6f0dc);color:#0d1b2a">🏛️ كلاسيك</button>
+                  <button onclick="applyDocTheme('green')" style="padding:10px;border-radius:8px;border:2px solid #22c55e;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;background:linear-gradient(135deg,#ffffff,#e7f7ef);color:#064e3b">🌿 أخضر</button>
+                  <button onclick="applyDocTheme('purple')" style="padding:10px;border-radius:8px;border:2px solid #a855f7;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;background:linear-gradient(135deg,#ffffff,#f3e9fc);color:#3b0764">💜 بنفسجي</button>
+                  <button onclick="applyDocTheme('red')" style="padding:10px;border-radius:8px;border:2px solid #ef4444;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;background:linear-gradient(135deg,#ffffff,#fdeaea);color:#450a0a">❤️ أحمر</button>
+                  <button onclick="applyDocTheme('teal')" style="padding:10px;border-radius:8px;border:2px solid #14b8a6;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;background:linear-gradient(135deg,#ffffff,#e6faf7);color:#042f2e">🩵 تيل</button>
                   <button onclick="applyDocTheme('minimal')" style="padding:10px;border-radius:8px;border:1px solid #dee2e6;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;background:#f8f9fa;color:#1a1d2e">⬜ مينمال</button>
                 </div>
               </div>
@@ -4509,19 +4526,31 @@ if (!_initFirebase()) {
 // Wrapped to handle late Firebase init
 function _startFbMonitor() {
   if (!_fbRTDB) { setTimeout(_startFbMonitor, 200); return; }
+  let _wasDisconnected = false;
   _fbRTDB.ref('.info/connected').on('value', snap => {
   const el = document.getElementById('fb-status');
-  if (!el) return;
   if (snap.val() === true) {
-    el.textContent = '🟢 متصل';
-    el.style.color = 'var(--green)';
-    el.style.background = 'rgba(34,197,94,.1)';
-    el.style.borderColor = 'rgba(34,197,94,.3)';
+    if (el) { el.textContent = '🟢 متصل'; el.style.color = 'var(--green)'; el.style.background = 'rgba(34,197,94,.1)'; el.style.borderColor = 'rgba(34,197,94,.3)'; }
+    // FIX #AUTO-RESYNC-ON-RECONNECT: لو الجهاز فصل فعليًا عن فايربيز (نت اتقطع مثلاً)
+    // وبعدين رجع يتصل، أي حركة اتسجلت محليًا وقت الانقطاع وفشل حفظها كانت بتفضل
+    // "محلي بس" للأبد من غير ما حد يعرف، لأن الكود مبيعيدش المحاولة تلقائيًا (غير
+    // زرار المزامنة اليدوي). دلوقتي أي إعادة اتصال حقيقية بتشغّل نفس منطق زرار
+    // المزامنة تلقائيًا في الخلفية، فتُستعاد أي بيانات كانت عالقة محليًا فقط.
+    if (_wasDisconnected) {
+      _wasDisconnected = false;
+      console.log('🔄 إعادة اتصال بفايربيز — مزامنة تلقائية للبيانات المحلية...');
+      setTimeout(()=>{
+        try{
+          if (typeof _forceSyncTreasuryNow === 'function') _forceSyncTreasuryNow();
+          // إعادة إرسال الدفتر/البروفه الحاليين (احتياطياً) لو كانا اتعدّلوا وقت الانقطاع
+          if (_fbRTDB && DB._c['dafter']) _fbRTDB.ref('data/shared/dafter').set(_sanitizeForFB(DB._c['dafter'])).catch(e=>console.warn('resync dafter:',e.code||e));
+          if (_fbRTDB && DB._c['proof']) _fbRTDB.ref('data/shared/proof').set(_sanitizeForFB(DB._c['proof'])).catch(e=>console.warn('resync proof:',e.code||e));
+        }catch(e){ console.warn('auto-resync error:', e); }
+      }, 1500);
+    }
   } else {
-    el.textContent = '🔴 غير متصل';
-    el.style.color = 'var(--red)';
-    el.style.background = 'rgba(239,68,68,.1)';
-    el.style.borderColor = 'rgba(239,68,68,.3)';
+    if (el) { el.textContent = '🔴 غير متصل'; el.style.color = 'var(--red)'; el.style.background = 'rgba(239,68,68,.1)'; el.style.borderColor = 'rgba(239,68,68,.3)'; }
+    _wasDisconnected = true;
   }
   });
 }
@@ -8373,6 +8402,7 @@ function renderTreasury(){
     <td style="display:flex;gap:4px;flex-wrap:nowrap">
       <button class="btn btn-green btn-sm" onclick="sendTrNotif('${esc(t.id)}')" title="إشعار واتساب">💬</button>
       <button class="btn btn-ghost btn-sm" onclick="printTrReceipt('${esc(t.id)}')" title="طباعة سند دفع">🖨️</button>
+      <button class="btn btn-ghost btn-sm" onclick="window._nextExportAsPDF=true;window._nextExportFilename='سند_${esc(t.id)}';printTrReceipt('${esc(t.id)}')" title="تنزيل PDF">📥</button>
       ${t.isReversal?`<span style="font-size:10px;color:var(--text3);padding:2px 6px">↩️ تسوية</span>`:t.reversedBy?`<span style="font-size:10px;color:var(--orange);padding:2px 6px" title="تمت تسوية هذه الحركة">⚠️ مُسوَّى</span>`:`<button class="btn btn-orange btn-sm" onclick="openTrReverseModal('${esc(t.id)}')" title="تسوية عكسية (تصحيح الخطأ)">↩️</button>`}
     </td>
   </tr>`).join('');
@@ -8404,13 +8434,13 @@ function printTrReceipt(id){
   const totalDebt=Math.max(0,_clientAccountSummary(cl.id||tr.accName).totalDebt);
   const html=`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">
   <style>
-    *{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif}
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
     body{background:#f0f4f8;display:flex;justify-content:center;align-items:flex-start;padding:20px;min-height:100vh}
     .cheque{background:#fff;width:190mm;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.15);position:relative}
-    .cheque-top{background:linear-gradient(135deg,#0d1b2a,#1a3a5c);color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:center}
-    .lab-name{font-size:20px;font-weight:900;letter-spacing:1px}
-    .lab-sub{font-size:11px;color:rgba(255,255,255,.7);margin-top:2px}
-    .doc-type{background:${accentColor};color:#fff;font-size:13px;font-weight:900;padding:6px 16px;border-radius:20px}
+    .cheque-top{background:#fff;border-bottom:3px solid ${accentColor};color:#111;padding:18px 24px;display:flex;justify-content:space-between;align-items:center}
+    .lab-name{font-size:20px;font-weight:900;letter-spacing:1px;color:#111}
+    .lab-sub{font-size:11px;color:#6b7280;margin-top:2px}
+    .doc-type{background:#fff;border:2px solid ${accentColor};color:${accentColor};font-size:13px;font-weight:900;padding:6px 16px;border-radius:20px}
     .cheque-body{padding:20px 24px}
     .cheque-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed #e5e7eb}
     .cheque-row:last-child{border:none}
@@ -8458,11 +8488,64 @@ function printTrReceipt(id){
   </div>
   \x3cscript>window.onload=()=>window.print()<\/script>
   </body></html>`;
-  _doPrint(html);
+  _printOrPDF(html);
 }
 
 // ======== PRINT ENGINE ========
 // ===== CENTRAL PRINT ENGINE - avoids popup blocker =====
+// FIX #PDF-EXPORT: نسخة موازية لـ _doPrint لكن بتنتج ملف PDF حقيقي يتنزل مباشرة،
+// بنفس آلية الـ iframe المخفي (نفس الـ HTML اللي بيتطبع بالظبط)، باستخدام html2pdf.js.
+function _doPDF(html, filename){
+  if(typeof html2pdf==='undefined'){
+    toast('⚠️ مكتبة PDF لسه بتحمّل، حاول تاني بعد ثانية','err');
+    return;
+  }
+  const old=document.getElementById('_pdf_iframe');
+  if(old)old.remove();
+  const iframe=document.createElement('iframe');
+  iframe.id='_pdf_iframe';
+  iframe.style.cssText='position:fixed;top:-9999px;left:-9999px;width:210mm;height:297mm;border:none;z-index:-1';
+  document.body.appendChild(iframe);
+  iframe.contentDocument.open();
+  iframe.contentDocument.write(html);
+  iframe.contentDocument.close();
+  iframe.onload=function(){
+    setTimeout(function(){
+      const body=iframe.contentDocument.body;
+      // إخفاء أزرار الطباعة/PDF نفسها من داخل المستند وقت التحويل لو موجودة
+      body.querySelectorAll('button,.btn,.no-pdf').forEach(el=>el.style.display='none');
+      toast('⏳ جاري تجهيز ملف PDF...');
+      html2pdf().set({
+        margin:0,
+        filename:(filename||'مستند')+'.pdf',
+        image:{type:'jpeg',quality:0.98},
+        html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff'},
+        jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+        pagebreak:{mode:['css','legacy']}
+      }).from(body).save().then(()=>{
+        toast('✅ تم تنزيل PDF بنجاح');
+        iframe.remove();
+      }).catch(e=>{
+        console.warn('PDF export error:',e);
+        toast('⚠️ حصل خطأ أثناء تجهيز PDF','err');
+        iframe.remove();
+      });
+    },900);
+  };
+}
+// FIX #PDF-EXPORT: غلاف موحّد — أي زرار "PDF" جنب زرار الطباعة بيحدد العلم ده قبل
+// ما ينادي نفس دالة الطباعة، فيطلع PDF بدل ما يفتح صندوق الطباعة، من غير ما نحتاج
+// نلمس توقيع كل دالة طباعة لوحدها.
+window._nextExportAsPDF=false;
+window._nextExportFilename='مستند';
+function _printOrPDF(html){
+  if(window._nextExportAsPDF){
+    window._nextExportAsPDF=false;
+    _doPDF(html, window._nextExportFilename||'مستند');
+  } else {
+    _doPrint(html);
+  }
+}
 function _doPrint(html){
   // Remove any existing print iframe
   const old=document.getElementById('_print_iframe');
@@ -8510,7 +8593,7 @@ function printPageRows(tbId,title,page){
   const paperStyle=getPaperStyle(page);
   const html=`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-  <style>*{font-family:'Cairo',sans-serif;box-sizing:border-box}body{${paperStyle};color:#111;background:#fff}
+  <style>*{font-family:'Cairo',sans-serif;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}body{${paperStyle};color:#111;background:#fff}
   .ph{display:flex;justify-content:space-between;border-bottom:2px solid #0d1b2a;padding-bottom:8px;margin-bottom:12px}
   .lab{font-size:18px;font-weight:900;color:#0d1b2a}.dt{font-size:10px;color:#666}
   table{width:100%;border-collapse:collapse}
@@ -8526,7 +8609,7 @@ function printPageRows(tbId,title,page){
   <table><thead>${tb.closest('table').querySelector('thead').innerHTML}</thead>
   <tbody>${tb.innerHTML}</tbody></table>
   </body></html>`;
-  _doPrint(html);
+  _printOrPDF(html);
 }
 
 function printSelRows(tbId,page){
@@ -8585,9 +8668,9 @@ function printSelRows(tbId,page){
     const renderCell=d=>`<tr><td style="width:38%;padding:7px 10px;font-weight:700;color:#555;font-size:10.5px;background:#f8f9fc;border-left:1px solid #e8eaf2">${d.label}</td><td style="padding:7px 10px;font-size:11px;font-weight:${d.bold?'700':'400'};color:${d.color||d.red?'#dc2626':'#1a1d2e'}">${d.val}</td></tr>`;
     cards+=`
     <div style="background:#fff;border:1px solid #dde0ee;border-radius:12px;margin-bottom:18px;overflow:hidden;page-break-inside:avoid;box-shadow:0 2px 8px rgba(0,0,0,.05)">
-      <div style="background:linear-gradient(135deg,${pageColor[pg]},${pageColor[pg]}dd);padding:10px 16px;display:flex;justify-content:space-between;align-items:center">
-        <div style="color:#fff;font-weight:900;font-size:13px">${esc(r.noteName||r.caseId||'حالة '+(idx+1))}</div>
-        <div style="background:${statusCol};color:#fff;font-size:9.5px;font-weight:700;padding:3px 10px;border-radius:20px">${statusLabel}</div>
+      <div style="background:#fff;border-bottom:3px solid ${pageColor[pg]};padding:10px 16px;display:flex;justify-content:space-between;align-items:center">
+        <div style="color:${pageColor[pg]};font-weight:900;font-size:13px">${esc(r.noteName||r.caseId||'حالة '+(idx+1))}</div>
+        <div style="background:#fff;border:1.5px solid ${statusCol};color:${statusCol};font-size:9.5px;font-weight:700;padding:3px 10px;border-radius:20px">${statusLabel}</div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
         <table style="width:100%;border-collapse:collapse;border-right:1px solid #e8eaf2">
@@ -8604,13 +8687,13 @@ function printSelRows(tbId,page){
   const html=`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <style>
-    *{font-family:'Cairo',sans-serif;box-sizing:border-box;margin:0;padding:0}
+    *{font-family:'Cairo',sans-serif;box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
     body{background:#f0f2f7;color:#1a1d2e;padding:16px}
-    .page-header{background:linear-gradient(135deg,${pageColor[pg]},${pageColor[pg]}cc);color:#fff;padding:20px 24px;border-radius:12px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
-    .lab-name{font-size:20px;font-weight:900}
-    .lab-sub{font-size:11px;opacity:.75;margin-top:4px}
-    .report-title{font-size:14px;font-weight:700;background:rgba(255,255,255,.15);padding:8px 16px;border-radius:8px;text-align:center}
-    .report-meta{font-size:10px;opacity:.7;margin-top:5px;text-align:center}
+    .page-header{background:#fff;border-bottom:3px solid ${pageColor[pg]};color:#1a1d2e;padding:20px 24px;border-radius:12px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+    .lab-name{font-size:20px;font-weight:900;color:${pageColor[pg]}}
+    .lab-sub{font-size:11px;color:#6b7280;margin-top:4px}
+    .report-title{font-size:14px;font-weight:700;background:#f5f5f8;border:1px solid ${pageColor[pg]};color:${pageColor[pg]};padding:8px 16px;border-radius:8px;text-align:center}
+    .report-meta{font-size:10px;color:#9ca3af;margin-top:5px;text-align:center}
     .summary-bar{display:flex;gap:12px;margin-bottom:16px}
     .sum-card{flex:1;background:#fff;border:1px solid #dde0ee;border-radius:10px;padding:12px;text-align:center}
     .sum-val{font-size:20px;font-weight:900;color:${pageAccent[pg]}}
@@ -8637,7 +8720,7 @@ function printSelRows(tbId,page){
     ${esc(li.name||'Perfect Lab Pro')} — طُبع بتاريخ ${dateStr}
   </div>
   </body></html>`;
-  _doPrint(html);
+  _printOrPDF(html);
 }
 // ======== PRINT HELPERS END ========
 
@@ -8647,13 +8730,13 @@ function printSelRows(tbId,page){
 const PR_TEMPLATES = {
   navyGold: {
     id: 'navyGold',
-    name: 'الكحلي والذهبي (الافتراضي)',
+    name: 'الكحلي والذهبي',
     render(ctx){
       const {li,c,dateStr,clientName,addrParts,phone,pageBadge,itemsRows,rowTotal,grandDebt,showTotalsCol,showDebt}=ctx;
       return `<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <style>
-    *{font-family:'Cairo',sans-serif;box-sizing:border-box;margin:0;padding:0}
+    *{font-family:'Cairo',sans-serif;box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
     body{background:#f0f2f7;color:#1a1d2e;padding:18px}
     .pr-doc{max-width:780px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,.08)}
     .pr-head{background:linear-gradient(135deg,#0d1b2a,#1a2e4a);color:#fff;padding:24px 28px;display:flex;justify-content:space-between;align-items:flex-start}
@@ -8662,12 +8745,17 @@ const PR_TEMPLATES = {
     .pr-head .meta{text-align:left;font-size:11px;opacity:.85;line-height:1.9}
     .pr-badge-wrap{text-align:center;margin:18px 0 10px}
     .pr-badge{background:linear-gradient(135deg,#0d1b2a,#1a2e4a);color:#e8c96a;padding:7px 26px;border-radius:20px;font-size:13px;font-weight:900;letter-spacing:.5px;display:inline-block}
-    .pr-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 28px;margin-bottom:16px}
-    .pr-meta-cell{background:#f8f9fc;border:1px solid #e8eaf2;border-radius:8px;padding:8px 12px}
-    .pr-meta-cell label{display:block;font-size:9.5px;color:#999;font-weight:700;margin-bottom:3px}
-    .pr-meta-cell span{font-size:13px;font-weight:700;color:#0d1b2a}
-    .pr-table{width:calc(100% - 56px);margin:0 28px 16px;border-collapse:collapse;font-size:12px}
-    .pr-table thead th{background:#0d1b2a;color:#e8c96a;padding:9px 11px;text-align:right;font-size:11px;font-weight:700}
+    .pr-meta-name{margin:0 28px 10px;background:#f8f9fc;border:1px solid #e8eaf2;border-radius:9px;padding:9px 14px}
+    .pr-meta-name label{display:block;font-size:9.5px;color:#999;font-weight:700;margin-bottom:3px}
+    .pr-meta-name span{font-size:15px;font-weight:900;color:#0d1b2a}
+    .pr-meta-box{margin:0 28px 14px;background:#f8f9fc;border:1px solid #e8eaf2;border-radius:9px;padding:2px 14px}
+    .pr-meta-row{display:flex;justify-content:space-between;gap:14px;padding:5px 0;font-size:11.5px;line-height:1.3}
+    .pr-meta-row+.pr-meta-row{border-top:1px solid #eceff7}
+    .pr-meta-row .k{color:#999;font-size:10px;font-weight:700;white-space:nowrap;padding-top:1px}
+    .pr-meta-row .v{color:#0d1b2a;font-weight:700;text-align:left}
+    .pr-table-wrap{margin:0 28px 16px;overflow-x:auto}
+    .pr-table{width:100%;min-width:480px;border-collapse:collapse;font-size:12px}
+    .pr-table thead th{background:#0d1b2a;color:#e8c96a;padding:9px 11px;text-align:right;font-size:11px;font-weight:700;white-space:nowrap}
     .pr-table thead th:first-child{border-radius:0 7px 7px 0}
     .pr-table thead th:last-child{border-radius:7px 0 0 7px}
     .pr-table tbody td{padding:9px 11px;border-bottom:1px solid #eceff7}
@@ -8678,7 +8766,7 @@ const PR_TEMPLATES = {
     .pr-foot{background:#f8f9fc;border-top:1px solid #e8eaf2;padding:16px 28px;text-align:center}
     .pr-foot .msg{font-size:12px;font-weight:700;color:#0d1b2a;margin-bottom:6px}
     .pr-foot .contacts{font-size:10.5px;color:#666}
-    @media print{body{background:#fff;padding:0}.pr-doc{box-shadow:none;border-radius:0;max-width:100%}@page{size:A4;margin:10mm}}
+    @media print{body{background:#fff;padding:0}.pr-doc{box-shadow:none;border-radius:0;max-width:100%}.pr-table-wrap{overflow:visible!important}.pr-table{min-width:0!important}@page{size:A4;margin:10mm}}
   </style></head><body>
   <div class="pr-doc">
     <div class="pr-head">
@@ -8691,22 +8779,21 @@ const PR_TEMPLATES = {
       </div>
     </div>
     <div class="pr-badge-wrap"><span class="pr-badge">${pageBadge}</span></div>
-    <div class="pr-meta-grid">
-      <div class="pr-meta-cell"><label>العميل / الطبيب</label><span>${esc(clientName)}</span></div>
-      <div class="pr-meta-cell"><label>العنوان</label><span>${esc(addrParts.join('، ')||'—')}</span></div>
-      <div class="pr-meta-cell"><label>رقم الهاتف</label><span>${esc(phone||'—')}</span></div>
-      <div class="pr-meta-cell"><label>التاريخ</label><span>${dateStr}</span></div>
+    <div class="pr-meta-name"><label>العميل / الطبيب</label><span>${esc(clientName)}</span></div>
+    <div class="pr-meta-box">
+      <div class="pr-meta-row"><span class="k">العنوان</span><span class="v">${esc(addrParts.join('، ')||'—')}</span></div>
+      <div class="pr-meta-row"><span class="k">رقم الهاتف</span><span class="v">${esc(phone||'—')}</span></div>
     </div>
-    <table class="pr-table">
+    <div class="pr-table-wrap"><table class="pr-table">
       <thead><tr>
-        <th style="width:32px">#</th>
-        <th>المريض / رقم الحالة</th>
+        <th style="width:28px">#</th>
+        <th style="width:32%">المريض / رقم الحالة</th>
         <th>المنتج</th>
-        <th style="text-align:center">العدد</th>
-        ${showTotalsCol?'<th>الإجمالي</th>':''}
+        <th style="width:52px;text-align:center">العدد</th>
+        ${showTotalsCol?'<th style="width:90px">الإجمالي</th>':''}
       </tr></thead>
       <tbody>${itemsRows}</tbody>
-    </table>
+    </table></div>
     ${(showTotalsCol||showDebt)?`<div class="pr-totals">
       ${showTotalsCol?`<div class="pr-tot-row"><span>🧾 قيمة الفاتورة الحالية</span><span style="font-weight:700">${fmtAr(rowTotal)} ${c}</span></div>`:''}
       ${showDebt?`<div class="pr-tot-row grand"><span>📌 إجمالي المديونية</span><span>${fmtAr(grandDebt)} ${c}</span></div>`:''}
@@ -8718,9 +8805,144 @@ const PR_TEMPLATES = {
   </div>
   </body></html>`;
     }
+  },
+  classicWhite: {
+    id: 'classicWhite',
+    name: 'عالمي كلاسيك (أبيض/رمادي)',
+    render(ctx){
+      const {li,c,dateStr,clientName,addrParts,phone,pageBadge,itemsRows,rowTotal,grandDebt,showTotalsCol,showDebt}=ctx;
+      // نفس صفوف itemsRows لكن بدون التلوين الغامق الخاص بقالب navyGold — نعيد بناءها بشكل محايد
+      return `<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    *{font-family:'Cairo',sans-serif;box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
+    body{background:#fff;color:#222;padding:0}
+    .in-doc{max-width:780px;margin:0 auto;padding:34px 36px;border:1px solid #ddd}
+    .in-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #2b3a4a;padding-bottom:16px;margin-bottom:20px}
+    .in-head h1{font-size:22px;font-weight:900;color:#2b3a4a}
+    .in-head .sub{font-size:10.5px;color:#888;margin-top:4px}
+    .in-head .title{text-align:left}
+    .in-head .title .badge-txt{font-size:20px;font-weight:900;letter-spacing:2px;color:#2b3a4a;text-transform:uppercase}
+    .in-head .title .date{font-size:11.5px;color:#666;margin-top:6px}
+    .in-billto{margin-bottom:20px}
+    .in-billto .lbl{font-size:9.5px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+    .in-billto .nm{font-size:16px;font-weight:900;color:#222}
+    .in-billto .info{font-size:11.5px;color:#555;margin-top:3px;line-height:1.6}
+    .in-table{width:100%;border-collapse:collapse;margin-bottom:18px;font-size:12px}
+    .in-table thead th{border-bottom:2px solid #2b3a4a;padding:9px 8px;text-align:right;font-size:10.5px;font-weight:700;color:#2b3a4a;text-transform:uppercase;letter-spacing:.4px}
+    .in-table tbody td{padding:10px 8px;border-bottom:1px solid #e5e5e5}
+    .in-totals{margin-right:auto;max-width:280px;margin-left:0}
+    .in-tot-row{display:flex;justify-content:space-between;font-size:12.5px;padding:6px 0;color:#555}
+    .in-tot-row.grand{font-size:16px;font-weight:900;color:#2b3a4a;border-top:2px solid #2b3a4a;margin-top:6px;padding-top:10px}
+    .in-foot{margin-top:28px;padding-top:14px;border-top:1px solid #e5e5e5;text-align:center;font-size:10.5px;color:#888}
+    @media print{body{padding:0}.in-doc{border:none;max-width:100%}@page{size:A4;margin:12mm}}
+  </style></head><body>
+  <div class="in-doc">
+    <div class="in-head">
+      <div><h1>🦷 ${esc(li.name||'Perfect Lab Pro')}</h1>
+        <div class="sub">${[li.ph1?'📞 '+li.ph1:'',li.addr?'📍 '+li.addr:''].filter(Boolean).join('   ')}</div>
+      </div>
+      <div class="title"><div class="badge-txt">${pageBadge.replace(/^[^\u0600-\u06FF]+/,'').trim()}</div><div class="date">📅 ${dateStr}</div></div>
+    </div>
+    <div class="in-billto">
+      <div class="lbl">Bill To / إلى</div>
+      <div class="nm">${esc(clientName)}</div>
+      <div class="info">${[addrParts.join('، '),phone].filter(Boolean).join('  •  ')||'—'}</div>
+    </div>
+    <table class="in-table">
+      <thead><tr><th style="width:28px">#</th><th>المريض / رقم الحالة</th><th>المنتج</th><th style="width:52px;text-align:center">العدد</th>${showTotalsCol?'<th style="width:90px">الإجمالي</th>':''}</tr></thead>
+      <tbody>${itemsRows.replace(/color:#0d1b2a/g,'color:#2b3a4a')}</tbody>
+    </table>
+    ${(showTotalsCol||showDebt)?`<div class="in-totals">
+      ${showTotalsCol?`<div class="in-tot-row"><span>قيمة الفاتورة الحالية</span><span style="font-weight:700;color:#222">${fmtAr(rowTotal)} ${c}</span></div>`:''}
+      ${showDebt?`<div class="in-tot-row grand"><span>إجمالي المديونية</span><span>${fmtAr(grandDebt)} ${c}</span></div>`:''}
+    </div>`:''}
+    <div class="in-foot">${esc(getNsText('footer-inv','Thank you for your business'))} — ${[li.ph1,li.wa].filter(Boolean).join(' | ')}</div>
+  </div>
+  </body></html>`;
+    }
+  },
+  foodTicket: {
+    id: 'foodTicket',
+    name: 'تيكيت دافي (الافتراضي)',
+    render(ctx){
+      const {li,c,dateStr,clientName,addrParts,phone,pageBadge,rows,rowTotal,grandDebt,showTotalsCol,showDebt}=ctx;
+      const itemsHtml=rows.map(r=>`
+        <div class="fd-item">
+          <span class="nm2">${esc(r.noteName||'—')} — ${esc(r.product||'—')}</span>
+          <span class="dots"></span>
+          <span class="qty2">× ${toAr(r.qty||0)}</span>
+          ${showTotalsCol?`<span class="price">${fmtAr(r.total||0)} ${c}</span>`:''}
+        </div>`).join('');
+      const printTime=new Date().toLocaleString('ar-EG',{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      return `<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    *{font-family:'Cairo',sans-serif;box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
+    body{background:#e9ddc9;padding:24px}
+    .fd-doc{max-width:760px;margin:0 auto;background:#fffaf0;border:3px solid #c0552d;border-radius:18px;padding:0;overflow:hidden;position:relative}
+    .fd-head{background:#fffaf0;border-bottom:4px solid #c0552d;color:#000;padding:20px 30px;text-align:center;position:relative}
+    .fd-head .nm{font-size:23px;font-weight:900;letter-spacing:.5px;color:#000}
+    .fd-head .sub{font-size:11px;color:#3a2e1e;margin-top:4px;letter-spacing:1px;font-weight:600}
+    .fd-ticket{text-align:center;margin:-16px 0 0}
+    .fd-ticket span{display:inline-block;background:#fffaf0;color:#000;font-weight:900;font-size:15px;padding:8px 30px;border-radius:22px;border:3px solid #c0552d;letter-spacing:.5px}
+    .fd-body{padding:26px 32px}
+    .fd-row-2{display:flex;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+    .fd-cell .lbl{font-size:10px;color:#5a4a35;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+    .fd-cell .val{font-size:15px;font-weight:900;color:#000;margin-top:3px}
+    .fd-cell .sub2{font-size:11.5px;color:#000;font-weight:600;margin-top:2px}
+    .fd-divider{border:none;border-top:2px dashed #c0552d;margin:16px 0}
+    .fd-item{display:flex;align-items:baseline;gap:8px;padding:10px 0}
+    .fd-item .nm2{font-size:14px;font-weight:700;color:#000;white-space:nowrap}
+    .fd-item .dots{flex:1;border-bottom:2px dotted #c0552d;transform:translateY(-4px)}
+    .fd-item .qty2{font-size:11.5px;color:#000;font-weight:600;white-space:nowrap}
+    .fd-item .price{font-size:15px;font-weight:900;color:#000;white-space:nowrap}
+    .fd-totals{background:#fffaf0;border:2px solid #c0552d;border-radius:12px;padding:14px 18px;margin-top:16px}
+    .fd-tot-row{display:flex;justify-content:space-between;font-size:13px;color:#000;font-weight:600;padding:3px 0}
+    .fd-tot-row.grand{font-size:19px;font-weight:900;color:#000;border-top:2px dashed #c0552d;margin-top:6px;padding-top:10px}
+    .fd-foot{text-align:center;padding:18px 30px 24px;font-size:11.5px;color:#000}
+    .fd-foot .msg{font-size:14px;font-weight:900;color:#000;margin-bottom:8px}
+    .fd-foot .stamp{font-size:10.5px;color:#3a2e1e;font-weight:600;border-top:1px dashed #c0552d;padding-top:10px;margin-top:4px}
+    .fd-scallop{height:14px;background:radial-gradient(circle,#e9ddc9 8px,transparent 9px) 0 -7px/20px 20px repeat-x}
+    @media print{body{background:#fff;padding:0}.fd-doc{border-color:#000;max-width:100%}.fd-head{border-bottom-color:#000}.fd-ticket span{border-color:#000}.fd-divider{border-top-color:#000}.fd-item .dots{border-bottom-color:#000}.fd-totals{border-color:#000}.fd-tot-row.grand{border-top-color:#000}.fd-foot .stamp{border-top-color:#000}@page{size:A4;margin:10mm}}
+  </style></head><body>
+  <div class="fd-doc">
+    <div class="fd-head">
+      <div class="nm">🦷 ${esc(li.name||'Perfect Lab Pro')}</div>
+      ${li.addr?`<div class="sub">${esc(li.addr)}</div>`:''}
+    </div>
+    <div class="fd-ticket"><span>${pageBadge}</span></div>
+    <div class="fd-body">
+      <div class="fd-row-2">
+        <div class="fd-cell">
+          <div class="lbl">الطلب لـ</div>
+          <div class="val">${esc(clientName)}</div>
+          ${addrParts.length?`<div class="sub2">${esc(addrParts.join('، '))}</div>`:''}
+        </div>
+        <div class="fd-cell" style="text-align:left">
+          <div class="lbl">الهاتف</div>
+          <div class="val">${esc(phone||'—')}</div>
+        </div>
+      </div>
+      <hr class="fd-divider">
+      ${itemsHtml}
+      ${(showTotalsCol||showDebt)?`<div class="fd-totals">
+        ${showTotalsCol?`<div class="fd-tot-row"><span>قيمة الفاتورة الحالية</span><span>${fmtAr(rowTotal)} ${c}</span></div>`:''}
+        ${showDebt?`<div class="fd-tot-row grand"><span>الإجمالي المستحق</span><span>${fmtAr(grandDebt)} ${c}</span></div>`:''}
+      </div>`:''}
+    </div>
+    <div class="fd-foot">
+      <div class="msg">${esc(getNsText('footer-inv','🌻 شكراً لثقتكم فينا'))}</div>
+      <div>${[li.ph1,li.ph2,li.wa].filter(Boolean).join(' · ')}</div>
+      <div class="stamp">📅 تاريخ الفاتورة: ${dateStr}&nbsp;&nbsp;&nbsp;🖨️ وقت الطباعة: ${printTime}</div>
+    </div>
+    <div class="fd-scallop"></div>
+  </div>
+  </body></html>`;
+    }
   }
 };
-function getPRTemplateId(){ const id=DB.get('prTemplate'); return (id && PR_TEMPLATES[id]) ? id : 'navyGold'; }
+function getPRTemplateId(){ const id=DB.get('prTemplate'); return (id && PR_TEMPLATES[id]) ? id : 'foodTicket'; }
 function setPRTemplateId(id){ if(PR_TEMPLATES[id]) DB.set('prTemplate', id); }
 
 // ===== طباعة فاتورة احترافية (PR-style) للصف/الصفوف المحددة فقط =====
@@ -8755,6 +8977,7 @@ function printRowsAsPRInvoice(tbId,page,forceTplId){
   const clInfo=(DB.get('clients')||[]).find(x=>x.name===clientName)||{};
   const addrParts=[clInfo.addr,clInfo.city,clInfo.gov].filter(Boolean);
 
+  // حجم الورق المختار من رزارير الطباعة — تم إلغاء تصميم الكاشير المنفصل بناءً على طلب المستخدم، فنفس القالب يُستخدم دائمًا
   const pageBadge={dafter:'📂 حالة قيد التنفيذ',proof:'🔬 بروفه',archive:'🧾 فاتورة مبيعات'}[page]||'فاتورة';
   // البروفة: لا تُظهر أي سعر/حساب مالي في الطباعة (نفس منطق الإشعار)
   const showTotalsCol = page!=='proof';
@@ -8771,9 +8994,9 @@ function printRowsAsPRInvoice(tbId,page,forceTplId){
   // اختيار القالب: forceTplId (من شاشة الاختيار) أو آخر قالب محفوظ تلقائيًا بدون سؤال
   const tplId = forceTplId || getPRTemplateId();
   if(forceTplId) setPRTemplateId(forceTplId);
-  const tpl = PR_TEMPLATES[tplId] || PR_TEMPLATES.navyGold;
-  const html = tpl.render({li,c,dateStr,clientName,addrParts,phone,pageBadge,itemsRows,rowTotal,grandDebt,showTotalsCol,showDebt});
-  _doPrint(html);
+  const tpl = PR_TEMPLATES[tplId] || PR_TEMPLATES.foodTicket;
+  const html = tpl.render({li,c,dateStr,clientName,addrParts,phone,pageBadge,itemsRows,rows,rowTotal,grandDebt,showTotalsCol,showDebt});
+  _printOrPDF(html);
 }
 
 // ===== شاشة اختيار قالب PR (تُفتح من قائمة الطباعة عند الحاجة لتغيير القالب) =====
@@ -11235,6 +11458,31 @@ function doPrintInv(){
   window.addEventListener('afterprint',restore);
   window.print();
 }
+// FIX #PDF-EXPORT: نسخة PDF لفاتورة العميل الحية (مش HTML مولّد منفصل زي باقي الشاشات،
+// فبنستخدم html2pdf مباشرة على عنصر .inv-doc نفسه من صفحة التطبيق الحالية).
+function doPDFInv(){
+  if(typeof html2pdf==='undefined'){toast('⚠️ مكتبة PDF لسه بتحمّل، حاول تاني بعد ثانية','err');return;}
+  const doc=document.querySelector('.inv-doc');
+  if(!doc){toast('تعذّر إيجاد الفاتورة','err');return;}
+  const tb=document.getElementById('inv-toolbar');
+  if(tb)tb.style.display='none';
+  const clientName=document.getElementById('inv-client-name')?.textContent?.trim()||'فاتورة';
+  toast('⏳ جاري تجهيز ملف PDF...');
+  html2pdf().set({
+    margin:5,
+    filename:'فاتورة_'+clientName+'.pdf',
+    image:{type:'jpeg',quality:0.98},
+    html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff'},
+    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
+  }).from(doc).save().then(()=>{
+    toast('✅ تم تنزيل PDF بنجاح');
+    if(tb)tb.style.display='flex';
+  }).catch(e=>{
+    console.warn('PDF export error:',e);
+    toast('⚠️ حصل خطأ أثناء تجهيز PDF','err');
+    if(tb)tb.style.display='flex';
+  });
+}
 let _invDocCtx=null;
 function copyInvMsg(){
   const nm=document.getElementById('inv-client-name')?.textContent;
@@ -11500,12 +11748,17 @@ function loadNsSettings(){
 }
 
 // ======== DESIGN PANEL ENGINE ========
+// FIX #DOC-THEME-DARK-BG: القوالب الجاهزة كانت كلها خلفيات غامقة + نص فاتح (نفس نمط
+// الخطر اللي اتصلح في باقي شاشات الطباعة) — بتتفعّل فعليًا على الفاتورة الحقيقية لو
+// اتختارت من هنا. اتحوّلت لخلفيات فاتحة + لون مميز للحدود والعناوين، بنفس الأسلوب
+// المستخدم في القوالب المُصلَّحة الأخرى (كارت العميل/المورد/الراتب) — استهلاك حبر أقل
+// وطباعة مضمونة حتى لو المتصفح ما دعمش print-color-adjust.
 const DOC_THEMES={
-  classic:{'header-bg':'#0d1b2a','header-bg2':'#1a2e4a','header-text':'#e8c96a','header-sub':'#b0c4de','table-head':'#0d1b2a','table-head-text':'#e8c96a','table-even':'#f6f7fc','table-border':'#eceff7','totals-bg':'#eef1ff','totals-border':'#ced5ee','totals-grand':'#0d1b2a','debt-color':'#f97316','foot-bg':'#0d1b2a','foot-text':'#cccccc'},
-  green:{'header-bg':'#064e3b','header-bg2':'#065f46','header-text':'#6ee7b7','header-sub':'#a7f3d0','table-head':'#064e3b','table-head-text':'#6ee7b7','table-even':'#f0fdf4','table-border':'#bbf7d0','totals-bg':'#ecfdf5','totals-border':'#6ee7b7','totals-grand':'#064e3b','debt-color':'#dc2626','foot-bg':'#064e3b','foot-text':'#a7f3d0'},
-  purple:{'header-bg':'#3b0764','header-bg2':'#581c87','header-text':'#d8b4fe','header-sub':'#e9d5ff','table-head':'#3b0764','table-head-text':'#d8b4fe','table-even':'#faf5ff','table-border':'#e9d5ff','totals-bg':'#f5f3ff','totals-border':'#c4b5fd','totals-grand':'#3b0764','debt-color':'#dc2626','foot-bg':'#3b0764','foot-text':'#e9d5ff'},
-  red:{'header-bg':'#450a0a','header-bg2':'#7f1d1d','header-text':'#fca5a5','header-sub':'#fecaca','table-head':'#450a0a','table-head-text':'#fca5a5','table-even':'#fff5f5','table-border':'#fecaca','totals-bg':'#fef2f2','totals-border':'#fca5a5','totals-grand':'#450a0a','debt-color':'#f97316','foot-bg':'#450a0a','foot-text':'#fecaca'},
-  teal:{'header-bg':'#042f2e','header-bg2':'#134e4a','header-text':'#5eead4','header-sub':'#99f6e4','table-head':'#042f2e','table-head-text':'#5eead4','table-even':'#f0fdfa','table-border':'#99f6e4','totals-bg':'#f0fdfa','totals-border':'#5eead4','totals-grand':'#042f2e','debt-color':'#f97316','foot-bg':'#042f2e','foot-text':'#99f6e4'},
+  classic:{'header-bg':'#ffffff','header-bg2':'#f6f0dc','header-text':'#0d1b2a','header-sub':'#6b7280','table-head':'#f6f0dc','table-head-text':'#0d1b2a','table-even':'#fbfaf6','table-border':'#e8e0c8','totals-bg':'#f6f0dc','totals-border':'#c9a84c','totals-grand':'#0d1b2a','debt-color':'#dc2626','foot-bg':'#ffffff','foot-text':'#6b7280'},
+  green:{'header-bg':'#ffffff','header-bg2':'#e7f7ef','header-text':'#064e3b','header-sub':'#4b5563','table-head':'#e7f7ef','table-head-text':'#064e3b','table-even':'#f6fdf9','table-border':'#bbf7d0','totals-bg':'#ecfdf5','totals-border':'#22c55e','totals-grand':'#064e3b','debt-color':'#dc2626','foot-bg':'#ffffff','foot-text':'#4b5563'},
+  purple:{'header-bg':'#ffffff','header-bg2':'#f3e9fc','header-text':'#3b0764','header-sub':'#4b5563','table-head':'#f3e9fc','table-head-text':'#3b0764','table-even':'#faf6fe','table-border':'#e9d5ff','totals-bg':'#f5f3ff','totals-border':'#a855f7','totals-grand':'#3b0764','debt-color':'#dc2626','foot-bg':'#ffffff','foot-text':'#4b5563'},
+  red:{'header-bg':'#ffffff','header-bg2':'#fdeaea','header-text':'#450a0a','header-sub':'#4b5563','table-head':'#fdeaea','table-head-text':'#450a0a','table-even':'#fff8f8','table-border':'#fecaca','totals-bg':'#fef2f2','totals-border':'#ef4444','totals-grand':'#450a0a','debt-color':'#dc2626','foot-bg':'#ffffff','foot-text':'#4b5563'},
+  teal:{'header-bg':'#ffffff','header-bg2':'#e6faf7','header-text':'#042f2e','header-sub':'#4b5563','table-head':'#e6faf7','table-head-text':'#042f2e','table-even':'#f5fdfc','table-border':'#99f6e4','totals-bg':'#f0fdfa','totals-border':'#14b8a6','totals-grand':'#042f2e','debt-color':'#dc2626','foot-bg':'#ffffff','foot-text':'#4b5563'},
   minimal:{'header-bg':'#f8f9fa','header-bg2':'#e9ecef','header-text':'#1a1d2e','header-sub':'#6c757d','table-head':'#dee2e6','table-head-text':'#1a1d2e','table-even':'#f8f9fa','table-border':'#dee2e6','totals-bg':'#f8f9fa','totals-border':'#dee2e6','totals-grand':'#1a1d2e','debt-color':'#dc2626','foot-bg':'#e9ecef','foot-text':'#495057'}
 };
 
@@ -14767,6 +15020,7 @@ function renderSalaryReport(){
           <button class="btn btn-ghost btn-sm" onclick="openAttendanceModal('${emp.id}')" title="تسجيل غياب/تأخير/جزاء/سلفة">📋</button>
           <button class="btn btn-ghost btn-sm" style="color:var(--green)" onclick="openAttendanceModal('${emp.id}','bonus')" title="مكافأة سريعة">🎁</button>
           <button class="btn btn-blue btn-sm" onclick="printEmpSalaryCardPaged('${emp.id}','${ym}')" title="طباعة كارت راتب تفصيلي">🖨️</button>
+          <button class="btn btn-blue btn-sm" onclick="window._nextExportAsPDF=true;window._nextExportFilename='راتب_${esc(emp.name)}_${ym}';printEmpSalaryCardPaged('${emp.id}','${ym}')" title="تنزيل PDF">📥</button>
           ${paidRecord
             ?`<span class="badge bg-green" title="تم الصرف بتاريخ ${paidRecord.date} — ${fmt(paidRecord.amount)} ${c}">✅ مدفوع</span>`
             :(net>0?`<button class="btn btn-green btn-sm" onclick="paySingleSalary('${emp.id}','${ym}',${net})" title="صرف راتب ${emp.name}">💸</button>`:'')}
@@ -14827,46 +15081,46 @@ function printEmpSalaryCardPaged(empId,ym){
   ).join('')||'<tr><td colspan="4" style="text-align:center;padding:16px;color:#9ca3af;font-size:11px">لا توجد حركات حضور/خصومات مسجّلة هذا الشهر</td></tr>';
   const html='<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">'
     +'<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap">'
-    +'<style>*{margin:0;padding:0;box-sizing:border-box;font-family:"Cairo",sans-serif}body{background:#e8edf5;padding:20px}.pp{background:#fff;max-width:210mm;margin:0 auto;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.15)}@media print{body{background:#fff;padding:0}.pp{box-shadow:none;border-radius:0}@page{size:A4;margin:10mm}}</style>'
+    +'<style>*{margin:0;padding:0;box-sizing:border-box;font-family:"Cairo",sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}body{background:#e8edf5;padding:20px}.pp{background:#fff;max-width:210mm;margin:0 auto;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.15);border:1px solid #dde3ee}@media print{body{background:#fff;padding:0}.pp{box-shadow:none;border-radius:0}@page{size:A4;margin:10mm}}</style>'
     +'</head><body><div class="pp">'
-    +'<div style="background:linear-gradient(135deg,#0d1b3e 0%,#1a3a6b 50%,#0f2a52 100%);padding:0;position:relative;overflow:hidden">'
-    +'<div style="position:absolute;top:-20px;left:-20px;width:120px;height:120px;border-radius:50%;background:rgba(201,168,76,.08)"></div>'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:16px 24px;position:relative">'
+    +'<div style="background:#fff;border-bottom:3px solid #c9a84c;padding:0">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:16px 24px">'
     +'<div style="display:flex;align-items:center;gap:14px">'+logo+'<div>'
-    +'<div style="font-size:17px;font-weight:900;color:#fff">'+(li.name||'Perfect Lab Pro')+'</div>'
-    +'<div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:2px">'+contact+'</div>'
+    +'<div style="font-size:17px;font-weight:900;color:#0d1b3e">'+(li.name||'Perfect Lab Pro')+'</div>'
+    +'<div style="font-size:10px;color:#6b7280;margin-top:2px">'+contact+'</div>'
     +'</div></div>'
     +'<div style="text-align:left">'
-    +'<div style="font-size:11px;color:rgba(255,255,255,.5);letter-spacing:2px;text-transform:uppercase">SALARY SLIP</div>'
-    +'<div style="font-size:13px;font-weight:700;color:#e8c96a;margin-top:2px">بطاقة راتب موظف</div>'
+    +'<div style="font-size:11px;color:#9ca3af;letter-spacing:2px;text-transform:uppercase">SALARY SLIP</div>'
+    +'<div style="font-size:13px;font-weight:700;color:#b8860b;margin-top:2px">بطاقة راتب موظف</div>'
     +'</div></div>'
-    +'<div style="background:rgba(0,0,0,.25);padding:12px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;position:relative">'
-    +'<div><div style="font-size:10px;color:rgba(255,255,255,.4);letter-spacing:1px">الموظف</div>'
-    +'<div style="font-size:20px;font-weight:900;color:#e8c96a">'+esc(emp.name)+'</div>'
-    +'<div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:2px">'+esc(emp.role||'—')+(emp.phone?' | 📞 '+esc(emp.phone):'')+'</div></div>'
-    +'<div style="background:rgba(255,255,255,.08);border-radius:10px;padding:10px 18px;text-align:center">'
-    +'<div style="font-size:10px;color:rgba(255,255,255,.4)">الشهر</div>'
-    +'<div style="font-size:14px;font-weight:700;color:#e8c96a;margin-top:2px">📅 '+monthLabel+'</div>'
-    +(paidRecord?'<div style="font-size:9px;color:#86efac;margin-top:3px">✅ مصروف بتاريخ '+paidRecord.date+'</div>':'<div style="font-size:9px;color:#fca5a5;margin-top:3px">لم يُصرف بعد</div>')
+    +'<div style="background:#f5f2e8;border-top:1px solid #ece6d3;padding:12px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">'
+    +'<div><div style="font-size:10px;color:#9a8a5a;letter-spacing:1px">الموظف</div>'
+    +'<div style="font-size:20px;font-weight:900;color:#0d1b3e">'+esc(emp.name)+'</div>'
+    +'<div style="font-size:11px;color:#6b7280;margin-top:2px">'+esc(emp.role||'—')+(emp.phone?' | 📞 '+esc(emp.phone):'')+'</div></div>'
+    +'<div style="background:#fff;border:1px solid #e0d8bc;border-radius:10px;padding:10px 18px;text-align:center">'
+    +'<div style="font-size:10px;color:#9a8a5a">الشهر</div>'
+    +'<div style="font-size:14px;font-weight:700;color:#0d1b3e;margin-top:2px">📅 '+monthLabel+'</div>'
+    +(paidRecord?'<div style="font-size:9px;color:#15803d;margin-top:3px">✅ مصروف بتاريخ '+paidRecord.date+'</div>':'<div style="font-size:9px;color:#b91c1c;margin-top:3px">لم يُصرف بعد</div>')
     +'</div></div>'
-    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);background:#0a1628;position:relative">'
-    +'<div style="padding:12px 10px;text-align:center;border-left:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)">'
-    +'<div style="font-size:9px;color:rgba(255,255,255,.4)">الراتب الأساسي</div><div style="font-size:14px;font-weight:900;color:#e8c96a;margin-top:3px">'+fmt(baseSalary)+' '+c+'</div></div>'
-    +'<div style="padding:12px 10px;text-align:center;border-left:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)">'
-    +'<div style="font-size:9px;color:rgba(255,255,255,.4)">بونص إنتاج</div><div style="font-size:14px;font-weight:900;color:#86efac;margin-top:3px">'+fmt(prodBonus)+' '+c+'</div></div>'
-    +'<div style="padding:12px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,.08)">'
-    +'<div style="font-size:9px;color:rgba(255,255,255,.4)">مكافآت وبدلات</div><div style="font-size:14px;font-weight:900;color:#93c5fd;margin-top:3px">'+fmt(att.bonuses+att.allowances)+' '+c+'</div></div>'
-    +'<div style="padding:12px 10px;text-align:center;border-left:1px solid rgba(255,255,255,.08)">'
-    +'<div style="font-size:9px;color:rgba(255,255,255,.4)">إجمالي الخصومات</div><div style="font-size:14px;font-weight:900;color:#fca5a5;margin-top:3px">'+fmt(att.totalDeduct)+' '+c+'</div></div>'
-    +'<div style="padding:12px 10px;text-align:center;border-left:1px solid rgba(255,255,255,.08)">'
-    +'<div style="font-size:9px;color:rgba(255,255,255,.4)">سلف مخصومة</div><div style="font-size:14px;font-weight:900;color:#d8b4fe;margin-top:3px">'+fmt(advances)+' '+c+'</div></div>'
+    +'</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);background:#fff">'
+    +'<div style="padding:12px 10px;text-align:center;border-left:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb">'
+    +'<div style="font-size:9px;color:#9ca3af">الراتب الأساسي</div><div style="font-size:14px;font-weight:900;color:#0d1b3e;margin-top:3px">'+fmt(baseSalary)+' '+c+'</div></div>'
+    +'<div style="padding:12px 10px;text-align:center;border-left:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb">'
+    +'<div style="font-size:9px;color:#9ca3af">بونص إنتاج</div><div style="font-size:14px;font-weight:900;color:#166534;margin-top:3px">'+fmt(prodBonus)+' '+c+'</div></div>'
+    +'<div style="padding:12px 10px;text-align:center;border-bottom:1px solid #e5e7eb">'
+    +'<div style="font-size:9px;color:#9ca3af">مكافآت وبدلات</div><div style="font-size:14px;font-weight:900;color:#1d4ed8;margin-top:3px">'+fmt(att.bonuses+att.allowances)+' '+c+'</div></div>'
+    +'<div style="padding:12px 10px;text-align:center;border-left:1px solid #e5e7eb">'
+    +'<div style="font-size:9px;color:#9ca3af">إجمالي الخصومات</div><div style="font-size:14px;font-weight:900;color:#b91c1c;margin-top:3px">'+fmt(att.totalDeduct)+' '+c+'</div></div>'
+    +'<div style="padding:12px 10px;text-align:center;border-left:1px solid #e5e7eb">'
+    +'<div style="font-size:9px;color:#9ca3af">سلف مخصومة</div><div style="font-size:14px;font-weight:900;color:#7e22ce;margin-top:3px">'+fmt(advances)+' '+c+'</div></div>'
     +'<div style="padding:12px 10px;text-align:center">'
-    +'<div style="font-size:9px;color:rgba(255,255,255,.4)">صافي الراتب</div><div style="font-size:16px;font-weight:900;color:#e8c96a;margin-top:3px">'+fmt(net)+' '+c+'</div></div>'
-    +'</div><div style="height:4px;background:linear-gradient(90deg,#c9a84c,#e8c96a,#c9a84c)"></div></div>'
+    +'<div style="font-size:9px;color:#9ca3af">صافي الراتب</div><div style="font-size:16px;font-weight:900;color:#0d1b3e;margin-top:3px">'+fmt(net)+' '+c+'</div></div>'
+    +'</div><div style="height:4px;background:linear-gradient(90deg,#c9a84c,#e8c96a,#c9a84c)"></div>'
     +'<div style="padding:16px 20px">'
     +'<div style="font-size:11px;font-weight:800;color:#1a3a6b;border-right:4px solid #c9a84c;padding-right:10px;margin-bottom:10px">📋 تفاصيل الحضور والخصومات والمكافآت ('+(att.att||[]).length+' حركة)</div>'
     +'<table style="width:100%;border-collapse:collapse">'
-    +'<thead><tr style="background:linear-gradient(90deg,#1a3a6b,#0f2a52);color:#fff">'
+    +'<thead><tr style="background:#1a3a6b;color:#fff">'
     +'<th style="padding:7px 8px;text-align:right;font-size:10.5px;font-weight:700">التاريخ</th>'
     +'<th style="padding:7px 8px;text-align:right;font-size:10.5px;font-weight:700">النوع</th>'
     +'<th style="padding:7px 8px;text-align:right;font-size:10.5px;font-weight:700">ملاحظة</th>'
@@ -14879,7 +15133,7 @@ function printEmpSalaryCardPaged(empId,ym){
     +'<div style="height:28px"></div><div style="font-size:10px">توقيع الاستلام</div></div>'
     +'</div></div></div>'
     +'\x3cscript>window.onload=function(){setTimeout(function(){window.print();},800);}<\/script></body></html>';
-  _doPrint(html);
+  _printOrPDF(html);
 }
 
 // ── سلف الموظف المتبقية في شهر معين ──
@@ -15592,11 +15846,11 @@ setTimeout(()=>{renderEmployees();},1000);
       <div class="inv-head-info">
         <h2 id="inv-lab-name">Perfect Lab Pro</h2>
         <p id="inv-lab-contact"></p>
-        <p id="inv-lab-addr" style="font-size:11px;color:rgba(255,255,255,.55);margin-top:2px"></p>
+        <p id="inv-lab-addr" style="font-size:11px;color:#8a8f9c;margin-top:2px"></p>
       </div>
       <div class="inv-head-badge" style="text-align:right;min-width:130px">
-        <div style="font-size:10px;color:rgba(255,255,255,.5);line-height:2">
-          <div id="inv-inv-no-small" style="color:rgba(255,255,255,.7)">فاتورة: —</div>
+        <div style="font-size:10px;color:#6b7280;line-height:2">
+          <div id="inv-inv-no-small" style="color:#1a1d2e;font-weight:700">فاتورة: —</div>
           <div id="inv-date-head"></div>
           <div id="inv-delegate-head"></div>
         </div>
@@ -15607,6 +15861,7 @@ setTimeout(()=>{renderEmployees();},1000);
       <button class="ibtn ibtn-ghost" onclick="closeInvDoc()">✕ إغلاق</button>
       <button class="ibtn ibtn-ghost" onclick="copyInvMsg()">📋 نسخ الرسالة</button>
       <button class="ibtn ibtn-blue" onclick="doPrintInv()">🖨️ طباعة</button>
+      <button class="ibtn ibtn-ghost" onclick="doPDFInv()">📥 تنزيل PDF</button>
       <button class="ibtn ibtn-green" id="inv-wa-btn">💬 إرسال واتساب</button>
     </div>
     <!-- BODY -->
@@ -15616,27 +15871,26 @@ setTimeout(()=>{renderEmployees();},1000);
         <span style="background:linear-gradient(135deg,#0d1b2a,#1a2e4a);color:#e8c96a;padding:6px 22px;border-radius:20px;font-size:13px;font-weight:900;letter-spacing:1px">🧾 فاتورة مبيعات</span>
       </div>
       <!-- Meta -->
-      <div class="inv-meta-grid">
-        <div class="inv-meta-cell"><label>العميل / الطبيب</label><span id="inv-client-name">—</span></div>
-        <div class="inv-meta-cell"><label>العنوان</label><span id="inv-client-addr">—</span></div>
-        <div class="inv-meta-cell"><label>رقم الهاتف</label><span id="inv-phone-cell">—</span></div>
-        <div class="inv-meta-cell"><label>التاريخ</label><span id="inv-date-cell">—</span></div>
+      <div class="inv-meta-name"><label>العميل / الطبيب</label><span id="inv-client-name">—</span></div>
+      <div class="inv-meta-box">
+        <div class="inv-meta-row"><label>العنوان</label><span id="inv-client-addr">—</span></div>
+        <div class="inv-meta-row"><label>رقم الهاتف</label><span id="inv-phone-cell">—</span></div>
       </div>
       <!-- Items -->
-      <table class="inv-table">
+      <div class="inv-table-wrap"><table class="inv-table">
         <thead>
           <tr>
-            <th style="width:32px">#</th>
-            <th>المريض / رقم الحالة</th>
+            <th style="width:26px">#</th>
+            <th style="width:26%">المريض / رقم الحالة</th>
             <th>النوع</th>
-            <th>اللون</th>
-            <th style="text-align:center">العدد</th>
-            <th>السعر</th>
-            <th>الإجمالي</th>
+            <th style="width:60px">اللون</th>
+            <th style="width:44px;text-align:center">العدد</th>
+            <th style="width:75px">السعر</th>
+            <th style="width:85px">الإجمالي</th>
           </tr>
         </thead>
         <tbody id="inv-items-body"></tbody>
-      </table>
+      </table></div>
       <!-- Totals -->
       <div class="inv-totals">
         <div class="inv-tot-row">
@@ -18011,12 +18265,12 @@ function printPagedReport(opts){
       +'<span>طُبع: '+new Date().toLocaleDateString('ar-EG')+'</span>'
       +'<div style="border:1px dashed #ccc;padding:4px 16px;border-radius:4px;min-width:100px;text-align:center">توقيع المحاسب</div></div>':'';
     pages+='<div class="pp" style="page-break-after:'+(isLast?'auto':'always')+'">'
-      +'<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:'+color+';color:#fff">'
-      +'<div style="display:flex;align-items:center;gap:12px">'+logo+'<div><div style="font-size:15px;font-weight:900">'+(li.name||'Perfect Lab Pro')+'</div>'
-      +'<div style="font-size:10px;opacity:.7">'+contact+'</div></div></div>'
-      +'<div style="text-align:left"><div style="font-size:13px;font-weight:700">'+title+'</div>'
-      +(subtitle?'<div style="font-size:11px;opacity:.8">'+subtitle+'</div>':'')
-      +'<div style="font-size:10px;opacity:.7">صفحة '+(pg+1)+' من '+totalPages+'</div></div></div>'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:#fff;border-bottom:3px solid '+color+'">'
+      +'<div style="display:flex;align-items:center;gap:12px">'+logo+'<div><div style="font-size:15px;font-weight:900;color:'+color+'">'+(li.name||'Perfect Lab Pro')+'</div>'
+      +'<div style="font-size:10px;color:#6b7280">'+contact+'</div></div></div>'
+      +'<div style="text-align:left"><div style="font-size:13px;font-weight:700;color:'+color+'">'+title+'</div>'
+      +(subtitle?'<div style="font-size:11px;color:#6b7280">'+subtitle+'</div>':'')
+      +'<div style="font-size:10px;color:#9ca3af">صفحة '+(pg+1)+' من '+totalPages+'</div></div></div>'
       +'<div style="background:'+accentColor+';height:4px;margin-bottom:12px"></div>'
       +'<table style="width:100%;border-collapse:collapse"><thead><tr style="background:'+color+';color:#fff">'
       +headers.map(function(h){return '<th style="padding:7px 8px;text-align:right;font-weight:700;font-size:11px">'+h+'</th>';}).join('')
@@ -18025,11 +18279,11 @@ function printPagedReport(opts){
   }
   const html='<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">'
     +'<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">'
-    +'<style>*{margin:0;padding:0;box-sizing:border-box;font-family:"Cairo",sans-serif}body{background:#f5f5f5;padding:16px}.pp{background:#fff;max-width:210mm;margin:0 auto 20px;border-radius:10px;overflow:hidden;padding:0 0 16px;box-shadow:0 2px 12px rgba(0,0,0,.1)}table{table-layout:auto;width:100%}'
+    +'<style>*{margin:0;padding:0;box-sizing:border-box;font-family:"Cairo",sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}body{background:#f5f5f5;padding:16px}.pp{background:#fff;max-width:210mm;margin:0 auto 20px;border-radius:10px;overflow:hidden;padding:0 0 16px;box-shadow:0 2px 12px rgba(0,0,0,.1)}table{table-layout:auto;width:100%}'
     +'@media print{body{background:#fff;padding:0}.pp{box-shadow:none;border-radius:0;margin-bottom:0;page-break-after:always}@page{size:A4;margin:10mm}}'
     +'</style>'
     +'</head><body>'+pages+'\x3cscript>window.onload=function(){setTimeout(function(){window.print();},800);}<\/script></body></html>';
-  _doPrint(html);
+  _printOrPDF(html);
 }
 
 function printClientCardPaged(){
@@ -18148,7 +18402,7 @@ function printClientCardPaged(){
     +'<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap">'
     +'<style>*{margin:0;padding:0;box-sizing:border-box;font-family:"Cairo",sans-serif}body{background:#e8edf5;padding:20px}.pp{background:#fff;max-width:210mm;margin:0 auto 24px;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.15)}@media print{body{background:#fff;padding:0}.pp{box-shadow:none;border-radius:0;margin-bottom:0;page-break-after:always}@page{size:A4;margin:10mm}}</style>'
     +'</head><body>'+pages+'\x3cscript>window.onload=function(){setTimeout(function(){window.print();},800);}<\/script></body></html>';
-  _doPrint(html);
+  _printOrPDF(html);
 }
 
 function printSupCardPaged(){
@@ -18268,7 +18522,7 @@ function printSupCardPaged(){
     +'<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap">'
     +'<style>*{margin:0;padding:0;box-sizing:border-box;font-family:"Cairo",sans-serif}body{background:#e8e8f5;padding:20px}.pp{background:#fff;max-width:210mm;margin:0 auto 24px;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.15)}@media print{body{background:#fff;padding:0}.pp{box-shadow:none;border-radius:0;margin-bottom:0;page-break-after:always}@page{size:A4;margin:10mm}}</style>'
     +'</head><body>'+pages+'\x3cscript>window.onload=function(){setTimeout(function(){window.print();},800);}<\/script></body></html>';
-  _doPrint(html);
+  _printOrPDF(html);
 }
 
 function printTechReportPaged(){
@@ -18357,7 +18611,7 @@ function _printPersonSlip(opts){
     +'<div style="flex:1;border:1px dashed #ccc;border-radius:6px;padding:18px 10px;text-align:center;font-size:11px;color:#666">توقيع الاستلام — '+esc(personName)+'</div>'
     +'</div></div></div>'
     +'\x3cscript>window.onload=function(){setTimeout(function(){window.print();},800);}<\/script></body></html>';
-  _doPrint(html);
+  _printOrPDF(html);
 }
 
 function printSingleTechSlip(name){
