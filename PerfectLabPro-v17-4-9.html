@@ -2752,6 +2752,18 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
         <!-- filled by JS -->
       </div>
     </div>
+
+    <!-- FIX #PROSPECTS-FORCE-RESYNC: زر مزامنة يدوية للعملاء المحتملين وزياراتهم —
+         مفيد للمندوب في الميدان لما يشتغل بنت ضعيف/متقطع، يضمن إن كل حاجة سجلها
+         على الجهاز فعلاً وصلت لفايربيز، حتى لو كانت متطابقة بالفعل (آمن تماماً). -->
+    <div class="card" style="margin-top:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px">🔄 مزامنة يدوية</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.6">
+        لو دخلت بيانات وأنت في الميدان والنت كان ضعيف أو مقطوع، اضغط الزر ده بعد ما يرجع النت للتأكد إن كل العملاء المحتملين والزيارات المسجلة على الجهاز ده وصلت فعلاً لباقي الأجهزة. الإجراء آمن ولا يكرر أو يحذف أي بيانات.
+      </div>
+      <button class="btn btn-orange btn-sm" onclick="forceSyncProspects()">🔄 إعادة مزامنة العملاء المحتملين الآن</button>
+      <div id="pros-resync-status" style="font-size:11px;color:var(--text3);margin-top:8px"></div>
+    </div>
   </div>
 
   <!-- ================================================================ -->
@@ -4665,7 +4677,7 @@ function _treasuryValToArray(v){
 // إعادة المزامنة اليدوية بيرمي "map is not a function"). الحل: نفس دالة التطبيع
 // المستخدمة للخزنة (_treasuryValToArray منطقها عام أصلاً رغم اسمها)، مطبَّقة الآن
 // على أي مفتاح مخزَّن بنفس الأسلوب الجراحي.
-const KEYED_LIST_KEYS = ['sup_payments','purchases'];
+const KEYED_LIST_KEYS = ['sup_payments','purchases','prospects','prospect_visits'];
 // ===== DB — Firebase Realtime Database + localStorage cache =====
 const DB = {
   _c: {},
@@ -4933,8 +4945,12 @@ const DB = {
           if (activePg) {
             const pgId = activePg.id?.replace('pg-', '');
             if (pgId && pgId !== 'dashboard') {
+              // FIX #PROSPECTS-REALTIME-RENDER: صفحة العملاء المحتملين كانت غائبة عن
+              // خريطة إعادة الرسم اللحظي — بيانات جهاز تاني كانت توصل وتتخزن بالخلفية
+              // لكن الشاشة ما كانتش بترسم نفسها تاني إلا لو المستخدم خرج ودخل الصفحة.
               const renders = {dafter:renderDafter,proof:renderProof,archive:renderArchive,
-                treasury:renderTreasury,debts:renderDebts,inventory:renderInventory};
+                treasury:renderTreasury,debts:renderDebts,inventory:renderInventory,
+                prospects:renderProspects};
               if (renders[pgId]) {
                 // FIX #SCROLL-PRESERVE: حفظ موضع التمرير قبل استبدال innerHTML
                 // واسترجاعه فوراً بعد الرسم — بدون ده، أي تحديث لحظي بيرجّع المستخدم
@@ -5207,18 +5223,76 @@ function forceSyncTreasury(){
     ()=>{ _forceSyncTreasuryNow(); }
   );
 }
+
+// ══════════════════════════════════════════════════════════════
+// FIX #PROSPECTS-FORCE-RESYNC: نفس زر المزامنة اليدوية بتاع الخزنة، بس للعملاء
+// المحتملين وزياراتهم — مفيد جداً للمندوب اللي بيشتغل في الميدان بنت ضعيف/متقطع:
+// يضمن إن كل حاجة أضافها على الجهاز فعلاً وصلت لفايربيز، بدل ما يفضل قلقان.
+// ══════════════════════════════════════════════════════════════
+async function _forceSyncProspectsNow(){
+  const statusEl=document.getElementById('pros-resync-status');
+  if(statusEl)statusEl.textContent='⏳ جاري إعادة المزامنة...';
+  try{
+    const prCount = await _forceResendKeyedList('prospects');
+    const vCount = await _forceResendKeyedList('prospect_visits');
+    _keyedPrevSnapshot['prospects'] = _treasuryValToArray(DB.get('prospects')).map(r=>({...r}));
+    _keyedPrevSnapshot['prospect_visits'] = _treasuryValToArray(DB.get('prospect_visits')).map(r=>({...r}));
+    const msg=`✅ تمت إعادة المزامنة: ${prCount} عميل محتمل، ${vCount} زيارة`;
+    if(statusEl)statusEl.textContent=msg;
+    toast('✅ تمت إعادة المزامنة بنجاح');
+    renderProspects();
+  }catch(e){
+    console.warn('prospects force resync error:', e);
+    if(statusEl)statusEl.textContent='❌ حدث خطأ أثناء المزامنة: '+(e.message||e);
+    toast('❌ فشلت إعادة المزامنة','err');
+  }
+}
+function forceSyncProspects(){
+  const statusEl=document.getElementById('pros-resync-status');
+  if(!_fbRTDB){
+    if(statusEl)statusEl.textContent='⚠️ لا يوجد اتصال بفايربيز الآن — جرب لما يرجع النت.';
+    toast('لا يوجد اتصال بفايربيز الآن','err');
+    return;
+  }
+  _forceSyncProspectsNow();
+}
 // ===== FIX #CASE-GROUPING: تجميع صفوف الدفتر/البروفه/الأرشيف حسب رقم الحالة (caseId) =====
 // عشان تظهر الحالة اللي فيها أكتر من نوع منتج (بورسلين + بورسلين زراعة مثلاً) كوحدة واحدة
 // بصريًا في الجدول، بدل ما تظهر كصفوف منفصلة مالهاش علاقة ببعض. الترتيب بيحافظ على أول
-// ظهور لكل caseId في القائمة، وبيجمع كل الصفوف اللي ليها نفس الرقم مع بعض حتى لو مش متجاورة.
+// ظهور لكل مفتاح في القائمة، وبيجمع كل الصفوف اللي ليها نفس المفتاح مع بعض حتى لو مش متجاورة.
+// FIX #CASE-GROUP-ID-COLLISION-SAFETY: caseId لوحده مش كافي كمعيار ربط — الدالة nid()
+// بترجّع الرقم من العداد المحلي على الجهاز قبل ما تتأكد من فايربيز (optimistic)، فلو جهاز
+// كان متأخر في المزامنة ممكن يرجّع نفس الرقم اللي جهاز/جلسة تانية استخدمته قبل كده بأيام —
+// حالتين مختلفتين تمامًا (عميل/مريض/تاريخ مختلفين) بياخدوا نفس caseId بالغلط، وكانت الدالة
+// بتجمعهم بصريًا وماليًا كأنهم حالة واحدة. الحالة الحقيقية المرتبطة (فاتورة فيها أكتر من صنف)
+// دايمًا بتتسجل بنفس عملية الإدخال، فبتشترك في نفس caseId + نفس العميل + نفس المريض + نفس
+// التاريخ مع بعض. فبنضيف الثلاثة التانيين كشرط أمان: لو caseId اتصادف واتكرر غلط بس
+// العميل/المريض/التاريخ مختلفين، الصفوف دلوقتي بتتفصل تلقائيًا بدل ما تتجمع غلط.
+function _groupKey(r){
+  return String(r.caseId||r.id)+'|'+String(r.client||'').trim().toLowerCase()+'|'+String(r.noteName||'').trim().toLowerCase()+'|'+String(r.date||'');
+}
 function _caseGroups(list){
   const map=new Map();const order=[];
   list.forEach(r=>{
-    const key=String(r.caseId||r.id);
+    const key=_groupKey(r);
     if(!map.has(key)){map.set(key,[]);order.push(key);}
     map.get(key).push(r);
   });
   return order.map(k=>map.get(k));
+}
+// FIX #NOTE-CASENO-COLLISION-SAFETY: "ملاحظات الحالة" (📝) بترتبط بالصف إما برقم الصف
+// الفريد (rowId) أو برقم الحالة (caseNo) — الربط عن طريق caseNo لوحده بيرث نفس مشكلة
+// تصادم caseId: لو رقمين مختلفين اتصادفوا نفس caseId، ملاحظة اتكتبت على حالة عميل معين
+// كانت ممكن تظهر غلط تحت حالة عميل تاني مختلف تمامًا بس بنفس الرقم بالصدفة. فبنضيف شرط
+// أمان: التطابق بـ caseNo لوحده مايكفيش لو الملاحظة محفوظ فيها اسم عميل (clientName) ومش
+// نفس عميل الصف الحالي — أما التطابق المباشر بـ rowId فيفضل زي ما هو (مفيش تصادم فيه).
+function _noteMatchesRow(n,r){
+  if(n.rowId===r.id||n.rowId===r.sourceId)return true;
+  if(n.caseNo&&n.caseNo===String(r.caseId||'')){
+    if(n.clientName&&r.client&&String(n.clientName).trim().toLowerCase()!==String(r.client).trim().toLowerCase())return false;
+    return true;
+  }
+  return false;
 }
 // الخصم بيتخزن على صف واحد بس داخل المجموعة (النوع الأول) — فبنلاقيه بالبحث عن أول صف بخصم فعلي
 function _grpDiscount(rows){const r=rows.find(x=>+x.discount>0);return r?+r.discount:0;}
@@ -5453,15 +5527,21 @@ function _filterRowsByDateText(tbId, rows, dateKey, fromId, toId, searchInputQue
     showMap[row.id]=dateOk&&textOk&&catOk;
   });
   const groupShow={};
-  rows.forEach(row=>{ if(showMap[row.id]){const k=String(row.caseId||row.id);groupShow[k]=true;} });
+  rows.forEach(row=>{ if(showMap[row.id]){const k=_groupKey(row);groupShow[k]=true;} });
   let vis=0;
   rows.forEach(row=>{
     const tr=document.querySelector('#'+tbId+' tr[data-id="'+row.id+'"]');
     if(!tr)return;
-    const k=String(row.caseId||row.id);
+    const k=_groupKey(row);
     const show=groupShow[k]?true:showMap[row.id];
     tr.style.display=show?'':'none';
     if(show)vis++;
+  });
+  // FIX #CASE-SUMMARY-ROW-FILTER-SYNC: سطر "📦 إجمالي الحالة" ملوش data-id فكان بيفضل
+  // ظاهر دايمًا زي ما هو حتى لو كل صفوف مجموعته اتخفت بالفلتر/البحث — دلوقتي بيتخفى/يتظهر
+  // مع مجموعته بناءً على نفس مفتاح التجميع (data-grp).
+  document.querySelectorAll('#'+tbId+' tr.case-summary-row[data-grp]').forEach(sr=>{
+    sr.style.display=groupShow[sr.dataset.grp]?'':'none';
   });
   const emEl=document.getElementById(tbId.replace('-tb','-empty'));
   if(emEl)emEl.style.display=vis===0?'block':'none';
@@ -5504,15 +5584,19 @@ function filterProofCombined(){
     showMap[row.id]=textOk&&catOk;
   });
   const groupShow={};
-  list.forEach(row=>{ if(showMap[row.id]){const k=String(row.caseId||row.id);groupShow[k]=true;} });
+  list.forEach(row=>{ if(showMap[row.id]){const k=_groupKey(row);groupShow[k]=true;} });
   let vis=0;
   list.forEach(row=>{
     const tr=document.querySelector('#proof-tb tr[data-id="'+row.id+'"]');
     if(!tr)return;
-    const k=String(row.caseId||row.id);
+    const k=_groupKey(row);
     const show=groupShow[k]?true:showMap[row.id];
     tr.style.display=show?'':'none';
     if(show)vis++;
+  });
+  // FIX #CASE-SUMMARY-ROW-FILTER-SYNC-PROOF: نفس مزامنة سطر إجمالي الحالة مع فلتر الدفتر.
+  document.querySelectorAll('#proof-tb tr.case-summary-row[data-grp]').forEach(sr=>{
+    sr.style.display=groupShow[sr.dataset.grp]?'':'none';
   });
   const emEl=document.getElementById('proof-empty');
   if(emEl)emEl.style.display=vis===0?'block':'none';
@@ -8264,7 +8348,7 @@ function renderDafter(){
     const isGrp=rows.length>1;
     const discount=_grpDiscount(rows);
     const rowsHtml=rows.map((r,idx)=>{
-      const rowNoteCount=allNotes.filter(n=>n.rowId===r.id||n.caseNo===String(r.caseId)).length;
+      const rowNoteCount=allNotes.filter(n=>_noteMatchesRow(n,r)).length;
       const isRetFromProof=r.returnedFrom==='proof';
       const isRetFromArchive=r.returnedFrom==='archive';
       const isDup=r.client&&r.noteName&&_dupCount[_dupKey(r)]>1;
@@ -8277,7 +8361,7 @@ function renderDafter(){
       const sharedHead=idx===0?`<td class="chk-col" rowspan="${rows.length}"><input type="checkbox" onclick="event.stopPropagation()"></td>
     <td rowspan="${rows.length}"><span style="font-size:11px;color:var(--text3)">#${esc(String(r.caseId))}</span><br><strong>${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:10px;color:var(--teal)">${esc(r.noteName)}</span>`:''}${techProgressBadge(r)}</td><td rowspan="${rows.length}">${esc(r.phone||'-')}</td>`:'';
       const delegateCell=idx===0?`<td rowspan="${rows.length}">${r.delegate?badge(esc(r.delegate),'bg-teal'):'—'}</td>`:'';
-      return`<tr data-id="${esc(r.id)}" data-case="${esc(String(r.caseId))}" data-cat="${getProductionCat(r.product)}" class="${rowCls}" onclick="groupAwareRowClick(this)">
+      return`<tr data-id="${esc(r.id)}" data-case="${esc(_groupKey(r))}" data-cat="${getProductionCat(r.product)}" class="${rowCls}" onclick="groupAwareRowClick(this)">
     ${sharedHead}
     <td>${linkBadge}${esc(r.product)}</td><td>${esc(r.color||'-')}</td><td>${esc(String(r.qty))}</td>
     <td><strong style="color:var(--gold2)">${fmt(r.grossTotal!=null?r.grossTotal:r.total)}</strong></td>
@@ -8286,7 +8370,7 @@ function renderDafter(){
     <td onclick="event.stopPropagation()"><button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2)" onclick="openRowDetail('${r.id}','dafter')" title="عرض التفاصيل">👁️</button> <button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--gold2)" onclick="editRowDafter('${r.id}')" title="تعديل هذا الصف">✏️</button></td>
     <td onclick="event.stopPropagation()"><button class="row-note-btn${rowNoteCount?` has-note`:''}" onclick="openRowNote('${r.id}','${esc(String(r.caseId))}','${esc(r.client)}','dafter')" title="ملاحظات الحالة">${rowNoteCount?`📝${rowNoteCount}`:'📝'}</button></td>
   </tr>`;}).join('');
-    const summaryRow=(isGrp||discount>0)?`<tr class="case-summary-row"><td colspan="12">
+    const summaryRow=(isGrp||discount>0)?`<tr class="case-summary-row" data-grp="${esc(_groupKey(rows[0]))}"><td colspan="12">
       <span class="cs-label">📦 إجمالي الحالة #${esc(String(rows[0].caseId))}:</span> <span class="cs-label">${fmt(_grpSubtotal(rows))} ج</span>${discount>0?`&nbsp;—&nbsp;<span class="cs-label">خصم:</span> <span class="cs-disc">${fmt(discount)} ج</span>`:''}&nbsp;—&nbsp;<span class="cs-label">الصافي:</span> <span class="cs-net">${fmt(_grpNet(rows))} ج</span>
     </td></tr>`:'';
     return rowsHtml+summaryRow;
@@ -8457,7 +8541,7 @@ function renderProof(){
     const isGrp=rows.length>1;
     const discount=_grpDiscount(rows);
     const rowsHtml=rows.map((r,idx)=>{
-      const rowNoteCount=allNotes.filter(n=>n.rowId===r.id||n.caseNo===String(r.caseId)).length;
+      const rowNoteCount=allNotes.filter(n=>_noteMatchesRow(n,r)).length;
       const isRetFromArchive=r.returnedFrom==='archive';
       const isDup=r.client&&r.noteName&&_dupCount[_dupKey(r)]>1;
       const rowCls=(isRetFromArchive?'row-returned-from-archive':'')+(isDup?' row-duplicate':'')+(isGrp?` case-grp-row${idx===0?' case-grp-first':''}`:'');
@@ -8468,7 +8552,7 @@ function renderProof(){
       const sharedHead=idx===0?`<td class="chk-col" rowspan="${rows.length}"><input type="checkbox" onclick="event.stopPropagation()"></td>
     <td rowspan="${rows.length}"><span style="font-size:11px;color:var(--text3)">#${esc(String(r.caseId))}</span><br><strong>${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:10px;color:var(--teal)">${esc(r.noteName)}</span>`:''}${techProgressBadge(r)}</td>`:'';
       const delegateCell=idx===0?`<td rowspan="${rows.length}">${r.delegate?badge(esc(r.delegate),'bg-teal'):'—'}</td>`:'';
-      return`<tr data-id="${esc(r.id)}" data-case="${esc(String(r.caseId))}" data-cat="${getProductionCat(r.product)}" class="${rowCls}" onclick="groupAwareRowClick(this)">
+      return`<tr data-id="${esc(r.id)}" data-case="${esc(_groupKey(r))}" data-cat="${getProductionCat(r.product)}" class="${rowCls}" onclick="groupAwareRowClick(this)">
     ${sharedHead}
     <td>${linkBadge}${esc(r.product)}</td><td>${esc(r.color||'-')}</td><td>${esc(String(r.qty))}</td>
     <td><strong style="color:var(--gold2)">${fmt(r.grossTotal!=null?r.grossTotal:r.total)}</strong></td>
@@ -8477,7 +8561,7 @@ function renderProof(){
     <td onclick="event.stopPropagation()"><button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2)" onclick="openRowDetail('${r.id}','proof')" title="عرض التفاصيل">👁️</button> <button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--gold2)" onclick="editRowProof('${r.id}')" title="تعديل هذا الصف">✏️</button></td>
     <td onclick="event.stopPropagation()"><button class="row-note-btn${rowNoteCount?` has-note`:''}" onclick="openRowNote('${r.id}','${esc(String(r.caseId))}','${esc(r.client)}','proof')" title="ملاحظات الحالة">${rowNoteCount?`📝${rowNoteCount}`:'📝'}</button></td>
   </tr>`;}).join('');
-    const summaryRow=(isGrp||discount>0)?`<tr class="case-summary-row"><td colspan="10">
+    const summaryRow=(isGrp||discount>0)?`<tr class="case-summary-row" data-grp="${esc(_groupKey(rows[0]))}"><td colspan="10">
       <span class="cs-label">📦 إجمالي الحالة #${esc(String(rows[0].caseId))}:</span> <span class="cs-label">${fmt(_grpSubtotal(rows))} ج</span>${discount>0?`&nbsp;—&nbsp;<span class="cs-label">خصم:</span> <span class="cs-disc">${fmt(discount)} ج</span>`:''}&nbsp;—&nbsp;<span class="cs-label">الصافي:</span> <span class="cs-net">${fmt(_grpNet(rows))} ج</span>
     </td></tr>`:'';
     return rowsHtml+summaryRow;
@@ -8703,13 +8787,13 @@ function renderArchive(bypassLimit){
       const sharedHead=idx===0?`<td class="chk-col" rowspan="${rows.length}"><input type="checkbox" onclick="event.stopPropagation()"></td>
       <td rowspan="${rows.length}"><span style="font-size:11px;color:var(--text3)">#${esc(String(r.caseId||'-'))}</span><br><strong style="font-size:12px">${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:10px;color:var(--teal)">${esc(r.noteName)}</span>`:''}${dupBadge}${settledBadge}</td>
       <td rowspan="${rows.length}">${r.delegate?badge(esc(r.delegate),'bg-teal'):'—'}</td>`:'';
-      return`<tr data-id="${esc(r.id)}" data-case="${esc(String(r.caseId||r.id))}" data-cat="${getProductionCat(r.product)}" class="${isDup?'row-duplicate':''}${_settledInfo?' row-settled':''}${isGrp?` case-grp-row${idx===0?' case-grp-first':''}`:''}" style="${_settledInfo?'opacity:.65':''}" onclick="groupAwareRowClick(this)">
+      return`<tr data-id="${esc(r.id)}" data-case="${esc(_groupKey(r))}" data-cat="${getProductionCat(r.product)}" class="${isDup?'row-duplicate':''}${_settledInfo?' row-settled':''}${isGrp?` case-grp-row${idx===0?' case-grp-first':''}`:''}" style="${_settledInfo?'opacity:.65':''}" onclick="groupAwareRowClick(this)">
       ${sharedHead}
       <td>${linkBadge}${isGrp?esc(r.product||'')+' — ':''}<strong>${fmt(r.grossTotal!=null?r.grossTotal:r.total)}</strong></td>
       <td><span title="تاريخ الدفتر: ${esc(r.date||'-')}">${r.archivedAt?new Date(r.archivedAt).toISOString().split('T')[0]:esc(r.date||'-')}</span></td>
-      <td onclick="event.stopPropagation()">${(()=>{const cnt=allNotes.filter(n=>n.rowId===r.id||n.rowId===r.sourceId||n.caseNo===String(r.caseId||'')).length;return`<button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2)" onclick="openRowDetail('${r.id}','archive')" title="عرض التفاصيل">👁️</button> <button class="row-note-btn${cnt?` has-note`:''}" onclick="openRowNote('${r.id}','${esc(String(r.caseId||r.invId||''))}','${esc(r.client)}','archive')" title="ملاحظات الحالة">${cnt?`📝${cnt}`:'📝'}</button>`;})()}</td>
+      <td onclick="event.stopPropagation()">${(()=>{const cnt=allNotes.filter(n=>_noteMatchesRow(n,r)).length;return`<button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2)" onclick="openRowDetail('${r.id}','archive')" title="عرض التفاصيل">👁️</button> <button class="row-note-btn${cnt?` has-note`:''}" onclick="openRowNote('${r.id}','${esc(String(r.caseId||r.invId||''))}','${esc(r.client)}','archive')" title="ملاحظات الحالة">${cnt?`📝${cnt}`:'📝'}</button>`;})()}</td>
     </tr>`;}).join('');
-    const summaryRow=(isGrp||discount>0)?`<tr class="case-summary-row"><td colspan="6">
+    const summaryRow=(isGrp||discount>0)?`<tr class="case-summary-row" data-grp="${esc(_groupKey(rows[0]))}"><td colspan="6">
       <span class="cs-label">📦 إجمالي الحالة #${esc(String(rows[0].caseId||'-'))}:</span> <span class="cs-label">${fmt(_grpSubtotal(rows))} ج</span>${discount>0?`&nbsp;—&nbsp;<span class="cs-label">خصم:</span> <span class="cs-disc">${fmt(discount)} ج</span>`:''}&nbsp;—&nbsp;<span class="cs-label">الصافي:</span> <span class="cs-net">${fmt(_grpNet(rows))} ج</span>
     </td></tr>`:'';
     return rowsHtml+summaryRow;
@@ -17562,9 +17646,11 @@ let _rowNoteCtx = {rowId:'', caseNo:'', client:'', page:''};
 function openRowNote(rowId, caseNo, client, pageSrc){
   _rowNoteCtx = {rowId, caseNo, client, page: pageSrc};
   // نجمع الملاحظات المرتبطة بهذا الصف أو بهذه الحالة عبر كل الصفحات
+  // FIX #NOTE-CASENO-COLLISION-SAFETY: التطابق بـ caseNo لوحده مايكفيش لو الملاحظة
+  // محفوظ فيها اسم عميل مختلف عن عميل الصف الحالي (تصادم رقم حالة محتمل).
   const notes = (DB.get('notes')||[]).filter(n =>
     n.rowId === rowId || n.rowId === caseNo ||
-    (n.caseNo && n.caseNo === String(caseNo))
+    (n.caseNo && n.caseNo === String(caseNo) && (!n.clientName || !client || String(n.clientName).trim().toLowerCase()===String(client).trim().toLowerCase()))
   );
   const pgLabel = _PAGE_LABELS[pageSrc] || pageSrc;
   const priorityColor = {urgent:'var(--red)',high:'#f97316',normal:'var(--gold)',low:'var(--green)'};
@@ -21423,16 +21509,27 @@ function saveProspect(){
     p.center.trim().toLowerCase()===center.trim().toLowerCase()&&
     (p.city||'')===rec.city&&(p.gov||'')===rec.gov);
   if(dupCenter){toast('⚠️ هذا المركز مسجل بالفعل في نفس المنطقة: '+dupCenter.center,'err');return;}
+  const oldRec=editId?list.find(p=>p.id===+editId):null;
   if(editId)list=list.map(p=>p.id===+editId?rec:p);
   else list.push(rec);
-  DB.set('prospects',list);
+  _saveKeyedList('prospects',list);
+  // FIX #PROSPECTS-ACTLOG: تسجيل إضافة/تعديل العميل المحتمل في سجل النشاط —
+  // كانت غائبة تماماً فيبدو نشاط المندوب في السجل وكأنه "تسجيل دخول" فقط.
+  logActivity(editId?'prospect.edit':'prospect.add',{
+    client:rec.center+' — '+rec.doctor,
+    before:oldRec?snapshotFields(oldRec,['center','doctor','phone','delegate','status']):null,
+    after:snapshotFields(rec,['center','doctor','phone','delegate','status'])
+  });
   closeOv('ov-prospect');renderProspects();toast('✅ تم الحفظ');
 }
 
 function deleteProspect(id){
   if(!can('prospects.delete')){toast('ليس لديك صلاحية حذف العملاء المحتملين','err');return;}
   confirm2('حذف','هل تريد حذف هذا العميل المحتمل؟',()=>{
-    DB.set('prospects',(DB.get('prospects')||[]).filter(p=>p.id!==+id));
+    const list=DB.get('prospects')||[];
+    const rec=list.find(p=>p.id===+id);
+    _saveKeyedList('prospects',list.filter(p=>p.id!==+id));
+    logActivity('prospect.delete',{client:rec?(rec.center+' — '+rec.doctor):('#'+id),before:rec?snapshotFields(rec,['center','doctor','phone']):null});
     renderProspects();toast('تم الحذف');
   });
 }
@@ -21492,17 +21589,25 @@ function saveProspectVisit(){
   let list=DB.get('prospect_visits')||[];
   if(editId)list=list.map(v=>v.id===+editId?rec:v);
   else list.push(rec);
-  DB.set('prospect_visits',list);
+  _saveKeyedList('prospect_visits',list);
   let pros=DB.get('prospects')||[];
   const idx=pros.findIndex(p=>p.id===prospectId);
-  if(idx>=0){pros[idx].status=result;DB.set('prospects',pros);}
+  if(idx>=0){pros[idx].status=result;_saveKeyedList('prospects',pros);}
+  // FIX #PROSPECTS-ACTLOG: تسجيل الزيارة الميدانية في سجل النشاط
+  logActivity(editId?'prospect_visit.edit':'prospect_visit.add',{
+    client:(pros[idx]?pros[idx].center+' — '+pros[idx].doctor:('#'+prospectId))+' — '+delegate,
+    note:'النتيجة: '+result+(rec.notes?(' | '+rec.notes):'')
+  });
   closeOv('ov-prospect-visit');renderProspects();toast('✅ تم حفظ الزيارة');
 }
 
 function deleteProspectVisit(id){
   if(!can('prospects.visit')){toast('ليس لديك صلاحية حذف الزيارات','err');return;}
   confirm2('حذف','هل تريد حذف هذه الزيارة؟',()=>{
-    DB.set('prospect_visits',(DB.get('prospect_visits')||[]).filter(v=>v.id!==+id));
+    const list=DB.get('prospect_visits')||[];
+    const rec=list.find(v=>v.id===+id);
+    _saveKeyedList('prospect_visits',list.filter(v=>v.id!==+id));
+    logActivity('prospect_visit.delete',{note:rec?('زيارة '+(rec.delegate||'')+' بتاريخ '+(rec.date||'')):('#'+id)});
     renderProspectVisits();toast('تم الحذف');
   });
 }
@@ -21772,7 +21877,9 @@ function confirmActivateProspect(){
   let pros=DB.get('prospects')||[];
   const idx=pros.findIndex(p=>p.id===id);
   if(idx>=0){pros[idx].status='contracted';pros[idx].activatedClientId=newClient.id;}
-  DB.set('prospects',pros);
+  _saveKeyedList('prospects',pros);
+  // FIX #PROSPECTS-ACTLOG: تسجيل تفعيل العميل المحتمل كعميل فعلي
+  logActivity('prospect.activate',{client:newClient.center+' — '+newClient.name,note:'تم تحويله لعميل فعلي'});
   closeOv('ov-activate-prospect');renderProspects();
   if(typeof renderClients==='function')renderClients();
   toast('✅ تم تفعيل العميل وإضافته للعملاء الفعليين');
@@ -21890,7 +21997,12 @@ function loadImgPreview(input,previewId,dataId){
 function renderProspects(){
   renderProspectKPIs();
   renderProspectsList();
-  // Refresh analytics if tab is open
+  // FIX #PROSPECTS-REALTIME-RENDER: تحديث تبويب الزيارات والمتابعات كمان لو مفتوحين
+  // حالياً — مش بس التحليلات — عشان أي زيارة/متابعة وصلت من جهاز تاني تظهر فوراً.
+  const visTab=document.getElementById('prt-visits');
+  if(visTab&&visTab.classList.contains('on'))renderProspectVisits();
+  const fuTab=document.getElementById('prt-followups');
+  if(fuTab&&fuTab.classList.contains('on'))renderProspectFollowups();
   const anaTab=document.getElementById('prt-analytics');
   if(anaTab&&anaTab.classList.contains('on'))renderProspectAnalytics();
 }
