@@ -1299,7 +1299,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
         <div class="fg"><label>من تاريخ</label><input id="tr-flt-from" type="date" onchange="filterTreasury()"></div>
         <div class="fg"><label>إلى تاريخ</label><input id="tr-flt-to" type="date" onchange="filterTreasury()"></div>
         <div class="fg"><label>نوع الحركة</label><select id="tr-flt-type" onchange="filterTreasury()"><option value="">الكل</option><option value="in">مقبوضات</option><option value="out">مدفوعات</option></select></div>
-        <div class="fg"><label>الخزنة</label><select id="tr-flt-box" onchange="filterTreasury()"><option value="">كل الخزائن</option>${boxOptionsHTML()}</select></div>
+        <div class="fg"><label>الخزنة</label><select id="tr-flt-box" onchange="filterTreasury()"><option value="">كل الخزائن</option></select></div>
         <div class="fg"><label>نوع الحساب</label><select id="tr-flt-acctype" onchange="filterTreasury()">
           <option value="">الكل</option><option value="client">👤 عميل</option><option value="supplier">🏭 مورد</option><option value="archive">📋 أرشيف</option><option value="purchase">🛒 شراء</option><option value="employee">👷 موظف</option><option value="other">📝 أخرى</option>
         </select></div>
@@ -5251,7 +5251,11 @@ function nid(t){
 }
 // FIX #4: use crypto random IDs instead of Date.now() to prevent duplicate IDs
 function cur(){return(DB.get('trSetup')||{}).cur||'ج.م'}
-function fmt(n){const v=parseFloat(n);return (isNaN(v)?0:v).toLocaleString('en-US')}
+// FIX #FMT-DECIMAL-DRIFT: toLocaleString بدون خيارات بيسمح بعرض لغاية 3 خانات
+// عشرية افتراضيًا، فأي بواقي فاصلة عائمة متراكمة من عمليات جمع/طرح كتير (مشكلة
+// float كلاسيكية في JS، مثلاً 31068.346000000004) كانت بتظهر للمستخدم كـ"346"
+// بدل رقم مالي نضيف. الحل: تثبيت أقصى خانتين عشريتين لكل عرض مبلغ.
+function fmt(n){const v=parseFloat(n);return (isNaN(v)?0:v).toLocaleString('en-US',{maximumFractionDigits:2})}
 function today(){return new Date().toISOString().split('T')[0]}
 function toast(msg,t='ok'){const el=document.getElementById('toast');el.textContent=msg;el.className='toast '+(t==='ok'?'ok':'err');el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2800)}
 // ── تنبيه بصري موحّد لإدخال غير صحيح: اهتزاز + تحمير الحقل + اهتزاز الجهاز (موبايل) ──
@@ -8845,6 +8849,18 @@ function resetTrFilters(){
 function renderTreasury(){
   const list=DB.get('treasury')||[];const ts=DB.get('trSetup')||{cash:'نقدي',net:'شبكة',bank:'بنكي',cur:'ج.م'};
   const extraBoxes=getExtraBoxes();
+  // FIX #TR-FLT-BOX-STATIC-HTML: كان الـ <select id="tr-flt-box"> في الصفحة الثابتة (index)
+  // مكتوب فيه ${boxOptionsHTML()} كنص عادي جوه HTML ثابت (مش جوه Template Literal بتتنفذ)،
+  // فالمتصفح كان بيتجاهله تمامًا لأن <select> مايقبلش نص غير <option>. النتيجة: الفلتر
+  // كان دايماً فاضي إلا من "كل الخزائن" فقط، ولو حد ضاف خزنة إضافية أو غيّر الأسماء
+  // (نقدي/شبكة/بنكي) من الإعدادات، ماكانتش بتظهر في الفلتر أبداً. الحل: نملأ الـ select
+  // فعلياً من الجافاسكريبت عند كل رسم لصفحة الخزنة، مع الحفاظ على القيمة المختارة حالياً.
+  const trFltBoxSel=document.getElementById('tr-flt-box');
+  if(trFltBoxSel){
+    const savedBoxVal=trFltBoxSel.value;
+    trFltBoxSel.innerHTML='<option value="">كل الخزائن</option>'+boxOptionsHTML();
+    trFltBoxSel.value=savedBoxVal;
+  }
   const bal=box=>_getBoxBalance(list,box);
   const c=ts.cur||'ج.م';
   const extraTotal=extraBoxes.reduce((s,b)=>s+bal(b.id),0);
@@ -11298,7 +11314,7 @@ function getNsText(k,fallback=''){
   return a?(a.value||fallback):fallback;
 }
 function toAr(n){return String(n)} // English numbers only
-function fmtAr(n){const v=parseFloat(n);return (isNaN(v)?0:v).toLocaleString('en-US')}
+function fmtAr(n){const v=parseFloat(n);return (isNaN(v)?0:v).toLocaleString('en-US',{maximumFractionDigits:2})}
 function dateAr(){return new Date().toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'}).replace(/[٠-٩]/g,d=>'0123456789'['٠١٢٣٤٥٦٧٨٩'.indexOf(d)])}
 function getLabContactLine(){
   const li=DB.get('labinfo')||{};
@@ -16338,14 +16354,23 @@ function renderSupCard(){
   // الرصيد الافتتاحي
   const supOpeningBal=_getSupplierOpeningBalance(supId);
   // المديونية السابقة قبل الفترة
+  // FIX #SUPCARD-PAID-SOURCE: كانت "المدفوع" بتتحسب من purchases.paid، وده حقل
+  // بيتحدث بس لما دفعة تتوزّع FIFO على فاتورة شراء غير مسددة. أي دفعة مالهاش
+  // فاتورة شراء ترتبط بيها (زي سداد رصيد افتتاحي، أو دفعة زايدة عن الفواتير)
+  // كانت بتتسجل في sup_payments بس تفضل متجاهَلة تمامًا في الملخص، فيظهر
+  // "المدفوع خلال الفترة = 0" و"الإجمالي المتبقي" بدون خصم السداد الفعلي.
+  // الحل: الاعتماد على sup_payments (المصدر الحقيقي للمبالغ المدفوعة) في كل
+  // مكان بدل purchases.paid، سواء للمديونية السابقة أو للمدفوع خلال الفترة.
   const prevPurs=from?allPurs.filter(p=>p.supId===supId&&p.date<from):[];
   const prevPurTotal=prevPurs.reduce((s,p)=>s+ +p.total,0);
-  const prevDebt=Math.max(0,supOpeningBal+(from?prevPurTotal-prevPurs.reduce((s,p)=>s+ +p.paid,0):0));
+  const prevPays=from?allPays.filter(p=>p.supId===supId&&p.date<from):[];
+  const prevPaidTotal=prevPays.reduce((s,p)=>s+ +p.amount,0);
+  const prevDebt=Math.max(0,supOpeningBal+(from?prevPurTotal-prevPaidTotal:0));
   // خلال الفترة
   const purs=allPurs.filter(p=>p.supId===supId&&(!from||p.date>=from)&&(!to||p.date<=to));
   const pays=allPays.filter(p=>p.supId===supId&&(!from||p.date>=from)&&(!to||p.date<=to));
   const withdrawn=purs.reduce((s,p)=>s+ +p.total,0);
-  const paid=purs.reduce((s,p)=>s+ +p.paid,0);
+  const paid=pays.reduce((s,p)=>s+ +p.amount,0);
   const totalDebt=Math.max(0,(from?prevDebt:supOpeningBal)+withdrawn-paid);
   if(scOut)scOut.innerHTML=`
     <div class="card">
@@ -18375,7 +18400,7 @@ function renderBackup(){
     const arcDebt=(()=>{const seen=new Set();let sum=0;archive.forEach(r=>{const key=r.clientId||r.client;if(seen.has(key))return;seen.add(key);if(typeof _clientAccountSummary==='function')sum+=Math.max(0,_clientAccountSummary(key).totalDebt);});return sum;})();
     const arcThisMonth=archive.filter(r=>(r.date||r.archivedAt||'').slice(0,7)===thisMonth);
     const clientTotals={};archive.forEach(r=>{clientTotals[r.client]=(clientTotals[r.client]||0)+(+r.total||0)});
-    const topClients=Object.entries(clientTotals).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([n,v])=>n+': '+v.toLocaleString()+' '+c);
+    const topClients=Object.entries(clientTotals).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([n,v])=>n+': '+v.toLocaleString('en-US',{maximumFractionDigits:2})+' '+c);
     const prodTotals={};[...dafter,...proof,...archive].forEach(r=>{prodTotals[r.product]=(prodTotals[r.product]||0)+(+r.qty||0)});
     const topProds=Object.entries(prodTotals).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([n,v])=>n+': '+v+' وحدة');
     const lowInv=inventory.filter(i=>(+i.qty||0)<=(+i.min||0)).map(i=>i.name+' ('+i.qty+' '+i.unit+')');
@@ -18383,8 +18408,8 @@ function renderBackup(){
     return `=== بيانات مختبر الأسنان (${today2}) ===
 📋 الحالات: دفتر ${dafter.length} | بروفه ${proof.length} | أرشيف ${archive.length} إجمالي
 ⏰ متأخر في الدفتر: ${lateDafter} حالة
-📆 أرشيف هذا الشهر (${thisMonth}): ${arcThisMonth.length} فاتورة بإجمالي ${arcThisMonth.reduce((s,r)=>s+(+r.total||0),0).toLocaleString()} ${c}
-💰 المالية: إجمالي أرشيف ${arcTotal.toLocaleString()} | ديون ${arcDebt.toLocaleString()} | رصيد خزنة ${(tIn-tOut).toLocaleString()} ${c}
+📆 أرشيف هذا الشهر (${thisMonth}): ${arcThisMonth.length} فاتورة بإجمالي ${arcThisMonth.reduce((s,r)=>s+(+r.total||0),0).toLocaleString('en-US',{maximumFractionDigits:2})} ${c}
+💰 المالية: إجمالي أرشيف ${arcTotal.toLocaleString('en-US',{maximumFractionDigits:2})} | ديون ${arcDebt.toLocaleString('en-US',{maximumFractionDigits:2})} | رصيد خزنة ${(tIn-tOut).toLocaleString('en-US',{maximumFractionDigits:2})} ${c}
 👥 قاعدة البيانات: ${clients.length} عميل | ${technicians.length} فني | ${delegates.length} مندوب
 🏆 أكثر العملاء:\n${topClients.join('\n')||'لا يوجد'}
 📊 أكثر المنتجات:\n${topProds.join('\n')||'لا يوجد'}
