@@ -1293,8 +1293,27 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
       </div>
     </div>
     <div class="stats" id="tr-stats"></div>
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-head"><h3>🔍 بحث وفلترة</h3><button class="btn btn-ghost btn-sm" onclick="resetTrFilters()">↺ إعادة تعيين</button></div>
+      <div class="mb" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;align-items:end">
+        <div class="fg"><label>من تاريخ</label><input id="tr-flt-from" type="date" onchange="filterTreasury()"></div>
+        <div class="fg"><label>إلى تاريخ</label><input id="tr-flt-to" type="date" onchange="filterTreasury()"></div>
+        <div class="fg"><label>نوع الحركة</label><select id="tr-flt-type" onchange="filterTreasury()"><option value="">الكل</option><option value="in">مقبوضات</option><option value="out">مدفوعات</option></select></div>
+        <div class="fg"><label>الخزنة</label><select id="tr-flt-box" onchange="filterTreasury()"><option value="">كل الخزائن</option>${boxOptionsHTML()}</select></div>
+        <div class="fg"><label>نوع الحساب</label><select id="tr-flt-acctype" onchange="filterTreasury()">
+          <option value="">الكل</option><option value="client">👤 عميل</option><option value="supplier">🏭 مورد</option><option value="archive">📋 أرشيف</option><option value="purchase">🛒 شراء</option><option value="employee">👷 موظف</option><option value="other">📝 أخرى</option>
+        </select></div>
+      </div>
+      <div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div class="qdr-bar" style="display:flex;gap:5px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="qdrApply('tr-flt-from','tr-flt-to','today',filterTreasury)">📅 اليوم</button>
+          <button class="btn btn-ghost btn-sm" onclick="qdrApply('tr-flt-from','tr-flt-to','thisMonth',filterTreasury)">🗓️ الشهر الحالي</button>
+          <button class="btn btn-ghost btn-sm" onclick="qdrApply('tr-flt-from','tr-flt-to','prevMonth',filterTreasury)">⏮️ الشهر السابق</button>
+        </div>
+      </div>
+    </div>
     <div class="card">
-      <div class="card-head"><h3>سجل الحركات</h3><div class="search-box"><input type="text" placeholder="بحث..." oninput="filterTbl('tr-tb',this.value)"><span class="search-icon">&#x1F50D;</span></div></div>
+      <div class="card-head"><h3>سجل الحركات</h3><div class="search-box"><input type="text" placeholder="بحث بالاسم/الملاحظات/المبلغ..." oninput="filterTreasury()" id="tr-flt-text"><span class="search-icon">&#x1F50D;</span></div></div>
       <div class="tbl-wrap"><table><thead><tr><th class="chk-col"><input type="checkbox" onchange="toggleAllSel('tr-tb',this)"></th><th style="min-width:70px">رقم</th><th style="min-width:100px">التاريخ</th><th>النوع</th><th>الخزنة</th><th>الحساب</th><th>المبلغ</th><th>المستلم</th><th>ملاحظات</th><th></th></tr></thead><tbody id="tr-tb"></tbody></table></div>
       <div id="tr-empty" class="empty" style="display:none"><div class="ei">💰</div><p>لا توجد حركات</p></div>
     </div>
@@ -8783,6 +8802,46 @@ function doSettle(){
 }
 
 // TREASURY
+// FIX #TREASURY-SEARCH: بحث وفلترة شامل في الخزنة — بالتاريخ (من/إلى)، نوع الحركة
+// (مقبوضات/مدفوعات)، الخزنة، نوع الحساب (عميل/مورد/...)، وبحث نصي حر في الاسم/الملاحظات/المبلغ.
+// كل الفلاتر بتشتغل مع بعض (AND) فوق القائمة المرسومة بالفعل من renderTreasury.
+function filterTreasury(){
+  const tb=document.getElementById('tr-tb');if(!tb)return;
+  const from=document.getElementById('tr-flt-from')?.value||'';
+  const to=document.getElementById('tr-flt-to')?.value||'';
+  const type=document.getElementById('tr-flt-type')?.value||'';
+  const box=document.getElementById('tr-flt-box')?.value||'';
+  const accType=document.getElementById('tr-flt-acctype')?.value||'';
+  const q=(document.getElementById('tr-flt-text')?.value||'').trim().toLowerCase();
+  const qDigits=_dateQueryDigits(q);
+  const isDateLikeQuery=q&&qDigits.length>=2&&/^[0-9٠-٩\/\-_.\s]+$/.test(q.trim());
+  const list=DB.get('treasury')||[];
+  const byId={};list.forEach(t=>byId[t.id]=t);
+  let vis=0;
+  tb.querySelectorAll('tr[data-id]').forEach(tr=>{
+    const t=byId[tr.dataset.id];
+    if(!t){tr.style.display='none';return;}
+    const d=t.date||'';
+    const dateOk=(!from||d>=from)&&(!to||d<=to);
+    const typeOk=!type||t.type===type;
+    const boxOk=!box||t.box===box;
+    const accOk=!accType||t.accType===accType;
+    let textOk=true;
+    if(q){
+      textOk=tr.textContent.toLowerCase().includes(q);
+      if(!textOk&&isDateLikeQuery)textOk=_dateFuzzyMatch(tr.textContent,qDigits);
+    }
+    const show=dateOk&&typeOk&&boxOk&&accOk&&textOk;
+    tr.style.display=show?'':'none';
+    if(show)vis++;
+  });
+  const em=document.getElementById('tr-empty');
+  if(em)em.style.display=vis===0?'block':'none';
+}
+function resetTrFilters(){
+  ['tr-flt-from','tr-flt-to','tr-flt-type','tr-flt-box','tr-flt-acctype','tr-flt-text'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  filterTreasury();
+}
 function renderTreasury(){
   const list=DB.get('treasury')||[];const ts=DB.get('trSetup')||{cash:'نقدي',net:'شبكة',bank:'بنكي',cur:'ج.م'};
   const extraBoxes=getExtraBoxes();
@@ -8829,6 +8888,10 @@ function renderTreasury(){
       ${t.isReversal?`<span style="font-size:10px;color:var(--text3);padding:2px 6px">↩️ تسوية</span>`:t.reversedBy?`<span style="font-size:10px;color:var(--orange);padding:2px 6px" title="تمت تسوية هذه الحركة">⚠️ مُسوَّى</span>`:`<button class="btn btn-orange btn-sm" onclick="openTrReverseModal('${esc(t.id)}')" title="تسوية عكسية (تصحيح الخطأ)">↩️</button>`}
     </td>
   </tr>`).join('');
+  // FIX #TREASURY-FILTER-PERSIST: renderTreasury بيعيد بناء كل الصفوف من الصفر، فلازم نطبّق
+  // فلاتر البحث النشطة تاني بعد كل رسم، وإلا هتفضل الصفوف كلها ظاهرة رغم إن الفلتر لسه مفعّل.
+  const hasActiveFilter=['tr-flt-from','tr-flt-to','tr-flt-type','tr-flt-box','tr-flt-acctype','tr-flt-text'].some(id=>document.getElementById(id)?.value);
+  if(hasActiveFilter)filterTreasury();
 }
 function sendTrNotif(id){
   const tr=(DB.get('treasury')||[]).find(t=>t.id===id);
