@@ -1461,12 +1461,12 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
           <button class="btn btn-ghost btn-sm" onclick="document.getElementById('cl-rep-from').value='';document.getElementById('cl-rep-to').value='';renderClReport()">✕ الكل</button>
           <button class="btn btn-gold btn-sm" onclick="renderClReport()">📊 تحديث</button>
         </div>
-        <p style="font-size:10.5px;color:var(--text3);margin-top:6px">ملحوظة: فلتر الفترة يُطبَّق على الحالات/الإيرادات المعروضة فقط — أما "المتبقي" (المديونية) فهو دائماً رقم لحظي تراكمي حتى اليوم.</p>
+        <p style="font-size:10.5px;color:var(--text3);margin-top:6px">فلتر الفترة بيطبّق تقسيم كامل: مديونية سابقة (قبل الفترة) + مسحوب ومحصّل خلال الفترة + المتبقي حتى نهاية الفترة بالتحديد — بالإضافة لعمود "المتبقي الآن" اللي بيفضل دايماً الرقم اللحظي الحقيقي حتى اليوم بغض النظر عن الفلتر.</p>
       </div>
       <div class="stats" id="rep-cl-stats" style="margin-bottom:12px"></div>
       <div class="card">
         <div class="card-head"><h3>كشف العملاء والمديونيات</h3></div>
-        <div class="tbl-wrap"><table><thead><tr><th>العميل</th><th>الهاتف</th><th>الحالات</th><th>الإيرادات</th><th>المحصّل</th><th>المتبقي</th><th>إجراء</th></tr></thead><tbody id="rep-cl"></tbody></table></div>
+        <div class="tbl-wrap"><table><thead><tr><th>العميل</th><th>الهاتف</th><th>الحالات</th><th>مديونية سابقة<br><span style="font-weight:400;font-size:9px;color:var(--text3)">(قبل الفترة)</span></th><th>المسحوب<br><span style="font-weight:400;font-size:9px;color:var(--text3)">(خلال الفترة)</span></th><th>المحصّل<br><span style="font-weight:400;font-size:9px;color:var(--text3)">(خلال الفترة)</span></th><th>المتبقي<br><span style="font-weight:400;font-size:9px;color:var(--text3)">(نهاية الفترة)</span></th><th>المتبقي الآن<br><span style="font-weight:400;font-size:9px;color:var(--text3)">(لحظي)</span></th><th>إجراء</th></tr></thead><tbody id="rep-cl"></tbody></table></div>
       </div>
       <!-- ===== المديونيات حسب المندوب ===== -->
       <div class="card" style="margin-top:14px">
@@ -10851,18 +10851,19 @@ function renderClReport(){
     <div class="stat" style="--c:var(--red)"><label>إجمالي المديونيات</label><div class="val">${fmt(totalDebt)}</div><div class="sub">${c}</div></div>
     <div class="stat" style="--c:var(--orange)"><label>عدد المدينين</label><div class="val">${debtCount}</div><div class="sub">عميل</div></div>`;
   const byDgWrap=document.getElementById('cl-rep-by-dg');
+  const periodActive=!!(from||to);
   if(byDgWrap){
     byDgWrap.innerHTML=byDelegate.length?byDelegate.map((d,i)=>`
       <div class="dg-acc-block${i===0?' open':''}">
         <div class="dg-acc-head" onclick="this.closest('.dg-acc-block').classList.toggle('open')">
-          <div><div class="dg-acc-name">🤝 ${esc(d.name)}</div><div class="dg-acc-meta">${d.clients.length} عميل مدين</div></div>
+          <div><div class="dg-acc-name">🤝 ${esc(d.name)}</div><div class="dg-acc-meta">${d.clients.length} عميل مدين${periodActive?' — محصّل الفترة: '+fmt(d.totalPaidPeriod)+' '+c:''}</div></div>
           <div style="display:flex;align-items:center;gap:10px">
             <strong style="color:var(--red)">${fmt(d.total)} ${c}</strong>
             <span class="dg-acc-chev">▾</span>
           </div>
         </div>
         <div class="dg-acc-body">
-          ${d.clients.map(v=>`<div class="dg-acc-row"><span class="cl">${esc(v.name)}</span><span class="rate">${fmt(v.rem)} ${c}</span></div>`).join('')}
+          ${d.clients.map(v=>`<div class="dg-acc-row"><span class="cl">${esc(v.name)}</span><span class="rate">${fmt(v.rem)} ${c}${periodActive?` <span style="color:var(--green);font-size:10px">(محصّل: ${fmt(v.paidPeriod)} ${c})</span>`:''}</span></div>`).join('')}
         </div>
       </div>`).join(''):'<div class="empty" style="padding:20px"><div class="ei">🤝</div><p>لا توجد مديونيات مرتبطة بمناديب</p></div>';
   }
@@ -10874,12 +10875,14 @@ function renderClReport(){
       <td><strong>${esc(dispName)}</strong>${v.cnt===0&&v.rem>0?`<br><span style="font-size:9px;color:var(--text3)">رصيد افتتاحي — بدون حالات أرشيف</span>`:''}</td>
       <td style="color:var(--text2)">${esc(ph)||'—'}</td>
       <td>${v.cnt}</td>
+      <td style="color:var(--text2)">${fmt(v.prevDebt||0)} ${c}</td>
       <td style="color:var(--gold2)">${fmt(v.tot)} ${c}</td>
-      <td style="color:var(--green)">${fmt(v.paid)} ${c}</td>
+      <td style="color:var(--green)">${fmt(v.paidPeriod||0)} ${c}</td>
+      <td style="color:${v.remPeriod>0?'var(--red)':'var(--green)'}"><strong>${fmt(v.remPeriod||0)} ${c}</strong></td>
       <td style="color:${v.rem>0?'var(--red)':'var(--green)'}"><strong>${fmt(v.rem)} ${c}</strong></td>
       <td>${ph&&v.rem>0?`<button class="btn btn-green btn-sm" onclick="wa('${esc(ph)}',decodeURIComponent('${waMsg}'))">💬</button>`:'—'}</td>
     </tr>`;
-  }).join('')||`<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:20px">لا توجد بيانات</td></tr>`;
+  }).join('')||`<tr><td colspan="9" style="text-align:center;color:var(--text3);padding:20px">لا توجد بيانات</td></tr>`;
 }
 
 // ===== FIX #QUICK-DATE-RANGE: أزرار اختصار للفترة (الشهر الحالي/السابق/اختيار شهر) =====
@@ -16299,12 +16302,28 @@ function _buildClDebtReport(from,to){
     if(!clM[key].phone&&r.phone)clM[key].phone=r.phone;
     _seenClKeys.add(key);
   });
-  // المديونية (rem) والمحصّل الحقيقي تُحسب دائماً من كامل تاريخ العميل (بدون فلتر فترة) —
-  // لأن الدين رقم لحظي تراكمي، فلترته بفترة معينة يُعطي رقماً مضللاً.
+  // المديونية اللحظية (remNow) والمحصّل الكلي عبر كل تاريخ العميل — يفضلوا موجودين
+  // دايماً كمرجع "الوضع الآن" الحقيقي، بغض النظر عن الفترة المختارة.
+  // FIX #PERIOD-DEBT-BREAKDOWN: بالإضافة لكده، لو فيه فترة محددة (from/to) نحسب أيضاً
+  // نفس تقسيم "كارت حساب العميل" هنا: مديونية سابقة (قبل الفترة) + محصّل خلال الفترة +
+  // متبقي حتى نهاية الفترة بالتحديد — ده اللي المحاسبة الفعلية مع المناديب بتحتاجه
+  // (تسوية شهر معين بالظبط)، بعكس الرقم اللحظي اللي ممكن يتغير بعد نهاية الفترة بحركات لاحقة.
   _seenClKeys.forEach(key=>{
-    const summary=_clientAccountSummary(key);
-    clM[key].rem=Math.max(0,summary.totalDebt);
-    clM[key].paid=Math.max(0,summary.realPaid||0);
+    const liveSummary=_clientAccountSummary(key);
+    clM[key].remNow=Math.max(0,liveSummary.totalDebt);
+    clM[key].rem=clM[key].remNow; // توافق مع الكود القديم (المتبقي اللحظي)
+    clM[key].paidAllTime=Math.max(0,liveSummary.realPaid||0);
+    if(from||to){
+      const periodSummary=_clientAccountSummary(key,from,to);
+      clM[key].prevDebt=periodSummary.prevDebt;
+      clM[key].paidPeriod=Math.max(0,periodSummary.realPaid||0);
+      clM[key].remPeriod=periodSummary.totalDebt;
+    } else {
+      clM[key].prevDebt=0;
+      clM[key].paidPeriod=clM[key].paidAllTime;
+      clM[key].remPeriod=clM[key].remNow;
+    }
+    clM[key].paid=clM[key].paidPeriod; // توافق: عمود "المحصّل" أصبح خاص بالفترة
   });
   clients.forEach(cl=>{
     const key=cl.id||cl.name;
@@ -16312,22 +16331,34 @@ function _buildClDebtReport(from,to){
       clM[key].delegateId=cl.delegateId||'';clM[key].delegateName=cl.delegateName||'';
       return;
     }
-    const debt=Math.max(0,_clientAccountSummary(key).totalDebt);
+    const liveSummary=_clientAccountSummary(key);
+    const debt=Math.max(0,liveSummary.totalDebt);
     if(debt>0){
-      clM[key]={name:cl.name,clientId:cl.id||'',cnt:0,tot:0,paid:0,rem:debt,phone:cl.phone||cl.wa||'',delegateId:cl.delegateId||'',delegateName:cl.delegateName||''};
+      const periodSummary=(from||to)?_clientAccountSummary(key,from,to):null;
+      const paidAllTime=Math.max(0,liveSummary.realPaid||0);
+      clM[key]={name:cl.name,clientId:cl.id||'',cnt:0,tot:0,
+        rem:debt,remNow:debt,paidAllTime,
+        prevDebt:periodSummary?periodSummary.prevDebt:0,
+        paidPeriod:periodSummary?Math.max(0,periodSummary.realPaid||0):paidAllTime,
+        remPeriod:periodSummary?periodSummary.totalDebt:debt,
+        paid:periodSummary?Math.max(0,periodSummary.realPaid||0):paidAllTime,
+        phone:cl.phone||cl.wa||'',delegateId:cl.delegateId||'',delegateName:cl.delegateName||''};
     }
   });
   const clList=Object.entries(clM).sort((a,b)=>b[1].rem-a[1].rem||b[1].tot-a[1].tot);
   const totalDebt=clList.reduce((s,[,v])=>s+(v.rem>0?v.rem:0),0);
   const debtCount=clList.filter(([,v])=>v.rem>0).length;
-  // تجميع حسب المندوب — فقط العملاء المدينين (rem>0)
+  // تجميع حسب المندوب — فقط العملاء المدينين حالياً (rem>0)، لكن كل عنصر بيحمل معاه
+  // أرقام الفترة (prevDebt/paidPeriod/remPeriod) كمان عشان تسوية المندوب تبقى دقيقة.
   const byDgMap={};
   clList.filter(([,v])=>v.rem>0).forEach(([,v])=>{
     const dgKey=v.delegateId||'__none__';
     const dgName=v.delegateName||'بدون مندوب';
-    if(!byDgMap[dgKey])byDgMap[dgKey]={name:dgName,clients:[],total:0};
+    if(!byDgMap[dgKey])byDgMap[dgKey]={name:dgName,clients:[],total:0,totalPaidPeriod:0,totalRemPeriod:0};
     byDgMap[dgKey].clients.push(v);
     byDgMap[dgKey].total+=v.rem;
+    byDgMap[dgKey].totalPaidPeriod+=(v.paidPeriod||0);
+    byDgMap[dgKey].totalRemPeriod+=(v.remPeriod||0);
   });
   const byDelegate=Object.values(byDgMap).sort((a,b)=>b.total-a.total);
   byDelegate.forEach(d=>d.clients.sort((a,b)=>b.rem-a.rem));
@@ -19462,8 +19493,8 @@ function printGeneralReport(type){
     const clFrom=document.getElementById('cl-rep-from')?.value||'';
     const clTo=document.getElementById('cl-rep-to')?.value||today();
     const {clList,totalDebt}=_buildClDebtReport(clFrom,clTo);
-    const rows=clList.map(function(e){const v=e[1];return[esc(v.name),esc(v.phone||'—'),v.cnt,fmt(v.tot)+' '+c,fmt(v.rem)+' '+c];});
-    printPagedReport({title:titles[type],subtitle:(clFrom||'البداية')+' ← '+clTo,color:colors[type],accentColor:accentColors[type],headers:['العميل','الهاتف','الحالات','الإيرادات','المديونية'],rows:rows,footerRow:['الإجمالي','','','',fmt(totalDebt)+' '+c],pageSize:25});
+    const rows=clList.map(function(e){const v=e[1];return[esc(v.name),esc(v.phone||'—'),v.cnt,fmt(v.prevDebt||0)+' '+c,fmt(v.tot)+' '+c,fmt(v.paidPeriod||0)+' '+c,fmt(v.remPeriod||0)+' '+c,fmt(v.rem)+' '+c];});
+    printPagedReport({title:titles[type],subtitle:(clFrom||'البداية')+' ← '+clTo,color:colors[type],accentColor:accentColors[type],headers:['العميل','الهاتف','الحالات','مديونية سابقة','المسحوب','المحصّل (الفترة)','المتبقي (نهاية الفترة)','المتبقي الآن'],rows:rows,footerRow:['الإجمالي','','','','','','',fmt(totalDebt)+' '+c],pageSize:25});
   } else if(type==='del'){
     const degs=DB.get('delegates')||[];const delM={};
     // FIX #COMM-RATE-SYNC: التجميع الآن يحتفظ بكل حالة (cases) لحساب العمولة
@@ -19612,15 +19643,18 @@ function sendGeneralReportWA(type){
     const clFrom=document.getElementById('cl-rep-from')?.value||'';
     const clTo=document.getElementById('cl-rep-to')?.value||today();
     const {clList,totalDebt,byDelegate}=_buildClDebtReport(clFrom,clTo);
+    const periodActive=!!clFrom;
     const debtors=clList.filter(function(e){return e[1].rem>0;});
     const lines=['🦷 '+_labLine(),_sep(),'👥 مديونيات العملاء','📅 '+(clFrom||'كل الفترة')+' ← '+clTo,''];
     debtors.forEach(function(e){lines.push('  • '+e[1].name+': '+fmt(e[1].rem)+' '+c);});
     lines.push(_sep(),'💰 إجمالي المديونيات: '+fmt(totalDebt)+' '+c);
     if(byDelegate.length){
       lines.push(_sep(),'🤝 المديونيات حسب المندوب:','');
-      byDelegate.forEach(function(d){
-        lines.push('👤 '+d.name+' — إجمالي: '+fmt(d.total)+' '+c);
-        d.clients.forEach(function(v){lines.push('    • '+v.name+': '+fmt(v.rem)+' '+c);});
+      byDelegate.forEach(function(d,di){
+        lines.push('*👤 '+d.name+' — إجمالي: '+fmt(d.total)+' '+c+(periodActive?' | تحصيل الفترة: '+fmt(d.totalPaidPeriod)+' '+c:'')+'*');
+        lines.push('------------------------------------------');
+        d.clients.forEach(function(v){lines.push('    • '+v.name+': '+fmt(v.rem)+' '+c+(periodActive?' (تحصيل الفترة: '+fmt(v.paidPeriod)+' '+c+')':''));});
+        if(di<byDelegate.length-1)lines.push('');
       });
     }
     lines.push(_sep(),_labLine());
@@ -19825,15 +19859,18 @@ function copyReportSummary(type){
     const clFrom=document.getElementById('cl-rep-from')?.value||'';
     const clTo=document.getElementById('cl-rep-to')?.value||today();
     const {clList,totalDebt,byDelegate}=_buildClDebtReport(clFrom,clTo);
+    const periodActive=!!clFrom;
     const debtors=clList.filter(function(e){return e[1].rem>0;});
     const lines=['🦷 '+labLine,sep,'👥 مديونيات العملاء','📅 '+(clFrom||'كل الفترة')+' ← '+clTo,''];
     debtors.forEach(function(e){lines.push('  • '+e[1].name+': '+fmt(e[1].rem)+' '+c);});
     lines.push(sep,'💰 إجمالي المديونيات: '+fmt(totalDebt)+' '+c);
     if(byDelegate.length){
       lines.push(sep,'🤝 المديونيات حسب المندوب:','');
-      byDelegate.forEach(function(d){
-        lines.push('👤 '+d.name+' — إجمالي: '+fmt(d.total)+' '+c);
-        d.clients.forEach(function(v){lines.push('    • '+v.name+': '+fmt(v.rem)+' '+c);});
+      byDelegate.forEach(function(d,di){
+        lines.push('*👤 '+d.name+' — إجمالي: '+fmt(d.total)+' '+c+(periodActive?' | تحصيل الفترة: '+fmt(d.totalPaidPeriod)+' '+c:'')+'*');
+        lines.push('------------------------------------------');
+        d.clients.forEach(function(v){lines.push('    • '+v.name+': '+fmt(v.rem)+' '+c+(periodActive?' (تحصيل الفترة: '+fmt(v.paidPeriod)+' '+c+')':''));});
+        if(di<byDelegate.length-1)lines.push('');
       });
     }
     lines.push(sep,labLine);
