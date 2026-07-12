@@ -245,6 +245,59 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
 .stat{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;position:relative;overflow:hidden;border-right:4px solid var(--c,var(--gold))}
 .stat{transition:transform .2s,box-shadow .2s}.stat:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.3)}
+
+/* ============ FIXED ASSETS — REDESIGN v2 (تصميم مستقل عن باقي النظام) ============ */
+#pg-fixed-assets{--fa-glass:rgba(255,255,255,.045);--fa-glass2:rgba(255,255,255,.08);--fa-line:rgba(255,255,255,.1);--fa-violet:#8b5cf6;--fa-emerald:#10e0a0;--fa-amber:#f5c045}
+.theme-light #pg-fixed-assets,.theme-qasetly #pg-fixed-assets{--fa-glass:rgba(20,25,45,.04);--fa-glass2:rgba(20,25,45,.07);--fa-line:rgba(20,25,45,.12)}
+#pg-fixed-assets{background:radial-gradient(1100px 480px at 12% -10%,rgba(139,92,246,.14),transparent),radial-gradient(900px 460px at 100% 0%,rgba(16,224,160,.10),transparent);border-radius:18px;padding:16px;margin:-6px}
+#pg-fixed-assets .fa2-hero{position:relative;border-radius:22px;padding:26px 28px;margin-bottom:18px;background:linear-gradient(135deg,#0d1224 0%,#171b33 55%,#0f1a22 100%);border:1px solid var(--fa-line);overflow:hidden}
+#pg-fixed-assets .fa2-hero::before{content:'';position:absolute;inset:0;background:linear-gradient(120deg,transparent 40%,rgba(139,92,246,.16) 55%,transparent 72%);pointer-events:none}
+#pg-fixed-assets .fa2-hero::after{content:'';position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(16,224,160,.25),transparent 70%);top:-110px;left:-90px;filter:blur(8px)}
+#pg-fixed-assets .fa2-hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;position:relative;z-index:1}
+#pg-fixed-assets .fa2-eyebrow{font-size:10.5px;letter-spacing:3px;text-transform:uppercase;color:var(--fa-emerald);font-weight:800;margin-bottom:6px}
+#pg-fixed-assets .fa2-title{font-size:23px;font-weight:900;color:#fff;margin-bottom:4px}
+#pg-fixed-assets .fa2-sub{font-size:12px;color:rgba(255,255,255,.55)}
+#pg-fixed-assets .fa2-btnrow{display:flex;gap:8px;flex-wrap:wrap}
+#pg-fixed-assets .fa2-btn{border:1px solid var(--fa-line);background:var(--fa-glass2);color:#fff;padding:9px 16px;border-radius:12px;font-size:12.5px;font-weight:700;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:6px;font-family:'Cairo',sans-serif}
+#pg-fixed-assets .fa2-btn:hover{background:rgba(255,255,255,.15);transform:translateY(-1px)}
+#pg-fixed-assets .fa2-btn.violet{background:linear-gradient(135deg,var(--fa-violet),#6d28d9);border-color:transparent}
+#pg-fixed-assets .fa2-btn.emerald{background:linear-gradient(135deg,var(--fa-emerald),#0ea678);border-color:transparent;color:#04140f}
+#pg-fixed-assets .fa2-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:20px;position:relative;z-index:1}
+#pg-fixed-assets .fa2-stat{background:var(--fa-glass);border:1px solid var(--fa-line);border-radius:14px;padding:12px 14px;backdrop-filter:blur(6px)}
+#pg-fixed-assets .fa2-stat .lbl{font-size:10.5px;color:rgba(255,255,255,.55);display:flex;align-items:center;gap:5px}
+#pg-fixed-assets .fa2-stat b{display:block;font-size:17px;font-weight:900;color:#fff;margin-top:4px}
+#pg-fixed-assets .fa2-stat small{font-size:10px;color:rgba(255,255,255,.4)}
+#pg-fixed-assets .fa2-panel{background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:16px}
+#pg-fixed-assets .fa2-panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;flex-wrap:wrap}
+#pg-fixed-assets .fa2-panel-head h3{font-size:14px;font-weight:800;display:flex;align-items:center;gap:6px;margin:0}
+#pg-fixed-assets .fa2-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#pg-fixed-assets .fa2-filters select,#pg-fixed-assets .fa2-filters input{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:10px;font-family:'Cairo',sans-serif;font-size:12px}
+#pg-fixed-assets .fa2-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));gap:14px}
+#pg-fixed-assets .fa2-card{background:var(--bg2);border:1px solid var(--border);border-radius:18px;overflow:hidden;transition:.18s;position:relative}
+#pg-fixed-assets .fa2-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.35);border-color:var(--fa-violet)}
+#pg-fixed-assets .fa2-card-top{display:flex;gap:12px;padding:14px 14px 0}
+#pg-fixed-assets .fa2-card-img{width:54px;height:54px;border-radius:13px;object-fit:cover;border:1px solid var(--border)}
+#pg-fixed-assets .fa2-card-ph{width:54px;height:54px;border-radius:13px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+#pg-fixed-assets .fa2-card-name{font-size:13.5px;font-weight:800;color:var(--text);line-height:1.3}
+#pg-fixed-assets .fa2-card-cat{font-size:10.5px;color:var(--text3);margin-top:3px}
+#pg-fixed-assets .fa2-card-body{padding:12px 14px}
+#pg-fixed-assets .fa2-kv{display:flex;justify-content:space-between;font-size:11.5px;padding:4px 0;border-bottom:1px dashed var(--border)}
+#pg-fixed-assets .fa2-kv:last-child{border-bottom:none}
+#pg-fixed-assets .fa2-kv span{color:var(--text3)}
+#pg-fixed-assets .fa2-kv b{color:var(--text);font-weight:700}
+#pg-fixed-assets .fa2-bar{width:100%;height:5px;background:var(--bg4);border-radius:3px;overflow:hidden;margin:7px 0 5px}
+#pg-fixed-assets .fa2-bar i{display:block;height:100%}
+#pg-fixed-assets .fa2-tags{display:flex;flex-wrap:wrap;gap:5px;margin:9px 0 2px}
+#pg-fixed-assets .fa2-tag{font-size:9.5px;font-weight:700;padding:3.5px 9px;border-radius:20px;background:var(--bg3);color:var(--text2);border:1px solid var(--border);white-space:nowrap}
+#pg-fixed-assets .fa2-tag.warn{background:rgba(245,192,69,.15);color:var(--fa-amber);border-color:transparent}
+#pg-fixed-assets .fa2-tag.danger{background:rgba(239,68,68,.15);color:var(--red);border-color:transparent}
+#pg-fixed-assets .fa2-tag.ok{background:rgba(16,224,160,.15);color:var(--fa-emerald);border-color:transparent}
+#pg-fixed-assets .fa2-card-foot{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-top:1px solid var(--border);background:var(--bg3)}
+#pg-fixed-assets .fa2-actions{display:flex;gap:6px}
+#pg-fixed-assets .fa2-actions button{border:none;background:var(--bg4);color:var(--text2);width:28px;height:28px;border-radius:9px;cursor:pointer;font-size:12px}
+#pg-fixed-assets .fa2-actions button:hover{background:var(--fa-violet);color:#fff}
+#pg-fixed-assets .fa2-status{font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px}
+#faMaintList .doc-item,#fa-docs .doc-item{align-items:flex-start}
 .stat label{font-size:10px;color:var(--text3);display:block;margin-bottom:6px}
 .stat .val{font-weight:900;font-size:22px;line-height:1}
 .stat .sub{font-size:10px;color:var(--text2);margin-top:4px}
@@ -1660,9 +1713,9 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 
   <!-- INVENTORY -->
   <div class="page" id="pg-inventory">
-    <div class="ph"><h2>المخزون</h2><div class="btn-row"><button class="btn btn-gold" onclick="openInvModal()">+ إضافة صنف</button><button class="btn btn-ghost" onclick="editSelInv('inv-tb')">تعديل</button><button class="btn btn-ghost" onclick="delSelInv('inv-tb')">حذف</button><button class="btn btn-teal" onclick="fixMissingOpeningBatches()" title="ينشئ دفعة افتتاحية في FIFO لأي خامة عندها رصيد بدون دفعة، حتى تظهر في الجرد">🔧 إصلاح الأرصدة الناقصة من الجرد</button></div></div>
+    <div class="ph"><h2>المخزون</h2><div class="btn-row"><button class="btn btn-gold" onclick="openInvModal()">+ إضافة صنف</button><button class="btn btn-ghost" onclick="delSelInv('inv-tb')">حذف</button><button class="btn btn-teal" onclick="fixMissingOpeningBatches()" title="ينشئ دفعة افتتاحية في FIFO لأي خامة عندها رصيد بدون دفعة، حتى تظهر في الجرد">🔧 إصلاح الأرصدة الناقصة من الجرد</button></div></div>
     <div class="card"><div class="card-head"><h3>قائمة المخزون</h3></div>
-      <div class="tbl-wrap"><table><thead><tr><th class="chk-col"></th><th>صورة</th><th>اسم الصنف</th><th>نوع الصنف</th><th>الفئة</th><th title="آخر رصيد مسجّل من الشراء أو الجرد الدوري">الرصيد (آخر جرد)</th><th>الوحدة</th><th>الحد الأدنى</th><th>الحالة</th></tr></thead><tbody id="inv-tb"></tbody></table></div>
+      <div class="tbl-wrap"><table><thead><tr><th class="chk-col"></th><th>صورة</th><th>اسم الصنف</th><th>نوع الصنف</th><th>الفئة</th><th title="آخر رصيد مسجّل من الشراء أو الجرد الدوري">الرصيد (آخر جرد)</th><th>الوحدة</th><th>السعر</th><th>الحد الأدنى</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody id="inv-tb"></tbody></table></div>
       <div id="inv-empty" class="empty" style="display:none"><div class="ei">📦</div><p>لا يوجد مخزون</p></div>
     </div>
   </div>
@@ -1670,13 +1723,47 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 
   <!-- ===================== SUPPLIERS ===================== -->
   <div class="page" id="pg-suppliers">
-    <div class="ph"><h2>🏢 الموردون</h2><div class="btn-row"><button class="btn btn-gold" onclick="openSupplierModal()">+ إضافة مورد</button><button class="btn btn-ghost" onclick="editSelSup()">تعديل</button><button class="btn btn-ghost" onclick="delSelSup()">حذف</button></div></div>
+    <div class="ph"><h2>🏢 الموردون</h2><div class="btn-row"><button class="btn btn-gold" onclick="openSupplierModal()">+ إضافة مورد</button><button class="btn btn-ghost" onclick="editSelSup()">تعديل</button><button class="btn btn-ghost" onclick="delSelSup()">حذف</button><button class="btn btn-teal" onclick="openSupMatSaleModal()" title="بيع خامة (اشتريناها من مورد) لمورد آخر">🔄 بيع خامة لمورد</button></div></div>
     <div class="stats" id="sup-stats"></div>
     <div class="card">
       <div class="card-head"><h3>قائمة الموردين</h3><div class="search-box"><input type="text" placeholder="بحث..." oninput="filterTbl('suppliers-tb',this.value)"><span class="search-icon">🔍</span></div></div>
       <div class="selbar"><input type="checkbox" onchange="toggleAll('suppliers-tb',this.checked)"><a onclick="toggleAll('suppliers-tb',true)">تحديد الكل</a> | <a onclick="toggleAll('suppliers-tb',false)">إلغاء</a></div>
       <div class="tbl-wrap"><table><thead><tr><th class="chk-col"></th><th>اسم المورد</th><th>الهاتف</th><th>الخامات</th><th>إجمالي المشتريات</th><th>المدفوع</th><th>المديونية</th><th>الحالة</th><th></th></tr></thead><tbody id="suppliers-tb"></tbody></table></div>
       <div id="suppliers-empty" class="empty" style="display:none"><div class="ei">🏢</div><p>لا يوجد موردون — اضغط إضافة</p></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>🔄 سجل بيع الخامات للموردين</h3></div>
+      <div class="tbl-wrap"><table><thead><tr><th>التاريخ</th><th>المورد المستلم</th><th>الصنف</th><th>الكمية</th><th>سعر الوحدة</th><th>الإجمالي</th><th>ملاحظة</th><th></th></tr></thead><tbody id="sup-matsales-tb"></tbody></table></div>
+      <div id="sup-matsales-empty" class="empty" style="display:none"><div class="ei">🔄</div><p>لا يوجد بيع خامات مسجّل</p></div>
+    </div>
+  </div>
+
+  <!-- ===================== SUPPLIER MATERIAL SALE MODAL ===================== -->
+  <div class="overlay" id="ov-sup-matsale">
+    <div class="modal">
+      <div class="mh"><h3>🔄 بيع خامة لمورد آخر</h3><div class="mc-btn" onclick="closeOv('ov-sup-matsale')">✕</div></div>
+      <div class="mb">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:10px;background:var(--bg3);border-radius:7px;padding:8px 12px;border-right:3px solid var(--teal)">
+          لبيع خامة اشتريناها من مورد لمورد آخر. الكمية بتتخصم من إجمالي رصيد الصنف بالمخزن، وقيمة البيع بتتسجل كتسوية (دائن) تقلل مديونيتنا للمورد المستلم — ولو زادت عن مديونيتنا له بيبقى هو مديون لينا.
+        </div>
+        <div class="fgrid" style="grid-template-columns:1fr">
+          <div class="fg"><label>المورد المستلم (المستفيد من البيع) <span class="req">*</span></label>
+            <select id="sms-sup"><option value="">-- اختر المورد --</option></select>
+          </div>
+          <div class="fg"><label>الصنف <span class="req">*</span></label>
+            <select id="sms-item" onchange="onSmsItemChange()"><option value="">-- اختر الصنف --</option></select>
+            <div id="sms-item-stock" style="font-size:11px;color:var(--text3);margin-top:4px"></div>
+          </div>
+          <div class="fgrid" style="grid-template-columns:1fr 1fr">
+            <div class="fg"><label>الكمية <span class="req">*</span></label><input id="sms-qty" type="number" min="0" step="0.001" oninput="calcSmsTotal()"></div>
+            <div class="fg"><label>سعر الوحدة <span class="req">*</span></label><input id="sms-price" type="number" min="0" step="0.01" oninput="calcSmsTotal()"></div>
+          </div>
+          <div class="fg"><label>الإجمالي</label><input id="sms-total" type="text" readonly style="font-weight:800;color:var(--gold2)"></div>
+          <div class="fg"><label>التاريخ</label><input id="sms-date" type="date"></div>
+          <div class="fg"><label>ملاحظة</label><input id="sms-note" type="text" placeholder="اختياري"></div>
+        </div>
+      </div>
+      <div class="mf"><button class="btn btn-gold" onclick="saveSupMatSale()">💾 حفظ</button><button class="btn btn-ghost" onclick="closeOv('ov-sup-matsale')">إلغاء</button></div>
     </div>
   </div>
 
@@ -1849,37 +1936,65 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
     </div>
   </div>
 
-  <!-- ===================== FIXED ASSETS (الأصول الثابتة) ===================== -->
+  <!-- ===================== FIXED ASSETS (الأصول الثابتة) — تصميم مستقل v2 ===================== -->
   <div class="page" id="pg-fixed-assets">
-    <div class="ph">
-      <h2>🖥️ الأصول الثابتة / الأجهزة</h2>
-      <div class="btn-row">
-        <button class="btn btn-gold" onclick="openAssetModal()">+ إضافة أصل</button>
-        <button class="btn btn-ghost" onclick="renderFixedAssets()">🔄 تحديث</button>
+
+    <!-- Hero -->
+    <div class="fa2-hero">
+      <div class="fa2-hero-top">
+        <div>
+          <div class="fa2-eyebrow">Asset Intelligence</div>
+          <div class="fa2-title">🖥️ الأصول الثابتة والأجهزة</div>
+          <div class="fa2-sub">متابعة كاملة للقيمة، الصيانة، الضمان، والموقع — في مكان واحد</div>
+        </div>
+        <div class="fa2-btnrow">
+          <button class="fa2-btn violet" onclick="openAssetModal()">➕ إضافة أصل</button>
+          <button class="fa2-btn emerald" onclick="printAssetsReport()">🖨️ تقرير / PDF</button>
+          <button class="fa2-btn" onclick="renderFixedAssets()">🔄 تحديث</button>
+        </div>
+      </div>
+      <div class="fa2-stats" id="fa-totals"></div>
+    </div>
+
+    <!-- بيانات المعمل + التقييم -->
+    <div style="display:grid;grid-template-columns:1fr 1.3fr;gap:16px;margin-bottom:4px" id="fa-top-grid">
+      <div class="fa2-panel">
+        <div class="fa2-panel-head"><h3>🏭 بيانات المعمل</h3><button class="btn btn-gold btn-sm" onclick="saveFactoryInfo()">💾 حفظ</button></div>
+        <div class="fgrid">
+          <div class="fg"><label>اسم المعمل</label><input type="text" id="fi-name" placeholder="مثال: معمل بيرفكت للأسنان"></div>
+          <div class="fg"><label>العنوان</label><input type="text" id="fi-addr" placeholder="القاهرة، مصر"></div>
+          <div class="fg"><label>تاريخ التأسيس</label><input type="date" id="fi-founded"></div>
+          <div class="fg"><label>المساحة (م²)</label><input type="number" id="fi-area" min="0"></div>
+          <div class="fg"><label>رأس المال المستثمر (ج.م)</label><input type="number" id="fi-capital" min="0"></div>
+          <div class="fg"><label>عدد الموظفين</label><input type="number" id="fi-staff" min="0"></div>
+        </div>
+      </div>
+      <div class="fa2-panel">
+        <div class="fa2-panel-head"><h3>💎 التقييم الشامل لقيمة المعمل</h3><button class="btn btn-ghost btn-sm" onclick="renderFactoryValuation()">🔄 تحديث</button></div>
+        <div id="fa-valuation-body"></div>
       </div>
     </div>
-    <div class="stats" id="fa-stats"></div>
-    <!-- إجماليات -->
-    <div id="fa-totals" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px"></div>
-    <div class="card">
-      <div class="card-head">
-        <h3>قائمة الأصول</h3>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <select id="fa-filter-cat" onchange="renderFixedAssets()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:5px 10px;border-radius:7px;font-family:'Cairo',sans-serif;font-size:12px">
+
+    <div class="fa2-panel">
+      <div class="fa2-panel-head">
+        <h3>📋 قائمة الأصول</h3>
+        <div class="fa2-filters">
+          <select id="fa-filter-cat" onchange="renderFixedAssets()">
             <option value="">جميع الفئات</option>
-            <option>فرن</option><option>جهاز طرد</option><option>مطحنة</option><option>ليزر</option><option>أخرى</option>
+            <option>فرن</option><option>جهاز طرد</option><option>مطحنة</option><option>ليزر</option><option>🏠 عقار / مبنى</option><option>🌍 أرض</option><option>أخرى</option>
           </select>
-          <select id="fa-filter-status" onchange="renderFixedAssets()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:5px 10px;border-radius:7px;font-family:'Cairo',sans-serif;font-size:12px">
+          <select id="fa-filter-status" onchange="renderFixedAssets()">
             <option value="">جميع الحالات</option>
             <option>نشط</option><option>متوقف</option><option>مُباع</option>
           </select>
-          <div class="search-box"><input type="text" placeholder="بحث..." oninput="filterTbl('fa-tb',this.value)"><span class="search-icon">🔍</span></div>
+          <div class="search-box"><input type="text" placeholder="بحث..." oninput="faFilterCards(this.value)"><span class="search-icon">🔍</span></div>
         </div>
       </div>
-      <div class="tbl-wrap"><table><thead><tr><th>اسم الأصل</th><th>الفئة</th><th>تاريخ الشراء</th><th>التكلفة</th><th>العمر الافتراضي</th><th>الإهلاك الشهري</th><th>القيمة الدفترية</th><th>القسم</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody id="fa-tb"></tbody></table></div>
+      <div class="fa2-grid" id="fa-tb"></div>
       <div id="fa-empty" class="empty" style="display:none"><div class="ei">🖥️</div><p>لا توجد أصول — اضغط إضافة أصل</p></div>
     </div>
   </div>
+
 
   <!-- ===================== SPARE PARTS (قطع الغيار) ===================== -->
   <div class="page" id="pg-spare-parts">
@@ -3090,7 +3205,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
       <div class="card">
         <div class="card-head"><h3>قائمة العملاء (<span id="cl-count">0</span>)</h3><div class="search-box"><input type="text" placeholder="بحث..." oninput="filterTbl('clients-tb',this.value)"><span class="search-icon">🔍</span></div></div>
         <div class="selbar"><input type="checkbox" onchange="toggleAll('clients-tb',this.checked)"><a onclick="toggleAll('clients-tb',true)">تحديد الكل</a> | <a onclick="toggleAll('clients-tb',false)">إلغاء</a></div>
-        <div class="tbl-wrap"><table><thead><tr><th class="chk-col"></th><th>صورة</th><th>الاسم</th><th>الهاتف</th><th>واتساب</th><th>المحافظة</th><th>المدينة</th><th>العنوان</th><th></th></tr></thead><tbody id="clients-tb"></tbody></table></div>
+        <div class="tbl-wrap"><table><thead><tr><th class="chk-col"></th><th>صورة</th><th>الاسم</th><th>الهاتف</th><th>واتساب</th><th>المحافظة</th><th>المدينة</th><th>العنوان</th><th>الموقع</th><th></th></tr></thead><tbody id="clients-tb"></tbody></table></div>
         <div id="clients-empty" class="empty" style="display:none"><div class="ei">👥</div><p>لا يوجد عملاء — أضف أول عميل</p></div>
       </div>
     </div>
@@ -3241,14 +3356,13 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
       <div class="ph" style="margin-bottom:12px"><div></div>
         <div class="btn-row">
           <button class="btn btn-gold" onclick="openInvModal()">+ إضافة صنف</button>
-          <button class="btn btn-ghost" onclick="editSelInv('md-inv-tb')">تعديل</button>
           <button class="btn btn-ghost" onclick="delSelInv('md-inv-tb')">حذف</button>
           <button class="btn btn-gold btn-sm" onclick="openCatMgr()">إدارة الفئات</button>
         </div>
       </div>
       <div class="card">
         <div class="card-head"><h3>قائمة المخزون</h3></div>
-        <div class="tbl-wrap"><table><thead><tr><th class="chk-col"></th><th>صورة</th><th>اسم الصنف</th><th>نوع الصنف</th><th>الفئة</th><th>الرصيد</th><th>الوحدة</th><th>الحد الأدنى</th><th>الحالة</th></tr></thead><tbody id="md-inv-tb"></tbody></table></div>
+        <div class="tbl-wrap"><table><thead><tr><th class="chk-col"></th><th>صورة</th><th>اسم الصنف</th><th>نوع الصنف</th><th>الفئة</th><th>الرصيد</th><th>الوحدة</th><th>السعر</th><th>الحد الأدنى</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody id="md-inv-tb"></tbody></table></div>
         <div id="md-inv-empty" class="empty" style="display:none"><div class="ei">📦</div><p>لا يوجد مخزون</p></div>
       </div>
     </div>
@@ -4121,6 +4235,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
               <input id="cl-map" type="url" placeholder="https://maps.google.com/..." style="flex:1" dir="ltr">
               <button type="button" class="btn btn-blue btn-sm" onclick="clGetGPS()" title="موقعي الحالي">📡</button>
               <button type="button" class="btn btn-ghost btn-sm" onclick="clOpenMaps()" title="فتح خرائط Google">🗺️</button>
+              <button type="button" class="btn btn-green btn-sm" onclick="clSendLocationWa(_clId)" title="إرسال الموقع للمندوب/الديلفري">📍 إرسال</button>
             </div>
             <div id="cl-location-preview" style="display:none;margin-top:6px;padding:7px 11px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:7px;font-size:11px;color:var(--green)"></div>
           </div>
@@ -4507,22 +4622,37 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 
 <!-- ===== FIXED ASSET MODAL ===== -->
 <div class="overlay" id="ov-fixed-asset">
-  <div class="modal modal-md">
+  <div class="modal modal-lg">
     <div class="mh"><h3>🖥️ <span id="fa-modal-title">إضافة أصل ثابت</span></h3><div class="mc-btn" onclick="closeOv('ov-fixed-asset')">✕</div></div>
     <div class="mb">
+      <div class="sec-title">صورة الجهاز</div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:14px">
+        <div id="fa-img-ph" style="width:110px;height:110px;border-radius:10px;background:var(--bg3);border:2px dashed var(--border2);display:flex;align-items:center;justify-content:center;font-size:34px">🖥️</div>
+        <img id="fa-img-prev" style="width:110px;height:110px;border-radius:10px;object-fit:cover;border:1px solid var(--border);display:none" src="" alt="">
+        <input type="hidden" id="fa-img-data">
+        <div class="img-up" style="width:220px"><input type="file" accept="image/*" onchange="uploadImg('fa-img-prev','fa-img-ph','fa-img-data',this)"><div class="ui">📷</div><p>رفع صورة الجهاز</p></div>
+        <button class="btn btn-ghost btn-sm" onclick="rmImg('fa-img-prev','fa-img-ph','fa-img-data')">🗑️ إزالة</button>
+      </div>
       <div class="fgrid">
         <div class="fg"><label>اسم الأصل <span class="req">*</span></label><input type="text" id="fa-name" placeholder="مثال: فرن الحرق الرقمي"></div>
         <div class="fg">
           <label>الفئة <span class="req">*</span></label>
-          <select id="fa-cat">
+          <select id="fa-cat" onchange="_onAssetCatChange()">
             <option value="">-- اختر --</option>
-            <option>فرن</option><option>جهاز طرد</option><option>مطحنة</option><option>ليزر</option><option>أخرى</option>
+            <option>فرن</option><option>جهاز طرد</option><option>مطحنة</option><option>ليزر</option><option>🏠 عقار / مبنى</option><option>🌍 أرض</option><option>أخرى</option>
           </select>
         </div>
         <div class="fg"><label>تاريخ الشراء <span class="req">*</span></label><input type="date" id="fa-purchase-date" onchange="calcAssetDepreciation()"></div>
         <div class="fg"><label>تكلفة الشراء (ج.م) <span class="req">*</span></label><input type="number" id="fa-cost" min="0" oninput="calcAssetDepreciation()"></div>
-        <div class="fg"><label>العمر الافتراضي (سنوات) <span class="req">*</span></label><input type="number" id="fa-life" min="1" value="5" oninput="calcAssetDepreciation()"></div>
-        <div class="fg"><label>قيمة الإنقاذ (ج.م)</label><input type="number" id="fa-salvage" min="0" value="0" oninput="calcAssetDepreciation()"></div>
+        <div class="fg ffull" style="background:var(--bg3);border-radius:8px;padding:8px 12px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="fa-no-dep" style="width:16px;height:16px" onchange="calcAssetDepreciation()">
+            🌍 أصل لا يُهلك (أرض / عقار) — قيمته الدفترية بتفضل ثابتة = تكلفة الشراء
+          </label>
+        </div>
+        <div class="fg"><label>العمر الافتراضي (سنوات)</label><input type="number" id="fa-life" min="1" value="5" oninput="calcAssetDepreciation()"></div>
+        <div class="fg"><label>نسبة قيمة الإنقاذ (%)</label><input type="number" id="fa-salvage-pct" min="0" max="100" value="35" oninput="calcAssetDepreciation()"></div>
+        <div class="fg"><label>قيمة الإنقاذ (ج.م) — محسوبة تلقائيًا</label><input type="number" id="fa-salvage" min="0" value="0" readonly style="background:var(--bg3);color:var(--text2);cursor:not-allowed"></div>
         <div class="fg">
           <label>القسم</label>
           <select id="fa-dept">
@@ -4535,6 +4665,16 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
             <option>نشط</option><option>متوقف</option><option>مُباع</option>
           </select>
         </div>
+        <div class="fg ffull" style="background:var(--bg3);border-radius:8px;padding:10px;border-right:3px solid var(--teal)">
+          <label>💎 القيمة السوقية التقديرية (ج.م) <span style="color:var(--text3);font-weight:400">— حدّثها بنفسك من وقت لآخر حسب سعر السوق الفعلي</span></label>
+          <input type="number" id="fa-market-value" min="0" placeholder="مثال: 900000">
+          <div style="font-size:11px;color:var(--text3);margin-top:4px" id="fa-market-updated">لم يتم التحديث بعد</div>
+        </div>
+        <div class="fg"><label>📍 المكان الفعلي</label><input type="text" id="fa-location" placeholder="مثال: صالة الإنتاج - الدور الأول"></div>
+        <div class="fg"><label>👤 المسؤول عن الجهاز</label><input type="text" id="fa-responsible" list="fa-resp-list" placeholder="اسم الموظف المسؤول"><datalist id="fa-resp-list"></datalist></div>
+        <div class="fg"><label>🛡️ تاريخ انتهاء الضمان</label><input type="date" id="fa-warranty"></div>
+        <div class="fg"><label>🔁 صيانة دورية كل (شهور)</label><input type="number" id="fa-maint-interval" min="0" placeholder="مثال: 3" oninput="renderFaMaint()"></div>
+        <div class="fg"><label>📊 عدد الحالات المرتبطة بالجهاز</label><input type="number" id="fa-cases" min="0" placeholder="لحساب تكلفة الجهاز لكل حالة"></div>
         <div class="fg ffull"><label>ملاحظات</label><textarea id="fa-notes" style="min-height:45px"></textarea></div>
       </div>
       <!-- مربع الحساب التلقائي -->
@@ -4543,9 +4683,25 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
           <div class="ibox"><div class="irow"><label>الإهلاك السنوي</label><span id="fa-annual-dep" style="color:var(--orange)">—</span></div></div>
           <div class="ibox"><div class="irow"><label>الإهلاك الشهري</label><span id="fa-monthly-dep" style="color:var(--gold2)">—</span></div></div>
-          <div class="ibox"><div class="irow"><label>القيمة الدفترية الآن</label><span id="fa-book-val" style="color:var(--teal)">—</span></div></div>
+          <div class="ibox"><div class="irow"><label>القيمة الدفترية الآن (محاسبية)</label><span id="fa-book-val" style="color:var(--teal)">—</span></div></div>
         </div>
       </div>
+
+      <!-- سجل الصيانة -->
+      <div class="sec-title" style="margin-top:16px">🛠️ سجل الصيانة <span id="fa-maint-next" style="font-size:11px;font-weight:400;color:var(--text3)"></span></div>
+      <div style="display:grid;grid-template-columns:1fr 2fr 1fr 1fr auto;gap:8px;align-items:end;background:var(--bg3);border-radius:8px;padding:10px;margin-bottom:8px">
+        <div class="fg" style="margin:0"><label style="font-size:10px">التاريخ</label><input type="date" id="fam-date"></div>
+        <div class="fg" style="margin:0"><label style="font-size:10px">وصف العطل / الصيانة</label><input type="text" id="fam-desc" placeholder="مثال: تغيير مروحة التبريد"></div>
+        <div class="fg" style="margin:0"><label style="font-size:10px">التكلفة</label><input type="number" id="fam-cost" min="0"></div>
+        <div class="fg" style="margin:0"><label style="font-size:10px">الفني</label><input type="text" id="fam-tech" placeholder="اسم الفني"></div>
+        <button class="btn btn-gold btn-sm" onclick="addFaMaintEntry()">➕ إضافة</button>
+      </div>
+      <div id="fa-maint-list"></div>
+
+      <!-- المستندات -->
+      <div class="sec-title" style="margin-top:16px">📎 المستندات (فاتورة الشراء، عقد الضمان، رخصة...)</div>
+      <div class="img-up" style="margin-bottom:10px"><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.jpeg" multiple onchange="addFaDoc(this)"><div class="ui">📄</div><p>رفع مستند</p></div>
+      <div id="fa-docs"></div>
     </div>
     <div class="mf">
       <button class="btn btn-gold" onclick="saveFixedAsset()">💾 حفظ</button>
@@ -6906,6 +7062,7 @@ function renderClients(){
     <td>${esc(c.phone||'-')}</td>
     <td>${c.wa?`<button class="btn btn-green btn-sm" onclick="event.stopPropagation();wa('${esc(c.wa)}','مرحباً ${esc(c.name)}')">💬</button>`:'-'}</td>
     <td>${esc(c.gov||'-')}</td><td>${esc(c.city||'-')}</td><td style="font-size:11px">${esc(c.addr||'-')}</td>
+    <td>${c.map?`<button class="btn btn-green btn-sm" onclick="event.stopPropagation();clSendLocationWa('${esc(c.id)}')" title="إرسال الموقع للمندوب/الديلفري">📍</button>`:'<span style="color:var(--text3);font-size:11px">—</span>'}</td>
     <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openClientModal('${esc(c.id)}')">✏️</button></td>
   </tr>`).join('');
 }
@@ -7993,13 +8150,17 @@ function renderInvTb(tbId,emId){
   if(!tb)return;
   if(!list.length){tb.innerHTML='';if(em)em.style.display='block';return}
   if(em)em.style.display='none';
+  const c=cur();
   tb.innerHTML=list.map(i=>{const low=+i.qty<=+i.min;return`<tr data-id="${esc(i.id)}" onclick="rowClick(this)">
     <td class="chk-col"><input type="checkbox" onclick="event.stopPropagation()"></td>
     <td>${i.img?`<img class="av" style="border-radius:5px" src="${esc(i.img)}" alt="">`:'<div class="av-ph" style="border-radius:5px">📦</div>'}</td>
     <td><strong>${esc(i.name)}</strong></td><td>${invTypeBadge(i.type)}</td><td>${badge(esc(i.cat),'bg-blue')}</td>
     <td style="color:${low?'var(--red)':'var(--text)'};font-weight:${low?700:400}">${esc(String(i.qty))}</td>
-    <td>${esc(i.unit)}</td><td>${esc(String(i.min))}</td>
+    <td>${esc(i.unit)}</td>
+    <td style="color:var(--gold2);font-weight:700">${i.lastPrice?fmt(+i.lastPrice)+' '+c:'—'}</td>
+    <td>${esc(String(i.min))}</td>
     <td>${low?badge('منخفض','bg-red'):badge('متاح','bg-green')}</td>
+    <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openInvModal('${esc(i.id)}')" title="تعديل">✏️</button></td>
   </tr>`}).join('');
 }
 function openInvModal(editId=null){
@@ -13788,14 +13949,18 @@ function fillSupSelects(){
   ['pur-supplier'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=opts});
 }
 function getSupDebt(supId){
-  // المعادلة الصحيحة: رصيد افتتاحي + إجمالي الفواتير - إجمالي المدفوع
+  // المعادلة الصحيحة: رصيد افتتاحي + إجمالي الفواتير - إجمالي المدفوع - إجمالي بيع الخامات لهذا المورد
   const purs=DB.get('purchases')||[];
   const supPurs=purs.filter(p=>p.supId===supId);
   const tp=supPurs.reduce((a,p)=>a+Number(p.total||0),0);
   const pp=supPurs.reduce((a,p)=>a+Number(p.paid||0),0);
   const ob=_getSupplierOpeningBalance(supId);
-  const debt=Math.max(0,ob+tp-pp);
-  return{total:tp,paid:pp,debt,openingBal:ob};
+  // FIX #SUP-MATERIAL-SALE: بيع خامة (اشتريناها من مورد آخر) لهذا المورد يُعامل كتسوية
+  // (دائن) في حسابه — يقلل مديونيتنا له بنفس قيمة البيع، بنفس منطق الدفعة النقدية تمامًا.
+  const matSales=(DB.get('sup_material_sales')||[]).filter(m=>m.supId===supId);
+  const ms=matSales.reduce((a,m)=>a+Number(m.total||0),0);
+  const debt=Math.max(0,ob+tp-pp-ms);
+  return{total:tp,paid:pp,matSales:ms,debt,openingBal:ob};
 }
 function updateErpBadges(){
   const purs=DB.get('purchases')||[];
@@ -13834,6 +13999,7 @@ function renderSuppliers(){
           <button class="btn btn-teal btn-sm" onclick="sendSupWA('${s.id}');event.stopPropagation()">💬</button></td>
     </tr>`;
   }).join('');
+  renderSupMatSales();
 }
 function openSupplierModal(editId=null){
   if(!can('suppliers.add')){toast('ليس لديك صلاحية لإضافة/تعديل الموردين','err');return;}
@@ -13887,15 +14053,102 @@ const payCount=(DB.get('sup_payments')||[]).filter(x=>ids.includes(x.supId)).len
 confirm2('حذف الموردين',`حذف ${ids.length} مورد وكل بياناته (${purCount} فاتورة شراء، ${payCount} دفعة)؟`,()=>{
   // ===== تتبع: تسجيل حذف مورد كامل مع كل بياناته المالية (حذف خطير) =====
   logActivity('supplier.delete',{count:toDelete.length,note:supNames.join(', ')+` — شملت ${purCount} فاتورة شراء و${payCount} دفعة`,before:toDelete.map(s=>snapshotFields(s,['name','phone']))});
-  DB.set('suppliers',(DB.get('suppliers')||[]).filter(x=>!ids.includes(x.id)));_saveKeyedList('purchases',(DB.get('purchases')||[]).filter(x=>!ids.includes(x.supId)));_saveKeyedList('sup_payments',(DB.get('sup_payments')||[]).filter(x=>!ids.includes(x.supId)));DB.set('batches',(DB.get('batches')||[]).filter(x=>!ids.includes(x.supId)));renderSuppliers();toast('تم الحذف مع كل بيانات المورد');});}
+  DB.set('suppliers',(DB.get('suppliers')||[]).filter(x=>!ids.includes(x.id)));_saveKeyedList('purchases',(DB.get('purchases')||[]).filter(x=>!ids.includes(x.supId)));_saveKeyedList('sup_payments',(DB.get('sup_payments')||[]).filter(x=>!ids.includes(x.supId)));DB.set('batches',(DB.get('batches')||[]).filter(x=>!ids.includes(x.supId)));DB.set('sup_material_sales',(DB.get('sup_material_sales')||[]).filter(x=>!ids.includes(x.supId)));renderSuppliers();toast('تم الحذف مع كل بيانات المورد');});}
 function sendSupWA(id){
   const s=(DB.get('suppliers')||[]).find(x=>x.id===id);if(!s?.wa&&!s?.phone){toast('لا يوجد رقم واتساب','err');return;}
   const d=getSupDebt(id);
   const lab=DB.get('labinfo')||{};
   const c2=cur();
-  const msg=`🏢 *${lab.name||'Perfect Lab Pro'}*\n━━━━━━━━━━━━━━━\n📋 *كشف حساب — ${s.name}*\n📅 ${today()}\n\n💰 إجمالي المشتريات: ${fmt(d.total)} ${c2}\n✅ المدفوع: ${fmt(d.paid)} ${c2}\n${d.debt>0?`⚠️ المتبقي: ${fmt(d.debt)} ${c2}`:'✅ الحساب مسدد'}\n\nشكراً لتعاملكم معنا 🙏`;
+  const msg=`🏢 *${lab.name||'Perfect Lab Pro'}*\n━━━━━━━━━━━━━━━\n📋 *كشف حساب — ${s.name}*\n📅 ${today()}\n\n💰 إجمالي المشتريات: ${fmt(d.total)} ${c2}\n✅ المدفوع: ${fmt(d.paid)} ${c2}${d.matSales>0?`\n🔄 خامات مباعة له: ${fmt(d.matSales)} ${c2}`:''}\n${d.debt>0?`⚠️ المتبقي: ${fmt(d.debt)} ${c2}`:'✅ الحساب مسدد'}\n\nشكراً لتعاملكم معنا 🙏`;
   let ph=(s.wa||s.phone).replace(/[\s\-()]/g,'');if(ph.startsWith('+'))ph=ph.slice(1);if(ph.startsWith('0')&&ph.length===11)ph='20'+ph.slice(1);
   window.open('https://wa.me/'+ph+'?text='+encodeURIComponent(msg),'_blank');
+}
+
+// ===== FIX #SUP-MATERIAL-SALE: بيع خامة (اشتريناها من مورد) لمورد آخر =====
+function openSupMatSaleModal(){
+  if(!can('inventory.add')){toast('ليس لديك صلاحية','err');return;}
+  const sups=DB.get('suppliers')||[];
+  const supSel=document.getElementById('sms-sup');
+  supSel.innerHTML='<option value="">-- اختر المورد --</option>'+sups.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('');
+  const inv=DB.get('inventory')||[];
+  const itemSel=document.getElementById('sms-item');
+  itemSel.innerHTML='<option value="">-- اختر الصنف --</option>'+inv.map(i=>`<option value="${esc(i.id)}">${esc(i.name)} (متاح: ${esc(String(i.qty))} ${esc(i.unit||'')})</option>`).join('');
+  document.getElementById('sms-qty').value='';
+  document.getElementById('sms-price').value='';
+  document.getElementById('sms-total').value='';
+  document.getElementById('sms-note').value='';
+  document.getElementById('sms-date').value=today();
+  document.getElementById('sms-item-stock').textContent='';
+  openOv('ov-sup-matsale');
+}
+function onSmsItemChange(){
+  const itemId=document.getElementById('sms-item').value;
+  const inv=DB.get('inventory')||[];
+  const item=inv.find(x=>x.id===itemId);
+  const stockEl=document.getElementById('sms-item-stock');
+  if(item){
+    stockEl.textContent=`الرصيد المتاح: ${item.qty} ${item.unit||''}`;
+    if(!document.getElementById('sms-price').value && item.lastPrice) document.getElementById('sms-price').value=item.lastPrice;
+  } else stockEl.textContent='';
+  calcSmsTotal();
+}
+function calcSmsTotal(){
+  const qty=+document.getElementById('sms-qty').value||0;
+  const price=+document.getElementById('sms-price').value||0;
+  document.getElementById('sms-total').value=fmt(qty*price)+' '+cur();
+}
+function saveSupMatSale(){
+  if(!can('inventory.add')){toast('ليس لديك صلاحية','err');return;}
+  const supId=document.getElementById('sms-sup').value;
+  const itemId=document.getElementById('sms-item').value;
+  const qty=+document.getElementById('sms-qty').value||0;
+  const price=+document.getElementById('sms-price').value||0;
+  if(!supId){toast('يرجى اختيار المورد المستلم','err');return;}
+  if(!itemId){toast('يرجى اختيار الصنف','err');return;}
+  if(qty<=0){toast('يرجى إدخال كمية صحيحة','err');return;}
+  if(price<=0){toast('يرجى إدخال سعر الوحدة','err');return;}
+  const inv=DB.get('inventory')||[];
+  const item=inv.find(x=>x.id===itemId);
+  if(!item){toast('الصنف غير موجود','err');return;}
+  if(qty>(+item.qty||0)){toast('الكمية المطلوبة أكبر من الرصيد المتاح ('+item.qty+' '+(item.unit||'')+')','err');return;}
+  const sup=(DB.get('suppliers')||[]).find(x=>x.id===supId);
+  const total=qty*price;
+  // خصم الكمية من إجمالي رصيد الصنف (بدون ربط بدفعة FIFO معينة)
+  item.qty=Math.max(0,(+item.qty||0)-qty);
+  DB.set('inventory',inv);
+  const list=DB.get('sup_material_sales')||[];
+  const rec={id:'sms_'+Date.now(),date:document.getElementById('sms-date').value||today(),supId,supName:sup?.name||'',itemId,itemName:item.name,unit:item.unit||'',qty,unitPrice:price,total,note:document.getElementById('sms-note').value.trim()};
+  list.unshift(rec);
+  DB.set('sup_material_sales',list);
+  logActivity('supplier.materialSale',{client:sup?.name||'',note:`بيع ${qty} ${item.unit||''} من "${item.name}" — إجمالي ${fmt(total)} ${cur()}`});
+  closeOv('ov-sup-matsale');
+  renderSuppliers();renderInventory();renderInvTb('md-inv-tb','md-inv-empty');
+  toast('✅ تم تسجيل البيع وتحديث حساب المورد');
+}
+function renderSupMatSales(){
+  const tb=document.getElementById('sup-matsales-tb');if(!tb)return;
+  const em=document.getElementById('sup-matsales-empty');
+  const list=DB.get('sup_material_sales')||[];
+  const c2=cur();
+  if(!list.length){tb.innerHTML='';if(em)em.style.display='block';return;}
+  if(em)em.style.display='none';
+  tb.innerHTML=list.map(m=>`<tr>
+    <td>${esc(m.date||'-')}</td><td><strong>${esc(m.supName||'-')}</strong></td><td>${esc(m.itemName||'-')}</td>
+    <td>${esc(String(m.qty))} ${esc(m.unit||'')}</td><td>${fmt(m.unitPrice)} ${c2}</td>
+    <td style="color:var(--green);font-weight:700">${fmt(m.total)} ${c2}</td><td style="font-size:11px">${esc(m.note||'-')}</td>
+    <td><button class="btn btn-ghost btn-sm" onclick="delSupMatSale('${esc(m.id)}')" title="حذف">🗑️</button></td>
+  </tr>`).join('');
+}
+function delSupMatSale(id){
+  const list=DB.get('sup_material_sales')||[];
+  const rec=list.find(x=>x.id===id);
+  if(!rec)return;
+  confirm2('حذف عملية البيع','سيتم حذف السجل، ولن تتم إعادة الكمية تلقائياً للمخزون — راجع الكمية يدوياً لو لزم الأمر.',()=>{
+    DB.set('sup_material_sales',list.filter(x=>x.id!==id));
+    logActivity('supplier.materialSale.delete',{client:rec.supName||'',note:`حذف بيع ${rec.qty} ${rec.unit||''} من "${rec.itemName}"`});
+    renderSuppliers();
+    toast('تم الحذف');
+  });
 }
 
 /* ---- PURCHASES ---- */
@@ -17980,7 +18233,7 @@ function getAllData(){
   const keys=[
     // بيانات أساسية
     'clients','prices','technicians','delegates','users','dafter','proof','archive','treasury',
-    'inventory','inv_cats','price_cats','suppliers','purchases','sup_payments','batches','withdrawals',
+    'inventory','inv_cats','price_cats','suppliers','purchases','sup_payments','sup_material_sales','batches','withdrawals',
     'ctr','labinfo','trSetup','extra_boxes','perms','perms_advanced','invDesignFull','invDesign',
     'notes','employees','customColors','tr_other_cats','nsSettings',
     // بيانات كانت مفقودة من النسخة الاحتياطية
@@ -18651,7 +18904,7 @@ function renderBackup(){
       dafter:[],proof:[],archive:[],treasury:[],inventory:[],
       inv_cats:['زيركون','بورسلين','سيراميك','إضافات','مواد رابطة','أخرى'],
       price_cats:['زيركون','بورسلين','سيراميك','تقويم','متحرك','أخرى'],
-      suppliers:[],purchases:[],sup_payments:[],batches:[],withdrawals:[],employees:[],
+      suppliers:[],purchases:[],sup_payments:[],sup_material_sales:[],batches:[],withdrawals:[],employees:[],
       fixed_assets:[],attendance:[],prospects:[],delegate_visits:[],dept_inventory:[],inventory_reports:[],
       notifications:[],
       dept_prodcat_map:[
@@ -20751,10 +21004,18 @@ function delDeptInvMapEntry(id){
 // ============================================================
 // 3. FIXED ASSETS — الأصول الثابتة
 // ============================================================
+let _faDocs=[];let _faMaint=[];
+function _faPopulateRespList(){
+  const dl=document.getElementById('fa-resp-list');
+  if(!dl)return;
+  const emps=DB.get('employees')||[];
+  dl.innerHTML=emps.map(e=>`<option value="${esc(e.name||'')}">`).join('');
+}
 function openAssetModal(id){
   refreshDeptDropdowns();
   if(!can('fixed-assets.add')){toast('ليس لديك صلاحية لإضافة أصول ثابتة','err');return;}
   const c=cur();
+  _faPopulateRespList();
   if(id){
     const rec=(DB.get('fixed_assets')||[]).find(x=>x.id==id);
     if(!rec)return;
@@ -20764,11 +21025,25 @@ function openAssetModal(id){
     document.getElementById('fa-purchase-date').value=rec.purchaseDate||'';
     document.getElementById('fa-cost').value=rec.cost||'';
     document.getElementById('fa-life').value=rec.life||5;
+    document.getElementById('fa-no-dep').checked=!!rec.noDep;
+    document.getElementById('fa-salvage-pct').value=(rec.salvagePct!=null?rec.salvagePct:35);
     document.getElementById('fa-salvage').value=rec.salvage||0;
     document.getElementById('fa-dept').value=rec.dept||'';
     document.getElementById('fa-status').value=rec.status||'نشط';
     document.getElementById('fa-notes').value=rec.notes||'';
     document.getElementById('fa-name').dataset.editId=id;
+    document.getElementById('fa-market-value').value=rec.marketValue||'';
+    document.getElementById('fa-market-updated').textContent=rec.marketValueDate?('آخر تحديث: '+rec.marketValueDate):'لم يتم التحديث بعد';
+    document.getElementById('fa-location').value=rec.location||'';
+    document.getElementById('fa-responsible').value=rec.responsible||'';
+    document.getElementById('fa-warranty').value=rec.warrantyExpiry||'';
+    document.getElementById('fa-maint-interval').value=rec.maintIntervalMonths||'';
+    document.getElementById('fa-cases').value=rec.casesLinked||'';
+    _faDocs=(rec.docs||[]).slice();
+    _faMaint=(rec.maintenance||[]).slice();
+    const faImgPrev=document.getElementById('fa-img-prev'),faImgPh=document.getElementById('fa-img-ph'),faImgData=document.getElementById('fa-img-data');
+    if(rec.img){faImgData.value=rec.img;faImgPrev.src=rec.img;faImgPrev.style.display='block';faImgPh.style.display='none';}
+    else{faImgData.value='';faImgPrev.src='';faImgPrev.style.display='none';faImgPh.style.display='flex';}
   } else {
     document.getElementById('fa-modal-title').textContent='إضافة أصل ثابت';
     document.getElementById('fa-name').value='';
@@ -20776,30 +21051,107 @@ function openAssetModal(id){
     document.getElementById('fa-purchase-date').value=today();
     document.getElementById('fa-cost').value='';
     document.getElementById('fa-life').value=5;
+    document.getElementById('fa-no-dep').checked=false;
+    document.getElementById('fa-salvage-pct').value=35;
     document.getElementById('fa-salvage').value=0;
     document.getElementById('fa-dept').value='';
     document.getElementById('fa-status').value='نشط';
     document.getElementById('fa-notes').value='';
     document.getElementById('fa-name').dataset.editId='';
+    document.getElementById('fa-market-value').value='';
+    document.getElementById('fa-market-updated').textContent='لم يتم التحديث بعد';
+    document.getElementById('fa-location').value='';
+    document.getElementById('fa-responsible').value='';
+    document.getElementById('fa-warranty').value='';
+    document.getElementById('fa-maint-interval').value='';
+    document.getElementById('fa-cases').value='';
+    _faDocs=[];_faMaint=[];
+    rmImg('fa-img-prev','fa-img-ph','fa-img-data');
   }
+  document.getElementById('fam-date').value=today();
+  document.getElementById('fam-desc').value='';
+  document.getElementById('fam-cost').value='';
+  document.getElementById('fam-tech').value='';
+  renderFaDocs();
+  renderFaMaint();
   calcAssetDepreciation();
   openOv('ov-fixed-asset');
 }
 
+// ── مستندات الأصل ──
+function addFaDoc(input){
+  [...input.files].forEach(f=>{const r=new FileReader();r.onload=e=>{_faDocs.push({name:f.name,data:e.target.result});renderFaDocs()};r.readAsDataURL(f)});
+  input.value='';
+}
+function renderFaDocs(){
+  const el=document.getElementById('fa-docs');if(!el)return;
+  el.innerHTML=_faDocs.length?_faDocs.map((d,i)=>`<div class="doc-item">📄 ${esc(d.name)}<div style="display:flex;gap:6px"><a href="${d.data}" download="${esc(d.name)}">⬇️</a><span style="cursor:pointer;color:var(--red)" onclick="_faDocs.splice(${i},1);renderFaDocs()">🗑️</span></div></div>`).join(''):`<div style="font-size:11px;color:var(--text3);padding:6px 2px">لا توجد مستندات مرفوعة بعد</div>`;
+}
+
+// ── سجل الصيانة ──
+function addFaMaintEntry(){
+  const date=document.getElementById('fam-date').value||today();
+  const desc=document.getElementById('fam-desc').value.trim();
+  const cost=+document.getElementById('fam-cost').value||0;
+  const tech=document.getElementById('fam-tech').value.trim();
+  if(!desc){toast('اكتب وصف الصيانة أولاً','err');return;}
+  _faMaint.push({id:Date.now(),date,desc,cost,tech});
+  document.getElementById('fam-desc').value='';
+  document.getElementById('fam-cost').value='';
+  document.getElementById('fam-tech').value='';
+  renderFaMaint();
+}
+function delFaMaintEntry(id){
+  _faMaint=_faMaint.filter(m=>m.id!==id);
+  renderFaMaint();
+}
+function renderFaMaint(){
+  const el=document.getElementById('fa-maint-list');if(!el)return;
+  const c=cur();
+  const totalCost=_faMaint.reduce((s,m)=>s+(+m.cost||0),0);
+  const sorted=_faMaint.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  el.innerHTML=(sorted.length?sorted.map(m=>`<div class="doc-item"><span>🗓️ ${m.date} — ${esc(m.desc)}${m.tech?' <span style="color:var(--text3)">(الفني: '+esc(m.tech)+')</span>':''}</span><div style="display:flex;align-items:center;gap:10px"><b style="color:var(--gold2)">${fmt(m.cost||0)} ${c}</b><span style="cursor:pointer;color:var(--red)" onclick="delFaMaintEntry(${m.id})">🗑️</span></div></div>`).join(''):`<div style="font-size:11px;color:var(--text3);padding:6px 2px">لا توجد سجلات صيانة بعد</div>`)
+    + (_faMaint.length?`<div style="text-align:left;font-size:11px;color:var(--text3);margin-top:6px">إجمالي تكلفة الصيانة المسجّلة: <b style="color:var(--gold2)">${fmt(totalCost)} ${c}</b></div>`:'');
+  // تحديث تنبيه الصيانة القادمة
+  const interval=+document.getElementById('fa-maint-interval')?.value||0;
+  const nextEl=document.getElementById('fa-maint-next');
+  if(nextEl){
+    if(!interval){nextEl.textContent='';}
+    else{
+      const lastDate=sorted[0]?sorted[0].date:(document.getElementById('fa-purchase-date').value||today());
+      const due=new Date(lastDate);due.setMonth(due.getMonth()+interval);
+      nextEl.textContent='— الصيانة القادمة المتوقعة: '+due.toISOString().split('T')[0];
+    }
+  }
+}
+
+function _onAssetCatChange(){
+  const cat=document.getElementById('fa-cat').value;
+  const noDep=document.getElementById('fa-no-dep');
+  if(cat==='🌍 أرض')noDep.checked=true; // الأرض عادة لا تُهلك محاسبيًا
+  calcAssetDepreciation();
+}
 function calcAssetDepreciation(){
   const cost=+document.getElementById('fa-cost')?.value||0;
   const life=+document.getElementById('fa-life')?.value||1;
-  const salvage=+document.getElementById('fa-salvage')?.value||0;
+  const noDep=document.getElementById('fa-no-dep')?.checked;
+  const salvagePct=noDep?100:(+document.getElementById('fa-salvage-pct')?.value||0);
+  const salvage=noDep?cost:cost*salvagePct/100;
+  const salvageEl=document.getElementById('fa-salvage');
+  if(salvageEl)salvageEl.value=salvage.toFixed(2);
+  const salvagePctEl=document.getElementById('fa-salvage-pct'),lifeEl=document.getElementById('fa-life');
+  if(salvagePctEl)salvagePctEl.disabled=!!noDep;
+  if(lifeEl)lifeEl.disabled=!!noDep;
   const purchaseDate=document.getElementById('fa-purchase-date')?.value||today();
   const box=document.getElementById('fa-calc-box');
   if(!cost||!life){if(box)box.style.display='none';return;}
-  const annualDep=(cost-salvage)/life;
+  const annualDep=noDep?0:(cost-salvage)/life;
   const monthlyDep=annualDep/12;
   const monthsElapsed=_monthsDiff(new Date(purchaseDate),new Date());
-  const bookVal=Math.max(salvage,cost-monthlyDep*monthsElapsed);
+  const bookVal=noDep?cost:Math.max(salvage,cost-monthlyDep*monthsElapsed);
   const c=cur();
-  if(document.getElementById('fa-annual-dep'))document.getElementById('fa-annual-dep').textContent=fmt(annualDep)+' '+c;
-  if(document.getElementById('fa-monthly-dep'))document.getElementById('fa-monthly-dep').textContent=fmt(monthlyDep)+' '+c;
+  if(document.getElementById('fa-annual-dep'))document.getElementById('fa-annual-dep').textContent=(noDep?'لا يُهلك':fmt(annualDep)+' '+c);
+  if(document.getElementById('fa-monthly-dep'))document.getElementById('fa-monthly-dep').textContent=(noDep?'لا يُهلك':fmt(monthlyDep)+' '+c);
   if(document.getElementById('fa-book-val'))document.getElementById('fa-book-val').textContent=fmt(bookVal)+' '+c;
   if(box)box.style.display='block';
 }
@@ -20825,18 +21177,37 @@ function saveFixedAsset(){
   const purchaseDate=document.getElementById('fa-purchase-date').value;
   const cost=+document.getElementById('fa-cost').value||0;
   const life=+document.getElementById('fa-life').value||1;
-  const salvage=+document.getElementById('fa-salvage').value||0;
+  const noDep=document.getElementById('fa-no-dep').checked;
+  const salvagePct=noDep?100:(+document.getElementById('fa-salvage-pct').value||0);
+  const salvage=noDep?cost:cost*salvagePct/100;
   const dept=document.getElementById('fa-dept').value;
   const status=document.getElementById('fa-status').value;
   const notes=document.getElementById('fa-notes').value;
+  const img=document.getElementById('fa-img-data').value||'';
+  const marketValueRaw=document.getElementById('fa-market-value').value;
+  const marketValue=marketValueRaw!==''?+marketValueRaw:null;
+  const location=document.getElementById('fa-location').value.trim();
+  const responsible=document.getElementById('fa-responsible').value.trim();
+  const warrantyExpiry=document.getElementById('fa-warranty').value||'';
+  const maintIntervalMonths=+document.getElementById('fa-maint-interval').value||0;
+  const casesLinked=+document.getElementById('fa-cases').value||0;
+  const docs=[..._faDocs];
+  const maintenance=[..._faMaint];
   if(!name||!purchaseDate||!cost){toast('الاسم وتاريخ الشراء والتكلفة مطلوبة','err');return;}
   const editId=document.getElementById('fa-name').dataset.editId?+document.getElementById('fa-name').dataset.editId:null;
   const list=DB.get('fixed_assets')||[];
   if(editId){
     const idx=list.findIndex(x=>x.id===editId);
-    if(idx>=0)list[idx]={...list[idx],name,cat,purchaseDate,cost,life,salvage,dept,status,notes,updatedAt:Date.now()};
+    if(idx>=0){
+      // نحدّث تاريخ "آخر تحديث للقيمة السوقية" ونسجّل في السجل التاريخي بس لو الرقم اتغيّر فعليًا
+      const valueChanged=marketValue!==(list[idx].marketValue??null);
+      const marketValueDate=valueChanged?today():list[idx].marketValueDate;
+      const marketValueHistory=(list[idx].marketValueHistory||[]).slice();
+      if(valueChanged&&marketValue!=null)marketValueHistory.push({date:today(),value:marketValue});
+      list[idx]={...list[idx],name,cat,purchaseDate,cost,life,noDep,salvagePct,salvage,dept,status,notes,img,marketValue,marketValueDate,marketValueHistory,location,responsible,warrantyExpiry,maintIntervalMonths,casesLinked,docs,maintenance,updatedAt:Date.now()};
+    }
   } else {
-    list.push({id:faNextId(),name,cat,purchaseDate,cost,life,salvage,dept,status,notes,createdAt:Date.now()});
+    list.push({id:faNextId(),name,cat,purchaseDate,cost,life,noDep,salvagePct,salvage,dept,status,notes,img,marketValue,marketValueDate:marketValue!=null?today():null,marketValueHistory:marketValue!=null?[{date:today(),value:marketValue}]:[],location,responsible,warrantyExpiry,maintIntervalMonths,casesLinked,docs,maintenance,createdAt:Date.now()});
   }
   DB.set('fixed_assets',list);
   closeOv('ov-fixed-asset');
@@ -20844,6 +21215,44 @@ function saveFixedAsset(){
   toast('تم حفظ الأصل');
 }
 
+function _faMaintTotalCost(x){return (x.maintenance||[]).reduce((s,m)=>s+(+m.cost||0),0);}
+function _faLastMaintDate(x){
+  const sorted=(x.maintenance||[]).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  return sorted[0]?sorted[0].date:null;
+}
+function _faNextMaintDue(x){
+  const interval=+x.maintIntervalMonths||0;
+  if(!interval)return null;
+  const last=_faLastMaintDate(x)||x.purchaseDate||today();
+  const due=new Date(last);due.setMonth(due.getMonth()+interval);
+  return due.toISOString().split('T')[0];
+}
+function _faMaintTag(x){
+  const due=_faNextMaintDue(x);
+  if(!due)return '';
+  const days=Math.floor((new Date(due)-new Date())/86400000);
+  if(days<0)return `<span class="fa2-tag danger">⚠️ صيانة متأخرة</span>`;
+  if(days<=14)return `<span class="fa2-tag warn">🔧 صيانة قريبة (${due})</span>`;
+  return `<span class="fa2-tag ok">🔧 القادمة: ${due}</span>`;
+}
+function _faWarrantyTag(x){
+  if(!x.warrantyExpiry)return '';
+  const days=Math.floor((new Date(x.warrantyExpiry)-new Date())/86400000);
+  if(days<0)return `<span class="fa2-tag">🛡️ الضمان منتهي</span>`;
+  if(days<=30)return `<span class="fa2-tag warn">🛡️ الضمان ينتهي قريبًا</span>`;
+  return `<span class="fa2-tag ok">🛡️ ساري حتى ${x.warrantyExpiry}</span>`;
+}
+function faFilterCards(q){
+  const qq=(q||'').toLowerCase();
+  let vis=0;
+  document.querySelectorAll('#fa-tb .fa2-card').forEach(card=>{
+    const show=!qq||(card.dataset.search||'').includes(qq);
+    card.style.display=show?'':'none';
+    if(show)vis++;
+  });
+  const emEl=document.getElementById('fa-empty');
+  if(emEl&&q)emEl.style.display=vis===0?'block':'none';
+}
 function renderFixedAssets(){
   const list=DB.get('fixed_assets')||[];
   const filterCat=document.getElementById('fa-filter-cat')?.value||'';
@@ -20856,13 +21265,17 @@ function renderFixedAssets(){
     return s+((+x.cost||0)-salvage)/life/12;
   },0);
   const totalBookVal=list.reduce((s,x)=>s+_calcBookValue(x),0);
-  // Totals bar
+  const totalMarketVal=list.reduce((s,x)=>s+(x.marketValue!=null?+x.marketValue:_calcBookValue(x)),0);
+  const totalMaintCost=list.reduce((s,x)=>s+_faMaintTotalCost(x),0);
+  // Totals bar (glass stats داخل الـ hero)
   const totalsEl=document.getElementById('fa-totals');
   if(totalsEl)totalsEl.innerHTML=`
-    <div class="stat" style="--c:var(--blue)"><div class="ico">🖥️</div><label>عدد الأصول</label><div class="val">${list.length}</div><div class="sub">${active.length} نشط</div></div>
-    <div class="stat" style="--c:var(--orange)"><div class="ico">💰</div><label>إجمالي التكلفة</label><div class="val">${fmt(totalCost)}</div><div class="sub">${c}</div></div>
-    <div class="stat" style="--c:var(--red)"><div class="ico">📉</div><label>إجمالي الإهلاك الشهري</label><div class="val">${fmt(totalMonthlyDep)}</div><div class="sub">${c}</div></div>
-    <div class="stat" style="--c:var(--teal)"><div class="ico">📊</div><label>إجمالي القيمة الدفترية</label><div class="val">${fmt(totalBookVal)}</div><div class="sub">${c}</div></div>`;
+    <div class="fa2-stat"><div class="lbl">🖥️ عدد الأصول</div><b>${list.length}</b><small>${active.length} نشط</small></div>
+    <div class="fa2-stat"><div class="lbl">💰 إجمالي التكلفة</div><b>${fmt(totalCost)}</b><small>${c}</small></div>
+    <div class="fa2-stat"><div class="lbl">📉 الإهلاك الشهري</div><b>${fmt(totalMonthlyDep)}</b><small>${c}</small></div>
+    <div class="fa2-stat"><div class="lbl">📊 القيمة الدفترية</div><b>${fmt(totalBookVal)}</b><small>${c}</small></div>
+    <div class="fa2-stat"><div class="lbl">💎 القيمة السوقية</div><b>${fmt(totalMarketVal)}</b><small>${c}</small></div>
+    <div class="fa2-stat"><div class="lbl">🛠️ إجمالي الصيانة</div><b>${fmt(totalMaintCost)}</b><small>${c}</small></div>`;
   const filtered=list.filter(x=>{
     if(filterCat&&x.cat!==filterCat)return false;
     if(filterStatus&&x.status!==filterStatus)return false;
@@ -20873,21 +21286,150 @@ function renderFixedAssets(){
     const life=+x.life||1;const salvage=+x.salvage||0;
     const monthlyDep=((+x.cost||0)-salvage)/life/12;
     const bookVal=_calcBookValue(x);
-    const statusBadge=x.status==='نشط'?'bg-green':x.status==='متوقف'?'bg-orange':'bg-gray';
-    return`<tr>
-      <td><strong>${esc(x.name)}</strong></td>
-      <td>${badge(x.cat||'—','bg-blue')}</td>
-      <td style="font-size:11px">${x.purchaseDate||'—'}</td>
-      <td style="color:var(--text2)">${fmt(+x.cost||0)} ${c}</td>
-      <td style="color:var(--text2)">${x.life} سنة</td>
-      <td style="color:var(--red)">${fmt(monthlyDep)} ${c}</td>
-      <td style="color:var(--teal);font-weight:700">${fmt(bookVal)} ${c}</td>
-      <td>${badge(x.dept||'عام','bg-purple')}</td>
-      <td>${badge(x.status,statusBadge)}</td>
-      <td><button class="btn btn-ghost btn-sm" onclick="openAssetModal(${x.id})">✏️</button> <button class="btn btn-sm" style="background:var(--red);color:#fff" onclick="delFixedAsset(${x.id})">🗑️</button></td>
-    </tr>`;
+    const pct=_assetAgeUsedPct(x);
+    const pctColor=pct>=90?'var(--red)':pct>=70?'var(--fa-amber)':'var(--fa-emerald)';
+    const statusColor=x.status==='نشط'?'rgba(16,224,160,.18);color:var(--fa-emerald)':x.status==='متوقف'?'rgba(245,192,69,.18);color:var(--fa-amber)':'rgba(156,163,175,.18);color:var(--text2)';
+    const maintCost=_faMaintTotalCost(x);
+    const costPerCase=(+x.casesLinked>0)?((+x.cost||0)+maintCost)/(+x.casesLinked):null;
+    const searchStr=[x.name,x.cat,x.dept,x.status,x.location,x.responsible].join(' ').toLowerCase();
+    return`<div class="fa2-card" data-search="${esc(searchStr)}">
+      <div class="fa2-card-top">
+        ${x.img?`<img class="fa2-card-img" src="${x.img}">`:`<div class="fa2-card-ph">🖥️</div>`}
+        <div style="flex:1;min-width:0">
+          <div class="fa2-card-name">${esc(x.name)}</div>
+          <div class="fa2-card-cat">${badge(x.cat||'—','bg-blue')} ${badge(x.dept||'عام','bg-purple')}</div>
+        </div>
+        <span class="fa2-status" style="background:${statusColor}">${x.status}</span>
+      </div>
+      <div class="fa2-card-body">
+        <div class="fa2-kv"><span>تاريخ الشراء</span><b>${x.purchaseDate||'—'}</b></div>
+        <div class="fa2-kv"><span>التكلفة</span><b>${fmt(+x.cost||0)} ${c}</b></div>
+        <div class="fa2-kv"><span>القيمة الدفترية</span><b style="color:var(--fa-emerald)">${fmt(bookVal)} ${c}</b></div>
+        <div class="fa2-kv"><span>💎 القيمة السوقية</span><b style="color:var(--fa-amber)">${x.marketValue!=null?fmt(+x.marketValue)+' '+c:'لم تُحدَّث'}</b></div>
+        ${x.location?`<div class="fa2-kv"><span>📍 المكان</span><b>${esc(x.location)}</b></div>`:''}
+        ${x.responsible?`<div class="fa2-kv"><span>👤 المسؤول</span><b>${esc(x.responsible)}</b></div>`:''}
+        ${maintCost?`<div class="fa2-kv"><span>🛠️ إجمالي الصيانة</span><b>${fmt(maintCost)} ${c}</b></div>`:''}
+        ${costPerCase!=null?`<div class="fa2-kv"><span>📊 تكلفة/حالة</span><b>${fmt(costPerCase)} ${c}</b></div>`:''}
+        ${!x.noDep?`<div class="fa2-bar"><i style="width:${pct}%;background:${pctColor}"></i></div><div style="font-size:10px;color:var(--text3)">استهلاك العمر الافتراضي: ${pct}%</div>`:''}
+        <div class="fa2-tags">
+          ${x.noDep?'<span class="fa2-tag ok">🌍 أصل لا يُهلك</span>':''}
+          ${_faMaintTag(x)}
+          ${_faWarrantyTag(x)}
+          ${(x.docs&&x.docs.length)?`<span class="fa2-tag">📎 ${x.docs.length} مستند</span>`:''}
+        </div>
+      </div>
+      <div class="fa2-card-foot">
+        <span style="font-size:10px;color:var(--text3)">#${x.id}</span>
+        <div class="fa2-actions">
+          <button title="تعديل" onclick="openAssetModal(${x.id})">✏️</button>
+          <button title="حذف" onclick="delFixedAsset(${x.id})">🗑️</button>
+        </div>
+      </div>
+    </div>`;
   }).join('');
   document.getElementById('fa-empty').style.display=filtered.length?'none':'block';
+  loadFactoryInfo();
+  renderFactoryValuation();
+}
+
+// ── نسبة استهلاك عمر الأصل + شارات المتابعة ──
+function _assetAgeUsedPct(asset){
+  const life=+asset.life||1;
+  const monthsElapsed=_monthsDiff(new Date(asset.purchaseDate||today()),new Date());
+  return Math.max(0,Math.min(100,Math.round(monthsElapsed/(life*12)*100)));
+}
+function _assetFollowUpBadges(x){
+  let html='';
+  if(x.noDep){
+    html+=`<div style="font-size:10px;color:var(--teal)">🌍 أصل لا يُهلك</div>`;
+  } else {
+    const pct=_assetAgeUsedPct(x);
+    const pctColor=pct>=90?'var(--red)':pct>=70?'var(--orange)':'var(--teal)';
+    html+=`<div style="font-size:10px;color:var(--text3);margin-bottom:2px">استهلاك العمر: <span style="color:${pctColor};font-weight:700">${pct}%</span></div>
+      <div style="width:100%;height:5px;background:var(--bg4);border-radius:3px;overflow:hidden;margin-bottom:4px"><div style="width:${pct}%;height:100%;background:${pctColor}"></div></div>`;
+    if(pct>=90&&x.status==='نشط')html+=`<div style="font-size:10px;color:var(--red)">⚠️ قارب على نهاية العمر الافتراضي</div>`;
+  }
+  const daysSinceUpdate=x.marketValueDate?Math.floor((new Date()-new Date(x.marketValueDate))/(1000*60*60*24)):null;
+  if(daysSinceUpdate===null)html+=`<div style="font-size:10px;color:var(--gold2)">🔔 لم تُحدَّد قيمة سوقية</div>`;
+  else if(daysSinceUpdate>180)html+=`<div style="font-size:10px;color:var(--gold2)">🔔 القيمة السوقية قديمة (${daysSinceUpdate} يوم)</div>`;
+  return html;
+}
+
+// ── بيانات المعمل (تُقرأ/تُحفظ من نفس labinfo المستخدم في باقي النظام) ──
+function loadFactoryInfo(){
+  const li=DB.get('labinfo')||{};
+  const sv=(id,v)=>{const el=document.getElementById(id);if(el&&document.activeElement!==el)el.value=v||'';};
+  sv('fi-name',li.name);sv('fi-addr',li.addr);sv('fi-founded',li.founded);
+  sv('fi-area',li.area);sv('fi-capital',li.capital);sv('fi-staff',li.staff);
+}
+function saveFactoryInfo(){
+  const li=DB.get('labinfo')||{};
+  const gv=id=>document.getElementById(id)?.value||'';
+  Object.assign(li,{name:gv('fi-name')||li.name,addr:gv('fi-addr')||li.addr,founded:gv('fi-founded'),area:gv('fi-area'),capital:gv('fi-capital'),staff:gv('fi-staff')});
+  DB.set('labinfo',li);
+  toast('تم حفظ بيانات المعمل');
+  renderFactoryValuation();
+}
+
+// ── التقييم الشامل لقيمة المعمل (قراءة فقط — لا يُعدّل أي حسابات محاسبية قائمة) ──
+function renderFactoryValuation(){
+  const body=document.getElementById('fa-valuation-body');
+  if(!body)return;
+  const c=cur();
+  const todayStr=today();
+  const ym=todayStr.slice(0,7);
+  const [yr,mo]=ym.split('-').map(Number);
+  const fromDate=ym+'-01';
+  const pnl=_calcPnL(fromDate,todayStr);
+  const {closingRaw,closingSemi,closingFin,treasury,fixedAssets,upTo}=pnl;
+  const totalStock=closingRaw+closingSemi+closingFin;
+  const trSetup=DB.get('trSetup')||{cash:'نقدي',net:'شبكة',bank:'بنكي'};
+  const trUpTo=treasury.filter(t=>upTo(t.date));
+  const totalCash=_boxBal(trUpTo,'cash')+_boxBal(trUpTo,'net')+_boxBal(trUpTo,'bank');
+  // مديونية العملاء
+  const arc=DB.get('archive')||[];
+  const arcUpTo=arc.filter(r=>{const d=r.archivedAt?new Date(r.archivedAt).toISOString().split('T')[0]:(r.date||'');return upTo(d);});
+  const arcTotalUpTo=arcUpTo.reduce((s,r)=>s+(+r.total||0),0);
+  const clientPaidUpTo=(DB.get('treasury')||[]).filter(t=>upTo(t.date||'')&&t.type==='in'&&!t.isTransfer&&(t.accType==='client'||t.accType==='archive')).reduce((s,t)=>s+(+t.amount||0),0);
+  const settledUpTo=(DB.get('settlements')||[]).filter(s=>upTo(s.date||'')).reduce((s,x)=>s+(+x.amount||0),0);
+  const clientsOBDebt=(DB.get('clients')||[]).reduce((s,cl)=>{const ob=_getClientOpeningBalance(cl.id);return s+(ob>0?ob:0);},0);
+  const totalClientDebt=Math.max(0,arcTotalUpTo-clientPaidUpTo-settledUpTo)+clientsOBDebt;
+  // الأصول الثابتة
+  const totalBookVal=fixedAssets.reduce((s,x)=>s+_calcBookValue(x),0);
+  const totalMarketVal=fixedAssets.reduce((s,x)=>s+(x.marketValue!=null?+x.marketValue:_calcBookValue(x)),0);
+  // مستحقات الموردين (الخصوم)
+  const suppDebt=(DB.get('suppliers')||[]).reduce((s,sup)=>{const d=getSupDebt(sup.id);return s+(+d.debt||0);},0);
+  const totalAssetsBook=totalCash+totalStock+totalClientDebt+totalBookVal;
+  const totalAssetsMarket=totalCash+totalStock+totalClientDebt+totalMarketVal;
+  const netWorthBook=totalAssetsBook-suppDebt;
+  const netWorthMarket=totalAssetsMarket-suppDebt;
+  const totalOriginalCost=fixedAssets.reduce((s,x)=>s+(+x.cost||0),0);
+  const growthPct=totalOriginalCost>0?Math.round((totalMarketVal-totalOriginalCost)/totalOriginalCost*100):0;
+  const Row=(lbl,val,color='var(--text)')=>`<tr><td style="padding:7px 10px;color:var(--text2)">${lbl}</td><td style="padding:7px 10px;text-align:left;font-weight:700;color:${color}">${fmt(val)} ${c}</td></tr>`;
+  body.innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div style="background:var(--bg3);border-radius:10px;padding:14px;text-align:center;border:1px solid var(--border)">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:6px">🧾 قيمة الأصول وقت الشراء (إجمالي التكلفة الأصلية)</div>
+        <div style="font-size:19px;font-weight:900;color:var(--text)">${fmt(totalOriginalCost)} ${c}</div>
+      </div>
+      <div style="background:rgba(201,168,76,.12);border-radius:10px;padding:14px;text-align:center;border:1px solid var(--gold)">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:6px">💎 قيمة الأصول الآن (بالتقدير السوقي)</div>
+        <div style="font-size:19px;font-weight:900;color:var(--gold2)">${fmt(totalMarketVal)} ${c}</div>
+        <div style="font-size:10px;color:${growthPct>=0?'var(--green)':'var(--red)'};margin-top:4px">${growthPct>=0?'▲':'▼'} ${Math.abs(growthPct)}% ${growthPct>=0?'زيادة':'نقص'} عن سعر الشراء</div>
+      </div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <tr><td colspan="2" style="padding:10px 10px 4px;font-size:11px;font-weight:800;color:var(--text3)">تفاصيل التقييم الشامل — يشمل النقدية والمخزون والمديونيات مع الأصول</td></tr>
+      ${Row('💵 النقدية بكل الخزائن',totalCash)}
+      ${Row('📦 المخزون (خامات+نصف مصنع+منتج نهائي)',totalStock)}
+      ${Row('🧾 مديونيات العملاء (مستحقة لنا)',totalClientDebt)}
+      ${Row('🖥️ الأصول الثابتة — دفترية',totalBookVal,'var(--teal)')}
+      ${Row('💎 الأصول الثابتة — سوقية تقديرية',totalMarketVal,'var(--gold2)')}
+      <tr style="border-top:1px solid var(--border)"><td style="padding:7px 10px;color:var(--text2)">📉 مستحقات الموردين (مطروحة)</td><td style="padding:7px 10px;text-align:left;font-weight:700;color:var(--red)">− ${fmt(suppDebt)} ${c}</td></tr>
+      <tr style="background:var(--bg3)"><td style="padding:10px;font-weight:800">🏭 صافي قيمة المعمل — بالقيمة الدفترية</td><td style="padding:10px;text-align:left;font-weight:900;font-size:14px;color:var(--teal)">${fmt(netWorthBook)} ${c}</td></tr>
+      <tr style="background:rgba(201,168,76,.12)"><td style="padding:10px;font-weight:800">🏭 صافي قيمة المعمل — بالقيمة السوقية التقديرية</td><td style="padding:10px;text-align:left;font-weight:900;font-size:15px;color:var(--gold2)">${fmt(netWorthMarket)} ${c}</td></tr>
+    </table>
+    <div style="font-size:11px;color:var(--text3);margin-top:8px">* الرقمان بيتحدّثوا لحظيًا حسب بيانات الخزينة والمخزون والمديونيات حتى تاريخ اليوم (${todayStr}). الرواتب المستحقة غير مطروحة هنا — راجع صفحة "الميزان المحاسبي" للتفاصيل الكاملة.</div>`;
 }
 
 function delFixedAsset(id){
@@ -20896,6 +21438,59 @@ function delFixedAsset(id){
     DB.set('fixed_assets',(DB.get('fixed_assets')||[]).filter(x=>x.id!==id));
     renderFixedAssets();toast('تم الحذف');
   });
+}
+
+// ── تقرير طباعة/PDF لكل الأصول الثابتة ──
+function printAssetsReport(){
+  const list=DB.get('fixed_assets')||[];
+  if(!list.length){toast('لا توجد أصول لعرضها في التقرير','err');return;}
+  const c=cur();
+  const li=DB.get('labinfo')||{};
+  const logo=li.logo?'<img src="'+li.logo+'" style="height:44px;object-fit:contain;border-radius:6px">':'<div style="font-size:30px">🖥️</div>';
+  const totalCost=list.reduce((s,x)=>s+(+x.cost||0),0);
+  const totalBookVal=list.reduce((s,x)=>s+_calcBookValue(x),0);
+  const totalMarketVal=list.reduce((s,x)=>s+(x.marketValue!=null?+x.marketValue:_calcBookValue(x)),0);
+  const totalMaint=list.reduce((s,x)=>s+_faMaintTotalCost(x),0);
+  const rows=list.map((x,i)=>{
+    const bookVal=_calcBookValue(x);
+    return '<tr style="'+(i%2===0?'background:#f8f9fa':'')+'">'
+      +'<td style="padding:6px 8px;border-bottom:1px solid #e5e7eb;font-size:10.5px;font-weight:700">'+esc(x.name)+'</td>'
+      +'<td style="padding:6px 8px;border-bottom:1px solid #e5e7eb;font-size:10px">'+esc(x.cat||'—')+'</td>'
+      +'<td style="padding:6px 8px;border-bottom:1px solid #e5e7eb;font-size:10px">'+(x.purchaseDate||'—')+'</td>'
+      +'<td style="padding:6px 8px;border-bottom:1px solid #e5e7eb;font-size:10px">'+fmt(+x.cost||0)+' '+c+'</td>'
+      +'<td style="padding:6px 8px;border-bottom:1px solid #e5e7eb;font-size:10px;font-weight:700;color:#0d9488">'+fmt(bookVal)+' '+c+'</td>'
+      +'<td style="padding:6px 8px;border-bottom:1px solid #e5e7eb;font-size:10px;font-weight:700;color:#8a6520">'+(x.marketValue!=null?fmt(+x.marketValue)+' '+c:'—')+'</td>'
+      +'<td style="padding:6px 8px;border-bottom:1px solid #e5e7eb;font-size:10px">'+esc(x.location||'—')+'</td>'
+      +'<td style="padding:6px 8px;border-bottom:1px solid #e5e7eb;font-size:10px">'+esc(x.responsible||'—')+'</td>'
+      +'<td style="padding:6px 8px;border-bottom:1px solid #e5e7eb;font-size:10px">'+esc(x.status)+'</td>'
+      +'</tr>';
+  }).join('');
+  const html='<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">'
+    +'<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap">'
+    +'<style>*{margin:0;padding:0;box-sizing:border-box;font-family:"Cairo",sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}body{background:#e8edf5;padding:20px}.pp{background:#fff;max-width:210mm;margin:0 auto;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.15);border:1px solid #dde3ee}@media print{body{background:#fff;padding:0}.pp{box-shadow:none;border-radius:0}@page{size:A4;margin:10mm}}</style>'
+    +'</head><body><div class="pp">'
+    +'<div style="background:#fff;border-bottom:3px solid #c9a84c;padding:16px 24px;display:flex;justify-content:space-between;align-items:center">'
+    +'<div style="display:flex;align-items:center;gap:12px">'+logo+'<div><div style="font-size:16px;font-weight:900;color:#0d1b3e">'+(li.name||'Perfect Lab Pro')+'</div><div style="font-size:10px;color:#666;margin-top:2px">'+(li.addr||'')+'</div></div></div>'
+    +'<div style="text-align:left"><div style="font-size:10px;color:#555;letter-spacing:2px;text-transform:uppercase">FIXED ASSETS REPORT</div><div style="font-size:13px;font-weight:700;color:#8a6520">تقرير الأصول الثابتة</div><div style="font-size:10px;color:#666;margin-top:2px">'+today()+'</div></div>'
+    +'</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:16px 24px">'
+    +'<div style="background:#f4f6fb;border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;color:#666">عدد الأصول</div><div style="font-size:15px;font-weight:900;color:#0d1b3e">'+list.length+'</div></div>'
+    +'<div style="background:#f4f6fb;border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;color:#666">إجمالي التكلفة</div><div style="font-size:14px;font-weight:900;color:#0d1b3e">'+fmt(totalCost)+' '+c+'</div></div>'
+    +'<div style="background:#eefaf7;border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;color:#666">القيمة الدفترية</div><div style="font-size:14px;font-weight:900;color:#0d9488">'+fmt(totalBookVal)+' '+c+'</div></div>'
+    +'<div style="background:rgba(201,168,76,.12);border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;color:#666">القيمة السوقية</div><div style="font-size:14px;font-weight:900;color:#8a6520">'+fmt(totalMarketVal)+' '+c+'</div></div>'
+    +'</div>'
+    +'<div style="padding:0 24px 20px">'
+    +'<table style="width:100%;border-collapse:collapse">'
+    +'<thead><tr style="background:linear-gradient(90deg,#1a3a6b,#0f2a52);color:#fff">'
+    +'<th style="padding:7px 8px;text-align:right;font-size:10px">الاسم</th><th style="padding:7px 8px;text-align:right;font-size:10px">الفئة</th><th style="padding:7px 8px;text-align:right;font-size:10px">تاريخ الشراء</th><th style="padding:7px 8px;text-align:right;font-size:10px">التكلفة</th><th style="padding:7px 8px;text-align:right;font-size:10px">القيمة الدفترية</th><th style="padding:7px 8px;text-align:right;font-size:10px">القيمة السوقية</th><th style="padding:7px 8px;text-align:right;font-size:10px">المكان</th><th style="padding:7px 8px;text-align:right;font-size:10px">المسؤول</th><th style="padding:7px 8px;text-align:right;font-size:10px">الحالة</th>'
+    +'</tr></thead><tbody>'+rows+'</tbody>'
+    +'<tfoot><tr style="background:#1a3a6b;color:#e8c96a"><td colspan="3" style="padding:8px;font-size:11px;font-weight:800">الإجمالي (إجمالي الصيانة: '+fmt(totalMaint)+' '+c+')</td><td style="padding:8px;font-size:11px;font-weight:900">'+fmt(totalCost)+' '+c+'</td><td style="padding:8px;font-size:11px;font-weight:900">'+fmt(totalBookVal)+' '+c+'</td><td style="padding:8px;font-size:11px;font-weight:900" colspan="4">'+fmt(totalMarketVal)+' '+c+'</td></tr></tfoot>'
+    +'</table>'
+    +'<div style="margin-top:16px;padding-top:10px;border-top:2px solid #e5e7eb;display:flex;justify-content:space-between;font-size:10px;color:#555">'
+    +'<span>🦷 '+(li.name||'Perfect Lab Pro')+'</span><span>طُبع: '+new Date().toLocaleDateString('ar-EG')+'</span>'
+    +'</div></div></div>'
+    +'\x3cscript>window.onload=function(){setTimeout(function(){window.print();},800);}<\/script></body></html>';
+  _doPrint(html);
 }
 
 // ============================================================
@@ -21975,6 +22570,24 @@ function clOpenMaps(){
   const map=document.getElementById('cl-map').value;
   if(map)window.open(map,'_blank');
   else window.open('https://maps.google.com','_blank');
+}
+
+// FIX #CLIENT-SEND-LOCATION: إرسال موقع العيادة عبر واتساب — يعرض قائمة اختيار
+// (المندوب المرتبط + أرقام الإدارة + جروبات واتساب + نسخ النص) بنفس نظام waOrCopy الموحّد
+function clSendLocationWa(clientId){
+  const clients=DB.get('clients')||[];
+  const cl=clientId?clients.find(x=>x.id===clientId):null;
+  // لو الفورم مفتوح على نفس العميل (أو عميل جديد لسه ما اتحفظش)، استخدم قيم الفورم الحالية
+  const formOpen=document.getElementById('ov-client')?.classList.contains('open');
+  const useForm=formOpen&&(!cl||_clId===clientId);
+  const name=useForm?(document.getElementById('cl-name')?.value||'').trim():(cl?.name||'');
+  const map=useForm?(document.getElementById('cl-map')?.value||'').trim():(cl?.map||'');
+  const delegateId=useForm?(document.getElementById('cl-delegate-id')?.value||''):(cl?.delegateId||'');
+  if(!map){toast('لا يوجد رابط موقع محفوظ لهذا العميل — سجّل الموقع أولاً','err');return;}
+  const msg=`📍 موقع عيادة: ${name||'بدون اسم'}\n${map}`;
+  const dgs=DB.get('delegates')||[];
+  const dg=delegateId?dgs.find(d=>d.id===delegateId):null;
+  waOrCopy(msg, dg?{type:'delegate',name:dg.name}:{});
 }
 
 // ===== Balance type toggle =====
