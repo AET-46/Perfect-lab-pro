@@ -80,6 +80,26 @@ tr.case-summary-row .cs-label{color:var(--text3)}
 tr.case-summary-row .cs-net{color:var(--gold2);font-weight:800;font-size:12.5px}
 tr.case-summary-row .cs-disc{color:var(--red);font-weight:700}
 tr.row-returned-from-proof{background:rgba(249,115,22,.08)!important;border-right:3px solid var(--orange)}
+/* FIX #CASE-GROUP-COMPACT: خلية بيانات العميل المشتركة (rowspan) بقت مضغوطة الحجم
+   بدل ما تاخد نفس ارتفاع الصف الطبيعي بالكامل — مع الحفاظ على إمكانية تحديد كل نوع
+   بمفرده عن طريق الـ checkbox الخاص بيه (rowClick) */
+.grp-shared-compact{padding:6px 10px!important;font-size:11px;line-height:1.5}
+.grp-shared-compact strong{font-size:12px}
+/* FIX #CASE-GROUP-BOX-HEADER: صندوق مضغوط لبيانات الحالة المرتبطة + صفوف عادية الحجم تحته */
+tr.case-grp-head-row td{padding:0!important;border-bottom:none!important}
+.grp-head-box{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
+  background:linear-gradient(135deg,rgba(20,184,166,.12),rgba(20,184,166,.03));
+  border:1px solid var(--border2);border-radius:10px;padding:6px 12px;margin:6px 0 2px}
+.grp-head-l{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.grp-head-case{font-size:10px;color:var(--text3)}
+.grp-head-name{font-size:12px}
+.grp-head-sub{font-size:10px;color:var(--teal)}
+.grp-head-r{display:flex;align-items:center;gap:10px}
+.grp-head-phone{font-size:11px;color:var(--text2)}
+.grp-head-total{font-size:11px;color:var(--gold2);font-weight:800}
+tr.case-grp-type-row td{border-bottom:1px dashed var(--border)}
+.type-pill{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:18px;background:var(--bg4);color:var(--text2);font-size:9.5px;font-weight:800;border-radius:6px;padding:0 5px;margin-left:4px}
+.type-pill-cell{white-space:nowrap}
 tr.row-returned-from-proof:hover{background:rgba(249,115,22,.14)!important}
 tr.row-returned-from-archive{background:rgba(168,85,247,.08)!important;border-right:3px solid var(--purple)}
 tr.row-returned-from-archive:hover{background:rgba(168,85,247,.14)!important}
@@ -5454,6 +5474,28 @@ function _noteMatchesRow(n,r){
 function _grpDiscount(rows){const r=rows.find(x=>+x.discount>0);return r?+r.discount:0;}
 function _grpSubtotal(rows){return rows.reduce((s,r)=>s+(+(r.grossTotal!=null?r.grossTotal:r.total)||0),0);}
 function _grpNet(rows){return rows.reduce((s,r)=>s+(+r.total||0),0);}
+// FIX #CASE-GROUP-BOX-HEADER: صندوق علوي مضغوط لبيانات الحالة المرتبطة/المكررة (تحل محل
+// الخلية الممتدة rowspan) — بيُستخدم في الدفتر/البروفه/الأرشيف بس لما تكون الحالة فعلاً
+// مقسّمة (isGrp)، من غير ما يمس شكل الصفوف العادية إطلاقاً.
+function _grpHeadHtml(rows,totalCols,isDup,extraBadges){
+  const r=rows[0];
+  const dupBadge=isDup?`<span class="return-badge" style="background:rgba(234,179,8,.18);color:#eab308">⚠️ مكرر</span>`:'';
+  return `<tr class="case-grp-head-row" data-case="${esc(_groupKey(r))}"><td colspan="${totalCols}">
+    <div class="grp-head-box">
+      <div class="grp-head-l">
+        <span class="grp-head-case">#${esc(String(r.caseId||'-'))}</span>
+        <strong class="grp-head-name">${esc(r.client)}</strong>
+        ${r.noteName?`<span class="grp-head-sub">${esc(r.noteName)}</span>`:''}
+        ${dupBadge}${extraBadges||''}
+        ${r.delegate?badge(esc(r.delegate),'bg-teal'):''}
+      </div>
+      <div class="grp-head-r">
+        ${r.phone?`<span class="grp-head-phone">${esc(r.phone)}</span>`:''}
+        <span class="grp-head-total">الإجمالي: ${fmt(_grpSubtotal(rows))} ج</span>
+      </div>
+    </div>
+  </td></tr>`;
+}
 function nid(t){
   const c=DB.get('ctr')||{};
   if(c[t]===undefined)c[t]=0;
@@ -5641,8 +5683,12 @@ function refreshCatTabs(page,list){
   if(!wrap)return;
   // للأرشيف: نحسب العدادات من كل السجلات دومًا، حتى لو الجدول المعروض محدود بعدد صفوف (arc-limit)
   const fullList=page==='archive'?(DB.get('archive')||[]):list;
-  const counts={all:fullList.length,zirconia:0,porcelain:0,removable:0,orthodontic:0,unknown:0,settled:0};
-  fullList.forEach(r=>{const cat=getProductionCat(r.product);if(counts[cat]!==undefined)counts[cat]++;if(page==='archive'&&isArchRowSettled(r.id))counts.settled++;});
+  const counts={all:0,zirconia:0,porcelain:0,removable:0,orthodontic:0,unknown:0,settled:0};
+  fullList.forEach(r=>{
+    if(page==='archive'&&isArchRowSettled(r.id)){counts.settled++;return;}
+    counts.all++;
+    const cat=getProductionCat(r.product);if(counts[cat]!==undefined)counts[cat]++;
+  });
   wrap.querySelectorAll('.tab').forEach(t=>{
     const cat=t.dataset.cat;
     const cntEl=t.querySelector('.cat-cnt');
@@ -5679,7 +5725,10 @@ function _filterRowsByDateText(tbId, rows, dateKey, fromId, toId, searchInputQue
     }
     const dateOk=(!from||d>=from)&&(!to||d<=to);
     const textOk=!q||_normAr(tr.textContent).includes(q);
-    const catOk=!activeCat||activeCat==='all'||(activeCat==='settled'&&catPage==='archive'?isArchRowSettled(row.id):getProductionCat(row.product)===activeCat);
+    const isSettledRow=catPage==='archive'&&isArchRowSettled(row.id);
+    const catOk=catPage==='archive'
+      ? (activeCat==='settled' ? isSettledRow : (!isSettledRow&&(!activeCat||activeCat==='all'||getProductionCat(row.product)===activeCat)))
+      : (!activeCat||activeCat==='all'||getProductionCat(row.product)===activeCat);
     showMap[row.id]=dateOk&&textOk&&catOk;
   });
   const groupShow={};
@@ -6041,8 +6090,12 @@ function goPage(pg, fromHistory){
   // إعادة تطبيق الصلاحيات بعد كل render
   setTimeout(applyActionPerms, 50);
   // FIX: scroll للأعلى — double rAF + setTimeout يضمن التمرير بعد انتهاء الرسم فعلياً
-  requestAnimationFrame(()=>{requestAnimationFrame(()=>{const c=document.querySelector('.content');if(c)c.scrollTop=0;});});
-  setTimeout(()=>{const c=document.querySelector('.content');if(c)c.scrollTop=0;},100);
+  // FIX #STICKY-BLANK-GAP: بعض متصفحات أندرويد بتسيب مسافة فاضية فوق الهيدر الـ sticky
+  // لو الصفحة اتفتحت من رابط فيه Hash مباشرة (مثلاً #fixed-assets) وكان الكيبورد
+  // لسه بيتقفل وقتها — بنصفّر سكرول الـ window كمان مش بس .content، ومحاولة متأخرة إضافية.
+  requestAnimationFrame(()=>{requestAnimationFrame(()=>{const c=document.querySelector('.content');if(c)c.scrollTop=0;window.scrollTo(0,0);});});
+  setTimeout(()=>{const c=document.querySelector('.content');if(c)c.scrollTop=0;window.scrollTo(0,0);},100);
+  setTimeout(()=>{const c=document.querySelector('.content');if(c)c.scrollTop=0;window.scrollTo(0,0);},450);
 }
 
 // Event delegation على الـ sidebar كله — أكثر موثوقية من listeners فردية
@@ -8519,18 +8572,27 @@ function renderDafter(){
       const retBadge=(isRetFromProof?`<span class="return-badge from-proof" title="أُرجع من البروفه بتاريخ ${esc(r.returnedAt||'')}">↩ بروفه ${esc(r.returnedAt||'')}</span>${pfBadge}`
                     :isRetFromArchive?`<span class="return-badge from-archive" title="أُرجع من الأرشيف بتاريخ ${esc(r.returnedAt||'')}">↩ أرشيف ${esc(r.returnedAt||'')}</span>${pfBadge}`:'')+dupBadge;
       const linkBadge=isGrp?`<span class="case-link-badge">🔗 ${idx+1}/${rows.length}</span>`:'';
-      const sharedHead=idx===0?`<td class="chk-col" rowspan="${rows.length}"><input type="checkbox" onclick="event.stopPropagation()"></td>
-    <td rowspan="${rows.length}"><span style="font-size:11px;color:var(--text3)">#${esc(String(r.caseId))}</span><br><strong>${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:10px;color:var(--teal)">${esc(r.noteName)}</span>`:''}${techProgressBadge(r)}</td><td rowspan="${rows.length}">${esc(r.phone||'-')}</td>`:'';
-      const delegateCell=idx===0?`<td rowspan="${rows.length}">${r.delegate?badge(esc(r.delegate),'bg-teal'):'—'}</td>`:'';
-      return`<tr data-id="${esc(r.id)}" data-case="${esc(_groupKey(r))}" data-cat="${getProductionCat(r.product)}" class="${rowCls}" onclick="groupAwareRowClick(this)">
-    ${sharedHead}
-    <td>${linkBadge}${esc(r.product)}</td><td>${esc(r.color||'-')}</td><td>${esc(String(r.qty))}</td>
+      const ownChk=`<td class="chk-col"><input type="checkbox" onclick="event.stopPropagation();rowClick(this.closest('tr'))"></td>`;
+      // FIX #CASE-GROUP-BOX-HEADER: للحالات المرتبطة/المكررة بس (isGrp) — صندوق مضغوط
+      // منفصل فوق + صف عادي الحجم مستقل لكل نوع (بدل الخلية الممتدة rowspan). الحالات
+      // العادية (مش مقسّمة) تفضل بنفس الشكل القديم تمامًا من غير أي تغيير.
+      const sharedHead=(!isGrp&&idx===0)?`<td class="grp-shared-compact" rowspan="${rows.length}"><span style="font-size:11px;color:var(--text3)">#${esc(String(r.caseId))}</span><br><strong>${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:10px;color:var(--teal)">${esc(r.noteName)}</span>`:''}${techProgressBadge(r)}</td><td rowspan="${rows.length}">${esc(r.phone||'-')}</td>`:'';
+      const delegateCell=(!isGrp&&idx===0)?`<td rowspan="${rows.length}">${r.delegate?badge(esc(r.delegate),'bg-teal'):'—'}</td>`:'';
+      const typeCells=isGrp?`<td class="type-pill-cell"><span class="type-pill">${idx+1}/${rows.length}</span> ${esc(r.product)}</td><td>${esc(r.color||'-')}</td><td>${esc(String(r.qty))}</td>
+    <td><strong style="color:var(--gold2)">${fmt(r.grossTotal!=null?r.grossTotal:r.total)}</strong></td>
+    <td>${retBadge}${esc(r.date||'-')}</td><td>${esc(r.notes||'-')}</td>`
+      :`<td>${linkBadge}${esc(r.product)}</td><td>${esc(r.color||'-')}</td><td>${esc(String(r.qty))}</td>
     <td><strong style="color:var(--gold2)">${fmt(r.grossTotal!=null?r.grossTotal:r.total)}</strong></td>
     ${delegateCell}
-    <td>${retBadge}${esc(r.date||'-')}</td><td>${esc(r.notes||'-')}</td>
+    <td>${retBadge}${esc(r.date||'-')}</td><td>${esc(r.notes||'-')}</td>`;
+      const dataRow=`<tr data-id="${esc(r.id)}" data-case="${esc(_groupKey(r))}" data-cat="${getProductionCat(r.product)}" class="${rowCls}${isGrp?' case-grp-type-row':''}" onclick="${isGrp?'rowClick(this)':'groupAwareRowClick(this)'}">
+    ${ownChk}${sharedHead}
+    ${typeCells}
     <td onclick="event.stopPropagation()"><button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2)" onclick="openRowDetail('${r.id}','dafter')" title="عرض التفاصيل">👁️</button> <button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--gold2)" onclick="editRowDafter('${r.id}')" title="تعديل هذا الصف">✏️</button></td>
     <td onclick="event.stopPropagation()"><button class="row-note-btn${rowNoteCount?` has-note`:''}" onclick="openRowNote('${r.id}','${esc(String(r.caseId))}','${esc(r.client)}','dafter')" title="ملاحظات الحالة">${rowNoteCount?`📝${rowNoteCount}`:'📝'}</button></td>
-  </tr>`;}).join('');
+  </tr>`;
+      return (isGrp&&idx===0)?_grpHeadHtml(rows,12,isDup)+dataRow:dataRow;
+    }).join('');
     const summaryRow=(isGrp||discount>0)?`<tr class="case-summary-row" data-grp="${esc(_groupKey(rows[0]))}"><td colspan="12">
       <span class="cs-label">📦 إجمالي الحالة #${esc(String(rows[0].caseId))}:</span> <span class="cs-label">${fmt(_grpSubtotal(rows))} ج</span>${discount>0?`&nbsp;—&nbsp;<span class="cs-label">خصم:</span> <span class="cs-disc">${fmt(discount)} ج</span>`:''}&nbsp;—&nbsp;<span class="cs-label">الصافي:</span> <span class="cs-net">${fmt(_grpNet(rows))} ج</span>
     </td></tr>`:'';
@@ -8710,18 +8772,24 @@ function renderProof(){
       const pfBadge=(r.payFactor===0.5)?` <span class="return-badge" style="background:rgba(239,68,68,.15);color:var(--red)" title="أجر الفنيين على هذه الحالة نص الثمن">½ نص الثمن</span>`:'';
       const retBadge=(isRetFromArchive?`<span class="return-badge from-archive" title="أُرجع من الأرشيف بتاريخ ${esc(r.returnedAt||'')}">↩ أرشيف ${esc(r.returnedAt||'')}</span>${pfBadge}`:'')+dupBadge;
       const linkBadge=isGrp?`<span class="case-link-badge">🔗 ${idx+1}/${rows.length}</span>`:'';
-      const sharedHead=idx===0?`<td class="chk-col" rowspan="${rows.length}"><input type="checkbox" onclick="event.stopPropagation()"></td>
-    <td rowspan="${rows.length}"><span style="font-size:11px;color:var(--text3)">#${esc(String(r.caseId))}</span><br><strong>${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:10px;color:var(--teal)">${esc(r.noteName)}</span>`:''}${techProgressBadge(r)}</td>`:'';
-      const delegateCell=idx===0?`<td rowspan="${rows.length}">${r.delegate?badge(esc(r.delegate),'bg-teal'):'—'}</td>`:'';
-      return`<tr data-id="${esc(r.id)}" data-case="${esc(_groupKey(r))}" data-cat="${getProductionCat(r.product)}" class="${rowCls}" onclick="groupAwareRowClick(this)">
-    ${sharedHead}
-    <td>${linkBadge}${esc(r.product)}</td><td>${esc(r.color||'-')}</td><td>${esc(String(r.qty))}</td>
+      const ownChk=`<td class="chk-col"><input type="checkbox" onclick="event.stopPropagation();rowClick(this.closest('tr'))"></td>`;
+      const sharedHead=(!isGrp&&idx===0)?`<td class="grp-shared-compact" rowspan="${rows.length}"><span style="font-size:11px;color:var(--text3)">#${esc(String(r.caseId))}</span><br><strong>${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:10px;color:var(--teal)">${esc(r.noteName)}</span>`:''}${techProgressBadge(r)}</td>`:'';
+      const delegateCell=(!isGrp&&idx===0)?`<td rowspan="${rows.length}">${r.delegate?badge(esc(r.delegate),'bg-teal'):'—'}</td>`:'';
+      const typeCells=isGrp?`<td class="type-pill-cell"><span class="type-pill">${idx+1}/${rows.length}</span> ${esc(r.product)}</td><td>${esc(r.color||'-')}</td><td>${esc(String(r.qty))}</td>
+    <td><strong style="color:var(--gold2)">${fmt(r.grossTotal!=null?r.grossTotal:r.total)}</strong></td>
+    <td>${retBadge}<span title="تاريخ الدفتر: ${esc(r.date||'-')}">${esc(r.proofDate||r.date||'-')}</span></td>`
+      :`<td>${linkBadge}${esc(r.product)}</td><td>${esc(r.color||'-')}</td><td>${esc(String(r.qty))}</td>
     <td><strong style="color:var(--gold2)">${fmt(r.grossTotal!=null?r.grossTotal:r.total)}</strong></td>
     ${delegateCell}
-    <td>${retBadge}<span title="تاريخ الدفتر: ${esc(r.date||'-')}">${esc(r.proofDate||r.date||'-')}</span></td>
+    <td>${retBadge}<span title="تاريخ الدفتر: ${esc(r.date||'-')}">${esc(r.proofDate||r.date||'-')}</span></td>`;
+      const dataRow=`<tr data-id="${esc(r.id)}" data-case="${esc(_groupKey(r))}" data-cat="${getProductionCat(r.product)}" class="${rowCls}${isGrp?' case-grp-type-row':''}" onclick="${isGrp?'rowClick(this)':'groupAwareRowClick(this)'}">
+    ${ownChk}${sharedHead}
+    ${typeCells}
     <td onclick="event.stopPropagation()"><button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2)" onclick="openRowDetail('${r.id}','proof')" title="عرض التفاصيل">👁️</button> <button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--gold2)" onclick="editRowProof('${r.id}')" title="تعديل هذا الصف">✏️</button></td>
     <td onclick="event.stopPropagation()"><button class="row-note-btn${rowNoteCount?` has-note`:''}" onclick="openRowNote('${r.id}','${esc(String(r.caseId))}','${esc(r.client)}','proof')" title="ملاحظات الحالة">${rowNoteCount?`📝${rowNoteCount}`:'📝'}</button></td>
-  </tr>`;}).join('');
+  </tr>`;
+      return (isGrp&&idx===0)?_grpHeadHtml(rows,10,isDup)+dataRow:dataRow;
+    }).join('');
     const summaryRow=(isGrp||discount>0)?`<tr class="case-summary-row" data-grp="${esc(_groupKey(rows[0]))}"><td colspan="10">
       <span class="cs-label">📦 إجمالي الحالة #${esc(String(rows[0].caseId))}:</span> <span class="cs-label">${fmt(_grpSubtotal(rows))} ج</span>${discount>0?`&nbsp;—&nbsp;<span class="cs-label">خصم:</span> <span class="cs-disc">${fmt(discount)} ج</span>`:''}&nbsp;—&nbsp;<span class="cs-label">الصافي:</span> <span class="cs-net">${fmt(_grpNet(rows))} ج</span>
     </td></tr>`:'';
@@ -8913,6 +8981,10 @@ function renderArchive(bypassLimit){
   // فلتر فئة نشط (غير "الكل") يتطلب تجاوز الحد كي يعمل الفلتر على كل البيانات لا الجزء المعروض فقط
   if(_catFilter.archive&&_catFilter.archive!=='all')bypassLimit=true;
   let list=(DB.get('archive')||[]).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  // FIX #SETTLED-OWN-TAB: الفواتير المسوّاة بقت تظهر بس تحت تبويب "⚖️ مسوّاة" —
+  // متبقاش ظاهرة مختلطة مع باقي الأرشيف في تبويب "الكل" أو أي تبويب فئة تانية.
+  if(_catFilter.archive==='settled'){ list=list.filter(r=>isArchRowSettled(r.id)); }
+  else { list=list.filter(r=>!isArchRowSettled(r.id)); }
   // تطبيق حد عدد الصفوف (إلا لو بحث نشط طلب تجاوزه)
   const limitSel=document.getElementById('arc-limit');
   const limitVal=limitSel?limitSel.value:'50';
@@ -8945,15 +9017,17 @@ function renderArchive(bypassLimit){
       const _settledInfo=getArchRowSettlement(r.id);
       const settledBadge=_settledInfo?`<span class="return-badge" style="background:rgba(147,51,234,.18);color:#a855f7" title="مسوّاة بمبلغ ${fmt(+_settledInfo.amount||0)} — السبب: ${esc(_settledInfo.reason||'')}">⚖️ مسوّاة</span>`:'';
       const linkBadge=isGrp?`<span class="case-link-badge">🔗 ${idx+1}/${rows.length}</span> `:'';
-      const sharedHead=idx===0?`<td class="chk-col" rowspan="${rows.length}"><input type="checkbox" onclick="event.stopPropagation()"></td>
-      <td rowspan="${rows.length}"><span style="font-size:11px;color:var(--text3)">#${esc(String(r.caseId||'-'))}</span><br><strong style="font-size:12px">${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:10px;color:var(--teal)">${esc(r.noteName)}</span>`:''}${dupBadge}${settledBadge}</td>
+      const ownChk=`<td class="chk-col"><input type="checkbox" onclick="event.stopPropagation();rowClick(this.closest('tr'))"></td>`;
+      const sharedHead=(!isGrp&&idx===0)?`<td class="grp-shared-compact" rowspan="${rows.length}"><span style="font-size:11px;color:var(--text3)">#${esc(String(r.caseId||'-'))}</span><br><strong style="font-size:12px">${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:10px;color:var(--teal)">${esc(r.noteName)}</span>`:''}${dupBadge}${settledBadge}</td>
       <td rowspan="${rows.length}">${r.delegate?badge(esc(r.delegate),'bg-teal'):'—'}</td>`:'';
-      return`<tr data-id="${esc(r.id)}" data-case="${esc(_groupKey(r))}" data-cat="${getProductionCat(r.product)}" class="${isDup?'row-duplicate':''}${_settledInfo?' row-settled':''}${isGrp?` case-grp-row${idx===0?' case-grp-first':''}`:''}" style="${_settledInfo?'opacity:.65':''}" onclick="groupAwareRowClick(this)">
-      ${sharedHead}
+      const dataRow=`<tr data-id="${esc(r.id)}" data-case="${esc(_groupKey(r))}" data-cat="${getProductionCat(r.product)}" class="${isDup?'row-duplicate':''}${_settledInfo?' row-settled':''}${isGrp?' case-grp-type-row':''}" onclick="${isGrp?'rowClick(this)':'groupAwareRowClick(this)'}">
+      ${ownChk}${sharedHead}
       <td>${linkBadge}${isGrp?esc(r.product||'')+' — ':''}<strong>${fmt(r.grossTotal!=null?r.grossTotal:r.total)}</strong></td>
       <td><span title="تاريخ الدفتر: ${esc(r.date||'-')}">${r.archivedAt?new Date(r.archivedAt).toISOString().split('T')[0]:esc(r.date||'-')}</span></td>
       <td onclick="event.stopPropagation()">${(()=>{const cnt=allNotes.filter(n=>_noteMatchesRow(n,r)).length;return`<button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2)" onclick="openRowDetail('${r.id}','archive')" title="عرض التفاصيل">👁️</button> <button class="row-note-btn${cnt?` has-note`:''}" onclick="openRowNote('${r.id}','${esc(String(r.caseId||r.invId||''))}','${esc(r.client)}','archive')" title="ملاحظات الحالة">${cnt?`📝${cnt}`:'📝'}</button>`;})()}</td>
-    </tr>`;}).join('');
+    </tr>`;
+      return (isGrp&&idx===0)?_grpHeadHtml(rows,6,isDup,settledBadge)+dataRow:dataRow;
+    }).join('');
     const summaryRow=(isGrp||discount>0)?`<tr class="case-summary-row" data-grp="${esc(_groupKey(rows[0]))}"><td colspan="6">
       <span class="cs-label">📦 إجمالي الحالة #${esc(String(rows[0].caseId||'-'))}:</span> <span class="cs-label">${fmt(_grpSubtotal(rows))} ج</span>${discount>0?`&nbsp;—&nbsp;<span class="cs-label">خصم:</span> <span class="cs-disc">${fmt(discount)} ج</span>`:''}&nbsp;—&nbsp;<span class="cs-label">الصافي:</span> <span class="cs-net">${fmt(_grpNet(rows))} ج</span>
     </td></tr>`:'';
@@ -18932,6 +19006,9 @@ function renderBackup(){
     window._currentUser={...profile};
     DB._uid = 'shared';
     document.getElementById('login-screen').classList.add('hidden');
+    // FIX #STICKY-BLANK-GAP: قفل الكيبورد فورًا (لو كان مفتوح من حقول الدخول) قبل ما ننتقل
+    // للصفحة المستهدفة من الرابط — تقليل احتمال بقاء مسافة فاضية فوق الهيدر الـ sticky
+    try{ document.activeElement?.blur(); }catch(e){}
     initPermsIfEmpty();
     applySession(window._currentUser);
     setTimeout(()=>{
