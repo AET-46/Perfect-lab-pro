@@ -1216,6 +1216,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
         <button class="btn btn-ghost" onclick="delSelDafter()" data-perm-hide="dafter.delete">حذف</button>
         <button class="btn btn-ghost" onclick="moveToProof()" data-perm-hide="dafter.to_proof">نقل للبروفه</button>
         <button class="btn btn-ghost" onclick="openTechAssign('dafter')" data-perm-hide="dafter.to_archive">نقل للأرشيف</button>
+        <button class="btn btn-ghost" id="dafter-sync-btn" onclick="manualSyncKey('dafter','dafter-sync-btn')" title="رفع فوري للبيانات لتأكيد المزامنة مع السيرفر">🔄 مزامنة يدوية</button>
         <div style="position:relative;display:inline-block">
           <button class="btn btn-ghost" onclick="togglePrintMenu('pm-dafter')">🖨️ طباعة ▾</button>
           <div id="pm-dafter" style="display:none;position:absolute;left:0;top:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;z-index:999;min-width:180px;padding:4px;box-shadow:0 8px 24px rgba(0,0,0,.3)">
@@ -1386,7 +1387,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
       </div>
     </div>
     <div class="card">
-      <div class="card-head"><h3>سجل الحركات</h3><div class="search-box"><input type="text" placeholder="بحث بالاسم/الملاحظات/المبلغ..." oninput="filterTreasury()" id="tr-flt-text"><span class="search-icon">&#x1F50D;</span></div></div>
+      <div class="card-head"><h3>سجل الحركات</h3><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><select id="tr-limit" onchange="renderTreasury()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:7px;font-family:'Cairo',sans-serif;font-size:11px;cursor:pointer"><option value="50">آخر 50 حركة</option><option value="100">آخر 100 حركة</option><option value="150">آخر 150 حركة</option><option value="all">كل الحركات</option></select><div class="search-box"><input type="text" placeholder="بحث بالاسم/الملاحظات/المبلغ..." oninput="filterTreasury()" id="tr-flt-text"><span class="search-icon">&#x1F50D;</span></div><button class="btn btn-ghost btn-sm" id="tr-sync-btn" onclick="manualSyncKey('treasury','tr-sync-btn')" title="رفع فوري للبيانات لتأكيد المزامنة مع السيرفر">🔄 مزامنة يدوية</button></div></div>
       <div class="tbl-wrap"><table><thead><tr><th class="chk-col"><input type="checkbox" onchange="toggleAllSel('tr-tb',this)"></th><th style="min-width:70px">رقم</th><th style="min-width:100px">التاريخ</th><th>النوع</th><th>الخزنة</th><th>الحساب</th><th>المبلغ</th><th>المستلم</th><th>ملاحظات</th><th></th></tr></thead><tbody id="tr-tb"></tbody></table></div>
       <div id="tr-empty" class="empty" style="display:none"><div class="ei">💰</div><p>لا توجد حركات</p></div>
     </div>
@@ -5018,148 +5019,193 @@ const DB = {
   },
 
   // FIX #REALTIME: مستمع مستمر للتغييرات من Firebase
+  // FIX #REALTIME-PERKEY: كان المستمع الواحد على 'value' فوق عقدة data/shared
+  // كاملة يخلي فايربيز يبعث السناپشوت الكامل لكل الجداول (دفتر/بروفة/أرشيف/
+  // خزنة/مشتريات...) عند أي تغيير في *أي جدول واحد* — تعديل حركة خزنة واحدة كان
+  // يرسل ويعيد معالجة كل الجداول الأخرى لكل جهاز متصل. الحل: نستمع بـ
+  // child_changed/child_added/child_removed على نفس عقدة data/shared، وفايربيز
+  // بالتصميم يبعث حمولة المفتاح (الجدول) اللي اتغيّر فعلاً بس. هذا لا يغيّر شكل
+  // التخزين ولا منطق الدمج (كل حالة خاصة زي activityLog/notif_log/treasury
+  // محتفظ بها بالكامل كما هي) ولا يعتمد على قائمة مفاتيح مكتوبة يدوياً (getAllData
+  // فيها تعليق موثّق بمفاتيح كانت ناقصة من النسخة الاحتياطية سابقاً — child_* هنا
+  // ديناميكي تلقائياً ولا يمكن نسيان جدول منه).
   startRealtimeSync(uid) {
     this._uid = uid || 'shared';
     if (!_fbRTDB) return;
     // تجنب تسجيل أكثر من listener
     if (this._realtimeRef) { try { this._realtimeRef.off(); } catch(e){} }
     this._realtimeRef = _fbRTDB.ref('data/shared');
-    this._realtimeRef.on('value', snap => {
-      if (!snap.exists()) return;
-      const data = snap.val();
-      // تجاهل التحديثات اللي مصدرها هذا الجهاز (منع loop)
-      const ignoredAt = window._lastLocalWrite || 0;
-      if (Date.now() - ignoredAt < 800) return;
-      Object.keys(data).forEach(k => {
-        // FIX #PENDING-WRITE-RACE: لو فيه كتابة محلية لسه في الطابور لهذا المفتاح
-        // (مجدولة بالـ debounce ولسه ما اتبعتت لفايربيز) تجاهل القيمة الواردة له
-        // الآن، لأنها قديمة بالضرورة (سناپشوت سابق لكتابتنا الحالية). تطبيقها هنا
-        // كان بيمسح التعديل المحلي الطازج (مثال: نقل حالة من الدفتر للبروفه يكتب
-        // مفتاحين بتوقيتين مختلفين شوية فيوصل صدى الأول قبل ما يخلص إرسال الثاني).
-        if (this._wt[k]) return;
-        // FIX #ACTLOG-MERGE: دمج سجل النشاط بدل استبداله — الأحدث يكسب
-        if(k === 'activityLog'){
-          const remoteLog = data[k];
-          if(!Array.isArray(remoteLog)) return;
-          const localLog = this._c['activityLog'];
-          if(Array.isArray(localLog) && localLog.length > 0){
-            // دمج: اجمع السجلين واحذف المكرر بالـ id ثم رتّب بالأحدث
-            const merged = [...localLog, ...remoteLog.filter(r=>!localLog.some(l=>l.id===r.id))];
-            merged.sort((a,b)=>(b.ts||0)-(a.ts||0));
-            if(merged.length>1000)merged.splice(1000);
-            this._c[k] = merged;
-            try { localStorage.setItem('plp_' + k, JSON.stringify(merged)); } catch(e) {}
-          } else {
-            this._c[k] = remoteLog;
-            try { localStorage.setItem('plp_' + k, JSON.stringify(remoteLog)); } catch(e) {}
-          }
-          return;
-        }
-        // FIX #NOTIFLOG-MERGE: نفس مبدأ activityLog — كتابة جهاز تاني كانت تمسح
-        // سجل إشعارات الجهاز الأول لأن notif_log لم يكن له merge مثل activityLog.
-        // النتيجة: إشعارات مرسلة فعلاً تختفي من السجل بعد كتابة جهاز آخر للـ Firebase.
-        if(k === 'notif_log'){
-          const remoteLog = data[k];
-          if(!Array.isArray(remoteLog)) return;
-          const localLog = this._c['notif_log'];
-          if(Array.isArray(localLog) && localLog.length > 0){
-            const merged = [...localLog, ...remoteLog.filter(r=>!localLog.some(l=>l.id===r.id))];
-            merged.sort((a,b)=>(b.ts||0)-(a.ts||0));
-            if(merged.length>500)merged.splice(500);
-            this._c[k] = merged;
-            try { localStorage.setItem('plp_' + k, JSON.stringify(merged)); } catch(e) {}
-          } else {
-            this._c[k] = remoteLog;
-            try { localStorage.setItem('plp_' + k, JSON.stringify(remoteLog)); } catch(e) {}
-          }
-          return;
-        }
-        // FIX #TREASURY-MERGE: نفس مبدأ activityLog/notif_log — جهازان يكتبان حركة
-        // خزنة تقريباً في نفس اللحظة كانا يمسحان حركة بعض لأن treasury كانت تُستبدل
-        // بالكامل (.set()) بدل الدمج. النتيجة: الحركة تظهر لحظياً ثم تختفي والرصيد
-        // يرجع كأنها لم تُدخل، رغم بقاء أثرها في سجل النشاط (المحمي بالدمج بالفعل).
-        // يدعم الآن شكلي التخزين: array قديمة أو object مفتاحه id (بعد الترحيل لكتابة
-        // جراحية لكل حركة على حدة — راجع _saveTreasury).
-        if(k === 'treasury'){
-          // FIX #TREASURY-TRUST-REMOTE-RACE-V2: المحاولة الأولى حطّت مهلة دقيقتين
-          // لحماية حركة لسه بتتزامن — لكن المستخدم أكّد إن الحركة اختفت *بعد* الدقيقتين
-          // بالظبط، يعني الكتابة الفعلية لفايربيز كانت متأخرة أو متعطّلة لفترة أطول من
-          // كده على نته. الحل الصحيح: مفيش حذف فعلي لحركات الخزنة في التطبيق أصلاً —
-          // أي "حذف" بيتم عن طريق نظام التسوية العكسية (قيد إلغاء) مش مسح حقيقي (راجع
-          // تعليق "delTr/deleteTr: replaced by reversal system"). يعني معندناش أي داعي
-          // نثق في "غياب" حركة من السناپشوت البعيد كدليل حذف — ده دايماً معناه إنها لسه
-          // في الطريق. فبدل مهلة زمنية اعتباطية، نحافظ دايماً على أي حركة محلية مش موجودة
-          // بعد، بالضبط زي نفس منطق المزامنة الأولية الآمن (راجع FIX #TREASURY-SYNC فوق).
-          const remoteTr = _treasuryValToArray(data[k]);
-          const localTr = this._c['treasury'];
-          let merged;
-          if(Array.isArray(localTr) && localTr.length){
-            const remoteIds = new Set(remoteTr.map(r=>r&&r.id));
-            const keepLocal = localTr.filter(l=>l && !remoteIds.has(l.id));
-            merged = keepLocal.length ? [...remoteTr, ...keepLocal] : remoteTr;
-          } else {
-            merged = remoteTr;
-          }
+    const _rtErr = err => { console.warn('Firebase realtime error:', err.message); };
+    const _applyIncomingKey = (k, v) => {
+      // FIX #PENDING-WRITE-RACE: لو فيه كتابة محلية لسه في الطابور لهذا المفتاح
+      // (مجدولة بالـ debounce ولسه ما اتبعتت لفايربيز) تجاهل القيمة الواردة له
+      // الآن، لأنها قديمة بالضرورة (سناپشوت سابق لكتابتنا الحالية). تطبيقها هنا
+      // كان بيمسح التعديل المحلي الطازج (مثال: نقل حالة من الدفتر للبروفه يكتب
+      // مفتاحين بتوقيتين مختلفين شوية فيوصل صدى الأول قبل ما يخلص إرسال الثاني).
+      // FIX #REALTIME-DROP-GLOBAL-GUARD: كان هنا حارس عام إضافي (window._lastLocalWrite,
+      // 800ms) بيتجاهل أي تحديث وارد لو حصلت أي كتابة محلية لأي مفتاح خلال آخر 800ms —
+      // مش بس كتابة لنفس المفتاح k. النتيجة: تعديل حقيقي جاي من جهاز تاني على مفتاح
+      // (مثلاً treasury) كان ممكن يتجاهل غلط لو جهازك كتب أي مفتاح تاني (مثلاً archive)
+      // في نفس اللحظة تقريباً — نفس عيلة باغ "الحركة تظهر وتختفي" بس بنطاق أوسع من اللازم.
+      // الحارس لكل مفتاح (_wt[k] فوق) كافي وأدق: بيتجاهل بس المفتاح اللي فعلاً في طابور
+      // الكتابة المحلية له، ومايأثرش على أي مفتاح تاني. الحارس العام اتشال بالكامل.
+      if (this._wt[k]) return;
+      // FIX #ACTLOG-MERGE: دمج سجل النشاط بدل استبداله — الأحدث يكسب
+      if(k === 'activityLog'){
+        const remoteLog = v;
+        if(!Array.isArray(remoteLog)) return;
+        const localLog = this._c['activityLog'];
+        if(Array.isArray(localLog) && localLog.length > 0){
+          // دمج: اجمع السجلين واحذف المكرر بالـ id ثم رتّب بالأحدث
+          const merged = [...localLog, ...remoteLog.filter(r=>!localLog.some(l=>l.id===r.id))];
+          merged.sort((a,b)=>(b.ts||0)-(a.ts||0));
+          if(merged.length>1000)merged.splice(1000);
           this._c[k] = merged;
           try { localStorage.setItem('plp_' + k, JSON.stringify(merged)); } catch(e) {}
-          try { _trPrevSnapshot = merged.map(r=>r?{...r}:r); } catch(e) {}
-          return;
+        } else {
+          this._c[k] = remoteLog;
+          try { localStorage.setItem('plp_' + k, JSON.stringify(remoteLog)); } catch(e) {}
         }
-        // FIX #KEYEDLIST-OBJECT-SHAPE-BUG: نفس التطبيع هنا كمان — المستمع اللحظي
-        // كان بيستقبل sup_payments/purchases كـ object لو جهاز تاني حفظها بالشكل
-        // الجراحي، فيتحول الكاش المحلي لـ object فجأة أثناء الاستخدام العادي.
-        const v = KEYED_LIST_KEYS.includes(k) ? _treasuryValToArray(data[k]) : data[k];
-        this._c[k] = v;
-        try { localStorage.setItem('plp_' + k, JSON.stringify(v)); } catch(e) {}
-      });
-      // إعادة render الصفحة الحالية إن كانت مفتوحة
-      // FIX #TOUCH-DEFER: لو المستخدم ماسك بيسحب دلوقتي، نأجل الريندر لحد ما يسيب إصبعه
-      // (استبدال DOM الجدول أثناء لمسة فعلية بيسبب "تجمد" ظاهري للسكرول على أندرويد)
-      const _doRealtimeRender=()=>{
-        try {
-          const activePg = document.querySelector('.page.active');
-          if (activePg) {
-            const pgId = activePg.id?.replace('pg-', '');
-            if (pgId && pgId !== 'dashboard') {
-              // FIX #PROSPECTS-REALTIME-RENDER: صفحة العملاء المحتملين كانت غائبة عن
-              // خريطة إعادة الرسم اللحظي — بيانات جهاز تاني كانت توصل وتتخزن بالخلفية
-              // لكن الشاشة ما كانتش بترسم نفسها تاني إلا لو المستخدم خرج ودخل الصفحة.
-              const renders = {dafter:renderDafter,proof:renderProof,archive:renderArchive,
-                treasury:renderTreasury,debts:renderDebts,inventory:renderInventory,
-                prospects:renderProspects};
-              if (renders[pgId]) {
-                // FIX #SCROLL-PRESERVE: حفظ موضع التمرير قبل استبدال innerHTML
-                // واسترجاعه فوراً بعد الرسم — بدون ده، أي تحديث لحظي بيرجّع المستخدم
-                // لقمة الجدول أو يقطع حركة اللمس وسط القراءة/السحب.
-                const ct=document.querySelector('.content');
-                const savedScroll=ct?ct.scrollTop:0;
-                renders[pgId]();
-                if(ct){
-                  ct.scrollTop=savedScroll;
-                  // درجة أمان إضافية: بعض المتصفحات تحتاج فريم إضافي بعد reflow الجدول الجديد
-                  requestAnimationFrame(()=>{ct.scrollTop=savedScroll;});
-                }
-              }
+        this._scheduleRealtimeRender();
+        return;
+      }
+      // FIX #NOTIFLOG-MERGE: نفس مبدأ activityLog — كتابة جهاز تاني كانت تمسح
+      // سجل إشعارات الجهاز الأول لأن notif_log لم يكن له merge مثل activityLog.
+      // النتيجة: إشعارات مرسلة فعلاً تختفي من السجل بعد كتابة جهاز آخر للـ Firebase.
+      if(k === 'notif_log'){
+        const remoteLog = v;
+        if(!Array.isArray(remoteLog)) return;
+        const localLog = this._c['notif_log'];
+        if(Array.isArray(localLog) && localLog.length > 0){
+          const merged = [...localLog, ...remoteLog.filter(r=>!localLog.some(l=>l.id===r.id))];
+          merged.sort((a,b)=>(b.ts||0)-(a.ts||0));
+          if(merged.length>500)merged.splice(500);
+          this._c[k] = merged;
+          try { localStorage.setItem('plp_' + k, JSON.stringify(merged)); } catch(e) {}
+        } else {
+          this._c[k] = remoteLog;
+          try { localStorage.setItem('plp_' + k, JSON.stringify(remoteLog)); } catch(e) {}
+        }
+        this._scheduleRealtimeRender();
+        return;
+      }
+      // FIX #TREASURY-MERGE: نفس مبدأ activityLog/notif_log — جهازان يكتبان حركة
+      // خزنة تقريباً في نفس اللحظة كانا يمسحان حركة بعض لأن treasury كانت تُستبدل
+      // بالكامل (.set()) بدل الدمج. النتيجة: الحركة تظهر لحظياً ثم تختفي والرصيد
+      // يرجع كأنها لم تُدخل، رغم بقاء أثرها في سجل النشاط (المحمي بالدمج بالفعل).
+      // يدعم الآن شكلي التخزين: array قديمة أو object مفتاحه id (بعد الترحيل لكتابة
+      // جراحية لكل حركة على حدة — راجع _saveTreasury).
+      if(k === 'treasury'){
+        // FIX #TREASURY-TRUST-REMOTE-RACE-V2: المحاولة الأولى حطّت مهلة دقيقتين
+        // لحماية حركة لسه بتتزامن — لكن المستخدم أكّد إن الحركة اختفت *بعد* الدقيقتين
+        // بالظبط، يعني الكتابة الفعلية لفايربيز كانت متأخرة أو متعطّلة لفترة أطول من
+        // كده على نته. الحل الصحيح: مفيش حذف فعلي لحركات الخزنة في التطبيق أصلاً —
+        // أي "حذف" بيتم عن طريق نظام التسوية العكسية (قيد إلغاء) مش مسح حقيقي (راجع
+        // تعليق "delTr/deleteTr: replaced by reversal system"). يعني معندناش أي داعي
+        // نثق في "غياب" حركة من السناپشوت البعيد كدليل حذف — ده دايماً معناه إنها لسه
+        // في الطريق. فبدل مهلة زمنية اعتباطية، نحافظ دايماً على أي حركة محلية مش موجودة
+        // بعد، بالضبط زي نفس منطق المزامنة الأولية الآمن (راجع FIX #TREASURY-SYNC فوق).
+        const remoteTr = _treasuryValToArray(v);
+        const localTr = this._c['treasury'];
+        let merged;
+        if(Array.isArray(localTr) && localTr.length){
+          const remoteIds = new Set(remoteTr.map(r=>r&&r.id));
+          const keepLocal = localTr.filter(l=>l && !remoteIds.has(l.id));
+          merged = keepLocal.length ? [...remoteTr, ...keepLocal] : remoteTr;
+        } else {
+          merged = remoteTr;
+        }
+        this._c[k] = merged;
+        try { localStorage.setItem('plp_' + k, JSON.stringify(merged)); } catch(e) {}
+        try { _trPrevSnapshot = merged.map(r=>r?{...r}:r); } catch(e) {}
+        this._scheduleRealtimeRender();
+        return;
+      }
+      // FIX #KEYEDLIST-OBJECT-SHAPE-BUG: نفس التطبيع هنا كمان — المستمع اللحظي
+      // كان بيستقبل sup_payments/purchases كـ object لو جهاز تاني حفظها بالشكل
+      // الجراحي، فيتحول الكاش المحلي لـ object فجأة أثناء الاستخدام العادي.
+      const val = KEYED_LIST_KEYS.includes(k) ? _treasuryValToArray(v) : v;
+      this._c[k] = val;
+      try { localStorage.setItem('plp_' + k, JSON.stringify(val)); } catch(e) {}
+      this._scheduleRealtimeRender();
+    };
+    this._realtimeRef.on('child_changed', snap => _applyIncomingKey(snap.key, snap.val()), _rtErr);
+    this._realtimeRef.on('child_added',   snap => _applyIncomingKey(snap.key, snap.val()), _rtErr);
+    // child_removed: نادر الحدوث (لا يوجد حذف فعلي لمعظم الجداول)، لكن نتعامل معه
+    // لو جدول كامل اتمسح صراحة (DB.del) عشان الكاش المحلي يتزامن صح.
+    this._realtimeRef.on('child_removed', snap => {
+      const k = snap.key;
+      if (this._wt[k]) return;
+      delete this._c[k];
+      try { localStorage.removeItem('plp_' + k); } catch(e) {}
+      this._scheduleRealtimeRender();
+    }, _rtErr);
+  },
+
+  // FIX #REALTIME-PERKEY: مؤجّل ومُجمّع (debounce 80ms) — لو أكثر من مفتاح
+  // اتغيّر تقريباً في نفس اللحظة (مثال: تحويل بين خزينتين، أو أول اتصال بالمستمع
+  // حيث child_added بيتنطلق مرة واحدة لكل مفتاح موجود مسبقاً دفعة واحدة)، نرسم
+  // الصفحة مرة وحدة بدل عشرات المرات خلال جزء من الثانية.
+  _rtRenderTimer: null,
+  _scheduleRealtimeRender() {
+    if (this._rtRenderTimer) clearTimeout(this._rtRenderTimer);
+    this._rtRenderTimer = setTimeout(() => { this._rtRenderTimer = null; this._triggerRealtimeRender(); }, 80);
+  },
+  // FIX #TOUCH-DEFER: لو المستخدم ماسك بيسحب دلوقتي، نأجل الريندر لحد ما يسيب إصبعه
+  // (استبدال DOM الجدول أثناء لمسة فعلية بيسبب "تجمد" ظاهري للسكرول على أندرويد)
+  _triggerRealtimeRender() {
+    if (window._userTouching) {
+      let _waitTicks=0;
+      const _waitRelease=setInterval(()=>{
+        _waitTicks++;
+        // حد أقصى أمان: لا نؤجل أكثر من ~10 ثوانٍ حتى لو ظل المستخدم ماسكاً باستمرار
+        if (!window._userTouching || _waitTicks>66) {
+          clearInterval(_waitRelease);
+          // FIX #TOUCH-GAP: هامش أمان صغير بعد ما المستخدم يسيب إصبعه — تجنباً
+          // لأي حركة inertia scrolling لسه شغالة على أندرويد فور رفع اللمسة
+          setTimeout(()=>this._doRealtimeRender(),80);
+        }
+      },150);
+    } else {
+      this._doRealtimeRender();
+    }
+  },
+  _doRealtimeRender() {
+    try {
+      const activePg = document.querySelector('.page.active');
+      if (activePg) {
+        const pgId = activePg.id?.replace('pg-', '');
+        if (pgId && pgId !== 'dashboard') {
+          // FIX #PROSPECTS-REALTIME-RENDER: صفحة العملاء المحتملين كانت غائبة عن
+          // خريطة إعادة الرسم اللحظي — بيانات جهاز تاني كانت توصل وتتخزن بالخلفية
+          // لكن الشاشة ما كانتش بترسم نفسها تاني إلا لو المستخدم خرج ودخل الصفحة.
+          // FIX #REALTIME-RENDER-EXPAND: أضفنا المشتريات/ديون الموردين/الموردين/صرف
+          // الأقسام/مخزون الأقسام بعد مراجعة كل دالة رسم على حدة — كلهم إعادة بناء
+          // جدول فقط (زي الخزنة بالظبط)، مفيش فورم مفتوح ممكن يتمسح، والقوائم
+          // المنسدلة (الأقسام) بتحافظ على القيمة المختارة قبل إعادة البناء. لم نضف
+          // ماستر داتا/الإشعارات/الملاحظات لأن فيها فورمات إدخال نشطة ممكن تتمسح
+          // تحت إيد المستخدم وهو بيكتب — تحتاج حماية إضافية قبل ما تتضاف.
+          const renders = {dafter:renderDafter,proof:renderProof,archive:renderArchive,
+            treasury:renderTreasury,debts:renderDebts,inventory:renderInventory,
+            prospects:renderProspects,purchases:renderPurchases,supdebts:renderSupDebts,
+            suppliers:renderSuppliers,'dept-withdrawal':renderDeptWithdrawals,
+            'dept-inventory':renderDeptInventory};
+          if (renders[pgId]) {
+            // FIX #SCROLL-PRESERVE: حفظ موضع التمرير قبل استبدال innerHTML
+            // واسترجاعه فوراً بعد الرسم — بدون ده، أي تحديث لحظي بيرجّع المستخدم
+            // لقمة الجدول أو يقطع حركة اللمس وسط القراءة/السحب.
+            const ct=document.querySelector('.content');
+            const savedScroll=ct?ct.scrollTop:0;
+            renders[pgId]();
+            if(ct){
+              ct.scrollTop=savedScroll;
+              // درجة أمان إضافية: بعض المتصفحات تحتاج فريم إضافي بعد reflow الجدول الجديد
+              requestAnimationFrame(()=>{ct.scrollTop=savedScroll;});
             }
           }
-        } catch(e) {}
-      };
-      if (window._userTouching) {
-        let _waitTicks=0;
-        const _waitRelease=setInterval(()=>{
-          _waitTicks++;
-          // حد أقصى أمان: لا نؤجل أكثر من ~10 ثوانٍ حتى لو ظل المستخدم ماسكاً باستمرار
-          if (!window._userTouching || _waitTicks>66) {
-            clearInterval(_waitRelease);
-            // FIX #TOUCH-GAP: هامش أمان صغير بعد ما المستخدم يسيب إصبعه — تجنباً
-            // لأي حركة inertia scrolling لسه شغالة على أندرويد فور رفع اللمسة
-            setTimeout(_doRealtimeRender,80);
-          }
-        },150);
-      } else {
-        _doRealtimeRender();
+        }
       }
-    }, err => { console.warn('Firebase realtime error:', err.message); });
+    } catch(e) {}
   },
 
   init() {}
@@ -5284,6 +5330,40 @@ function _saveTreasury(list){
     _fbRTDB.ref('data/shared/treasury').update(updates)
       .catch(e=>{ console.warn('⚠️ treasury FB write:', e.code||e); DB._notifySyncFail(); });
   }catch(e){ console.warn('⚠️ treasury FB write ex:', e); }
+}
+
+// FIX #MANUAL-SYNC: زر مزامنة يدوي — بيرفع القائمة الحالية المحلية لفايربيز فورًا
+// (من غير انتظار الـ debounce الطبيعي) ويدّي تأكيد صريح (نجاح/فشل) عن طريق toast،
+// بدل ما المستخدم يفضل غير متأكد هل البيانات فعلاً وصلت السيرفر ولا لسه. مفيد
+// خصوصًا بعد انقطاع نت مؤقت ظهر بسببه تنبيه فشل المزامنة، فيقدر المستخدم يجرّب
+// يرفع تاني يدوي بدل ما يستنى الكتابة التلقائية القادمة.
+function manualSyncKey(key, btnId){
+  if(!_fbRTDB){ toast('لا يوجد اتصال بفايربيز حالياً — تحقق من الإنترنت','err'); return; }
+  const btn = btnId ? document.getElementById(btnId) : null;
+  const origHTML = btn ? btn.innerHTML : '';
+  if(btn){ btn.disabled = true; btn.innerHTML = '⏳ جاري الرفع...'; }
+  const finish = (ok) => {
+    if(btn){ btn.disabled = false; btn.innerHTML = origHTML; }
+    toast(ok ? '✅ تم رفع البيانات للسيرفر بنجاح' : '⚠️ فشل الرفع — تحقق من الإنترنت وحاول تاني', ok ? undefined : 'err');
+  };
+  try {
+    const data = DB.get(key) || [];
+    if(key === 'treasury' && Array.isArray(data)){
+      // نفس منطق _saveTreasury الجراحي، لكن بدون الاعتماد على _trPrevSnapshot —
+      // بترفع كل حركة بمفتاح id-ها لضمان مطابقة السيرفر للنسخة المحلية بالكامل
+      // فعلياً، حتى لو حصل أي فرق ما كانش متسجل في اللقطة الداخلية.
+      const updates = {};
+      data.forEach(rec => { if(rec && rec.id) updates[rec.id] = _sanitizeForFB(rec); });
+      _fbRTDB.ref('data/shared/treasury').update(updates)
+        .then(()=>{ _trPrevSnapshot = data.map(r=>({...r})); finish(true); })
+        .catch(()=>finish(false));
+    } else {
+      if(DB._wt && DB._wt[key]){ clearTimeout(DB._wt[key]); delete DB._wt[key]; }
+      _fbRTDB.ref('data/shared/' + key).set(_sanitizeForFB(data))
+        .then(()=>finish(true))
+        .catch(()=>finish(false));
+    }
+  } catch(e) { console.warn('manualSyncKey error', key, e); finish(false); }
 }
 
 // FIX #BOX-BAL-SHARED: دالة موحّدة لحساب رصيد أي خزنة (أساسية أو إضافية) — كانت
@@ -9139,6 +9219,19 @@ function filterTreasury(){
   const qDigits=_dateQueryDigits(q);
   const isDateLikeQuery=q&&qDigits.length>=2&&/^[0-9٠-٩\/\-_.\s]+$/.test(q.trim());
   const list=DB.get('treasury')||[];
+  // FIX #TR-LIMIT-BYPASS: لو فيه فلتر نشط (تاريخ/نوع/خزنة/حساب/بحث) والجدول
+  // معروض بحد أقصى للصفوف (مش "كل الحركات"), لازم نعيد رسم الجدول بكل الصفوف
+  // أولاً (bypassLimit=true)، وإلا الفلتر هيشتغل بس على آخر N حركة المعروضة
+  // فعلاً بدل كل الحركات التاريخية — بالظبط نفس منطق filterArchiveCombined.
+  const anyFilterActive=!!(from||to||type||box||accType||q);
+  const trLimitSel=document.getElementById('tr-limit');
+  const trLimitActive=trLimitSel&&trLimitSel.value!=='all';
+  const domRowCount=tb.querySelectorAll('tr[data-id]').length;
+  if(anyFilterActive&&trLimitActive&&domRowCount<list.length){ renderTreasury(true); return; }
+  if(!anyFilterActive&&trLimitActive){
+    const trLimitN=parseInt(trLimitSel.value,10)||50;
+    if(domRowCount>trLimitN){ renderTreasury(); return; }
+  }
   const byId={};list.forEach(t=>byId[t.id]=t);
   let vis=0;
   tb.querySelectorAll('tr[data-id]').forEach(tr=>{
@@ -9165,7 +9258,11 @@ function resetTrFilters(){
   ['tr-flt-from','tr-flt-to','tr-flt-type','tr-flt-box','tr-flt-acctype','tr-flt-text'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   filterTreasury();
 }
-function renderTreasury(){
+function renderTreasury(bypassLimit){
+  // FIX #TR-RENDER-LIMIT: القائمة الكاملة (list) تُستخدم زي ما هي بدون أي تقصير في
+  // كل حسابات الأرصدة والإجماليات أسفل (bal/grandTotal/orphanTotal) — الأرصدة مجموع
+  // تراكمي لكل الحركات التاريخية ولازم تفضل كذلك. التحديد (limit) بيطبّق فقط على عدد
+  // الصفوف اللي بتترسم فعليًا في جدول الـ DOM (tr-tb) تحت، تحسينًا لسرعة الرسم فقط.
   const list=DB.get('treasury')||[];const ts=DB.get('trSetup')||{cash:'نقدي',net:'شبكة',bank:'بنكي',cur:'ج.م'};
   const extraBoxes=getExtraBoxes();
   // FIX #TR-FLT-BOX-STATIC-HTML: كان الـ <select id="tr-flt-box"> في الصفحة الثابتة (index)
@@ -9209,7 +9306,12 @@ function renderTreasury(){
     if(da!==db) return db.localeCompare(da);
     return (+b.num||0)-(+a.num||0);
   });
-  tb.innerHTML=sorted.map(t=>`<tr data-id="${t.id}">
+  // FIX #TR-RENDER-LIMIT: نفس منطق renderArchive's bypassLimit — نطبّق الحد على
+  // renderList (اللي بيترسم فعليًا) فقط، مش على sorted/list المستخدمة في الحسابات.
+  const trLimitSel=document.getElementById('tr-limit');
+  const trLimitVal=trLimitSel?trLimitSel.value:'50';
+  const renderList=(trLimitVal!=='all' && !bypassLimit) ? sorted.slice(0,parseInt(trLimitVal,10)||50) : sorted;
+  tb.innerHTML=renderList.map(t=>`<tr data-id="${t.id}">
     <td class="chk-col"><input type="checkbox" data-id="${t.id}" class="row-chk" data-tb="tr-tb"></td>
     <td>T-${esc(String(t.num||''))}</td><td>${esc(t.date||'-')}</td>
     <td>${t.type==='in'?badge('مقبوضات','bg-green'):badge('مدفوعات','bg-red')}</td>
