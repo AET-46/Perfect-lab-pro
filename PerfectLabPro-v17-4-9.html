@@ -5638,6 +5638,22 @@ document.getElementById('conf-ok').onclick=()=>{if(_cb&&typeof _cb.fn==='functio
 function badge(txt,cls){return`<span class="badge ${cls}">${txt}</span>`}
 // FIX #CLEANUP-DEAD-FEATURE: حُذفت stBadge — بقايا مفهوم "حالة الفاتورة
 // الفردية" (unpaid/partial/settled/done) الملغى لصالح _clientAccountSummary.
+// FIX #PHONE-FIELD-PRIORITY: كذا مكان في النظام (الخزنة، صفحة العملاء) كان بيفضّل
+// حقل "واتساب" المنفصل (cl.wa) على حقل "الهاتف" العادي (cl.phone) بمجرد وجوده، حتى
+// لو كان فيه بيانات تالفة/بصيغة غلط — فيفشل الإرسال من هذه الصفحات رغم إن نفس العميل
+// يشتغل عادي من الأرشيف/البروفة لأنهم بيستخدموا phone مباشرة. الحل: نجرّب كل رقم مرشح
+// بالترتيب ونستخدم أول رقم يعدّي التحقق الفعلي (نفس تحقق wa() بالضبط)، مش أول رقم موجود.
+function _normalizePhone(raw){
+  let n=(raw||'').replace(/[\s\-()]/g,'');
+  if(!n)return null;
+  n=n.replace(/^\+/,'');
+  if(n.startsWith('0')&&n.length===11&&/^01[0-9]/.test(n))n='20'+n.slice(1);
+  return /^\d{7,15}$/.test(n)?n:null;
+}
+function _firstValidPhone(...candidates){
+  for(const c of candidates){ if(c&&_normalizePhone(c))return c; }
+  return '';
+}
 function wa(phone,text,meta){
   let n=(phone||'').replace(/[\s\-()]/g,'');
   if(!n){toast('لا يوجد رقم هاتف','err');return}
@@ -7193,7 +7209,7 @@ function renderClients(){
     <td>${avHTML(c.img,'👤')}</td>
     <td><strong>${esc(c.name)}</strong></td>
     <td>${esc(c.phone||'-')}</td>
-    <td>${c.wa?`<button class="btn btn-green btn-sm" onclick="event.stopPropagation();wa('${esc(c.wa)}','مرحباً ${esc(c.name)}')">💬</button>`:'-'}</td>
+    <td>${_firstValidPhone(c.wa,c.phone)?`<button class="btn btn-green btn-sm" onclick="event.stopPropagation();wa('${esc(_firstValidPhone(c.wa,c.phone))}','مرحباً ${esc(c.name)}')">💬</button>`:'-'}</td>
     <td>${esc(c.gov||'-')}</td><td>${esc(c.city||'-')}</td><td style="font-size:11px">${esc(c.addr||'-')}</td>
     <td>${c.map?`<button class="btn btn-green btn-sm" onclick="event.stopPropagation();clSendLocationWa('${esc(c.id)}')" title="إرسال الموقع للمندوب/الديلفري">📍</button>`:'<span style="color:var(--text3);font-size:11px">—</span>'}</td>
     <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openClientModal('${esc(c.id)}')">✏️</button></td>
@@ -7312,6 +7328,17 @@ function saveClient(){
   const commRate=commRateRaw!==''&&commRateRaw!=null?+commRateRaw:(dg?.comm||0);
   const data={id:_clId||('c_'+Date.now()),name,phone:document.getElementById('cl-phone').value,wa:document.getElementById('cl-wa').value,phonesExtra:document.getElementById('cl-phones-extra').value,gov:document.getElementById('cl-gov').value,city:document.getElementById('cl-city').value,addr:document.getElementById('cl-addr').value,map:document.getElementById('cl-map').value,notes:document.getElementById('cl-notes').value,img:document.getElementById('cl-img-data').value,openingBalance,
     delegateId,delegateName:dg?.name||'',commRate};
+  const oldClient=_clId?existingClients.find(x=>x.id===_clId):null;
+  // FIX #CLIENT-NOOP-SAVE: كان الحفظ بيتم دايماً حتى لو المستخدم فتح تعديل عميل وضغط
+  // "حفظ" من غير ما يغيّر أي حرف — بيتسجل "تعديل عميل" في سجل النشاط وبيتبعت كتابة
+  // كاملة لفايربيز رغم إن البيانات قبل وبعد متطابقة تماماً (اتأكدت بالتجربة الفعلية:
+  // فتح عميل، حفظ من غير تعديل، ظهر سطر جديد بقبل=بعد). دلوقتي بنقارن أول حاجة، ولو
+  // مفيش أي فرق حقيقي، بنقفل المودال من غير أي كتابة أو تسجيل نشاط خالص.
+  if(!isNew && oldClient && JSON.stringify(oldClient)===JSON.stringify(data)){
+    closeOv('ov-client');
+    toast('لا يوجد تغيير للحفظ');
+    return;
+  }
   let list=DB.get('clients')||[];
   // تحديث ربط المندوب في جدول المناديب أيضاً
   if(delegateId){
@@ -7320,12 +7347,15 @@ function saveClient(){
     if(dgRec){
       if(!dgRec.clients)dgRec.clients=[];
       const exists=dgRec.clients.find(c=>c.clientId===data.id);
-      if(!exists)dgRec.clients.push({clientId:data.id,clientName:name,commEnabled:commRate>0,commRate});
-      else{exists.clientName=name;exists.commRate=commRate;exists.commEnabled=commRate>0;}
-      DB.set('delegates',dgs);
+      // FIX #DELEGATE-LINK-NOOP-SAVE: نفس علة saveClient بالظبط — كانت الكتابة لفايربيز
+      // بتتم دايماً حتى لو اسم/نسبة عمولة العميل عند المندوب متطابقين فعلاً.
+      if(!exists){dgRec.clients.push({clientId:data.id,clientName:name,commEnabled:commRate>0,commRate});DB.set('delegates',dgs);}
+      else if(exists.clientName!==name||exists.commRate!==commRate||exists.commEnabled!==(commRate>0)){
+        exists.clientName=name;exists.commRate=commRate;exists.commEnabled=commRate>0;
+        DB.set('delegates',dgs);
+      }
     }
   }
-  const oldClient=_clId?(DB.get('clients')||[]).find(x=>x.id===_clId):null;
   const oldName=oldClient?oldClient.name:null;
   if(_clId)list=list.map(x=>x.id===_clId?data:x);else list.push(data);
   DB.set('clients',list);
@@ -12528,9 +12558,9 @@ function sendTrWA(){
   let phone='';
   if(_trWAData.accName){
     const cl=(DB.get('clients')||[]).find(c=>c.name===_trWAData.accName);
-    phone=cl?.wa||cl?.phone||li.wa||li.ph1||'';
+    phone=_firstValidPhone(cl?.wa,cl?.phone,li.wa,li.ph1);
   }
-  if(!phone)phone=li.wa||li.ph1||'';
+  if(!phone)phone=_firstValidPhone(li.wa,li.ph1);
   const msg=buildTrWAMsg(_trWAData.tr,_trWAData.accName);
   if(!phone){copyTxt(msg);toast('تم نسخ الرسالة (لا يوجد رقم)');closeOv('ov-tr-wa');return;}
   wa(phone,msg);closeOv('ov-tr-wa');
@@ -14207,6 +14237,13 @@ function saveSupplier(){
   const supOpeningBalance=supBalType&&supBalAmount?{type:supBalType,amount:supBalAmount,note:supBalNote,date:today()}:null;
   const data={name,phone:document.getElementById('sup-phone').value.trim(),wa:document.getElementById('sup-wa').value.trim(),materials:document.getElementById('sup-materials').value.trim(),addr:document.getElementById('sup-addr').value.trim(),email:document.getElementById('sup-email').value.trim(),notes:document.getElementById('sup-notes').value.trim(),openingBalance:supOpeningBalance};
   const oldSup=_editSupId?sups.find(x=>x.id===_editSupId):null;
+  // FIX #SUPPLIER-NOOP-SAVE: نفس علة saveClient بالظبط — كان الحفظ والتسجيل في سجل
+  // النشاط بيتم دايماً حتى لو مفيش أي تغيير حقيقي في بيانات المورد.
+  if(oldSup && JSON.stringify({...oldSup,...data})===JSON.stringify(oldSup)){
+    closeOv('ov-supplier');
+    toast('لا يوجد تغيير للحفظ');
+    return;
+  }
   if(_editSupId){const i=sups.findIndex(x=>x.id===_editSupId);sups[i]={...sups[i],...data};}
   else sups.push({id:'SUP-'+Date.now(),...data,createdAt:today()});
   DB.set('suppliers',sups);
