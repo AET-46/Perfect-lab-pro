@@ -5053,6 +5053,14 @@ const DB = {
           const v = KEYED_LIST_KEYS.includes(k) ? _treasuryValToArray(data[k]) : data[k];
           this._c[k] = v;
           try { localStorage.setItem('plp_' + k, JSON.stringify(v)); } catch(e) {}
+          // FIX #KEYEDLIST-PREVSNAPSHOT-INIT: كان _keyedPrevSnapshot[k] فاضٍ طول الجلسة
+          // لحد أول عملية حفظ — فأول حفظ بعد فتح التطبيق كان بيعامل كل السجلات القديمة
+          // (بصورها base64) على إنها "جديدة" ويعالجها كلها مرة واحدة synchronous، وده
+          // سبب التجميد لثوانٍ وتذبذب حالة الاتصال بفايربيز بعده. تهيئتها هنا من نفس
+          // بيانات المزامنة الأولية يخلي أول حفظ يقارن صح من الأول.
+          if(typeof KEYED_LIST_KEYS !== 'undefined' && KEYED_LIST_KEYS.includes(k) && Array.isArray(v)){
+            try{ _keyedPrevSnapshot[k] = v.map(r=>({...r})); }catch(e){}
+          }
         });
         console.log('✅ Firebase sync: ' + Object.keys(data).length + ' keys');
       }
@@ -5175,6 +5183,12 @@ const DB = {
       const val = KEYED_LIST_KEYS.includes(k) ? _treasuryValToArray(v) : v;
       this._c[k] = val;
       try { localStorage.setItem('plp_' + k, JSON.stringify(val)); } catch(e) {}
+      // FIX #KEYEDLIST-PREVSNAPSHOT-INIT (استمرار): نحدّث البصمة السابقة هنا كمان
+      // لما يوصل تحديث حقيقي من جهاز تاني، وإلا أول حفظ محلي بعدها كان هيعامل
+      // تعديل الجهاز التاني على إنه "جديد" ويعالج صوره كلها من الأول تاني.
+      if(typeof KEYED_LIST_KEYS !== 'undefined' && KEYED_LIST_KEYS.includes(k) && Array.isArray(val)){
+        try{ _keyedPrevSnapshot[k] = val.map(r=>({...r})); }catch(e){}
+      }
       this._scheduleRealtimeRender();
     };
     this._realtimeRef.on('child_changed', snap => _applyIncomingKey(snap.key, snap.val()), _rtErr);
@@ -22094,6 +22108,9 @@ function renderProspectsList(){
     const d=filterDel?p.delegate===filterDel:true;
     return q&&r&&d;
   });
+  // FIX #PROSPECTS-NEWEST-FIRST: كانت بتتعرض بترتيب الإضافة الطبيعي (الأقدم فوق،
+  // الأحدث تحت) — رتّبناها بالأحدث فوق (createdAt تنازلياً) زي باقي شاشات النظام.
+  list=list.sort((a,b)=>(b.createdAt||b.id||0)-(a.createdAt||a.id||0));
   const tb=document.getElementById('pros-tb');const empty=document.getElementById('pros-empty');
   if(!list.length){tb.innerHTML='';if(empty)empty.style.display='';return;}
   if(empty)empty.style.display='none';
@@ -22140,7 +22157,9 @@ function renderProspectVisits(){
     const d=filterDel?v.delegate===filterDel:true;
     const dt=filterDate?v.date===filterDate:true;
     return d&&dt;
-  }).sort((a,b)=>b.date.localeCompare(a.date));
+  // FIX #PROSPECTS-NEWEST-FIRST: كانت بترتب باليوم بس، فزيارتين في نفس اليوم كان
+  // ترتيبهم بينهم عشوائي (بيبقى الأقدم فوق أحياناً) — ضفنا id كمعيار ترتيب ثانوي.
+  }).sort((a,b)=>b.date.localeCompare(a.date)||(b.id||0)-(a.id||0));
   const tb=document.getElementById('pros-visits-tb');const empty=document.getElementById('pros-visits-empty');
   if(!list.length){tb.innerHTML='';if(empty)empty.style.display='';return;}
   if(empty)empty.style.display='none';
