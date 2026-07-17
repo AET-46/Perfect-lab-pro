@@ -5447,6 +5447,25 @@ function _getOrphanBoxesBalance(list, knownBoxIds){
 // list=DB.get(key) وتعدّل عليه مباشرة (push أو تغيير حقل) قبل النداء هنا. عشان
 // نفس السبب، لازم لقطة مستقلة لكل مفتاح مش معتمدة على DB._c[key] وقت الاستدعاء.
 let _keyedPrevSnapshot = {};
+// FIX #KEYEDLIST-IMAGE-FREEZE: مقارنة "قديم/جديد" كانت بتعمل JSON.stringify على
+// السجل بالكامل — لسجلات فيها صور base64 (زي مركز/دكتور العميل المحتمل) ده معناه
+// معالجة عشرات آلاف الأحرف بشكل متزامن لكل سجل، لكل عملية حفظ، على الخيط الرئيسي.
+// النتيجة: تجميد ظاهري للواجهة (حتى شارة الاتصال بفايربيز نفسها بتقف) خصوصاً على
+// الموبايل أو مع عدد لا بأس به من العملاء المحتملين. الحل: نبني "بصمة خفيفة" للسجل
+// بنفس القيم لكن بعد استبدال أي نص طويل (زي base64) بطوله + بداية/نهاية قصيرة —
+// ده كافٍ عملياً لاكتشاف أي تغيير حقيقي في الصورة نفسها، من غير معالجة محتواها كاملاً.
+function _lightSigVal(v){
+  if(typeof v==='string' && v.length>200){
+    return v.length+':'+v.slice(0,24)+'…'+v.slice(-24);
+  }
+  return v;
+}
+function _lightSig(rec){
+  if(!rec) return '';
+  const out={};
+  for(const k in rec) out[k]=_lightSigVal(rec[k]);
+  return JSON.stringify(out);
+}
 function _saveKeyedList(key, list){
   const prevList = _keyedPrevSnapshot[key] || [];
   const prevMap = new Map(prevList.map(r=>[r.id,r]));
@@ -5462,7 +5481,7 @@ function _saveKeyedList(key, list){
   let hasChanges=false;
   newMap.forEach((rec,id)=>{
     const prev=prevMap.get(id);
-    if(!prev || JSON.stringify(prev)!==JSON.stringify(rec)){ updates[id]=_sanitizeForFB(rec); hasChanges=true; }
+    if(!prev || _lightSig(prev)!==_lightSig(rec)){ updates[id]=_sanitizeForFB(rec); hasChanges=true; }
   });
   prevMap.forEach((rec,id)=>{
     if(!newMap.has(id)){ updates[id]=null; hasChanges=true; }
@@ -9428,7 +9447,13 @@ function sendTrNotif(id){
   const tr=(DB.get('treasury')||[]).find(t=>t.id===id);
   if(!tr){toast('حركة غير موجودة','err');return;}
   const msg=buildFinancialMsg(tr.accName,+tr.amount,tr.receiver||'');
-  const phone=(DB.get('clients')||[]).find(c=>c.name===tr.accName)?.phone||'';
+  // FIX #TRNOTIF-PHONE-BY-ID: كانت بتدوّر على الهاتف بمطابقة الاسم بس (tr.accName)،
+  // فلو فيه عميلين بنفس الاسم أو الاسم اتغيّر بعد الحركة، كانت بتجيب رقم غلط أو فاضي
+  // رغم إن نفس العميل بترسله فاتورة/بروفه عادي (لأنهم بياخدوا الرقم من السجل نفسه).
+  // بنفس منطق printTrReceipt: نجرب clientId الأول، وبعدين الاسم كـ fallback بس.
+  const clientsAll=DB.get('clients')||[];
+  const matchedClient=clientsAll.find(c=>c.id===tr.clientId)||clientsAll.find(c=>c.name===tr.accName);
+  const phone=matchedClient?.phone||'';
   const url=phone?`https://wa.me/2${phone.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`:`https://wa.me/?text=${encodeURIComponent(msg)}`;
   window.open(url,'_blank');
 }
