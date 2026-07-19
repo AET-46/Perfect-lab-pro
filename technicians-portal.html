@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>🔧 مركز الفنيين — Perfect Lab</title>
+<!-- Firebase SDK — نفس تحميل السيستم الكبير -->
+<script>
+(function() {
+  function loadScript(url, fallback, cb) {
+    var s = document.createElement('script');
+    s.src = url; s.onload = cb;
+    s.onerror = function() {
+      var s2 = document.createElement('script');
+      s2.src = fallback; s2.onload = cb;
+      s2.onerror = function(){ console.error('Firebase SDK failed to load'); };
+      document.head.appendChild(s2);
+    };
+    document.head.appendChild(s);
+  }
+  loadScript('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js','https://cdn.jsdelivr.net/npm/firebase@10.12.0/firebase-app-compat.min.js',function(){
+    loadScript('https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js','https://cdn.jsdelivr.net/npm/firebase@10.12.0/firebase-database-compat.min.js',function(){});
+    loadScript('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js','https://cdn.jsdelivr.net/npm/firebase@10.12.0/firebase-auth-compat.min.js',function(){});
+  });
+})();
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+/* ═══ THEME 1 — أزرق فيسبوك (فاتح) — الافتراضي ═══ */
+:root, body[data-theme="blue"]{
+  --bg:#f0f2f5;--bg2:#ffffff;--bg3:#f0f2f5;--bg4:#e4e6eb;
+  --text:#050505;--text2:#65676b;--text3:#8a8d91;
+  --gold:#1877f2;--gold2:#42a5f5;
+  --teal:#00a884;--green:#31a24c;--red:#e41e3f;
+  --orange:#f7b928;--blue:#1877f2;--purple:#8c7ae6;
+  --border:#dadde1;--radius:14px;
+  --grad:linear-gradient(135deg,var(--gold),var(--gold2));
+  --ontext:#ffffff;
+}
+/* ═══ THEME 2 — داكن (فيسبوك دارك مود) ═══ */
+body[data-theme="darknavy"]{
+  --bg:#18191a;--bg2:#242526;--bg3:#3a3b3c;--bg4:#4e4f50;
+  --text:#e4e6eb;--text2:#b0b3b8;--text3:#8a8d91;
+  --gold:#2374e1;--gold2:#4599ff;
+  --teal:#00a884;--green:#4bd07d;--red:#f3425f;
+  --orange:#ffb74d;--blue:#2374e1;--purple:#a29bfe;
+  --border:#3e4042;--radius:14px;
+  --grad:linear-gradient(135deg,var(--gold),var(--gold2));
+  --ontext:#ffffff;
+}
+body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-height:100vh;transition:background .3s}
+.theme-btn{background:var(--bg3);border:1px solid var(--border);color:var(--gold2);border-radius:10px;width:30px;height:30px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* LOGIN */
+#login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;padding:20px}
+#login-screen.hidden{display:none}
+.login-card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:32px 24px;width:100%;max-width:360px;text-align:center}
+.login-card h1{font-size:24px;color:var(--gold2);margin-bottom:4px}
+.login-card p{font-size:14px;color:var(--text3);margin-bottom:24px}
+.login-card input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:16px;font-family:inherit;margin-bottom:12px;direction:rtl}
+.login-card input:focus{outline:none;border-color:var(--gold)}
+.btn-login{width:100%;background:var(--grad);color:var(--ontext);font-weight:900;font-size:17px;border:none;border-radius:10px;padding:13px;cursor:pointer;font-family:inherit}
+.login-err{color:var(--red);font-size:14px;margin-top:8px;display:none}
+
+/* HEADER */
+.header{background:color-mix(in srgb, var(--bg2) 92%, transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.header-title{font-size:17px;font-weight:900;color:var(--gold2)}
+.header-user{display:flex;align-items:center;gap:8px}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--grad);color:var(--ontext);font-weight:900;font-size:15px;display:flex;align-items:center;justify-content:center}
+.logout-btn{background:transparent;border:1px solid var(--border);color:var(--text3);border-radius:8px;padding:4px 10px;font-size:13px;cursor:pointer;font-family:inherit}
+
+/* TABS */
+.tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);padding:0 12px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1;padding:11px 8px;text-align:center;font-size:15px;font-weight:700;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:.2s}
+.tab.on{color:var(--gold2);border-bottom-color:var(--gold)}
+
+/* SEARCH */
+.search-wrap{padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:53px;z-index:90}
+.search-box{position:relative;display:flex;align-items:center}
+.search-box svg{position:absolute;right:12px;width:15px;height:15px;color:var(--text3);pointer-events:none}
+.search-box input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 36px 10px 32px;color:var(--text);font-size:15px;font-family:inherit;direction:rtl;transition:border-color .2s}
+.search-box input:focus{outline:none;border-color:var(--gold)}
+.search-box input::placeholder{color:var(--text3)}
+.date-filter-row{display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap}
+.date-filter-lbl{font-size:12px;color:var(--text3);font-weight:700}
+.date-input{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 8px;color:var(--text);font-size:13px;font-family:inherit}
+.date-filter-clear{background:none;border:none;color:var(--red);font-size:12px;font-weight:700;cursor:pointer;padding:4px}
+.search-clear{position:absolute;left:8px;width:20px;height:20px;border:none;background:var(--bg4);color:var(--text3);border-radius:50%;font-size:14px;cursor:pointer;display:none;align-items:center;justify-content:center;line-height:1}
+.search-clear.show{display:flex}
+
+/* CONTENT */
+.content{padding:14px;max-width:600px;margin:0 auto}
+
+/* CASE CARD */
+.case-card{background:color-mix(in srgb, var(--bg2) 90%, transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,.18)}
+.case-head{padding:12px 14px;display:flex;justify-content:space-between;align-items:flex-start}
+.case-client{font-size:16px;font-weight:900;color:var(--text)}
+.case-patient{font-size:13px;color:var(--teal);margin-top:2px}
+.case-id{font-size:12px;color:var(--text3)}
+.case-product{font-size:13px;color:var(--gold2);margin-top:3px}
+.case-date{font-size:12px;color:var(--text3)}
+.case-source{font-size:12px;padding:2px 7px;border-radius:20px;font-weight:700}
+.src-dafter{background:rgba(59,130,246,.15);color:var(--blue)}
+.src-proof{background:rgba(249,115,22,.15);color:var(--orange)}
+
+/* STAGES CIRCLES */
+.stages-row{padding:10px 14px 14px;display:flex;gap:10px;flex-wrap:wrap;border-top:1px solid var(--border)}
+.stage-btn{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;min-width:60px}
+.stage-circle{width:46px;height:46px;border-radius:16px;border:2px solid var(--border);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--text3);transition:.2s;text-align:center;line-height:1.2;padding:4px}
+.stage-circle.active{border-color:var(--green);background:rgba(34,197,94,.15);color:var(--green)}
+.stage-circle.pending{border-color:var(--orange);background:rgba(249,115,22,.15);color:var(--orange)}
+.stage-circle.approved{border-color:var(--teal);background:rgba(45,212,191,.15);color:var(--teal)}
+.stage-label{font-size:11px;color:var(--text3);text-align:center;max-width:60px}
+
+/* STATUS BADGE */
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:12px;font-weight:700}
+.badge-pending{background:rgba(249,115,22,.15);color:var(--orange)}
+.badge-approved{background:rgba(45,212,191,.15);color:var(--teal)}
+.badge-rejected{background:rgba(239,68,68,.15);color:var(--red)}
+
+/* SUMMARY CARD */
+.summary-card{background:color-mix(in srgb, var(--bg2) 90%, transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:0 4px 18px rgba(0,0,0,.18)}
+.summary-title{font-size:14px;color:var(--text3);margin-bottom:10px}
+.summary-amount{font-size:30px;font-weight:900;color:var(--gold2)}
+.summary-sub{font-size:13px;color:var(--text3);margin-top:2px}
+.stat-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:14px}
+.stat-row:last-child{border:none}
+.stat-label{color:var(--text3)}
+.stat-val{font-weight:700;color:var(--text)}
+
+/* EMPTY */
+.empty{text-align:center;padding:40px 20px;color:var(--text3)}
+.empty-icon{font-size:38px;margin-bottom:10px}
+.empty p{font-size:15px}
+
+/* TOAST */
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--bg3);color:var(--text);padding:10px 20px;border-radius:20px;font-size:15px;z-index:9999;opacity:0;transition:.3s;pointer-events:none;white-space:nowrap;border:1px solid var(--border)}
+#toast.show{opacity:1}
+
+/* LOADING */
+.spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;margin:30px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* CONFIRM MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:flex-end;justify-content:center;z-index:999;padding:20px}
+.modal-overlay.hidden{display:none}
+.modal-box{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:20px;width:100%;max-width:400px;text-align:center}
+.modal-box h3{font-size:17px;font-weight:900;margin-bottom:8px}
+.modal-box p{font-size:14px;color:var(--text3);margin-bottom:16px}
+.modal-btns{display:flex;gap:10px}
+.btn{padding:10px 20px;border-radius:10px;border:none;font-family:inherit;font-weight:700;font-size:15px;cursor:pointer;flex:1;transition:transform .12s}
+.btn:active{transform:scale(.96)}
+.btn-gold{background:var(--grad);color:var(--ontext);box-shadow:0 3px 12px color-mix(in srgb, var(--gold) 35%, transparent)}
+.btn-teal{background:rgba(45,212,191,.15);color:var(--teal);border:1px solid var(--teal)}
+.btn-sm{padding:6px 13px;font-size:13px}
+.btn-block{width:100%;padding:12px}
+.btn-ghost{background:var(--bg3);color:var(--text);border:1px solid var(--border)}
+.btn-red{background:rgba(239,68,68,.2);color:var(--red);border:1px solid var(--red)}
+
+/* HISTORY TAB */
+.hist-card{background:color-mix(in srgb, var(--bg2) 90%, transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;padding:12px 14px;box-shadow:0 4px 18px rgba(0,0,0,.18)}
+.hist-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.hist-client{font-size:15px;font-weight:900}
+.hist-meta{font-size:12px;color:var(--text3)}
+.hist-stages{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.hist-stage{font-size:12px;padding:3px 8px;border-radius:20px;font-weight:700}
+.hist-stage.approved{background:rgba(45,212,191,.15);color:var(--teal)}
+.hist-stage.pending{background:rgba(249,115,22,.15);color:var(--orange)}
+.hist-stage.rejected{background:rgba(239,68,68,.15);color:var(--red)}
+
+/* TEETH CHART — طقم أسنان علوي وسفلي */
+.teeth-btn{margin-top:10px;width:100%;background:var(--bg3);border:1px dashed var(--border);color:var(--gold2);border-radius:10px;padding:8px;font-size:13px;font-family:inherit;cursor:pointer;font-weight:700}
+.teeth-summary{font-size:12px;color:var(--teal);margin-top:4px}
+.tooth-modal-box{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:18px;width:100%;max-width:420px;max-height:92vh;overflow-y:auto}
+.tooth-arch{display:flex;flex-direction:column;align-items:center;gap:6px;margin:10px 0 16px}
+.tooth-arch-label{font-size:13px;color:var(--text3);font-weight:700;margin-bottom:4px}
+.tooth-row{display:flex;gap:4px;justify-content:center}
+.tooth{width:26px;height:32px;border-radius:8px 8px 10px 10px;border:2px solid var(--border);background:var(--bg3);color:var(--text3);font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s}
+.tooth.sel{background:var(--grad);border-color:var(--gold2);color:var(--ontext);transform:translateY(-3px)}
+.tooth-quad-gap{width:8px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <h1>🔧 مركز الفنيين</h1>
+    <p>Perfect Lab Pro — تسجيل دخول الفني</p>
+    <input type="text" id="lg-user" placeholder="اسم المستخدم">
+    <input type="password" id="lg-pass" placeholder="كلمة المرور">
+    <button class="btn-login" onclick="doLogin()">دخول</button>
+    <div class="login-err" id="lg-err"></div>
+  </div>
+</div>
+
+<!-- LOGIN SCREEN REMOVED PERMANENTLY -->
+
+<!-- HEADER -->
+<div class="header" id="main-header" style="display:none">
+  <div class="header-title">🔧 مركز الفنيين</div>
+  <div class="header-user">
+    <span style="font-size:14px;color:var(--text3)" id="hd-name"></span>
+    <span id="hd-dept" style="font-size:12px;background:var(--bg3);color:var(--gold2);border:1px solid var(--border);border-radius:20px;padding:2px 9px;display:none"></span>
+    <button class="theme-btn" onclick="cycleTheme()" title="تغيير الألوان">🎨</button>
+    <div class="avatar" id="hd-avatar">ف</div>
+    <button class="logout-btn" onclick="doLogout()">خروج</button>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs" id="main-tabs" style="display:none">
+  <div class="tab on" onclick="switchTab('dafter',this)">📒 الدفتر</div>
+  <div class="tab" onclick="switchTab('proof',this)">🔬 البروفه</div>
+  <div class="tab" onclick="switchTab('history',this)">📋 سجلي</div>
+  <div class="tab" onclick="switchTab('summary',this)">💰 مستحقاتي</div>
+</div>
+
+<!-- SEARCH -->
+<div class="search-wrap" id="search-wrap" style="display:none">
+  <div class="search-box">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input type="text" id="search-input" placeholder="بحث بالاسم أو رقم الحالة أو المنتج..." oninput="onSearchInput(this.value)">
+    <button class="search-clear" id="search-clear-btn" onclick="clearSearch()">✕</button>
+  </div>
+  <div class="date-filter-row">
+    <label class="date-filter-lbl">من:</label>
+    <input type="date" id="date-from" class="date-input" onchange="onDateFilterChange()">
+    <label class="date-filter-lbl">إلى:</label>
+    <input type="date" id="date-to" class="date-input" onchange="onDateFilterChange()">
+    <button class="date-filter-clear" id="date-clear-btn" onclick="clearDateFilter()" style="display:none">✕ مسح التاريخ</button>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content" id="main-content" style="display:none">
+  <div class="spinner" id="loading-spinner"></div>
+  <div id="tab-content"></div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay hidden" id="confirm-modal">
+  <div class="modal-box">
+    <h3 id="cm-title"></h3>
+    <p id="cm-msg"></p>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+      <button class="btn btn-gold" id="cm-ok">تأكيد</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN PICK MODAL -->
+<div class="modal-overlay hidden" id="admin-pick-modal">
+  <div class="modal-box">
+    <h3 style="font-size:15px;font-weight:900;margin-bottom:4px;color:var(--gold2)">📤 إرسال التقرير إلى</h3>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:10px">اختر رقم الإدارة المطلوب إرسال التقرير عليه</p>
+    <div id="admin-pick-list"></div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeAdminPick()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOOTH CHART MODAL -->
+<div class="modal-overlay hidden" id="tooth-modal">
+  <div class="tooth-modal-box">
+    <h3 style="font-size:17px;font-weight:900;margin-bottom:4px;color:var(--gold2)">🦷 اختيار الأسنان</h3>
+    <p style="font-size:13px;color:var(--text3);margin-bottom:10px" id="tooth-case-label"></p>
+    <div class="tooth-arch">
+      <div class="tooth-arch-label">علوي (Upper)</div>
+      <div class="tooth-row" id="tooth-upper-r"></div>
+    </div>
+    <div style="border-top:1px dashed var(--border);margin:4px 0 10px"></div>
+    <div class="tooth-arch">
+      <div class="tooth-arch-label">سفلي (Lower)</div>
+      <div class="tooth-row" id="tooth-lower-r"></div>
+    </div>
+    <div style="font-size:12px;color:var(--text3);text-align:center;margin-bottom:10px" id="tooth-count-label"></div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeToothModal()">إلغاء</button>
+      <button class="btn btn-gold" onclick="saveTeeth()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- 🔌 Firebase مُعطّل — نسخة محلية بالكامل (بدون إنترنت) للمراجعة فقط -->
+<script>
+function initFirebase(){ /* no-op — offline build */ }
+</script>
+
+<script>
+// ═══════════════════════════════════════════════
+// CONFIG & CONSTANTS
+// ═══════════════════════════════════════════════
+const FB_CONFIG={
+  apiKey:"AIzaSyC_j5V6H_hrO5DhBIlipBFYks0uZ2vrO3I",
+  authDomain:"perfect-lab-25.firebaseapp.com",
+  databaseURL:"https://perfect-lab-25-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:"perfect-lab-25",
+  storageBucket:"perfect-lab-25.firebasestorage.app",
+  messagingSenderId:"949326964182",
+  appId:"1:949326964182:web:ae88b4aae59dba2f7b3077"
+};
+
+// مراحل الفنيين — نفس ما في السيستم الأصلي
+const STAGE_LABELS={
+  'تصميم زيركون':'تصميم\nزيركون',
+  'بناء زيركون':'بناء\nزيركون',
+  'تفنيش زيركون':'تفنيش\nزيركون',
+  'تصميم معدن':'تصميم\nمعدن',
+  'ليزر':'ليزر',
+  'بناء بورسلين':'بناء\nبورسلين',
+  'تفنيش معدن':'تفنيش\nمعدن',
+  'خراطة':'خراطة'
+};
+
+// المراحل المناسبة لكل نوع منتج
+function getStagesForProduct(productName){
+  const n=(productName||'').toLowerCase();
+  if(n.includes('زيركون'))return['تصميم زيركون','بناء زيركون','تفنيش زيركون'];
+  if(n.includes('معدن')||n.includes('بورسلين')||n.includes('فيس'))return['تصميم معدن','ليزر','بناء بورسلين','تفنيش معدن'];
+  return[]; // متحرك/تقويم — بدون مراحل
+}
+
+// مراحل كل قسم — لتقييد الفني على مراحل قسمه فقط
+const DEPARTMENT_STAGES={
+  'زيركون':['تصميم زيركون','بناء زيركون','تفنيش زيركون'],
+  'معدن':['تصميم معدن','ليزر','بناء بورسلين','تفنيش معدن']
+};
+// المراحل اللي يقدر الفني الحالي يشتغل عليها فعلاً (حسب قسمه)
+function getStagesForTech(productName){
+  const stages=getStagesForProduct(productName);
+  const dept=_user&&_user.department;
+  if(!dept||!DEPARTMENT_STAGES[dept])return stages; // فني عام (بدون قسم محدد) يشوف كل المراحل
+  const allowed=DEPARTMENT_STAGES[dept];
+  return stages.filter(s=>allowed.includes(s));
+}
+
+// ═══════════════════════════════════════════════
+// طقم الأسنان — ترقيم FDI (عالمي) — 32 سن
+// ═══════════════════════════════════════════════
+const TEETH_UPPER_R=[18,17,16,15,14,13,12,11]; // علوي يمين (يعرض معكوس بصريًا RTL)
+const TEETH_UPPER_L=[21,22,23,24,25,26,27,28]; // علوي يسار
+const TEETH_LOWER_R=[48,47,46,45,44,43,42,41]; // سفلي يمين
+const TEETH_LOWER_L=[31,32,33,34,35,36,37,38]; // سفلي يسار
+let _toothCaseId=null,_toothSelected=[];
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let _db=null,_user=null,_curTab='dafter';
+let _dafter=[],_proof=[],_myLogs=[];
+let _searchQuery='';
+// (رقم الإدارة بقى ديناميكي من data/shared/labinfo — شوف _getAdminNumbers أسفل)
+
+// ═══════════════════════════════════════════════
+// 🔌 FIREBASE — اتصال حقيقي بنفس قاعدة بيانات السيستم الكبير
+// ═══════════════════════════════════════════════
+const firebaseConfig={
+  apiKey:"AIzaSyC_j5V6H_hrO5DhBIlipBFYks0uZ2vrO3I",
+  authDomain:"perfect-lab-25.firebaseapp.com",
+  databaseURL:"https://perfect-lab-25-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:"perfect-lab-25",
+  storageBucket:"perfect-lab-25.firebasestorage.app",
+  messagingSenderId:"949326964182",
+  appId:"1:949326964182:web:ae88b4aae59dba2f7b3077"
+};
+let _fbRTDB=null,_fbInitDone=false,_fbAuthPending=false;
+function _initFirebase(){
+  if(typeof firebase==='undefined')return false;
+  if(_fbInitDone)return true;
+  if(_fbAuthPending)return false;
+  if(typeof firebase.database!=='function')return false;
+  if(typeof firebase.auth!=='function')return false;
+  try{
+    if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
+    _fbAuthPending=true;
+    firebase.auth().signInAnonymously().then(function(){
+      _fbRTDB=firebase.database();_fbInitDone=true;_fbAuthPending=false;
+      console.log('✅ Firebase: متصل بقاعدة بيانات PerfectLabPro');
+    }).catch(function(e){_fbAuthPending=false;console.error('Firebase auth error:',e&&(e.code||e.message));});
+    return false;
+  }catch(e){console.warn('Firebase init error:',e);return false;}
+}
+function waitForFirebase(){
+  return new Promise(resolve=>{
+    if(_fbInitDone){resolve(true);return;}
+    let tries=0;
+    const iv=setInterval(()=>{
+      if(!_fbInitDone)_initFirebase();
+      tries++;
+      if(_fbInitDone||tries>100){clearInterval(iv);resolve(_fbInitDone);}
+    },100);
+  });
+}
+_initFirebase();
+async function fbGet(path){
+  await waitForFirebase();
+  if(!_fbRTDB)return null;
+  const snap=await _fbRTDB.ref(path).get();
+  return snap.exists()?snap.val():null;
+}
+async function fbSet(path,val){
+  await waitForFirebase();
+  if(!_fbRTDB)throw new Error('لا يوجد اتصال بالإنترنت');
+  return _fbRTDB.ref(path).set(val);
+}
+async function fbUpdate(path,val){
+  await waitForFirebase();
+  if(!_fbRTDB)throw new Error('لا يوجد اتصال بالإنترنت');
+  return _fbRTDB.ref(path).update(val);
+}
+async function fbPush(path,val){
+  await waitForFirebase();
+  if(!_fbRTDB)throw new Error('لا يوجد اتصال بالإنترنت');
+  const ref=_fbRTDB.ref(path).push();
+  await ref.set({...val,id:ref.key});
+  return ref.key;
+}
+function toArr(v){if(!v)return[];return Array.isArray(v)?v.filter(Boolean):Object.values(v).filter(Boolean);}
+async function hashPassword(pass){
+  const enc=new TextEncoder();
+  const buf=await crypto.subtle.digest('SHA-256',enc.encode(pass));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function verifyPassword(pass,stored){
+  if(!stored)return false;
+  if(stored.length!==64)return pass===stored;
+  return (await hashPassword(pass))===stored;
+}
+
+// ═══════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+// THEME SWITCHER — 3 ألوان دافئة عصرية
+// ═══════════════════════════════════════════════
+const THEMES=['blue','darknavy'];
+const THEME_NAMES={blue:'☀️ أبيض وأزرق',darknavy:'🌙 داكن'};
+function applyTheme(t){document.body.setAttribute('data-theme',t);localStorage.setItem('tp_theme',t);}
+function cycleTheme(){
+  const cur=localStorage.getItem('tp_theme')||'blue';
+  const next=THEMES[(THEMES.indexOf(cur)+1)%THEMES.length];
+  applyTheme(next);
+  toast(THEME_NAMES[next]);
+}
+(function(){applyTheme(localStorage.getItem('tp_theme')||'blue');})();
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function toast(msg,type='ok'){
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.style.background=type==='err'?'rgba(239,68,68,.9)':type==='warn'?'rgba(249,115,22,.9)':'var(--bg3)';
+  el.classList.add('show');
+  clearTimeout(window._toastT);
+  window._toastT=setTimeout(()=>el.classList.remove('show'),2500);
+}
+function fmt(n){return Number(n||0).toLocaleString('ar-EG');}
+function today(){return new Date().toISOString().split('T')[0];}
+function timeNow(){return new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});}
+
+function showModal(title,msg,onOk){
+  document.getElementById('cm-title').textContent=title;
+  document.getElementById('cm-msg').textContent=msg;
+  document.getElementById('cm-ok').onclick=()=>{closeModal();onOk();};
+  document.getElementById('confirm-modal').classList.remove('hidden');
+}
+function closeModal(){document.getElementById('confirm-modal').classList.add('hidden');}
+
+// ═══════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════
+async function doLogin(){
+  const uname=document.getElementById('lg-user').value.trim();
+  const pass=document.getElementById('lg-pass').value.trim();
+  if(!uname||!pass){toast('أدخل الاسم وكلمة المرور','err');return;}
+  try{
+    await waitForFirebase();
+    if(!_fbRTDB){
+      const saved=localStorage.getItem('tp_user');
+      if(saved){_user=JSON.parse(saved);showApp();return;}
+      showLoginErr('لا يوجد اتصال بالإنترنت');return;
+    }
+    const users=toArr(await fbGet('data/shared/users'));
+    const u=users.find(x=>x.role==='technician'&&(x.name===uname||x.email===uname)&&x.active!==false);
+    if(!u||!(await verifyPassword(pass,u.passHash||u.pass||''))){showLoginErr();return;}
+    const techs=toArr(await fbGet('data/shared/technicians'));
+    const tech=techs.find(t=>t.name===u.name)||{};
+    // 💰 الراتب الثابت (لو موجود) بيتخزّن في data/shared/employees مش في technicians
+    const employees=toArr(await fbGet('data/shared/employees'));
+    const emp=employees.find(e=>e.name===u.name)||{};
+    _user={name:u.name,id:tech.id||u.uid||u.name,rates:tech.rates||{},productRates:tech.productRates||[],department:tech.spec||'',salary:+emp.salary||0};
+    localStorage.setItem('tp_user',JSON.stringify(_user));
+    showApp();
+  }catch(e){
+    console.error(e);
+    const saved=localStorage.getItem('tp_user');
+    if(saved){_user=JSON.parse(saved);showApp();}
+    else showLoginErr('خطأ في الاتصال بالنظام');
+  }
+}
+
+function showLoginErr(msg='اسم المستخدم أو كلمة المرور غلط'){
+  const el=document.getElementById('lg-err');
+  el.textContent=msg;el.style.display='block';
+}
+
+function doLogout(){
+  showModal('تسجيل الخروج','هل تريد الخروج؟',()=>{
+    _user=null;
+    localStorage.removeItem('tp_user');
+    location.reload();
+  });
+}
+
+// ═══════════════════════════════════════════════
+// APP SHELL
+// ═══════════════════════════════════════════════
+function showApp(){
+  document.getElementById('login-screen')?.classList.add('hidden');
+  document.getElementById('main-header').style.display='flex';
+  document.getElementById('main-tabs').style.display='flex';
+  document.getElementById('main-content').style.display='block';
+  document.getElementById('hd-name').textContent=_user.name;
+  document.getElementById('hd-avatar').textContent=(_user.name||'ف')[0];
+  const deptEl=document.getElementById('hd-dept');
+  if(_user.department){deptEl.textContent='قسم '+_user.department;deptEl.style.display='inline-block';}
+  else deptEl.style.display='none';
+  document.getElementById('search-wrap').style.display='block';
+  loadTab('dafter');
+}
+
+function switchTab(tab,el){
+  _curTab=tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  // إعادة ضبط البحث عند تغيير التاب
+  _searchQuery='';
+  const si=document.getElementById('search-input');
+  if(si)si.value='';
+  document.getElementById('search-clear-btn')?.classList.remove('show');
+  const searchable=(tab==='dafter'||tab==='proof'||tab==='history');
+  document.getElementById('search-wrap').style.display=searchable?'block':'none';
+  loadTab(tab);
+}
+
+function onSearchInput(val){
+  _searchQuery=(val||'').trim().toLowerCase();
+  document.getElementById('search-clear-btn')?.classList.toggle('show',!!_searchQuery);
+  if(_curTab==='dafter')renderCaseList(_dafter,'dafter');
+  else if(_curTab==='proof')renderCaseList(_proof,'proof');
+  else if(_curTab==='history')renderHistory();
+}
+
+function clearSearch(){
+  _searchQuery='';
+  const si=document.getElementById('search-input');
+  if(si)si.value='';
+  document.getElementById('search-clear-btn')?.classList.remove('show');
+  if(_curTab==='dafter')renderCaseList(_dafter,'dafter');
+  else if(_curTab==='proof')renderCaseList(_proof,'proof');
+  else if(_curTab==='history')renderHistory();
+}
+
+function matchesSearch(fields){
+  if(!_searchQuery)return true;
+  return fields.some(f=>String(f||'').toLowerCase().includes(_searchQuery));
+}
+
+// ═══════════════════════════════════════════════
+// فلتر التاريخ (من - إلى)
+// ═══════════════════════════════════════════════
+let _dateFrom='',_dateTo='';
+function onDateFilterChange(){
+  _dateFrom=document.getElementById('date-from').value||'';
+  _dateTo=document.getElementById('date-to').value||'';
+  document.getElementById('date-clear-btn').style.display=(_dateFrom||_dateTo)?'inline-block':'none';
+  if(_curTab==='dafter')renderCaseList(_dafter,'dafter');
+  else if(_curTab==='proof')renderCaseList(_proof,'proof');
+  else if(_curTab==='history')renderHistory();
+}
+function clearDateFilter(){
+  document.getElementById('date-from').value='';
+  document.getElementById('date-to').value='';
+  _dateFrom='';_dateTo='';
+  document.getElementById('date-clear-btn').style.display='none';
+  if(_curTab==='dafter')renderCaseList(_dafter,'dafter');
+  else if(_curTab==='proof')renderCaseList(_proof,'proof');
+  else if(_curTab==='history')renderHistory();
+}
+function matchesDateRange(dateStr){
+  if(!_dateFrom&&!_dateTo)return true;
+  if(!dateStr)return true;
+  if(_dateFrom&&dateStr<_dateFrom)return false;
+  if(_dateTo&&dateStr>_dateTo)return false;
+  return true;
+}
+
+async function loadTab(tab){
+  const content=document.getElementById('tab-content');
+  const spinner=document.getElementById('loading-spinner');
+  content.innerHTML='';
+  spinner.style.display='block';
+
+  try{
+    if(tab==='dafter'){
+      const data=await fbGet('data/shared/dafter');
+      _dafter=data?(Array.isArray(data)?data:Object.values(data)):[];
+      spinner.style.display='none';
+      renderCaseList(_dafter,'dafter');
+    }
+    else if(tab==='proof'){
+      const data=await fbGet('data/shared/proof');
+      _proof=data?(Array.isArray(data)?data:Object.values(data)):[];
+      spinner.style.display='none';
+      renderCaseList(_proof,'proof');
+    }
+    else if(tab==='history'){
+      await loadMyLogs();
+      spinner.style.display='none';
+      renderHistory();
+    }
+    else if(tab==='summary'){
+      await loadMyLogs();
+      spinner.style.display='none';
+      renderSummary();
+    }
+  }catch(e){
+    spinner.style.display='none';
+    content.innerHTML=`<div class="empty"><div class="empty-icon">⚠️</div><p>خطأ في تحميل البيانات</p></div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════
+// CASE LIST (DAFTER / PROOF)
+// ═══════════════════════════════════════════════
+function renderCaseList(list,source){
+  const content=document.getElementById('tab-content');
+  const filtered=list.filter(r=>matchesSearch([r.client,r.noteName,r.caseId,r.product])&&matchesDateRange(r.date));
+  if(!list.length){
+    content.innerHTML=`<div class="empty"><div class="empty-icon">${source==='dafter'?'📒':'🔬'}</div><p>لا توجد حالات حالياً</p></div>`;
+    return;
+  }
+  if(!filtered.length){
+    content.innerHTML=`<div class="empty"><div class="empty-icon">🔍</div><p>لا توجد نتائج مطابقة للبحث</p></div>`;
+    return;
+  }
+
+  // ترتيب حسب التاريخ (الأحدث أولاً)
+  const sorted=[...filtered].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+
+  content.innerHTML=sorted.map(r=>{
+    const stages=getStagesForTech(r.product);
+    if(!stages.length)return''; // متحرك/تقويم — لا تظهر للفني
+
+    // سجلات الفني الحالية على هذه الحالة (من techLogs في Firebase)
+    return`<div class="case-card" id="card-${esc(r.id)}">
+      <div class="case-head">
+        <div>
+          <div class="case-client">${esc(r.client)}</div>
+          ${r.noteName?`<div class="case-patient">👤 ${esc(r.noteName)}</div>`:''}
+          <div class="case-id">#${esc(String(r.caseId||'-'))} · ${esc(r.date||'-')}</div>
+          <div class="case-product">🦷 ${esc(r.product||'-')} ${r.qty>1?`× ${r.qty}`:''}</div>
+        </div>
+        <div style="text-align:left">
+          <span class="case-source ${source==='dafter'?'src-dafter':'src-proof'}">${source==='dafter'?'دفتر':'بروفه'}</span>
+        </div>
+      </div>
+      <div class="stages-row" id="stages-${esc(r.id)}">
+        ${renderStageCircles(r,stages,source)}
+      </div>
+      <div style="padding:0 14px 14px">
+        <button class="teeth-btn" onclick="openToothModal('${esc(r.id)}','${esc(r.client)} · #${esc(String(r.caseId||'-'))}')">🦷 اختيار الأسنان التي تم العمل عليها</button>
+        <div class="teeth-summary" id="teeth-sum-${esc(r.id)}"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // تحميل حالة كل مرحلة (pending/approved) من Firebase
+  loadStageStatuses(sorted,source);
+  // تحميل ملخص الأسنان المحفوظة لكل حالة
+  loadTeethSummaries(sorted);
+}
+
+// ═══════════════════════════════════════════════
+// TEETH CHART — طقم أسنان علوي/سفلي لكل حالة
+// ═══════════════════════════════════════════════
+async function loadTeethSummaries(list){
+  try{
+    const all=await fbGet('data/shared/caseTeeth');
+    if(!all)return;
+    for(const r of list){
+      const arr=all[r.id];
+      const el=document.getElementById('teeth-sum-'+r.id);
+      if(el&&arr&&arr.length)el.textContent=`✅ ${arr.length} سن محدد: ${arr.join('، ')}`;
+    }
+  }catch(e){}
+}
+
+async function openToothModal(caseId,label){
+  _toothCaseId=caseId;
+  document.getElementById('tooth-case-label').textContent=label;
+  try{
+    const saved=await fbGet(`data/shared/caseTeeth/${caseId}`);
+    _toothSelected=Array.isArray(saved)?saved.slice():[];
+  }catch(e){_toothSelected=[];}
+  renderToothRows();
+  document.getElementById('tooth-modal').classList.remove('hidden');
+}
+function closeToothModal(){document.getElementById('tooth-modal').classList.add('hidden');}
+
+function renderToothRows(){
+  const rowHtml=(right,left)=>`
+    ${right.map(t=>toothBtn(t)).join('')}
+    <div class="tooth-quad-gap"></div>
+    ${left.map(t=>toothBtn(t)).join('')}`;
+  document.getElementById('tooth-upper-r').innerHTML=rowHtml(TEETH_UPPER_R,TEETH_UPPER_L);
+  document.getElementById('tooth-lower-r').innerHTML=rowHtml(TEETH_LOWER_R,TEETH_LOWER_L);
+  updateToothCountLabel();
+}
+function toothBtn(t){
+  const sel=_toothSelected.includes(t);
+  return `<div class="tooth ${sel?'sel':''}" onclick="toggleTooth(${t})">${t}</div>`;
+}
+function toggleTooth(t){
+  const i=_toothSelected.indexOf(t);
+  if(i>-1)_toothSelected.splice(i,1); else _toothSelected.push(t);
+  renderToothRows();
+}
+function updateToothCountLabel(){
+  document.getElementById('tooth-count-label').textContent=
+    _toothSelected.length?`تم اختيار ${_toothSelected.length} سن`:'لم يتم اختيار أي سن بعد';
+}
+async function saveTeeth(){
+  try{
+    await fbSet(`data/shared/caseTeeth/${_toothCaseId}`,_toothSelected.sort((a,b)=>a-b));
+    toast('✅ تم حفظ الأسنان المحددة');
+    closeToothModal();
+    const el=document.getElementById('teeth-sum-'+_toothCaseId);
+    if(el)el.textContent=_toothSelected.length?`✅ ${_toothSelected.length} سن محدد: ${_toothSelected.join('، ')}`:'';
+  }catch(e){toast('خطأ في الحفظ','err');}
+}
+
+function renderStageCircles(r,stages,source){
+  return stages.map(stage=>{
+    const key=`${r.id}_${stage}`;
+    return`<div class="stage-btn" onclick="toggleStage('${esc(r.id)}','${esc(stage)}','${esc(source)}',this)" data-key="${esc(key)}">
+      <div class="stage-circle" id="sc-${esc(key)}">${esc(STAGE_LABELS[stage]||stage).replace('\n','<br>')}</div>
+      <div class="stage-label">${esc((STAGE_LABELS[stage]||stage).replace('\n',' '))}</div>
+    </div>`;
+  }).join('');
+}
+
+// ⚠️ ملاحظة مهمة: "المراحل معتمد/معلّق" ميزة جديدة مش موجودة في السيستم الكبير أصلاً
+// (تم تأجيل تصميمها فيه — قرار المستخدم). عشان كده بنخزّنها في مسار Firebase منفصل
+// تمامًا "techLogs" (مش تحت data/shared) — يعني بتتزامن حقيقي بين أجهزة الفنيين
+// اللي بيستخدموا البوابة دي، لكن من غير ما تلمس أو تتعارض مع بيانات السيستم الكبير خالص.
+async function loadStageStatuses(list,source){
+  // تحميل سجلات الفني (من الطبقة المحلية offline)
+  try{
+    const logs=await fbGet(`techLogs`);
+    if(!logs)return;
+    const logsArr=Array.isArray(logs)?logs:Object.values(logs);
+    logsArr.forEach(log=>{
+      if(log.techName!==_user.name)return;
+      const key=`${log.caseId}_${log.stage}`;
+      const circle=document.getElementById('sc-'+key);
+      if(circle){
+        circle.className=`stage-circle ${log.status==='approved'?'approved':log.status==='rejected'?'':'pending'}`;
+      }
+    });
+  }catch(e){}
+}
+
+// ═══════════════════════════════════════════════
+// TOGGLE STAGE
+// ═══════════════════════════════════════════════
+async function toggleStage(caseId,stage,source,btnEl){
+  // تحقق هل مسجّلة بالفعل
+  let existing=null;
+  try{
+    const logs=await fbGet('techLogs');
+    if(logs){
+      const arr=Array.isArray(logs)?logs:Object.values(logs);
+      existing=arr.find(l=>l.caseId===caseId&&l.stage===stage&&l.techName===_user.name);
+    }
+  }catch(e){}
+
+  if(existing){
+    if(existing.status==='approved'){
+      toast('هذه المرحلة معتمدة من الأدمن ولا يمكن إلغاؤها','warn');
+      return;
+    }
+    // إلغاء التسجيل
+    showModal('إلغاء التسجيل',`هل تريد إلغاء تسجيلك في مرحلة "${stage}"؟`,async()=>{
+      try{
+        await fbSet(`techLogs/${existing.id}`,null);
+        const circle=document.getElementById(`sc-${caseId}_${stage}`);
+        if(circle)circle.className='stage-circle';
+        toast('تم إلغاء التسجيل');
+      }catch(e){toast('خطأ في الإلغاء','err');}
+    });
+    return;
+  }
+
+  // تسجيل جديد
+  const list=source==='dafter'?_dafter:_proof;
+  const rec=list.find(r=>r.id===caseId);
+  if(!rec)return;
+
+  try{
+    const logId=await fbPush('techLogs',{
+      caseId,
+      caseRecordId:rec.id,
+      caseNum:rec.caseId,
+      client:rec.client,
+      noteName:rec.noteName||'',
+      product:rec.product||'',
+      qty:rec.qty||1,
+      date:rec.date||'',
+      source,
+      stage,
+      techName:_user.name,
+      techId:_user.id,
+      logDate:today(),
+      logTime:timeNow(),
+      status:'pending', // في انتظار موافقة الأدمن
+      createdAt:Date.now()
+    });
+    const circle=document.getElementById(`sc-${caseId}_${stage}`);
+    if(circle)circle.className='stage-circle pending';
+    toast(`✅ تم تسجيل "${stage}" — في انتظار الموافقة`);
+  }catch(e){toast('خطأ في التسجيل','err');}
+}
+
+// ═══════════════════════════════════════════════
+// HISTORY
+// ═══════════════════════════════════════════════
+async function loadMyLogs(){
+  try{
+    const logs=await fbGet('techLogs');
+    if(!logs){_myLogs=[];return;}
+    const arr=Array.isArray(logs)?logs:Object.values(logs);
+    _myLogs=arr.filter(l=>l.techName===_user.name).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  }catch(e){_myLogs=[];}
+}
+
+function renderHistory(){
+  const content=document.getElementById('tab-content');
+  if(!_myLogs.length){
+    content.innerHTML=`<div class="empty"><div class="empty-icon">📋</div><p>لم تسجّل أي مراحل بعد</p></div>`;
+    return;
+  }
+
+  const filteredLogs=_myLogs.filter(l=>matchesSearch([l.client,l.noteName,l.caseNum,l.product])&&matchesDateRange(l.logDate));
+  if(!filteredLogs.length){
+    content.innerHTML=`<div class="empty"><div class="empty-icon">🔍</div><p>لا توجد نتائج مطابقة للبحث</p></div>`;
+    return;
+  }
+
+  // تجميع حسب الحالة
+  const grouped={};
+  filteredLogs.forEach(l=>{
+    if(!grouped[l.caseId])grouped[l.caseId]={...l,stages:[]};
+    grouped[l.caseId].stages.push(l);
+  });
+
+  content.innerHTML=Object.values(grouped).map(g=>`
+    <div class="hist-card">
+      <div class="hist-head">
+        <div>
+          <div class="hist-client">${esc(g.client)}</div>
+          ${g.noteName?`<div style="font-size:13px;color:var(--teal)">👤 ${esc(g.noteName)}</div>`:''}
+          <div class="hist-meta">#${esc(String(g.caseNum||'-'))} · ${esc(g.product||'-')} · ${esc(g.logDate||'-')}</div>
+        </div>
+        <span class="badge badge-${g.stages.some(s=>s.status==='pending')?'pending':'approved'}">${g.stages.some(s=>s.status==='pending')?'قيد المراجعة':'معتمدة'}</span>
+      </div>
+      <div class="hist-stages">
+        ${g.stages.map(s=>`<span class="hist-stage ${s.status==='approved'?'approved':s.status==='rejected'?'rejected':'pending'}">${esc(s.stage)} ${s.status==='approved'?'✓':s.status==='rejected'?'✗':'⏳'}</span>`).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════
+// SUMMARY / مستحقاتي
+// ═══════════════════════════════════════════════
+function getMyRate(stage){
+  // أسعار شخصية للفني
+  if(_user.rates&&_user.rates[stage]>0)return _user.rates[stage];
+  return 0;
+}
+
+// ═══════════════════════════════════════════════
+// تقرير واتساب يومي للإدارة (شغل الفني اليوم + حسابه)
+// ═══════════════════════════════════════════════
+function buildDailyReportMsgTech(){
+  const todayDate=today();
+  const todayLogs=_myLogs.filter(l=>l.logDate===todayDate);
+  const approvedToday=todayLogs.filter(l=>l.status==='approved');
+  const pendingToday=todayLogs.filter(l=>l.status==='pending');
+  const rejectedToday=todayLogs.filter(l=>l.status==='rejected');
+  const totalToday=approvedToday.reduce((s,l)=>s+getMyRate(l.stage)*(l.qty||1),0);
+  const pendingAmtToday=pendingToday.reduce((s,l)=>s+getMyRate(l.stage)*(l.qty||1),0);
+
+  let msg=`🔧 *تقرير يومي — ${_user.name}*\n`;
+  msg+=`📅 ${todayDate}\n\n`;
+  msg+=`✅ *مراحل معتمدة اليوم:* ${approvedToday.length}\n`;
+  approvedToday.forEach(l=>{msg+=`  • ${l.client||'-'} — #${l.caseNum||'-'} — ${l.stage||'-'}\n`;});
+  if(pendingToday.length){
+    msg+=`\n⏳ *مراحل قيد المراجعة:* ${pendingToday.length}\n`;
+    pendingToday.forEach(l=>{msg+=`  • ${l.client||'-'} — #${l.caseNum||'-'} — ${l.stage||'-'}\n`;});
+  }
+  if(rejectedToday.length)msg+=`\n✗ *مرفوضة اليوم:* ${rejectedToday.length}\n`;
+  msg+=`\n💰 *حساب اليوم:*\n`;
+  msg+=`مستحقات معتمدة: ${fmt(totalToday)} ج.م\n`;
+  if(pendingAmtToday>0)msg+=`قيد المراجعة: ${fmt(pendingAmtToday)} ج.م\n`;
+  if(!todayLogs.length)msg+=`\n— لا يوجد نشاط مسجّل اليوم —`;
+  return msg;
+}
+// ═══════════════════════════════════════════════
+// إرسال للإدارة — نفس منطق الكبير بالظبط: الأرقام من data/shared/labinfo
+// (admin1/admin2/adminExtra) — رقم واحد يبعت مباشرة، أكتر من رقم يعرض قائمة اختيار
+// ═══════════════════════════════════════════════
+async function _getAdminNumbers(){
+  const li=(await fbGet('data/shared/labinfo'))||{};
+  const list=[];
+  if(li.admin1)list.push({label:'رقم الإدارة 1',phone:li.admin1});
+  if(li.admin2)list.push({label:'رقم الإدارة 2',phone:li.admin2});
+  (li.adminExtra||[]).forEach(a=>{if(a.phone)list.push({label:a.label||'رقم إدارة إضافي',phone:a.phone});});
+  return list;
+}
+function _waLink(phone,msg){
+  const clean=String(phone||'').replace(/[^0-9]/g,'');
+  return `https://wa.me/${clean}?text=${encodeURIComponent(msg)}`;
+}
+let _pendingAdminMsg='';
+async function sendToAdminWithPicker(msg){
+  const numbers=await _getAdminNumbers();
+  if(!numbers.length){toast('لا يوجد رقم إدارة مسجّل في بيانات المعمل الأساسية','err');return;}
+  if(numbers.length===1){window.open(_waLink(numbers[0].phone,msg),'_blank');return;}
+  _pendingAdminMsg=msg;
+  const list=document.getElementById('admin-pick-list');
+  list.innerHTML=numbers.map(n=>`<button class="btn btn-gold" style="margin-bottom:8px;width:100%" onclick="_sendAdminMsgTo('${esc(n.phone)}')">${esc(n.label)} — ${esc(n.phone)}</button>`).join('');
+  document.getElementById('admin-pick-modal').classList.remove('hidden');
+}
+function _sendAdminMsgTo(phone){
+  document.getElementById('admin-pick-modal').classList.add('hidden');
+  window.open(_waLink(phone,_pendingAdminMsg),'_blank');
+}
+function closeAdminPick(){document.getElementById('admin-pick-modal').classList.add('hidden');}
+
+function sendDailyReportToAdmin(){
+  const msg=buildDailyReportMsgTech();
+  sendToAdminWithPicker(msg);
+}
+
+function renderSummary(){
+  const content=document.getElementById('tab-content');
+
+  const approved=_myLogs.filter(l=>l.status==='approved');
+  const pending=_myLogs.filter(l=>l.status==='pending');
+  const rejected=_myLogs.filter(l=>l.status==='rejected');
+  const totalLogs=_myLogs.length;
+  const pct=n=>totalLogs?Math.round(n/totalLogs*100):0;
+
+  // حساب المستحقات المعتمدة
+  let totalApproved=0;
+  const stageBreakdown={};
+  approved.forEach(l=>{
+    const rate=getMyRate(l.stage);
+    const amt=rate*(l.qty||1);
+    totalApproved+=amt;
+    if(!stageBreakdown[l.stage])stageBreakdown[l.stage]={count:0,units:0,rate,total:0};
+    stageBreakdown[l.stage].count++;
+    stageBreakdown[l.stage].units+=(l.qty||1);
+    stageBreakdown[l.stage].total+=amt;
+  });
+
+  const pendingAmt=pending.reduce((s,l)=>s+getMyRate(l.stage)*(l.qty||1),0);
+
+  content.innerHTML=`
+    <button class="btn btn-teal btn-sm btn-block" style="margin-bottom:12px" onclick="sendDailyReportToAdmin()">📱 إرسال تقرير اليوم للإدارة (واتساب)</button>
+    <div class="summary-card">
+      <div class="summary-title">📊 إجمالي الحالات والنسب</div>
+      <div class="summary-sub" style="margin-bottom:10px">${totalLogs} مرحلة مسجّلة إجمالاً</div>
+      <div class="stat-row"><div class="stat-label" style="color:var(--green)">✅ معتمدة</div><div class="stat-val">${approved.length} <span style="color:var(--text3);font-weight:400">(${pct(approved.length)}%)</span></div></div>
+      <div class="stat-row"><div class="stat-label" style="color:var(--orange)">⏳ قيد المراجعة</div><div class="stat-val">${pending.length} <span style="color:var(--text3);font-weight:400">(${pct(pending.length)}%)</span></div></div>
+      ${rejected.length?`<div class="stat-row"><div class="stat-label" style="color:var(--red)">✗ مرفوضة</div><div class="stat-val">${rejected.length} <span style="color:var(--text3);font-weight:400">(${pct(rejected.length)}%)</span></div></div>`:''}
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-title">💰 إجمالي المستحقات المعتمدة (قطعة/عمل)</div>
+      <div class="summary-amount">${fmt(totalApproved)} ج.م</div>
+      <div class="summary-sub">${approved.length} مرحلة معتمدة · ${approved.reduce((s,l)=>s+(l.qty||1),0)} وحدة</div>
+    </div>
+
+    ${_user.salary>0?`<div class="summary-card">
+      <div class="summary-title" style="color:var(--teal)">🏦 الراتب الثابت</div>
+      <div class="summary-amount" style="color:var(--teal)">${fmt(_user.salary)} ج.م / شهريًا</div>
+      <div class="summary-sub">إجمالي مستحقاتك المتوقعة: ${fmt(_user.salary+totalApproved)} ج.م (راتب + قطعة/عمل)</div>
+    </div>`:''}
+
+    ${pendingAmt>0?`<div class="summary-card" style="border-color:rgba(249,115,22,.3)">
+      <div class="summary-title" style="color:var(--orange)">⏳ في انتظار الموافقة</div>
+      <div class="summary-amount" style="color:var(--orange)">${fmt(pendingAmt)} ج.م</div>
+      <div class="summary-sub">${pending.length} مرحلة قيد المراجعة</div>
+    </div>`:''}
+
+    <div class="summary-card">
+      <div class="summary-title">📊 تفصيل حسب المرحلة (المعتمدة)</div>
+      ${Object.keys(stageBreakdown).length===0?
+        '<div style="color:var(--text3);font-size:14px;text-align:center;padding:10px">لا توجد مراحل معتمدة بعد</div>':
+        Object.entries(stageBreakdown).map(([stage,d])=>`
+          <div class="stat-row">
+            <div>
+              <div class="stat-label">${esc(stage)}</div>
+              <div style="font-size:12px;color:var(--text3)">${d.count} حالة · ${d.units} وحدة · ${fmt(d.rate)} ج.م/وحدة</div>
+            </div>
+            <div class="stat-val">${fmt(d.total)} ج.م</div>
+          </div>
+        `).join('')
+      }
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-title">📈 إحصائيات الشهر</div>
+      <div class="stat-row"><span class="stat-label">مراحل معتمدة</span><span class="stat-val" style="color:var(--teal)">${approved.length}</span></div>
+      <div class="stat-row"><span class="stat-label">مراحل قيد المراجعة</span><span class="stat-val" style="color:var(--orange)">${pending.length}</span></div>
+      <div class="stat-row"><span class="stat-label">إجمالي الوحدات</span><span class="stat-val">${approved.reduce((s,l)=>s+(l.qty||1),0)}</span></div>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════
+// AUTO LOGIN (لو فيه جلسة محفوظة على نفس الجهاز فقط)
+// ═══════════════════════════════════════════════
+window.addEventListener('load',async ()=>{
+  const saved=localStorage.getItem('tp_user');
+  if(saved){
+    try{_user=JSON.parse(saved);await waitForFirebase();showApp();return;}
+    catch(e){localStorage.removeItem('tp_user');}
+  }
+  // مفيش جلسة محفوظة — يفضل شاشة تسجيل الدخول ظاهرة وينتظر إدخال بيانات حقيقية
+});
+</script>
+</body>
+</html>
