@@ -239,6 +239,7 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
   <div class="header-title">📋 مركز المناديب</div>
   <div style="display:flex;align-items:center;gap:8px">
     <span style="font-size:14px;color:var(--text3)" id="hd-name"></span>
+    <button class="theme-btn" onclick="showRawDelegate()" title="فحص مؤقت">🛠️</button>
     <button class="theme-btn" onclick="cycleTheme()" title="تغيير الألوان">🎨</button>
     <div class="avatar" id="hd-avatar">م</div>
     <button class="logout-btn" onclick="doLogout()">خروج</button>
@@ -768,6 +769,15 @@ function renderClients(){
 // ⚠️ مؤقت للتشخيص فقط — يوري بيانات العميل الخام زي ما هي متخزنة في Firebase
 // عشان نعرف اسم الحقل الصح اللي بيتسجل فيه % العمولة المخصصة من صفحة "ربط العملاء بالمناديب"
 // (يُحذف بعد ما نضبط اسم الحقل في _clientCommRate)
+// ⚠️ مؤقت للتشخيص فقط — يوري سجل المندوب الخام (فيه غالبًا خريطة العملاء/النسب المخصصة)
+function showRawDelegate(){
+  fbGet('data/shared/delegates').then(delegates=>{
+    const list=toArr(delegates);
+    const del=list.find(d=>d.name===_user.name||d.id===_user.id);
+    if(!del){toast('لم يتم العثور على سجل المندوب','err');return;}
+    alert('بيانات المندوب الخام:\n\n'+JSON.stringify(del,null,2));
+  }).catch(e=>{console.error(e);toast('خطأ في الجلب','err');});
+}
 function showRawClient(clientId){
   const cl=_myClients.find(c=>String(c.id)===String(clientId));
   if(!cl){toast('العميل غير موجود','err');return;}
