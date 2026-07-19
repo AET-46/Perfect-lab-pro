@@ -663,6 +663,7 @@ async function loadTab(tab){
 // ═══════════════════════════════════════
 // CLIENTS TAB
 // ═══════════════════════════════════════
+let _clientMonth='current';
 function _clientCommRate(cl){
   // العمولة بتتسجل لكل عميل (دكتور) في البيانات الأساسية بالسيستم الكبير — مش كل دكتور بياخد عمولة.
   // بنقرا الحقل المسجّل من data/shared/clients زي ما هو، ولو مش موجود بنرجع لنسبة المندوب العامة كافتراضي فقط.
@@ -747,7 +748,10 @@ function renderClients(){
           <div style="font-size:13px;font-weight:900;color:var(--gold2);margin-bottom:6px">✅ الحالات المنتهية (مؤرشفة)</div>
           ${cArchive.map(r=>`<div class="case-row"><div class="case-row-head"><span>#${esc(String(r.caseId||'-'))} ${esc(r.noteName?'· '+r.noteName:'')}</span><span class="deliv-badge ${r.handoverStatus==='returned'?'returned':'delivered'}">${r.handoverStatus==='returned'?'↩️ مرتجع':r.handoverStatus==='delivered'?'✅ تم التسليم':'أرشيف'}</span></div><div style="font-size:12px;color:var(--text3)">${esc(r.product||'-')} · ${esc(r.archivedAt?new Date(r.archivedAt).toISOString().split('T')[0]:r.date||'-')} ${+r.remaining>0?`· <span style="color:var(--red)">متبقي: ${fmt(r.remaining)}</span>`:''}</div></div>`).join('')}
         </div>`:''}
-        ${(()=>{const cr=_clientCommRate(cl);return `<div style="font-size:12px;color:var(--text3);margin-top:10px;border-top:1px solid var(--border);padding-top:8px">💰 عمولة هذا الطبيب: <b style="color:${cr.rate>0?'var(--gold2)':'var(--red)'}">${cr.rate}%</b>${cr.registered?' (مسجّلة في بيانات العميل)':' (نسبتك العامة — غير مسجّلة تفصيليًا لهذا العميل)'}</div>`;})()}
+        ${(()=>{const cr=_clientCommRate(cl);return `<div style="font-size:12px;color:var(--text3);margin-top:10px;border-top:1px solid var(--border);padding-top:8px;display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <span>💰 عمولة هذا الطبيب: <b style="color:${cr.rate>0?'var(--gold2)':'var(--red)'}">${cr.rate}%</b>${cr.registered?' (مسجّلة في بيانات العميل)':' (نسبتك العامة — غير مسجّلة تفصيليًا لهذا العميل)'}</span>
+          <button class="btn btn-ghost btn-sm" style="flex:none;padding:3px 8px;font-size:11px" onclick="event.stopPropagation();showRawClient('${esc(cl.id)}')">🛠️ فحص خام</button>
+        </div>`;})()}
       </div>
     </div>`;
   }).join('');
@@ -760,6 +764,14 @@ function renderClients(){
 
   c.innerHTML=pills+`<div style="font-size:14px;color:var(--text3);margin-bottom:10px">${visibleCount} عميل${activeMonth!=='all'?' — '+(activeMonth===curMonthKey?'الشهر الحالي':_monthLabel(activeMonth)):''}</div>`+
     (cards.replace(/\s/g,'')?cards:`<div class="empty"><div class="empty-icon">📅</div><p>لا يوجد نشاط لعملاءك في الشهر المختار</p></div>`);
+}
+// ⚠️ مؤقت للتشخيص فقط — يوري بيانات العميل الخام زي ما هي متخزنة في Firebase
+// عشان نعرف اسم الحقل الصح اللي بيتسجل فيه % العمولة المخصصة من صفحة "ربط العملاء بالمناديب"
+// (يُحذف بعد ما نضبط اسم الحقل في _clientCommRate)
+function showRawClient(clientId){
+  const cl=_myClients.find(c=>String(c.id)===String(clientId));
+  if(!cl){toast('العميل غير موجود','err');return;}
+  alert('بيانات العميل الخام:\n\n'+JSON.stringify(cl,null,2));
 }
 function setClientMonth(k){_clientMonth=k;renderClients();}
 
