@@ -202,6 +202,20 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
 .debt-badge{font-size:13px;padding:3px 8px;border-radius:20px;font-weight:700}
 .debt-ok{background:rgba(34,197,94,.1);color:var(--green)}
 .debt-warn{background:rgba(239,68,68,.1);color:var(--red)}
+
+/* MONTH PILLS */
+.month-pills{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:10px;scrollbar-width:none}
+.month-pills::-webkit-scrollbar{display:none}
+.month-pill{flex:none;padding:7px 14px;border-radius:20px;font-size:13px;font-weight:700;background:var(--bg3);color:var(--text3);border:1px solid var(--border);cursor:pointer;white-space:nowrap}
+.month-pill.on{background:var(--grad);color:var(--ontext);border-color:transparent}
+
+/* COMMISSION EXEMPT TOGGLE */
+.comm-toggle{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text3);margin-top:6px;cursor:pointer;user-select:none}
+.comm-toggle input{accent-color:var(--gold)}
+
+/* GEO BUTTON */
+.geo-btn{width:100%;background:var(--bg3);border:1px dashed var(--border);border-radius:8px;padding:10px;color:var(--teal);font-size:14px;font-family:inherit;cursor:pointer;text-align:center;margin-bottom:12px}
+.geo-ok{border-color:var(--green)!important;color:var(--green)!important}
 </style>
 </head>
 <body>
@@ -236,9 +250,9 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
   <div class="tab on"  onclick="switchTab('clients',this)">👥 عملاءي</div>
   <div class="tab"     onclick="switchTab('cases',this)">📋 الحالات</div>
   <div class="tab"     onclick="switchTab('deliveries',this)">🚚 تسليمات</div>
-  <div class="tab"     onclick="switchTab('visits',this)">🗓️ زياراتي</div>
+  <div class="tab"     onclick="switchTab('visits',this)">🔄 متابعة زيارة</div>
   <div class="tab"     onclick="switchTab('commission',this)">💰 عمولتي</div>
-  <div class="tab"     onclick="switchTab('addclient',this)">➕ عميل محتمل</div>
+  <div class="tab"     onclick="switchTab('addclient',this)">➕ زيارة جديدة</div>
 </div>
 
 <!-- SEARCH -->
@@ -453,6 +467,45 @@ function cycleTheme(){
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function fmt(n){return Number(n||0).toLocaleString('ar-EG');}
 function today(){return new Date().toISOString().split('T')[0];}
+// يوم شغل المندوب: من ٣ العصر لـ٣ الفجر — أي وقت قبل الساعة ٣ فجرًا لسه بيتحسب على يوم الشغل اللي فات
+function shiftToday(ts){
+  const d=new Date((ts||Date.now())-3*3600*1000);
+  return d.toISOString().split('T')[0];
+}
+
+// ═══════════════════════════════════════
+// محافظات ومدن مصر (لقوائم العنوان)
+// ═══════════════════════════════════════
+const EGY_CITIES={
+  'الشرقية':['منية القمح','فاقوس','ههيا','الزقازيق','بلبيس','العاشر من رمضان','أبو حماد','ديرب نجم'],
+  'المنوفية':['شبين الكوم','منوف','أشمون','السادات','قويسنا','بركة السبع'],
+  'الإسماعيلية':['الإسماعيلية','فايد','القنطرة شرق','القنطرة غرب'],
+  'بورسعيد':['بورسعيد','بورفؤاد'],
+  'السويس':['السويس','الجناين','عتاقة'],
+  'القاهرة':['مدينة نصر','مصر الجديدة','المعادي','حلوان','شبرا','عين شمس','المطرية','الزيتون','السيدة زينب','الدرب الأحمر','مدينتي','التجمع الخامس','القاهرة الجديدة','الزمالك','وسط البلد','المقطم'],
+  'الجيزة':['الدقي','المهندسين','فيصل','الهرم','أكتوبر 6','الشيخ زايد','العمرانية','بولاق الدكرور','إمبابة','أوسيم'],
+  'الإسكندرية':['سموحة','ميامي','سيدي جابر','العجمي','المنتزه','محرم بك','الإبراهيمية','ستانلي','برج العرب','كرموز'],
+  'الدقهلية':['المنصورة','طلخا','ميت غمر','دكرنس','أجا','السنبلاوين','بلقاس','منية النصر'],
+  'الغربية':['طنطا','المحلة الكبرى','كفر الزيات','زفتى','السنطة','بسيون'],
+  'القليوبية':['بنها','شبرا الخيمة','قليوب','الخانكة','القناطر الخيرية','طوخ'],
+  'البحيرة':['دمنهور','كفر الدوار','رشيد','إدكو','أبو حمص','إيتاي البارود'],
+  'كفر الشيخ':['كفر الشيخ','دسوق','فوه','بلطيم','الحامول','قلين'],
+  'دمياط':['دمياط','رأس البر','فارسكور','الزرقا','كفر سعد'],
+  'شمال سيناء':['العريش','الشيخ زويد','رفح','بئر العبد'],
+  'جنوب سيناء':['شرم الشيخ','دهب','نويبع','طابا','سانت كاترين'],
+  'بني سويف':['بني سويف','الواسطى','ناصر','ببا','الفشن'],
+  'الفيوم':['الفيوم','سنورس','إطسا','طامية','يوسف الصديق'],
+  'المنيا':['المنيا','ملوي','سمالوط','مغاغة','بني مزار'],
+  'أسيوط':['أسيوط','ديروط','منفلوط','أبنوب','القوصية'],
+  'سوهاج':['سوهاج','جرجا','أخميم','طهطا','طما'],
+  'قنا':['قنا','نجع حمادي','قوص','دشنا','أبوتشت'],
+  'الأقصر':['الأقصر','الكرنك','إسنا','الزينية'],
+  'أسوان':['أسوان','إدفو','كوم أمبو','دراو'],
+  'البحر الأحمر':['الغردقة','رأس غارب','سفاجا','مرسى علم','القصير'],
+  'الوادي الجديد':['الخارجة','الداخلة','الفرافرة','باريس'],
+  'مطروح':['مرسى مطروح','العلمين','سيدي براني','السلوم']
+};
+const EGY_GOVS=Object.keys(EGY_CITIES);
 function toast(msg,type='ok'){
   const el=document.getElementById('toast');
   el.textContent=msg;
@@ -610,20 +663,65 @@ async function loadTab(tab){
 // ═══════════════════════════════════════
 // CLIENTS TAB
 // ═══════════════════════════════════════
+function _clientCommRate(cl){
+  // العمولة بتتسجل لكل عميل (دكتور) في البيانات الأساسية بالسيستم الكبير — مش كل دكتور بياخد عمولة.
+  // بنقرا الحقل المسجّل من data/shared/clients زي ما هو، ولو مش موجود بنرجع لنسبة المندوب العامة كافتراضي فقط.
+  if(!cl)return {rate:_user.commRate||0,registered:false};
+  const candidates=['commRate','commissionRate','commPercent','delegateCommRate','comm'];
+  for(const k of candidates){
+    if(cl[k]!==undefined&&cl[k]!==null&&cl[k]!=='')return {rate:+cl[k],registered:true};
+  }
+  return {rate:_user.commRate||0,registered:false};
+}
+function _monthKey(dateStr){ // 'YYYY-MM' من تاريخ نصي أو timestamp
+  if(!dateStr)return null;
+  const d=typeof dateStr==='number'?new Date(dateStr):new Date(dateStr);
+  if(isNaN(d))return null;
+  return d.toISOString().slice(0,7);
+}
+const AR_MONTHS=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+function _monthLabel(key){
+  const [y,m]=key.split('-').map(Number);
+  return AR_MONTHS[m-1]+(y!==new Date().getFullYear()?' '+y:'');
+}
+function _caseMonthKey(r){ return _monthKey(r.date)||_monthKey(r.archivedAt)||_monthKey(r.createdAt); }
+
 function renderClients(){
   const c=document.getElementById('tab-content');
   if(!_myClients.length){
     c.innerHTML=`<div class="empty"><div class="empty-icon">👥</div><p>لا يوجد عملاء مرتبطون بك بعد</p></div>`;return;
   }
+  // كل شهور الفعاليات المتاحة من حالات عملاءك (دفتر+بروفه+أرشيف)
+  const clientIds=new Set(_myClients.map(cl=>cl.id));
+  const clientNames=new Set(_myClients.map(cl=>cl.name));
+  const allMine=[..._dafter,..._proof,..._archive].filter(r=>clientIds.has(r.clientId)||clientNames.has(r.client));
+  const curMonthKey=new Date().toISOString().slice(0,7);
+  const monthKeys=[...new Set(allMine.map(_caseMonthKey).filter(Boolean))].sort().reverse();
+  if(!monthKeys.includes(curMonthKey))monthKeys.unshift(curMonthKey);
+
+  const pills=`<div class="month-pills">
+    <div class="month-pill ${_clientMonth==='all'?'on':''}" onclick="setClientMonth('all')">📅 الكل</div>
+    ${monthKeys.map(k=>`<div class="month-pill ${_clientMonth===k?'on':''}" onclick="setClientMonth('${k}')">${k===curMonthKey?'الشهر الحالي':_monthLabel(k)}</div>`).join('')}
+  </div>`;
+
+  const activeMonth=_clientMonth==='current'?curMonthKey:_clientMonth;
+
   const list=_myClients.filter(cl=>matchesSearch([cl.name,cl.phone,cl.specialty]));
   if(!list.length){
-    c.innerHTML=`<div class="empty"><div class="empty-icon">🔍</div><p>لا توجد نتائج مطابقة للبحث</p></div>`;return;
+    c.innerHTML=pills+`<div class="empty"><div class="empty-icon">🔍</div><p>لا توجد نتائج مطابقة للبحث</p></div>`;return;
   }
-  c.innerHTML=`<div style="font-size:14px;color:var(--text3);margin-bottom:10px">${list.length} عميل</div>`+
-  list.map(cl=>{
-    const cDafter=_dafter.filter(r=>r.clientId===cl.id||r.client===cl.name);
-    const cProof=_proof.filter(r=>r.clientId===cl.id||r.client===cl.name);
-    const cArchive=_archive.filter(r=>r.clientId===cl.id||r.client===cl.name);
+
+  const cards=list.map(cl=>{
+    let cDafter=_dafter.filter(r=>r.clientId===cl.id||r.client===cl.name);
+    let cProof=_proof.filter(r=>r.clientId===cl.id||r.client===cl.name);
+    let cArchive=_archive.filter(r=>r.clientId===cl.id||r.client===cl.name);
+    if(activeMonth!=='all'){
+      cDafter=cDafter.filter(r=>_caseMonthKey(r)===activeMonth);
+      cProof=cProof.filter(r=>_caseMonthKey(r)===activeMonth);
+      cArchive=cArchive.filter(r=>_caseMonthKey(r)===activeMonth);
+    }
+    if(activeMonth!=='all'&&!cDafter.length&&!cProof.length&&!cArchive.length)return ''; // مفيش نشاط للعميل في الشهر المختار
+    // ملحوظة: المبالغ (متبقي/مبيعات) مصدرها الأرشيف فقط، لأنه هو مصدر البيانات المالية المعتمد بنفس منطق السيستم الكبير
     const debt=cArchive.reduce((s,r)=>s+(+r.remaining||0),0);
     return`<div class="client-card">
       <div class="client-head" onclick="toggleClient('cl-${esc(cl.id)}')">
@@ -644,12 +742,26 @@ function renderClients(){
         ${cDafter.length?`<div style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:6px">📒 الدفتر</div>${cDafter.map(r=>`<div class="case-row"><div class="case-row-head"><span>#${esc(String(r.caseId||'-'))} ${esc(r.noteName?'· '+r.noteName:'')}</span><span class="case-src src-dafter">دفتر</span></div><div style="font-size:12px;color:var(--text3)">${esc(r.product||'-')} · ${esc(r.date||'-')}</div></div>`).join('')}`:''}
         <!-- حالات البروفه -->
         ${cProof.length?`<div style="font-size:13px;font-weight:700;color:var(--orange);margin-bottom:6px;margin-top:8px">🔬 البروفه</div>${cProof.map(r=>`<div class="case-row"><div class="case-row-head"><span>#${esc(String(r.caseId||'-'))} ${esc(r.noteName?'· '+r.noteName:'')}</span><span class="case-src src-proof">بروفه</span></div><div style="font-size:12px;color:var(--text3)">${esc(r.product||'-')} · ${esc(r.proofDate||r.date||'-')}</div></div>`).join('')}`:''}
-        <!-- حالات الأرشيف -->
-        ${cArchive.length?`<div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:6px;margin-top:8px">📁 الأرشيف</div>${cArchive.map(r=>`<div class="case-row"><div class="case-row-head"><span>#${esc(String(r.caseId||'-'))} ${esc(r.noteName?'· '+r.noteName:'')}</span><span class="deliv-badge ${r.handoverStatus==='returned'?'returned':'delivered'}">${r.handoverStatus==='returned'?'↩️ مرتجع':r.handoverStatus==='delivered'?'✅ تم التسليم':'أرشيف'}</span></div><div style="font-size:12px;color:var(--text3)">${esc(r.product||'-')} · ${esc(r.archivedAt?new Date(r.archivedAt).toISOString().split('T')[0]:r.date||'-')} ${+r.remaining>0?`· <span style="color:var(--red)">متبقي: ${fmt(r.remaining)}</span>`:''}</div></div>`).join('')}`:''}
+        <!-- الحالات المنتهية (مؤرشفة) — قسم مميز -->
+        ${cArchive.length?`<div style="border-top:2px solid var(--gold);margin-top:10px;padding-top:8px">
+          <div style="font-size:13px;font-weight:900;color:var(--gold2);margin-bottom:6px">✅ الحالات المنتهية (مؤرشفة)</div>
+          ${cArchive.map(r=>`<div class="case-row"><div class="case-row-head"><span>#${esc(String(r.caseId||'-'))} ${esc(r.noteName?'· '+r.noteName:'')}</span><span class="deliv-badge ${r.handoverStatus==='returned'?'returned':'delivered'}">${r.handoverStatus==='returned'?'↩️ مرتجع':r.handoverStatus==='delivered'?'✅ تم التسليم':'أرشيف'}</span></div><div style="font-size:12px;color:var(--text3)">${esc(r.product||'-')} · ${esc(r.archivedAt?new Date(r.archivedAt).toISOString().split('T')[0]:r.date||'-')} ${+r.remaining>0?`· <span style="color:var(--red)">متبقي: ${fmt(r.remaining)}</span>`:''}</div></div>`).join('')}
+        </div>`:''}
+        ${(()=>{const cr=_clientCommRate(cl);return `<div style="font-size:12px;color:var(--text3);margin-top:10px;border-top:1px solid var(--border);padding-top:8px">💰 عمولة هذا الطبيب: <b style="color:${cr.rate>0?'var(--gold2)':'var(--red)'}">${cr.rate}%</b>${cr.registered?' (مسجّلة في بيانات العميل)':' (نسبتك العامة — غير مسجّلة تفصيليًا لهذا العميل)'}</div>`;})()}
       </div>
     </div>`;
   }).join('');
+
+  const visibleCount=list.filter(cl=>{
+    if(activeMonth==='all')return true;
+    const has=[..._dafter,..._proof,..._archive].some(r=>(r.clientId===cl.id||r.client===cl.name)&&_caseMonthKey(r)===activeMonth);
+    return has;
+  }).length;
+
+  c.innerHTML=pills+`<div style="font-size:14px;color:var(--text3);margin-bottom:10px">${visibleCount} عميل${activeMonth!=='all'?' — '+(activeMonth===curMonthKey?'الشهر الحالي':_monthLabel(activeMonth)):''}</div>`+
+    (cards.replace(/\s/g,'')?cards:`<div class="empty"><div class="empty-icon">📅</div><p>لا يوجد نشاط لعملاءك في الشهر المختار</p></div>`);
 }
+function setClientMonth(k){_clientMonth=k;renderClients();}
 
 function toggleClient(id){
   const body=document.getElementById(id);
@@ -664,18 +776,19 @@ function toggleClient(id){
 // ═══════════════════════════════════════
 function renderCases(){
   const c=document.getElementById('tab-content');
+  // صفحة الحالات مخصّصة للحالات الجارية بس (دفتر + بروفه) — الحالات المنتهية/المؤرشفة تلاقيها في تبويب "عملائي"
   const all=[
     ..._dafter.map(r=>({...r,src:'دفتر'})),
-    ..._proof.map(r=>({...r,src:'بروفه'})),
-    ..._archive.map(r=>({...r,src:'أرشيف'}))
+    ..._proof.map(r=>({...r,src:'بروفه'}))
   ].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
 
-  if(!all.length){c.innerHTML=`<div class="empty"><div class="empty-icon">📋</div><p>لا توجد حالات مرتبطة بك</p></div>`;return;}
+  if(!all.length){c.innerHTML=`<div class="empty"><div class="empty-icon">📋</div><p>لا توجد حالات جارية حاليًا</p></div>`;return;}
 
   const filtered=all.filter(r=>matchesSearch([r.client,r.noteName,r.caseId,r.product])&&matchesDateRange(r.date));
   if(!filtered.length){c.innerHTML=`<div class="empty"><div class="empty-icon">🔍</div><p>لا توجد نتائج مطابقة للبحث</p></div>`;return;}
 
-  c.innerHTML=`<div style="font-size:14px;color:var(--text3);margin-bottom:10px">إجمالي ${filtered.length} حالة (دفتر: ${_dafter.length} · بروفه: ${_proof.length} · أرشيف: ${_archive.length})</div>`+
+  c.innerHTML=`<div style="font-size:14px;color:var(--text3);margin-bottom:4px">📋 الحالات الجارية فقط (دفتر: ${_dafter.length} · بروفه: ${_proof.length})</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:10px">الحالات المنتهية والمؤرشفة موجودة في تبويب "عملائي"</div>`+
   filtered.map(r=>`<div class="card" style="padding:12px 14px">
     <div style="display:flex;justify-content:space-between;align-items:flex-start">
       <div>
@@ -684,7 +797,7 @@ function renderCases(){
         <div style="font-size:13px;color:var(--text3)">#${esc(String(r.caseId||'-'))} · ${esc(r.product||'-')}</div>
         <div style="font-size:12px;color:var(--text3)">${esc(r.date||'-')} ${r.qty>1?`· ${r.qty} وحدة`:''}</div>
       </div>
-      <span class="case-src ${r.src==='دفتر'?'src-dafter':r.src==='بروفه'?'src-proof':'src-archive'}">${esc(r.src)}</span>
+      <span class="case-src ${r.src==='دفتر'?'src-dafter':'src-proof'}">${esc(r.src)}</span>
     </div>
   </div>`).join('');
 }
@@ -693,27 +806,38 @@ function renderCases(){
 // تقرير واتساب يومي للإدارة (شغل اليوم + حساب اليوم)
 // ═══════════════════════════════════════
 function buildDailyReportMsg(){
-  const todayDate=today();
-  const todayArchive=_archive.filter(r=>r.archivedAt&&new Date(r.archivedAt).toISOString().split('T')[0]===todayDate);
+  // "اليوم" هنا = يوم شغل المندوب (من ٣ العصر لـ٣ الفجر)، مش نص الليل لنص الليل
+  const shiftDate=shiftToday();
+  const todayArchive=_archive.filter(r=>r.archivedAt&&shiftToday(r.archivedAt)===shiftDate);
   const delivered=todayArchive.filter(r=>r.handoverStatus==='delivered');
   const returned=todayArchive.filter(r=>r.handoverStatus==='returned');
-  const totalSales=delivered.reduce((s,r)=>s+(+r.total||0),0);
-  const rate=_user.commRate||0;
-  const comm=totalSales*(rate/100);
-  const visitsToday=_myVisits.filter(v=>v.date===todayDate);
+  const visitsToday=_myVisits.filter(v=>v.date===shiftDate);
 
   let msg=`📋 *تقرير يومي — ${_user.name}*\n`;
-  msg+=`📅 ${todayDate}\n\n`;
+  msg+=`📅 ${shiftDate}\n\n`;
+
   msg+=`🚚 *التسليمات اليوم:* ${delivered.length}\n`;
-  delivered.forEach(r=>{msg+=`  • ${r.client||'-'} — #${r.caseId||'-'} — ${r.product||'-'} (${r.deliveryType||'-'})\n`;});
+  delivered.forEach(r=>{
+    msg+=`  • ${r.client||'-'}${r.noteName?' — 👤 اسم المريض: '+r.noteName:''} — ${r.product||'-'} (${r.deliveryType||'-'})\n`;
+  });
   if(returned.length){
     msg+=`\n↩️ *مرتجعات اليوم:* ${returned.length}\n`;
-    returned.forEach(r=>{msg+=`  • ${r.client||'-'} — #${r.caseId||'-'}\n`;});
+    returned.forEach(r=>{
+      msg+=`  • ${r.client||'-'}${r.noteName?' — 👤 اسم المريض: '+r.noteName:''}\n`;
+    });
   }
-  msg+=`\n🗓️ *زيارات اليوم:* ${visitsToday.length}\n`;
-  msg+=`\n💰 *حساب اليوم:*\n`;
-  msg+=`إجمالي مبيعات اليوم: ${fmt(totalSales)} ج.م\n`;
-  msg+=`عمولتك (${rate}%): ${fmt(comm)} ج.م\n`;
+
+  msg+=`\n🔄 *متابعة زيارة اليوم:* ${visitsToday.length}\n`;
+  visitsToday.forEach(v=>{
+    const p=_myProspects.find(pp=>pp.id===v.prospectId);
+    msg+=`  • ${p?p.doctor:'طبيب #'+v.prospectId}\n`;
+    if(p&&p.phone)msg+=`    ☎️ ${p.phone}\n`;
+    if(p&&(p.address||p.city||p.gov))msg+=`    📍 ${[p.address,p.city,p.gov].filter(Boolean).join('، ')}\n`;
+    msg+=`    النتيجة: ${RESULT_LABELS[v.result]||v.result||'-'}\n`;
+    if(v.notes)msg+=`    ملاحظة: ${v.notes}\n`;
+    if(p&&p.geo)msg+=`    🗺️ https://maps.google.com/?q=${p.geo.lat},${p.geo.lng}\n`;
+  });
+
   if(!delivered.length&&!returned.length&&!visitsToday.length)msg+=`\n— لا يوجد نشاط مسجّل اليوم —`;
   return msg;
 }
@@ -725,9 +849,9 @@ function buildDailyReportMsg(){
 async function _getAdminNumbers(){
   const li=(await fbGet('data/shared/labinfo'))||{};
   const list=[];
-  if(li.admin1)list.push({label:'رقم الإدارة 1',phone:li.admin1});
-  if(li.admin2)list.push({label:'رقم الإدارة 2',phone:li.admin2});
-  (li.adminExtra||[]).forEach(a=>{if(a.phone)list.push({label:a.label||'رقم إدارة إضافي',phone:a.phone});});
+  if(li.admin1)list.push({label:'رقم الإدارة 1',phone:li.admin1,group:li.admin1Group||li.group1||''});
+  if(li.admin2)list.push({label:'رقم الإدارة 2',phone:li.admin2,group:li.admin2Group||li.group2||''});
+  (li.adminExtra||[]).forEach(a=>{if(a.phone)list.push({label:a.label||'رقم إدارة إضافي',phone:a.phone,group:a.group||''});});
   return list;
 }
 function _waLink(phone,msg){
@@ -741,7 +865,7 @@ async function sendToAdminWithPicker(msg){
   if(numbers.length===1){window.open(_waLink(numbers[0].phone,msg),'_blank');return;}
   _pendingAdminMsg=msg;
   const list=document.getElementById('admin-pick-list');
-  list.innerHTML=numbers.map(n=>`<button class="btn btn-gold" style="margin-bottom:8px;width:100%" onclick="_sendAdminMsgTo('${esc(n.phone)}')">${esc(n.label)} — ${esc(n.phone)}</button>`).join('');
+  list.innerHTML=numbers.map(n=>`<button class="btn btn-gold" style="margin-bottom:8px;width:100%" onclick="_sendAdminMsgTo('${esc(n.phone)}')">${esc(n.label)}${n.group?' — 🏷️ '+esc(n.group):''} — ${esc(n.phone)}</button>`).join('');
   document.getElementById('admin-pick-modal').classList.remove('hidden');
 }
 function _sendAdminMsgTo(phone){
@@ -883,30 +1007,37 @@ async function moveToArchive(r,handoverStatus,delivType){
 const RESULT_LABELS={interested:'✅ مهتم',not_interested:'❌ غير مهتم',follow:'🔄 متابعة',contracted:'🤝 تم التعاقد'};
 function renderVisits(){
   const c=document.getElementById('tab-content');
-  c.innerHTML=`<button class="btn btn-gold btn-sm" style="margin-bottom:12px" onclick="openVisitModal()">➕ تسجيل زيارة جديدة</button>`;
+  c.innerHTML=`<button class="btn btn-gold btn-sm" style="margin-bottom:12px" onclick="openVisitModal()">➕ تسجيل متابعة زيارة</button>`;
   if(!_myProspects.length){
-    c.innerHTML+=`<div class="empty"><div class="empty-icon">🗓️</div><p>لسه معندكش عملاء محتملين مسجّلين — ضيفي واحد من تاب "عميل محتمل"</p></div>`;return;
+    c.innerHTML+=`<div class="empty"><div class="empty-icon">🔄</div><p>لسه معندكش زيارات مسجّلة — ضيفي واحدة من تاب "زيارة جديدة"</p></div>`;return;
   }
+  // قائمة الأطباء اللي عندك عشان تقدر تسجّل متابعة لأي حد فيهم بضغطة واحدة
+  const pFiltered=_myProspects.filter(p=>matchesSearch([p.doctor,p.city,p.gov]));
   const filtered=_myVisits.filter(v=>{
     const p=_myProspects.find(pp=>pp.id===v.prospectId);
-    return matchesSearch([p?.center,p?.doctor,v.doctor,v.notes])&&matchesDateRange(v.date);
+    return matchesSearch([p?.doctor,v.doctor,v.notes])&&matchesDateRange(v.date);
   });
-  c.innerHTML+=`<div style="font-size:14px;color:var(--text3);margin-bottom:10px">${_myProspects.length} عميل محتمل · ${_myVisits.length} زيارة مسجّلة</div>`;
-  if(!filtered.length&&_searchQuery){
-    c.innerHTML+=`<div class="empty"><div class="empty-icon">🔍</div><p>لا توجد نتائج مطابقة للبحث</p></div>`;return;
+  c.innerHTML+=`<div style="font-size:14px;color:var(--text3);margin-bottom:10px">${_myProspects.length} طبيب · ${_myVisits.length} متابعة مسجّلة</div>`;
+
+  if(pFiltered.length){
+    c.innerHTML+=`<div style="font-size:13px;font-weight:700;color:var(--gold2);margin-bottom:8px">👨‍⚕️ سجّل متابعة سريعة</div>`;
+    c.innerHTML+=`<div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:6px;scrollbar-width:none">`+
+      pFiltered.map(p=>`<button class="btn btn-ghost btn-sm" style="flex:none" onclick="openVisitModal(${esc(p.id)})">${esc(p.doctor)}</button>`).join('')+
+    `</div>`;
+  }
+
+  if(!filtered.length){
+    c.innerHTML+=`<div class="empty"><div class="empty-icon">🔍</div><p>لا توجد متابعات مسجّلة مطابقة</p></div>`;return;
   }
   c.innerHTML+=filtered.map(v=>{
     const p=_myProspects.find(pp=>pp.id===v.prospectId);
     return`<div class="card" style="padding:12px 14px;margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-        <div>
-          <span class="visit-type vt-${v.result==='contracted'?'visit':v.result==='interested'?'followup':v.result==='not_interested'?'call':'other'}">${RESULT_LABELS[v.result]||v.result}</span>
-          <span style="font-size:14px;font-weight:700;margin-right:6px">${esc(p?p.center+' — '+p.doctor:'عميل محتمل #'+v.prospectId)}</span>
-        </div>
+      <div style="font-size:15px;font-weight:900">${esc(p?p.doctor:'طبيب #'+v.prospectId)}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+        <span class="visit-type vt-${v.result==='contracted'?'visit':v.result==='interested'?'followup':v.result==='not_interested'?'call':'other'}">${RESULT_LABELS[v.result]||v.result}</span>
         <span style="font-size:12px;color:var(--text3)">${esc(v.date)}</span>
       </div>
-      ${v.doctor?`<div style="font-size:13px;color:var(--teal)">👨‍⚕️ ${esc(v.doctor)}</div>`:''}
-      <div style="font-size:14px">${esc(v.notes||'-')}</div>
+      ${v.notes?`<div style="font-size:14px;margin-top:6px">${esc(v.notes)}</div>`:''}
     </div>`;
   }).join('');
 }
@@ -914,30 +1045,58 @@ function renderVisits(){
 // ═══════════════════════════════════════
 // COMMISSION TAB
 // ═══════════════════════════════════════
+let _commMonth='current';
 function renderCommission(){
   const c=document.getElementById('tab-content');
   const rate=_user.commRate||0;
+  const curMonthKey=new Date().toISOString().slice(0,7);
+  const monthKeys=[...new Set(_archive.map(_caseMonthKey).filter(Boolean))].sort().reverse();
+  if(!monthKeys.includes(curMonthKey))monthKeys.unshift(curMonthKey);
+  const activeMonth=_commMonth==='current'?curMonthKey:_commMonth;
 
-  // حساب العمولة من الأرشيف (الحالات المكتملة)
+  const pills=`<div class="month-pills">
+    <div class="month-pill ${_commMonth==='all'?'on':''}" onclick="setCommMonth('all')">📅 كل الفترات</div>
+    ${monthKeys.map(k=>`<div class="month-pill ${activeMonth===k&&_commMonth!=='all'?'on':''}" onclick="setCommMonth('${k}')">${k===curMonthKey?'الشهر الحالي':_monthLabel(k)}</div>`).join('')}
+  </div>`;
+
+  const scoped=_commMonth==='all'?_archive:_archive.filter(r=>_caseMonthKey(r)===activeMonth);
+
+  // حساب العمولة بنسبة كل عميل (دكتور) المسجّلة في بياناته الأساسية — مش نسبة موحّدة لكل الحالات
   let totalComm=0;
   const byClient={};
-  _archive.forEach(r=>{
+  scoped.forEach(r=>{
     const total=+r.total||0;
-    const comm=total*(rate/100);
+    const cl=_myClients.find(c=>c.name===r.client);
+    const cr=_clientCommRate(cl);
+    const comm=total*(cr.rate/100);
     totalComm+=comm;
     const cn=r.client||'-';
-    if(!byClient[cn])byClient[cn]={cases:0,total:0,comm:0};
+    if(!byClient[cn])byClient[cn]={cases:0,total:0,comm:0,rate:cr.rate,registered:cr.registered};
     byClient[cn].cases++;byClient[cn].total+=total;byClient[cn].comm+=comm;
   });
 
-  const totalDebt=_archive.reduce((s,r)=>s+(+r.remaining||0),0);
-  const totalCollected=_archive.reduce((s,r)=>s+(+r.paid||0),0);
+  const totalDebt=scoped.reduce((s,r)=>s+(+r.remaining||0),0);
+  const totalCollected=scoped.reduce((s,r)=>s+(+r.paid||0),0);
 
-  c.innerHTML=`
+  // بطاقة اليوم — بنفس تعريف يوم الشغل (٣ العصر لـ٣ الفجر)
+  const shiftDate=shiftToday();
+  const todayDelivered=_archive.filter(r=>r.archivedAt&&shiftToday(r.archivedAt)===shiftDate&&r.handoverStatus==='delivered');
+  const todaySales=todayDelivered.reduce((s,r)=>s+(+r.total||0),0);
+  const todayComm=todayDelivered.reduce((s,r)=>{
+    const cl=_myClients.find(c=>c.name===r.client);
+    return s+(+r.total||0)*(_clientCommRate(cl).rate/100);
+  },0);
+
+  c.innerHTML=pills+`
     <div class="comm-card">
-      <div style="font-size:14px;color:var(--text3);margin-bottom:6px">💰 إجمالي العمولة المحسوبة</div>
+      <div style="font-size:14px;color:var(--text3);margin-bottom:6px">🕒 اليوم</div>
+      <div class="comm-row"><span style="color:var(--text3)">مبيعات اليوم</span><span style="font-weight:700">${fmt(todaySales)} ج.م</span></div>
+      <div class="comm-row"><span style="color:var(--text3)">عمولة اليوم</span><span style="font-weight:900;color:var(--gold2)">${fmt(todayComm)} ج.م</span></div>
+    </div>
+    <div class="comm-card">
+      <div style="font-size:14px;color:var(--text3);margin-bottom:6px">💰 إجمالي العمولة المحسوبة${_commMonth!=='all'?' — '+(activeMonth===curMonthKey?'الشهر الحالي':_monthLabel(activeMonth)):' — كل الفترات'}</div>
       <div class="comm-total">${fmt(totalComm)} ج.م</div>
-      <div class="comm-sub">نسبة ${rate}% من ${_archive.length} حالة مكتملة</div>
+      <div class="comm-sub">من ${scoped.length} حالة مكتملة (حسب نسبة عمولة كل دكتور)</div>
     </div>
     ${_user.salary>0?`<div class="comm-card">
       <div style="font-size:14px;color:var(--text3);margin-bottom:6px">🏦 الراتب الثابت</div>
@@ -946,10 +1105,10 @@ function renderCommission(){
     </div>`:''}
     <div class="comm-card">
       <div style="font-size:14px;color:var(--text3);margin-bottom:10px">📊 ملخص مالي</div>
-      <div class="comm-row"><span style="color:var(--text3)">إجمالي مبيعات عملاءك</span><span style="font-weight:700">${fmt(_archive.reduce((s,r)=>s+(+r.total||0),0))} ج.م</span></div>
+      <div class="comm-row"><span style="color:var(--text3)">إجمالي مبيعات عملاءك</span><span style="font-weight:700">${fmt(scoped.reduce((s,r)=>s+(+r.total||0),0))} ج.م</span></div>
       <div class="comm-row"><span style="color:var(--text3)">تم تحصيله</span><span style="font-weight:700;color:var(--green)">${fmt(totalCollected)} ج.م</span></div>
       <div class="comm-row"><span style="color:var(--text3)">متبقي (ديون)</span><span style="font-weight:700;color:${totalDebt>0?'var(--red)':'var(--green)'}">${fmt(totalDebt)} ج.م</span></div>
-      <div class="comm-row"><span style="color:var(--text3)">نسبة عمولتك</span><span style="font-weight:700;color:var(--gold2)">${rate}%</span></div>
+      <div class="comm-row"><span style="color:var(--text3)">نسبتك العامة الافتراضية</span><span style="font-weight:700;color:var(--gold2)">${rate}%</span></div>
     </div>
     <div class="comm-card">
       <div style="font-size:14px;color:var(--text3);margin-bottom:10px">👥 تفصيل حسب العميل</div>
@@ -957,65 +1116,98 @@ function renderCommission(){
         <div class="comm-row">
           <div>
             <div style="font-size:14px;font-weight:700">${esc(name)}</div>
-            <div style="font-size:12px;color:var(--text3)">${d.cases} حالة · ${fmt(d.total)} ج.م مبيعات</div>
+            <div style="font-size:12px;color:var(--text3)">${d.cases} حالة · ${fmt(d.total)} ج.م مبيعات · نسبة ${d.rate}%${d.registered?'':' (افتراضية)'}</div>
           </div>
           <div style="font-weight:900;color:var(--gold2)">${fmt(d.comm)} ج.م</div>
         </div>`).join('')}
     </div>`;
 }
+function setCommMonth(k){_commMonth=k;renderCommission();}
 
 // ═══════════════════════════════════════
 // ADD PROSPECT TAB — عميل محتمل جديد (نفس شكل data/shared/prospects الحقيقي)
 // ═══════════════════════════════════════
+let _ncGeo=null;
 function renderAddClient(){
   const c=document.getElementById('tab-content');
   c.innerHTML=`
     <div class="card" style="padding:16px">
-      <h3 style="font-size:16px;font-weight:900;color:var(--gold2);margin-bottom:16px">➕ عميل محتمل جديد</h3>
-      <div class="form-group"><label>اسم المركز / العيادة *</label><input type="text" id="nc-center" placeholder="اسم المركز أو العيادة"></div>
+      <h3 style="font-size:16px;font-weight:900;color:var(--gold2);margin-bottom:16px">➕ زيارة جديدة</h3>
       <div class="form-group"><label>اسم الدكتور *</label><input type="text" id="nc-doctor" placeholder="اسم الدكتور"></div>
       <div class="form-group"><label>رقم الهاتف</label><input type="tel" id="nc-phone" placeholder="01xxxxxxxxx"></div>
       <div class="form-group"><label>واتساب</label><input type="tel" id="nc-whatsapp" placeholder="01xxxxxxxxx"></div>
-      <div class="form-group"><label>المحافظة</label><input type="text" id="nc-gov" placeholder="مثال: القاهرة"></div>
-      <div class="form-group"><label>المدينة / المنطقة</label><input type="text" id="nc-city" placeholder="المدينة أو المنطقة"></div>
-      <div class="form-group"><label>العنوان</label><input type="text" id="nc-address" placeholder="العنوان بالتفصيل"></div>
+      <div class="form-group"><label>المحافظة</label>
+        <select id="nc-gov" onchange="onNcGovChange()">
+          <option value="">-- اختر المحافظة --</option>
+          ${EGY_GOVS.map(g=>`<option value="${esc(g)}">${esc(g)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group"><label>المدينة / المنطقة</label>
+        <select id="nc-city"><option value="">-- اختر المحافظة أولاً --</option></select>
+      </div>
+      <div class="form-group"><label>العنوان بالتفصيل</label><input type="text" id="nc-address" placeholder="اسم الشارع / علامة مميزة"></div>
+      <div class="form-group">
+        <label>الموقع الجغرافي</label>
+        <button type="button" class="geo-btn" id="nc-geo-btn" onclick="captureNcGeo()">📍 تحديد موقعي الحالي</button>
+      </div>
       <div class="form-group"><label>ملاحظات</label><textarea id="nc-notes" rows="3" placeholder="أي ملاحظات إضافية..."></textarea></div>
-      <button class="btn btn-gold btn-block" onclick="submitNewProspect()">💾 حفظ العميل المحتمل</button>
+      <button class="btn btn-gold btn-block" onclick="submitNewProspect()">💾 حفظ الزيارة</button>
     </div>
     ${_myProspects.length?`
-    <div style="font-size:14px;color:var(--text3);margin-top:14px;margin-bottom:8px">📋 عملاؤك المحتملون (${_myProspects.length})</div>
+    <div style="font-size:14px;color:var(--text3);margin-top:14px;margin-bottom:8px">📋 زياراتك المسجّلة (${_myProspects.length})</div>
     ${_myProspects.map(p=>`
       <div class="card" style="padding:10px 14px">
-        <div style="font-size:15px;font-weight:700">${esc(p.center)} — ${esc(p.doctor)}</div>
-        <div style="font-size:12px;color:var(--text3)">${esc(p.phone||'-')} ${p.city?'· '+esc(p.city):''}</div>
+        <div style="font-size:15px;font-weight:700">${esc(p.doctor)}</div>
+        <div style="font-size:12px;color:var(--text3)">${esc(p.phone||'-')} ${p.city?'· '+esc(p.city):''} ${p.gov?'· '+esc(p.gov):''}</div>
         <div style="font-size:12px;color:var(--gold2);margin-top:2px">${RESULT_LABELS[p.status]||(p.status==='new'?'🆕 جديد':esc(p.status||'-'))}</div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:8px;width:100%" onclick="openVisitModal(${esc(p.id)})">🔄 تسجيل متابعة</button>
       </div>`).join('')}`:''}`;
+  _ncGeo=null;
+}
+
+function onNcGovChange(){
+  const gov=document.getElementById('nc-gov').value;
+  const citySel=document.getElementById('nc-city');
+  const cities=EGY_CITIES[gov]||[];
+  citySel.innerHTML='<option value="">-- اختر المدينة --</option>'+cities.map(ct=>`<option value="${esc(ct)}">${esc(ct)}</option>`).join('');
+}
+
+function captureNcGeo(){
+  const btn=document.getElementById('nc-geo-btn');
+  if(!navigator.geolocation){toast('الجهاز لا يدعم تحديد الموقع','err');return;}
+  btn.textContent='⏳ جاري التحديد...';
+  navigator.geolocation.getCurrentPosition(pos=>{
+    _ncGeo={lat:pos.coords.latitude,lng:pos.coords.longitude};
+    btn.textContent='✅ تم تحديد الموقع';
+    btn.classList.add('geo-ok');
+    toast('✅ تم تحديد موقعك');
+  },err=>{
+    btn.textContent='📍 تحديد موقعي الحالي';
+    toast('تعذّر تحديد الموقع — تأكد من تفعيل صلاحية الموقع','err');
+  },{enableHighAccuracy:true,timeout:10000});
 }
 
 async function submitNewProspect(){
-  const center=document.getElementById('nc-center').value.trim();
   const doctor=document.getElementById('nc-doctor').value.trim();
-  if(!center||!doctor){toast('اسم المركز والدكتور مطلوبان','err');return;}
+  if(!doctor){toast('اسم الدكتور مطلوب','err');return;}
   try{
     const id=Date.now();
     const rec={
-      id,center,doctor,
+      id,center:doctor,doctor,
       phone:document.getElementById('nc-phone').value.trim(),
       whatsapp:document.getElementById('nc-whatsapp').value.trim(),
-      gov:document.getElementById('nc-gov').value.trim(),
-      city:document.getElementById('nc-city').value.trim(),
+      gov:document.getElementById('nc-gov').value,
+      city:document.getElementById('nc-city').value,
       address:document.getElementById('nc-address').value.trim(),
       notes:document.getElementById('nc-notes').value.trim(),
+      geo:_ncGeo||null,
       delegate:_user.name,
       doctorsCount:1,units:0,doctors:[],
       status:'new',createdAt:Date.now()
     };
     await fbUpdate('data/shared/prospects',{[id]:rec});
     _myProspects=[rec,..._myProspects];
-    toast('✅ تم حفظ العميل المحتمل');
-    ['nc-center','nc-doctor','nc-phone','nc-whatsapp','nc-gov','nc-city','nc-address','nc-notes'].forEach(id=>{
-      const el=document.getElementById(id);if(el)el.value='';
-    });
+    toast('✅ تم حفظ الزيارة');
     renderAddClient();
   }catch(e){console.error(e);toast('خطأ في الحفظ','err');}
 }
@@ -1033,7 +1225,7 @@ function openVisitModal(prospectId){
   sel.value=prospectId||'';
   document.getElementById('vm-notes').value='';
   document.getElementById('vm-result').value='';
-  document.getElementById('vm-date').value=today();
+  document.getElementById('vm-date').value=shiftToday();
   onVisitProspectChange();
   document.getElementById('visit-modal').classList.remove('hidden');
 }
@@ -1052,7 +1244,7 @@ async function saveVisit(){
   const doctor=document.getElementById('vm-doctor').value;
   const result=document.getElementById('vm-result').value;
   const notes=document.getElementById('vm-notes').value.trim();
-  const date=document.getElementById('vm-date').value||today();
+  const date=document.getElementById('vm-date').value||shiftToday();
   if(!prospectId||!doctor||!result){toast('العميل والدكتور والنتيجة مطلوبين','err');return;}
   try{
     const id=Date.now();
