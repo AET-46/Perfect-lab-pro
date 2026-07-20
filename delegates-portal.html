@@ -1045,16 +1045,27 @@ function buildDailyReportMsg(){
     msg+=`\n`;
   }
 
-  msg+=`\n🔄 *متابعة زيارة اليوم:* ${visitsToday.length}\n`;
-  visitsToday.forEach(v=>{
+  const fmtVisitLine=v=>{
     const p=_myProspects.find(pp=>pp.id===v.prospectId);
-    msg+=`  • ${p?p.doctor:(v.doctor||'طبيب #'+v.prospectId)}\n`;
-    if(p&&p.phone)msg+=`    ☎️ ${p.phone}\n`;
-    if(p&&(p.address||p.city||p.gov))msg+=`    📍 ${[p.address,p.city,p.gov].filter(Boolean).join('، ')}\n`;
-    msg+=`    النتيجة: ${RESULT_LABELS[v.result]||v.result||'-'}\n`;
-    if(v.notes)msg+=`    ملاحظة: ${v.notes}\n`;
-    if(p&&p.geo)msg+=`    🗺️ https://maps.google.com/?q=${p.geo.lat},${p.geo.lng}\n`;
-  });
+    let s=`  • ${p?p.doctor:(v.doctor||'طبيب #'+v.prospectId)}\n`;
+    if(p&&p.phone)s+=`    ☎️ ${p.phone}\n`;
+    if(p&&(p.address||p.city||p.gov))s+=`    📍 ${[p.address,p.city,p.gov].filter(Boolean).join('، ')}\n`;
+    s+=`    النتيجة: ${RESULT_LABELS[v.result]||v.result||'-'}\n`;
+    if(v.notes)s+=`    ملاحظة: ${v.notes}\n`;
+    if(p&&p.geo)s+=`    🗺️ https://maps.google.com/?q=${p.geo.lat},${p.geo.lng}\n`;
+    return s;
+  };
+  const newVisits=visitsToday.filter(v=>v.result==='new');
+  const followVisits=visitsToday.filter(v=>v.result!=='new');
+
+  if(newVisits.length){
+    msg+=`\n🆕✨ *عملاء جدد تمت زيارتهم اليوم:* ${newVisits.length}\n`;
+    newVisits.forEach(v=>msg+=fmtVisitLine(v));
+  }
+  if(followVisits.length){
+    msg+=`\n🔄 *متابعة زيارة اليوم:* ${followVisits.length}\n`;
+    followVisits.forEach(v=>msg+=fmtVisitLine(v));
+  }
 
   if(!delivered.length&&!returned.length&&!visitsToday.length)msg+=`\n— لا يوجد نشاط مسجّل اليوم —`;
   return msg;
@@ -1338,7 +1349,7 @@ async function moveToArchive(r,handoverStatus,delivType){
 }
 
 
-const RESULT_LABELS={interested:'✅ مهتم',not_interested:'❌ غير مهتم',follow:'🔄 متابعة',contracted:'🤝 تم التعاقد'};
+const RESULT_LABELS={interested:'✅ مهتم',not_interested:'❌ غير مهتم',follow:'🔄 متابعة',contracted:'🤝 تم التعاقد',new:'🆕 أول زيارة'};
 function renderVisits(){
   const c=document.getElementById('tab-content');
   c.innerHTML=`<button class="btn btn-gold btn-sm" style="margin-bottom:12px" onclick="openVisitModal()">➕ تسجيل متابعة زيارة</button>`;
@@ -1541,6 +1552,13 @@ async function submitNewProspect(){
     };
     await fbUpdate('data/shared/prospects',{[id]:rec});
     _myProspects=[rec,..._myProspects];
+
+    // تسجيل أول زيارة تلقائيًا مع إضافة العميل — عشان تظهر في تاب "متابعة زيارة" وفي التقرير اليومي
+    const visitId=id+1;
+    const visitRec={id:visitId,delegate:_user.name,prospectId:id,doctor,date:shiftToday(),result:'new',notes:rec.notes,createdAt:Date.now()};
+    await fbUpdate('data/shared/prospect_visits',{[visitId]:visitRec});
+    _myVisits=[visitRec,..._myVisits];
+
     toast('✅ تم حفظ الزيارة');
     renderAddClient();
   }catch(e){console.error(e);toast('خطأ في الحفظ','err');}
