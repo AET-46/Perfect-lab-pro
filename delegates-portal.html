@@ -645,7 +645,7 @@ async function loadTab(tab){
     _dafter=toArr(dafter).filter(r=>r.delegate===_user.name);
     _proof=toArr(proof).filter(r=>r.delegate===_user.name);
     _archive=toArr(archive).filter(r=>r.delegate===_user.name);
-    _myProspects=toArr(prospects).filter(p=>p.delegate===_user.name).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    _myProspects=toArr(prospects).filter(p=>p.delegate===_user.name||p.delegateName===_user.name).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
     _myVisits=toArr(prospectVisits).filter(v=>v.delegate===_user.name).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
     // نسب العمولة المخصصة لكل عميل — متسجّلة جوه سجل المندوب نفسه (data/shared/delegates → clients[])
     // زي صفحة "ربط العملاء بالمناديب" بالسيستم الكبير بالظبط
@@ -862,25 +862,44 @@ async function _getAdminNumbers(){
   if(li.admin1)list.push({label:'رقم الإدارة 1',phone:li.admin1,group:li.admin1Group||li.group1||''});
   if(li.admin2)list.push({label:'رقم الإدارة 2',phone:li.admin2,group:li.admin2Group||li.group2||''});
   (li.adminExtra||[]).forEach(a=>{if(a.phone)list.push({label:a.label||'رقم إدارة إضافي',phone:a.phone,group:a.group||''});});
+  // جروبات واتساب (روابط دعوة) — نفس li.waGroups المستخدمة في الملف الرئيسي
+  (li.waGroups||[]).forEach(g=>{if(g.link)list.push({label:'📢 '+(g.name||'جروب واتساب'),phone:null,isGroup:true,link:g.link});});
   return list;
 }
 function _waLink(phone,msg){
   const clean=String(phone||'').replace(/[^0-9]/g,'');
   return `https://wa.me/${clean}?text=${encodeURIComponent(msg)}`;
 }
+// نسخ النص وفتح رابط جروب الواتساب — واتساب لا يسمح بحقن نص جاهز داخل جروب عبر رابط الدعوة
+function _waGroupSend(msg,link){
+  const openLink=()=>{if(link)window.open(link,'_blank');};
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(msg).then(()=>{toast('✅ تم نسخ النص — الصقه داخل الجروب بعد فتحه');openLink();}).catch(openLink);
+  }else{openLink();}
+}
 let _pendingAdminMsg='';
 async function sendToAdminWithPicker(msg){
   const numbers=await _getAdminNumbers();
-  if(!numbers.length){toast('لا يوجد رقم إدارة مسجّل في بيانات المعمل الأساسية','err');return;}
-  if(numbers.length===1){window.open(_waLink(numbers[0].phone,msg),'_blank');return;}
+  if(!numbers.length){toast('لا يوجد رقم إدارة أو جروب مسجّل في بيانات المعمل الأساسية','err');return;}
+  if(numbers.length===1){
+    if(numbers[0].isGroup)_waGroupSend(msg,numbers[0].link);
+    else window.open(_waLink(numbers[0].phone,msg),'_blank');
+    return;
+  }
   _pendingAdminMsg=msg;
   const list=document.getElementById('admin-pick-list');
-  list.innerHTML=numbers.map(n=>`<button class="btn btn-gold" style="margin-bottom:8px;width:100%" onclick="_sendAdminMsgTo('${esc(n.phone)}')">${esc(n.label)}${n.group?' — 🏷️ '+esc(n.group):''} — ${esc(n.phone)}</button>`).join('');
+  list.innerHTML=numbers.map((n,i)=>`<button class="btn btn-gold" style="margin-bottom:8px;width:100%" onclick="_sendAdminMsgTo(${i})">${esc(n.label)}${n.group?' — 🏷️ '+esc(n.group):''}${n.phone?' — '+esc(n.phone):''}</button>`).join('');
+  list.dataset.numbers=JSON.stringify(numbers);
   document.getElementById('admin-pick-modal').classList.remove('hidden');
 }
-function _sendAdminMsgTo(phone){
+function _sendAdminMsgTo(idx){
+  const list=document.getElementById('admin-pick-list');
+  const numbers=JSON.parse(list.dataset.numbers||'[]');
+  const n=numbers[idx];
   document.getElementById('admin-pick-modal').classList.add('hidden');
-  window.open(_waLink(phone,_pendingAdminMsg),'_blank');
+  if(!n)return;
+  if(n.isGroup)_waGroupSend(_pendingAdminMsg,n.link);
+  else window.open(_waLink(n.phone,_pendingAdminMsg),'_blank');
 }
 function closeAdminPick(){document.getElementById('admin-pick-modal').classList.add('hidden');}
 
