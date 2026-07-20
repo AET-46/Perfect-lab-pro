@@ -285,8 +285,9 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
   <div class="modal-box">
     <h3 id="cm-title"></h3>
     <p id="cm-msg" style="font-size:14px;color:var(--text2);margin-bottom:6px"></p>
+    <div id="cm-extra" class="hidden" style="margin-bottom:10px"></div>
     <div class="modal-btns">
-      <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
+      <button class="btn btn-ghost" id="cm-cancel">إلغاء</button>
       <button class="btn btn-gold" id="cm-ok">تأكيد</button>
     </div>
   </div>
@@ -367,7 +368,7 @@ const FB_CONFIG={
 // ═══════════════════════════════════════
 let _db=null,_user=null,_curTab='clients';
 let _searchQuery='';
-let _myClients=[],_dafter=[],_proof=[],_archive=[],_myVisits=[],_myProspects=[],_treasury=[],_myDelegateClientMap={};
+let _myClients=[],_dafter=[],_proof=[],_archive=[],_myVisits=[],_myProspects=[],_treasury=[],_mySettlements=[],_myDelegateClientMap={};
 
 // ═══════════════════════════════════════
 // 🔌 FIREBASE — اتصال حقيقي بنفس قاعدة بيانات السيستم الكبير
@@ -383,20 +384,30 @@ const firebaseConfig={
   appId:"1:949326964182:web:ae88b4aae59dba2f7b3077"
 };
 // (رقم الإدارة بقى ديناميكي من data/shared/labinfo — شوف _getAdminNumbers أسفل)
-let _fbRTDB=null,_fbInitDone=false,_fbAuthPending=false;
+let _fbRTDB=null,_fbInitDone=false,_fbAuthPending=false,_fbAuthFailCount=0,_fbLastAuthAttempt=0;
 function _initFirebase(){
   if(typeof firebase==='undefined')return false;
   if(_fbInitDone)return true;
   if(_fbAuthPending)return false;
   if(typeof firebase.database!=='function')return false;
   if(typeof firebase.auth!=='function')return false;
+  // نفس منطق الملف الرئيسي: backoff متزايد بدل محاولة كل 100ms وقت انقطاع الشبكة
+  if(_fbAuthFailCount>0){
+    const backoff=Math.min(2000*_fbAuthFailCount,10000);
+    if(Date.now()-_fbLastAuthAttempt<backoff)return false;
+  }
   try{
     if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
     _fbAuthPending=true;
+    _fbLastAuthAttempt=Date.now();
     firebase.auth().signInAnonymously().then(function(){
-      _fbRTDB=firebase.database();_fbInitDone=true;_fbAuthPending=false;
+      _fbRTDB=firebase.database();_fbInitDone=true;_fbAuthPending=false;_fbAuthFailCount=0;
       console.log('✅ Firebase: متصل بقاعدة بيانات PerfectLabPro');
-    }).catch(function(e){_fbAuthPending=false;console.error('Firebase auth error:',e&&(e.code||e.message));});
+    }).catch(function(e){
+      _fbAuthPending=false;_fbAuthFailCount++;
+      if(_fbAuthFailCount===1||_fbAuthFailCount%5===0)console.error('Firebase auth error:',e&&(e.code||e.message),'— محاولة رقم',_fbAuthFailCount);
+      if(_fbAuthFailCount===3&&typeof toast==='function')toast('⚠️ تعذّر الاتصال بالسيرفر — تحقق من الإنترنت','err');
+    });
     return false;
   }catch(e){console.warn('Firebase init error:',e);return false;}
 }
@@ -405,9 +416,9 @@ function waitForFirebase(){
     if(_fbInitDone){resolve(true);return;}
     let tries=0;
     const iv=setInterval(()=>{
-      if(!_fbInitDone)_initFirebase();
+      if(_initFirebase()){clearInterval(iv);resolve(true);return;}
       tries++;
-      if(_fbInitDone||tries>100){clearInterval(iv);resolve(_fbInitDone);}
+      if(tries>100){clearInterval(iv);resolve(false);} // بعد ~10s نرجع false ونسيب المحاولات في الخلفية مستمرة (backoff) لحد ما الاتصال يرجع
     },100);
   });
 }
@@ -436,6 +447,19 @@ async function fbPush(path,val){
   return ref.key;
 }
 function toArr(v){if(!v)return[];return Array.isArray(v)?v.filter(Boolean):Object.values(v).filter(Boolean);}
+// مطابقة اسم المندوب — بتتجاهل فراغات زيادة واختلاف حالة الأحرف، عشان فروق كتابية بسيطة
+// (مسافة زيادة، حرف كبير/صغير لو الاسم إنجليزي) متبقاش سبب لاختفاء عميل/حالة من البورتال
+function _sameDelegateName(a,b){
+  if(!a||!b)return false;
+  return String(a).trim().toLowerCase()===String(b).trim().toLowerCase();
+}
+// مطابقة "هل العميل ده تابع للمندوب الحالي؟" — الأولوية دايمًا للـ delegateId (ثابت لا يتأثر
+// بتغيير اسم المندوب لاحقًا من الأدمن)، وبعدين أسماء delegate/delegateName كـ fallback للسجلات
+// القديمة اللي اتربطت قبل ما ميزة delegateId تتضاف، أو لو الربط اتعمل من مكان تاني.
+function _belongsToDelegate(c){
+  if(c.delegateId&&_user.id)return c.delegateId===_user.id;
+  return _sameDelegateName(c.delegate,_user.name)||_sameDelegateName(c.delegateName,_user.name);
+}
 async function hashPassword(pass){
   const enc=new TextEncoder();
   const buf=await crypto.subtle.digest('SHA-256',enc.encode(pass));
@@ -632,21 +656,31 @@ async function loadTab(tab){
   content.innerHTML='';spinner.style.display='block';
   try{
     // تحميل البيانات المشتركة من data/shared الحقيقي
-    const [clients,dafter,proof,archive,prospects,prospectVisits,delegates]=await Promise.all([
+    const [clients,dafter,proof,archive,prospects,prospectVisits,delegates,treasury,settlements]=await Promise.all([
       fbGet('data/shared/clients'),
       fbGet('data/shared/dafter'),
       fbGet('data/shared/proof'),
       fbGet('data/shared/archive'),
       fbGet('data/shared/prospects'),
       fbGet('data/shared/prospect_visits'),
-      fbGet('data/shared/delegates')
+      fbGet('data/shared/delegates'),
+      fbGet('data/shared/treasury'),
+      fbGet('data/shared/settlements')
     ]);
-    _myClients=toArr(clients).filter(c=>c.delegate===_user.name||c.delegateName===_user.name);
-    _dafter=toArr(dafter).filter(r=>r.delegate===_user.name);
-    _proof=toArr(proof).filter(r=>r.delegate===_user.name);
-    _archive=toArr(archive).filter(r=>r.delegate===_user.name);
-    _myProspects=toArr(prospects).filter(p=>p.delegate===_user.name||p.delegateName===_user.name).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-    _myVisits=toArr(prospectVisits).filter(v=>v.delegate===_user.name).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    _myClients=toArr(clients).filter(c=>_belongsToDelegate(c));
+    _dafter=toArr(dafter).filter(r=>_sameDelegateName(r.delegate,_user.name));
+    _proof=toArr(proof).filter(r=>_sameDelegateName(r.delegate,_user.name));
+    _archive=toArr(archive).filter(r=>_sameDelegateName(r.delegate,_user.name));
+    _myProspects=toArr(prospects).filter(p=>_belongsToDelegate(p)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    _myVisits=toArr(prospectVisits).filter(v=>_sameDelegateName(v.delegate,_user.name)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    // كارت حساب العميل: نحمّل فقط حركات الخزنة والتسويات الخاصة بعملاء هذا المندوب (خصوصية)
+    {
+      const myClientIds=new Set(_myClients.map(cl=>cl.id));
+      const myClientNames=new Set(_myClients.map(cl=>cl.name));
+      const belongsToMe=x=>(x.clientId&&myClientIds.has(x.clientId))||(!x.clientId&&myClientNames.has(x.accName));
+      _treasury=toArr(treasury).filter(belongsToMe);
+      _mySettlements=toArr(settlements).filter(belongsToMe);
+    }
     // نسب العمولة المخصصة لكل عميل — متسجّلة جوه سجل المندوب نفسه (data/shared/delegates → clients[])
     // زي صفحة "ربط العملاء بالمناديب" بالسيستم الكبير بالظبط
     const myDel=toArr(delegates).find(d=>d.name===_user.name||d.id===_user.id);
@@ -670,6 +704,7 @@ async function loadTab(tab){
 // CLIENTS TAB
 // ═══════════════════════════════════════
 let _clientMonth='current';
+let _clientCustomRange={}; // {[clientId]: {from,to}} — فترة مخصصة لكارت حساب عميل معين (تتجاوز فلتر الشهر)
 function _clientCommRate(cl){
   // العمولة المخصصة لكل عميل متسجّلة جوه سجل المندوب نفسه data/shared/delegates → clients[]
   // بنفس شكل صفحة "ربط العملاء بالمناديب" بالظبط: {clientId, commEnabled, commRate}
@@ -694,6 +729,50 @@ function _monthLabel(key){
 }
 function _caseMonthKey(r){ return _monthKey(r.date)||_monthKey(r.archivedAt)||_monthKey(r.createdAt); }
 
+// ═══════════════════════════════════════
+// كارت حساب العميل — نفس منطق _clientAccountSummary بالسيستم الكبير بالظبط
+// (رصيد افتتاحي + مديونية سابقة + فواتير/مدفوعات الفترة - التسويات) لكن مقصور على
+// بيانات هذا المندوب المحمّلة مسبقًا (_archive/_treasury/_mySettlements)
+// ═══════════════════════════════════════
+function _matchClRec(r,cl){ return cl.id?r.clientId===cl.id:(!r.clientId&&r.client===cl.name); }
+function _matchClTrs(t,cl){ return cl.id?t.clientId===cl.id:(!t.clientId&&t.accName===cl.name); }
+function _clOpeningBal(cl){
+  if(!cl||!cl.openingBalance||!cl.openingBalance.type||!cl.openingBalance.amount)return 0;
+  const amt=+cl.openingBalance.amount||0;
+  return cl.openingBalance.type==='debit'?amt:-amt;
+}
+function _clientAccountSummaryD(cl,from,to){
+  const linkedSettledIds=new Set(_mySettlements.filter(s=>s.invoiceId).map(s=>s.invoiceId));
+  const legacySettles=_mySettlements.filter(s=>!s.invoiceId);
+  const openingBal=_clOpeningBal(cl);
+  const dOf=r=>r.archivedAt?new Date(r.archivedAt).toISOString().split('T')[0]:(r.date||'');
+  const prevArc=from?_archive.filter(r=>_matchClRec(r,cl)&&dOf(r)<from&&!linkedSettledIds.has(r.id)):[];
+  const prevArcTotal=prevArc.reduce((s,r)=>s+(+r.total||0),0);
+  const prevTrsPaid=(from?_treasury.filter(t=>_matchClTrs(t,cl)&&t.date<from&&!t.isTransfer&&t.type==='in'):[]).reduce((s,t)=>s+ +t.amount,0);
+  const prevSettled=(from?legacySettles.filter(s=>_matchClTrs(s,cl)&&s.date<from):[]).reduce((s,x)=>s+ +x.amount,0);
+  const prevDebt=prevArcTotal-prevTrsPaid-prevSettled;
+  const periodArc=_archive.filter(r=>_matchClRec(r,cl)&&(!from||dOf(r)>=from)&&(!to||dOf(r)<=to)&&!linkedSettledIds.has(r.id));
+  const periodTrs=_treasury.filter(t=>_matchClTrs(t,cl)&&(!from||t.date>=from)&&(!to||t.date<=to)&&!t.isTransfer);
+  const periodSettles=legacySettles.filter(s=>_matchClTrs(s,cl)&&(!from||s.date>=from)&&(!to||s.date<=to));
+  const withdrawn=periodArc.reduce((s,r)=>s+ +r.total,0);
+  const realPaid=periodTrs.filter(t=>t.type==='in').reduce((s,t)=>s+ +t.amount,0);
+  const settledAmt=periodSettles.reduce((s,x)=>s+ +x.amount,0);
+  const paid=realPaid+settledAmt;
+  const totalDebt=(openingBal+prevDebt)+withdrawn-paid;
+  return {prevDebt,openingBal,withdrawn,paid,realPaid,settledAmt,totalDebt,periodArc,periodTrs};
+}
+// فترة كارت الحساب المالي — مبنية على الشهر المختار من فلتر "عملائي" (📅 الكل / شهر معيّن)
+function _accPeriodFromMonth(curMonthKey){
+  curMonthKey=curMonthKey||new Date().toISOString().slice(0,7);
+  const activeMonth=_clientMonth==='current'?curMonthKey:_clientMonth;
+  let accFrom='',accTo='';
+  if(activeMonth!=='all'){
+    const [ay,am]=activeMonth.split('-').map(Number);
+    accFrom=activeMonth+'-01';
+    accTo=new Date(ay,am,0).toISOString().slice(0,10);
+  }
+  return {activeMonth,accFrom,accTo};
+}
 function renderClients(){
   const c=document.getElementById('tab-content');
   if(!_myClients.length){
@@ -712,7 +791,7 @@ function renderClients(){
     ${monthKeys.map(k=>`<div class="month-pill ${_clientMonth===k?'on':''}" onclick="setClientMonth('${k}')">${k===curMonthKey?'الشهر الحالي':_monthLabel(k)}</div>`).join('')}
   </div>`;
 
-  const activeMonth=_clientMonth==='current'?curMonthKey:_clientMonth;
+  const {activeMonth,accFrom,accTo}=_accPeriodFromMonth(curMonthKey);
 
   const list=_myClients.filter(cl=>matchesSearch([cl.name,cl.phone,cl.specialty]));
   if(!list.length){
@@ -731,6 +810,8 @@ function renderClients(){
     if(activeMonth!=='all'&&!cDafter.length&&!cProof.length&&!cArchive.length)return ''; // مفيش نشاط للعميل في الشهر المختار
     // ملحوظة: المبالغ (متبقي/مبيعات) مصدرها الأرشيف فقط، لأنه هو مصدر البيانات المالية المعتمد بنفس منطق السيستم الكبير
     const debt=cArchive.reduce((s,r)=>s+(+r.remaining||0),0);
+    const range=_clientCustomRange[cl.id]||{from:accFrom,to:accTo};
+    const acc=_clientAccountSummaryD(cl,range.from,range.to);
     return`<div class="client-card">
       <div class="client-head" onclick="toggleClient('cl-${esc(cl.id)}')">
         <div style="flex:1">
@@ -755,6 +836,42 @@ function renderClients(){
           <div style="font-size:13px;font-weight:900;color:var(--gold2);margin-bottom:6px">✅ الحالات المنتهية (مؤرشفة)</div>
           ${cArchive.map(r=>`<div class="case-row"><div class="case-row-head"><span>#${esc(String(r.caseId||'-'))} ${esc(r.noteName?'· '+r.noteName:'')}</span><span class="deliv-badge ${r.handoverStatus==='returned'?'returned':'delivered'}">${r.handoverStatus==='returned'?'↩️ مرتجع':r.handoverStatus==='delivered'?'✅ تم التسليم':'أرشيف'}</span></div><div style="font-size:12px;color:var(--text3)">${esc(r.product||'-')} · ${esc(r.archivedAt?new Date(r.archivedAt).toISOString().split('T')[0]:r.date||'-')} ${+r.remaining>0?`· <span style="color:var(--red)">متبقي: ${fmt(r.remaining)}</span>`:''}</div></div>`).join('')}
         </div>`:''}
+        <!-- 🃏 كارت حساب العميل — نفس منطق السيستم الكبير -->
+        <div style="border-top:2px solid var(--gold);margin-top:10px;padding-top:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:6px">
+            <div style="font-size:13px;font-weight:900;color:var(--gold2)">🃏 كارت الحساب — ${range.from||'البداية'} ← ${range.to||'اليوم'}</div>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-sm" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text2);padding:5px 8px;font-size:12px;border-radius:8px" onclick="event.stopPropagation();printClientAccountCard('${esc(cl.id)}')">🖨️ طباعة</button>
+              <button class="btn btn-sm" style="background:#25d366;color:#fff;border:none;padding:5px 10px;font-size:12px;border-radius:8px" onclick="event.stopPropagation();sendClientAccountWA('${esc(cl.id)}')">💬 واتساب للعميل</button>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px;background:var(--bg3);border-radius:8px;padding:6px 8px" onclick="event.stopPropagation()">
+            <span style="font-size:11px;color:var(--text3)">فترة مخصصة:</span>
+            <input type="date" id="cr-from-${esc(cl.id)}" value="${range.from||''}" style="font-size:11px;padding:3px 5px;border-radius:5px;border:1px solid var(--border2);background:var(--bg2);color:var(--text)">
+            <span style="font-size:11px;color:var(--text3)">←</span>
+            <input type="date" id="cr-to-${esc(cl.id)}" value="${range.to||''}" style="font-size:11px;padding:3px 5px;border-radius:5px;border:1px solid var(--border2);background:var(--bg2);color:var(--text)">
+            <button class="btn btn-sm" style="font-size:11px;padding:3px 8px;border-radius:6px" onclick="applyClientCustomRange('${esc(cl.id)}')">تطبيق</button>
+            ${_clientCustomRange[cl.id]?`<button class="btn btn-sm" style="font-size:11px;padding:3px 8px;border-radius:6px;background:var(--bg2)" onclick="clearClientCustomRange('${esc(cl.id)}')">إلغاء</button>`:''}
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;margin-bottom:8px">
+            ${range.from?`<div>مديونية سابقة: <b style="color:${acc.prevDebt>0?'var(--red)':'var(--text2)'}">${fmt(acc.prevDebt)}</b></div>`:''}
+            ${acc.openingBal?`<div>رصيد افتتاحي: <b>${fmt(acc.openingBal)}</b></div>`:''}
+            <div>مسحوب الفترة: <b>${fmt(acc.withdrawn)}</b></div>
+            <div>مدفوع الفترة: <b style="color:var(--green,#22c55e)">${fmt(acc.paid)}</b></div>
+            <div style="grid-column:1/-1;border-top:1px solid var(--border);padding-top:4px;margin-top:2px">الإجمالي المتبقي: <b style="color:${acc.totalDebt>0?'var(--red)':'var(--text2)'}">${fmt(acc.totalDebt)}</b></div>
+          </div>
+          ${acc.periodArc.length?`<div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:4px">📄 فواتير الفترة</div>
+          <div style="overflow-x:auto;margin-bottom:8px"><table style="width:100%;font-size:11px;border-collapse:collapse">
+            <tr style="color:var(--text3);text-align:right"><th style="padding:3px">رقم</th><th style="padding:3px">بيان</th><th style="padding:3px">المنتج</th><th style="padding:3px">كمية</th><th style="padding:3px">الإجمالي</th><th style="padding:3px">التاريخ</th></tr>
+            ${acc.periodArc.map(r=>`<tr style="border-top:1px solid var(--border)"><td style="padding:3px">${esc(String(r.invId||r.caseId||'-'))}</td><td style="padding:3px">${esc(r.noteName||'-')}</td><td style="padding:3px">${esc(r.product||'-')}</td><td style="padding:3px">${r.qty||1}</td><td style="padding:3px">${fmt(r.total)}</td><td style="padding:3px">${esc(r.archivedAt?new Date(r.archivedAt).toISOString().split('T')[0]:(r.date||'-'))}</td></tr>`).join('')}
+          </table></div>`:''}
+          ${acc.periodTrs.length?`<div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:4px">💳 حركات مالية</div>
+          <div style="overflow-x:auto"><table style="width:100%;font-size:11px;border-collapse:collapse">
+            <tr style="color:var(--text3);text-align:right"><th style="padding:3px">رقم</th><th style="padding:3px">النوع</th><th style="padding:3px">المبلغ</th><th style="padding:3px">الخزنة</th><th style="padding:3px">ملاحظات</th><th style="padding:3px">التاريخ</th></tr>
+            ${acc.periodTrs.map(t=>`<tr style="border-top:1px solid var(--border)"><td style="padding:3px">T-${esc(String(t.num||'-'))}</td><td style="padding:3px;color:${t.type==='in'?'var(--green,#22c55e)':'var(--red)'}">${t.type==='in'?'مقبوض':'مدفوع'}</td><td style="padding:3px">${fmt(t.amount)}</td><td style="padding:3px">${esc(t.box||'-')}</td><td style="padding:3px">${esc(t.notes||'-')}</td><td style="padding:3px">${esc(t.date||'-')}</td></tr>`).join('')}
+          </table></div>`:''}
+          ${!acc.periodArc.length&&!acc.periodTrs.length?`<div style="font-size:12px;color:var(--text3)">لا توجد فواتير أو حركات مالية في هذه الفترة</div>`:''}
+        </div>
         ${(()=>{const cr=_clientCommRate(cl);return `<div style="font-size:12px;color:var(--text3);margin-top:10px;border-top:1px solid var(--border);padding-top:8px">
           💰 عمولة هذا الطبيب: <b style="color:${cr.rate>0?'var(--gold2)':'var(--red)'}">${cr.rate}%</b>${cr.registered?' (مسجّلة في ربط العملاء بالمناديب)':' (نسبتك العامة — غير مخصّصة لهذا العميل)'}
         </div>`;})()}
@@ -781,6 +898,84 @@ function toggleClient(id){
   if(arr)arr.textContent=body.classList.contains('open')?'▴':'▾';
 }
 
+function _effectiveClientRange(clientId){
+  if(_clientCustomRange[clientId])return _clientCustomRange[clientId];
+  const {accFrom,accTo}=_accPeriodFromMonth();
+  return {from:accFrom,to:accTo};
+}
+function applyClientCustomRange(clientId){
+  const from=document.getElementById('cr-from-'+clientId)?.value||'';
+  const to=document.getElementById('cr-to-'+clientId)?.value||'';
+  if(!from&&!to){toast('اختر تاريخ البداية أو النهاية على الأقل','err');return;}
+  _clientCustomRange[clientId]={from,to};
+  renderClients();
+}
+function clearClientCustomRange(clientId){
+  delete _clientCustomRange[clientId];
+  renderClients();
+}
+function printClientAccountCard(clientId){
+  const cl=_myClients.find(x=>x.id===clientId);
+  if(!cl){toast('العميل غير موجود','err');return;}
+  const range=_effectiveClientRange(clientId);
+  const acc=_clientAccountSummaryD(cl,range.from,range.to);
+  const w=window.open('','_blank');
+  if(!w){toast('المتصفح منع فتح نافذة الطباعة — اسمح بالنوافذ المنبثقة','err');return;}
+  w.document.write(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><title>كارت حساب — ${esc(cl.name)}</title>
+  <style>
+    body{font-family:Tahoma,Arial,sans-serif;padding:20px;color:#111}
+    h2{margin-bottom:2px}
+    .meta{color:#666;font-size:13px;margin-bottom:16px}
+    table{width:100%;border-collapse:collapse;margin-bottom:18px;font-size:13px}
+    th,td{border:1px solid #ccc;padding:6px 8px;text-align:right}
+    th{background:#f2f2f2}
+    .summary{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
+    .box{border:1px solid #ccc;border-radius:6px;padding:10px}
+    .box b{display:block;font-size:16px;margin-top:4px}
+    .red{color:#c0392b}.green{color:#27ae60}
+  </style></head><body>
+  <h2>🃏 كارت حساب العميل: ${esc(cl.name)}</h2>
+  <div class="meta">الفترة: ${esc(range.from||'البداية')} ← ${esc(range.to||'اليوم')} — المندوب: ${esc(_user.name)}</div>
+  <div class="summary">
+    ${range.from?`<div class="box">مديونية سابقة<b class="${acc.prevDebt>0?'red':''}">${fmt(acc.prevDebt)}</b></div>`:''}
+    ${acc.openingBal?`<div class="box">رصيد افتتاحي<b>${fmt(acc.openingBal)}</b></div>`:''}
+    <div class="box">مسحوب الفترة<b>${fmt(acc.withdrawn)}</b></div>
+    <div class="box">مدفوع الفترة<b class="green">${fmt(acc.paid)}</b></div>
+    <div class="box" style="grid-column:1/-1">الإجمالي المتبقي<b class="${acc.totalDebt>0?'red':'green'}">${fmt(acc.totalDebt)}</b></div>
+  </div>
+  <h3>📄 فواتير الفترة (${acc.periodArc.length})</h3>
+  <table><tr><th>رقم</th><th>بيان</th><th>المنتج</th><th>كمية</th><th>الإجمالي</th><th>التاريخ</th></tr>
+    ${acc.periodArc.map(r=>`<tr><td>${esc(String(r.invId||r.caseId||'-'))}</td><td>${esc(r.noteName||'-')}</td><td>${esc(r.product||'-')}</td><td>${r.qty||1}</td><td>${fmt(r.total)}</td><td>${esc(r.archivedAt?new Date(r.archivedAt).toISOString().split('T')[0]:(r.date||'-'))}</td></tr>`).join('')||'<tr><td colspan="6" style="text-align:center;color:#999">لا توجد فواتير</td></tr>'}
+  </table>
+  ${acc.periodTrs.length?`<h3>💳 التعاملات المالية (${acc.periodTrs.length})</h3>
+  <table><tr><th>رقم</th><th>النوع</th><th>المبلغ</th><th>الخزنة</th><th>ملاحظات</th><th>التاريخ</th></tr>
+    ${acc.periodTrs.map(t=>`<tr><td>T-${esc(String(t.num||'-'))}</td><td>${t.type==='in'?'مقبوض':'مدفوع'}</td><td>${fmt(t.amount)}</td><td>${esc(t.box||'-')}</td><td>${esc(t.notes||'-')}</td><td>${esc(t.date||'-')}</td></tr>`).join('')}
+  </table>`:''}
+  <script>window.onload=()=>{window.print();};<\/script>
+  </body></html>`);
+  w.document.close();
+}
+async function sendClientAccountWA(clientId){
+  const cl=_myClients.find(x=>x.id===clientId);
+  if(!cl){toast('العميل غير موجود','err');return;}
+  const phone=cl.wa||cl.phone;
+  if(!phone){toast('لا يوجد رقم هاتف مسجّل لهذا العميل','err');return;}
+  const {from:accFrom,to:accTo}=_effectiveClientRange(clientId);
+  const acc=_clientAccountSummaryD(cl,accFrom,accTo);
+  const li=(await fbGet('data/shared/labinfo'))||{};
+  const labParts=[li.name||'Perfect Lab Pro'];
+  if(li.ph1)labParts.push('📞 '+li.ph1);
+  if(li.wa)labParts.push('💬 '+li.wa);
+  const labLine=labParts.join(' | ');
+  const sep='———————————';
+  const debtLine=acc.totalDebt>0?'🔴 المتبقي: '+fmt(acc.totalDebt):'✅ رصيد دائن للعميل: '+fmt(Math.abs(acc.totalDebt));
+  const msg=[labLine,sep,'📋 كارت حساب العميل: '+cl.name,
+    '📅 الفترة: '+(accFrom||'البداية')+' ← '+(accTo||new Date().toISOString().slice(0,10)),'',
+    '📊 ملخص الحساب:','💰 إجمالي الفواتير: '+fmt(acc.withdrawn),
+    '✅ إجمالي المدفوع: '+fmt(acc.paid),debtLine,
+    sep,labLine].join('\n');
+  window.open(_waLink(phone,msg),'_blank');
+}
 // ═══════════════════════════════════════
 // CASES TAB
 // ═══════════════════════════════════════
@@ -826,21 +1021,34 @@ function buildDailyReportMsg(){
   let msg=`📋 *تقرير يومي — ${_user.name}*\n`;
   msg+=`📅 ${shiftDate}\n\n`;
 
-  msg+=`🚚 *التسليمات اليوم:* ${delivered.length}\n`;
+  const totalCollected=delivered.reduce((s,r)=>s+ +(r.delegateReportedAmount||0),0);
+  const totalNewCases=delivered.reduce((s,r)=>s+ +(r.reportedNewCasesCount||0),0);
+  msg+=`🧾 *سند تسليم اليوم — ${delivered.length} حالة*\n\n`;
   delivered.forEach(r=>{
-    msg+=`  • ${r.client||'-'}${r.noteName?' — 👤 اسم المريض: '+r.noteName:''} — ${r.product||'-'} (${r.deliveryType||'-'})\n`;
+    msg+=`👤 ${r.client||'-'}${r.noteName?' — '+r.noteName:''}\n`;
+    msg+=`✅ تم التسليم — ${r.product||'-'} (${r.deliveryType||'-'})\n`;
+    if(+(r.delegateReportedAmount||0)>0)msg+=`💰 تم تحصيل ${r.delegateReportedAmount}ج (محتاج اعتماد الخزنة)\n`;
+    if(+(r.reportedNewCasesCount||0)>0)msg+=`📥 تم استلام ${r.reportedNewCasesCount} حالة جديدة\n`;
+    msg+=`\n`;
   });
+  if(totalCollected>0||totalNewCases>0){
+    msg+=`— الإجمالي —\n`;
+    if(totalCollected>0)msg+=`💰 إجمالي التحصيل: ${totalCollected}ج\n`;
+    if(totalNewCases>0)msg+=`📥 إجمالي الحالات الجديدة: ${totalNewCases}\n`;
+    msg+=`\n`;
+  }
   if(returned.length){
-    msg+=`\n↩️ *مرتجعات اليوم:* ${returned.length}\n`;
+    msg+=`↩️ *مرتجعات اليوم:* ${returned.length}\n`;
     returned.forEach(r=>{
       msg+=`  • ${r.client||'-'}${r.noteName?' — 👤 اسم المريض: '+r.noteName:''}\n`;
     });
+    msg+=`\n`;
   }
 
   msg+=`\n🔄 *متابعة زيارة اليوم:* ${visitsToday.length}\n`;
   visitsToday.forEach(v=>{
     const p=_myProspects.find(pp=>pp.id===v.prospectId);
-    msg+=`  • ${p?p.doctor:'طبيب #'+v.prospectId}\n`;
+    msg+=`  • ${p?p.doctor:(v.doctor||'طبيب #'+v.prospectId)}\n`;
     if(p&&p.phone)msg+=`    ☎️ ${p.phone}\n`;
     if(p&&(p.address||p.city||p.gov))msg+=`    📍 ${[p.address,p.city,p.gov].filter(Boolean).join('، ')}\n`;
     msg+=`    النتيجة: ${RESULT_LABELS[v.result]||v.result||'-'}\n`;
@@ -955,13 +1163,21 @@ function renderDeliveries(){
     </div>`).join('');
 }
 
-function showModal(title,msg,onOk){
+function showModal(title,msg,onOk,extraHtml,onCancel){
   document.getElementById('cm-title').textContent=title;
   document.getElementById('cm-msg').textContent=msg;
+  const extraBox=document.getElementById('cm-extra');
+  if(extraHtml){extraBox.innerHTML=extraHtml;extraBox.classList.remove('hidden');}
+  else{extraBox.innerHTML='';extraBox.classList.add('hidden');}
   const okBtn=document.getElementById('cm-ok');
   const newOk=okBtn.cloneNode(true); // إزالة أي مستمعين سابقين
   okBtn.parentNode.replaceChild(newOk,okBtn);
-  newOk.addEventListener('click',()=>{closeModal();onOk();});
+  newOk.addEventListener('click',()=>{onOk&&onOk();});
+  const cancelBtn=document.getElementById('cm-cancel');
+  const newCancel=cancelBtn.cloneNode(true);
+  cancelBtn.parentNode.replaceChild(newCancel,cancelBtn);
+  // onCancel اختياري: لو محدّدة بتستخدم للانتقال لخطوة تانية في سلسلة نوافذ بدل ما تقفل على طول
+  newCancel.addEventListener('click',()=>{if(onCancel)onCancel();else closeModal();});
   document.getElementById('confirm-modal').classList.remove('hidden');
 }
 function closeModal(){document.getElementById('confirm-modal').classList.add('hidden');}
@@ -975,11 +1191,98 @@ async function confirmDelivery(id,delivType){
   if(!r)return;
   showModal('تأكيد التسليم',`هل تم تسليم حالة "${r.client}" · #${r.caseId||'-'} (${delivType}) فعلاً للعميل؟`,async()=>{
     try{
-      await moveToArchive(r,'delivered',delivType);
-      toast('✅ تم تأكيد التسليم');
+      const archived=await moveToArchive(r,'delivered',delivType);
       loadTab('deliveries'); // الصفحة تفضل فاضية من الحالة دي بعد التأكيد
-    }catch(e){toast('خطأ أثناء التأكيد','err');}
+      askCollection(archived); // بعد التسليم مباشرة: نافذة تلقائية — هل فيه تحصيل؟
+    }catch(e){toast('خطأ أثناء التأكيد','err');closeModal();}
   });
+}
+
+// خطوة ٢ (اتوماتيك بعد التسليم): هل حصّل المندوب مبلغ من العميل؟
+function askCollection(archived){
+  const extraHtml=`<div class="form-group" style="margin:0">
+    <label>💰 اكتب المبلغ اللي حصّلته من العميل الآن (سيبها فاضية أو دوس إلغاء لو مفيش تحصيل)</label>
+    <input type="number" id="collect-amount-input" inputmode="decimal" placeholder="0" style="width:100%;font-size:16px">
+  </div>`;
+  showModal('فيه تحصيل؟',`حالة "${archived.client}" — تم التسليم ✅`,async()=>{
+    const input=document.getElementById('collect-amount-input');
+    const amount=Math.max(0,+((input&&input.value)||0));
+    if(amount>0){
+      archived.delegateReportedAmount=amount; // بيتحدّث في _archive المحلي عشان يظهر في تقرير اليوم
+      try{await logDelegateReportedCollection(archived,amount);}catch(e){}
+    }
+    askNewCases(archived);
+  },extraHtml,()=>askNewCases(archived)); // إلغاء = مفيش تحصيل، وكمِّل للخطوة الجاية
+}
+
+// خطوة ٣ (اتوماتيك بعد التحصيل): هل استلم مقاسات/حالات جديدة (مش بروفة) من نفس العميل؟
+function askNewCases(archived){
+  const extraHtml=`<div class="form-group" style="margin:0">
+    <label>📥 استلمت مقاسات جديدة من نفس العميل؟ اكتب العدد (سيبها فاضية أو دوس إلغاء لو مفيش)</label>
+    <input type="number" id="newcases-count-input" inputmode="numeric" min="0" placeholder="0" style="width:100%;font-size:16px">
+  </div>`;
+  const finish=async()=>{
+    const input=document.getElementById('newcases-count-input');
+    const count=Math.max(0,Math.round(+((input&&input.value)||0)));
+    if(count>0){
+      archived.reportedNewCasesCount=count; // بيتحدّث في _archive المحلي عشان يظهر في تقرير اليوم
+      try{await logDelegateNewCases(archived,count);}catch(e){}
+    }
+    closeModal();
+  };
+  showModal('استلمت مقاسات جديدة؟',`عميل "${archived.client}"`,finish,extraHtml,finish);
+}
+
+// تسجيل مبلغ بلَّغ عنه المندوب وقت تسليم حالة معيّنة — قائمة منفصلة تمامًا عن data/shared/treasury
+// الهدف: توثيق سريع وسهل من المندوب، من غير ما نلمس حسابات الخزنة الفعلية أو نخاطر بتعارض
+// الكتابة على نفس المسار اللي بيستخدمه السيستم الكبير. الإدارة تراجع وتعتمد/ترحّل يدويًا من
+// صفحة الخزنة الأساسية. لو حبينا لاحقًا نربطها تلقائيًا بدفتر السيستم الكبير (تسهيل الإدخال)،
+// المكان ده جاهز كمصدر بيانات — يحتاج شغل إضافي في الملف الرئيسي مش هنا.
+async function logDelegateReportedCollection(r,amount){
+  try{
+    const path='data/shared/delegatePendingCollections';
+    const all=toArr(await fbGet(path));
+    const entry={
+      id:'pc_'+r.id+'_'+Date.now(),
+      sourceId:r.sourceId||r.id,
+      caseId:r.caseId||'-',
+      client:r.client||'-',
+      clientId:r.clientId||r.delegateClientId||null,
+      product:r.product||'-',
+      amount,
+      delegateId:_user.id||_user.delegateId||null,
+      delegateName:_user.name||'-',
+      date:r.date||shiftToday(),
+      status:'pending', // pending → لسه محتاج اعتماد الإدارة وترحيله للخزنة يدويًا
+      createdAt:Date.now()
+    };
+    await fbSet(path,[...all,entry]);
+  }catch(e){/* فشل تسجيل المبلغ للمراجعة ما يمنعش إتمام التسليم نفسه */}
+}
+
+// تسجيل عدد مقاسات/حالات جديدة استلمها المندوب من العميل — قائمة منفصلة عن data/shared/dafter
+// الهدف: تجهيز البيانات عشان موظف الدفتر في السيستم الكبير يلاقي إشعار جاهز (اسم العميل +
+// عدد الحالات) بدل ما يستنى المندوب يقوله شفهيًا. الإدخال الفعلي في الدفتر لسه محتاج شغل
+// إضافي في الملف الرئيسي (مش هنا) عشان يقرا المسار ده ويعرضه كنافذة عند فتح صفحة الدفتر.
+async function logDelegateNewCases(r,count){
+  try{
+    const path='data/shared/delegatePendingNewCases';
+    const all=toArr(await fbGet(path));
+    const entry={
+      id:'nc_'+r.sourceId+'_'+Date.now(),
+      sourceId:r.sourceId||r.id,
+      client:r.client||'-',
+      clientId:r.clientId||r.delegateClientId||null,
+      reportedCount:count,
+      confirmedCount:null, // هيتملى من موظف الدفتر لما يتأكد العدد اللي فعلاً وصل المعمل
+      delegateId:_user.id||_user.delegateId||null,
+      delegateName:_user.name||'-',
+      date:r.date||shiftToday(),
+      status:'pending', // pending → لسه محتاج فتح ٨ سجلات دفتر جديدة باسم العميل
+      createdAt:Date.now()
+    };
+    await fbSet(path,[...all,entry]);
+  }catch(e){/* فشل التسجيل ما يمنعش إتمام التسليم نفسه */}
 }
 
 async function confirmReturn(id,delivType){
@@ -991,6 +1294,7 @@ async function confirmReturn(id,delivType){
       toast('↩️ تم تسجيل الارتجاع');
       loadTab('deliveries');
     }catch(e){toast('خطأ أثناء التأكيد','err');}
+    closeModal();
   });
 }
 
@@ -1030,6 +1334,7 @@ async function moveToArchive(r,handoverStatus,delivType){
   if(delivType==='بروفة')_proof=_proof.filter(p=>p.id!==r.id);
   else _dafter=_dafter.filter(p=>p.id!==r.id);
   _archive=[..._archive,archived];
+  return archived;
 }
 
 
@@ -1061,7 +1366,7 @@ function renderVisits(){
   c.innerHTML+=filtered.map(v=>{
     const p=_myProspects.find(pp=>pp.id===v.prospectId);
     return`<div class="card" style="padding:12px 14px;margin-bottom:10px">
-      <div style="font-size:15px;font-weight:900">${esc(p?p.doctor:'طبيب #'+v.prospectId)}</div>
+      <div style="font-size:15px;font-weight:900">${esc(p?p.doctor:(v.doctor||'طبيب #'+v.prospectId))}</div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
         <span class="visit-type vt-${v.result==='contracted'?'visit':v.result==='interested'?'followup':v.result==='not_interested'?'call':'other'}">${RESULT_LABELS[v.result]||v.result}</span>
         <span style="font-size:12px;color:var(--text3)">${esc(v.date)}</span>
@@ -1183,7 +1488,7 @@ function renderAddClient(){
       <button class="btn btn-gold btn-block" onclick="submitNewProspect()">💾 حفظ الزيارة</button>
     </div>
     ${_myProspects.length?`
-    <div style="font-size:14px;color:var(--text3);margin-top:14px;margin-bottom:8px">📋 زياراتك المسجّلة (${_myProspects.length})</div>
+    <div style="font-size:14px;color:var(--text3);margin-top:14px;margin-bottom:8px">🏥 الأطباء المسجّلون لديك (${_myProspects.length}) — دوس "تسجيل متابعة" لتسجيل نتيجة الزيارة</div>
     ${_myProspects.map(p=>`
       <div class="card" style="padding:10px 14px">
         <div style="font-size:15px;font-weight:700">${esc(p.doctor)}</div>
