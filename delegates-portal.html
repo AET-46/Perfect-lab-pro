@@ -1061,10 +1061,14 @@ function buildDailyReportMsg(){
   if(newVisits.length){
     msg+=`\n🆕✨ *عملاء جدد تمت زيارتهم اليوم:* ${newVisits.length}\n`;
     newVisits.forEach(v=>msg+=fmtVisitLine(v));
+  }else{
+    msg+=`\n🆕✨ *عملاء جدد تمت زيارتهم اليوم:* 0\n`;
   }
   if(followVisits.length){
     msg+=`\n🔄 *متابعة زيارة اليوم:* ${followVisits.length}\n`;
     followVisits.forEach(v=>msg+=fmtVisitLine(v));
+  }else{
+    msg+=`\n🔄 *متابعة زيارة اليوم:* 0\n`;
   }
 
   if(!delivered.length&&!returned.length&&!visitsToday.length)msg+=`\n— لا يوجد نشاط مسجّل اليوم —`;
@@ -1352,7 +1356,8 @@ async function moveToArchive(r,handoverStatus,delivType){
 const RESULT_LABELS={interested:'✅ مهتم',not_interested:'❌ غير مهتم',follow:'🔄 متابعة',contracted:'🤝 تم التعاقد',new:'🆕 أول زيارة'};
 function renderVisits(){
   const c=document.getElementById('tab-content');
-  c.innerHTML=`<button class="btn btn-gold btn-sm" style="margin-bottom:12px" onclick="openVisitModal()">➕ تسجيل متابعة زيارة</button>`;
+  c.innerHTML=`<button class="btn btn-gold btn-sm" style="margin-bottom:12px" onclick="openVisitModal()">➕ تسجيل متابعة زيارة</button>
+  <button class="btn btn-ghost btn-sm" style="margin-bottom:12px;width:100%" onclick="backfillOldVisits()">🔁 تعبئة رجعية للأطباء بدون زيارة (كل المناديب)</button>`;
   if(!_myProspects.length){
     c.innerHTML+=`<div class="empty"><div class="empty-icon">🔄</div><p>لسه معندكش زيارات مسجّلة — ضيفي واحدة من تاب "زيارة جديدة"</p></div>`;return;
   }
@@ -1385,6 +1390,32 @@ function renderVisits(){
       ${v.notes?`<div style="font-size:14px;margin-top:6px">${esc(v.notes)}</div>`:''}
     </div>`;
   }).join('');
+}
+
+// تعبئة رجعية: أي طبيب (لأي مندوب) اتضاف قبل ميزة "أول زيارة" ومفيش له سجل
+// زيارة خالص، بنعمله سجل "🆕 أول زيارة" بتاريخ النهاردة عشان يظهر في تاب
+// "متابعة زيارة" وفي تقرير الواتساب فورًا. الميزة عامة لكل المناديب مش بس
+// الأطباء الظاهرين عند المندوب الحالي.
+async function backfillOldVisits(){
+  try{
+    toast('⏳ جارِ التعبئة الرجعية...');
+    const[prospectsSnap,visitsSnap]=await Promise.all([fbGet('data/shared/prospects'),fbGet('data/shared/prospect_visits')]);
+    const allProspects=toArr(prospectsSnap);
+    const allVisits=toArr(visitsSnap);
+    const idsWithVisit=new Set(allVisits.map(v=>v.prospectId));
+    const missing=allProspects.filter(p=>!idsWithVisit.has(p.id));
+    if(!missing.length){toast('✅ كل الأطباء ليهم زيارة مسجّلة بالفعل');return;}
+    const updates={};
+    missing.forEach(p=>{
+      const key='bf'+p.id;
+      updates[key]={id:key,delegate:p.delegate,prospectId:p.id,doctor:p.doctor,date:shiftToday(p.createdAt),result:'new',notes:p.notes||'',createdAt:p.createdAt||Date.now(),backfilled:true};
+    });
+    await fbUpdate('data/shared/prospect_visits',updates);
+    const mineNew=Object.values(updates).filter(v=>_sameDelegateName(v.delegate,_user.name));
+    if(mineNew.length)_myVisits=[...mineNew,..._myVisits];
+    toast(`✅ تم إنشاء ${missing.length} زيارة أولى لكل المناديب`);
+    loadTab(_curTab);
+  }catch(e){console.error(e);toast('خطأ أثناء التعبئة الرجعية','err');}
 }
 
 // ═══════════════════════════════════════
