@@ -239,7 +239,6 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
   <div class="header-title">📋 مركز المناديب</div>
   <div style="display:flex;align-items:center;gap:8px">
     <span style="font-size:14px;color:var(--text3)" id="hd-name"></span>
-    <button class="theme-btn" onclick="showRawDelegate()" title="فحص مؤقت">🛠️</button>
     <button class="theme-btn" onclick="cycleTheme()" title="تغيير الألوان">🎨</button>
     <div class="avatar" id="hd-avatar">م</div>
     <button class="logout-btn" onclick="doLogout()">خروج</button>
@@ -368,7 +367,7 @@ const FB_CONFIG={
 // ═══════════════════════════════════════
 let _db=null,_user=null,_curTab='clients';
 let _searchQuery='';
-let _myClients=[],_dafter=[],_proof=[],_archive=[],_myVisits=[],_myProspects=[],_treasury=[];
+let _myClients=[],_dafter=[],_proof=[],_archive=[],_myVisits=[],_myProspects=[],_treasury=[],_myDelegateClientMap={};
 
 // ═══════════════════════════════════════
 // 🔌 FIREBASE — اتصال حقيقي بنفس قاعدة بيانات السيستم الكبير
@@ -633,13 +632,14 @@ async function loadTab(tab){
   content.innerHTML='';spinner.style.display='block';
   try{
     // تحميل البيانات المشتركة من data/shared الحقيقي
-    const [clients,dafter,proof,archive,prospects,prospectVisits]=await Promise.all([
+    const [clients,dafter,proof,archive,prospects,prospectVisits,delegates]=await Promise.all([
       fbGet('data/shared/clients'),
       fbGet('data/shared/dafter'),
       fbGet('data/shared/proof'),
       fbGet('data/shared/archive'),
       fbGet('data/shared/prospects'),
-      fbGet('data/shared/prospect_visits')
+      fbGet('data/shared/prospect_visits'),
+      fbGet('data/shared/delegates')
     ]);
     _myClients=toArr(clients).filter(c=>c.delegate===_user.name||c.delegateName===_user.name);
     _dafter=toArr(dafter).filter(r=>r.delegate===_user.name);
@@ -647,6 +647,11 @@ async function loadTab(tab){
     _archive=toArr(archive).filter(r=>r.delegate===_user.name);
     _myProspects=toArr(prospects).filter(p=>p.delegate===_user.name).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
     _myVisits=toArr(prospectVisits).filter(v=>v.delegate===_user.name).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    // نسب العمولة المخصصة لكل عميل — متسجّلة جوه سجل المندوب نفسه (data/shared/delegates → clients[])
+    // زي صفحة "ربط العملاء بالمناديب" بالسيستم الكبير بالظبط
+    const myDel=toArr(delegates).find(d=>d.name===_user.name||d.id===_user.id);
+    _myDelegateClientMap={};
+    (myDel&&myDel.clients||[]).forEach(cc=>{if(cc&&cc.clientId)_myDelegateClientMap[cc.clientId]=cc;});
     spinner.style.display='none';
     if(tab==='clients')renderClients();
     else if(tab==='cases')renderCases();
@@ -666,12 +671,13 @@ async function loadTab(tab){
 // ═══════════════════════════════════════
 let _clientMonth='current';
 function _clientCommRate(cl){
-  // العمولة بتتسجل لكل عميل (دكتور) في البيانات الأساسية بالسيستم الكبير — مش كل دكتور بياخد عمولة.
-  // بنقرا الحقل المسجّل من data/shared/clients زي ما هو، ولو مش موجود بنرجع لنسبة المندوب العامة كافتراضي فقط.
+  // العمولة المخصصة لكل عميل متسجّلة جوه سجل المندوب نفسه data/shared/delegates → clients[]
+  // بنفس شكل صفحة "ربط العملاء بالمناديب" بالظبط: {clientId, commEnabled, commRate}
   if(!cl)return {rate:_user.commRate||0,registered:false};
-  const candidates=['commRate','commissionRate','commPercent','delegateCommRate','comm'];
-  for(const k of candidates){
-    if(cl[k]!==undefined&&cl[k]!==null&&cl[k]!=='')return {rate:+cl[k],registered:true};
+  const link=_myDelegateClientMap[cl.id];
+  if(link){
+    if(link.commEnabled===false)return {rate:0,registered:true}; // العمولة متقفلة لهذا العميل تحديدًا
+    return {rate:+link.commRate||0,registered:true};
   }
   return {rate:_user.commRate||0,registered:false};
 }
@@ -749,9 +755,8 @@ function renderClients(){
           <div style="font-size:13px;font-weight:900;color:var(--gold2);margin-bottom:6px">✅ الحالات المنتهية (مؤرشفة)</div>
           ${cArchive.map(r=>`<div class="case-row"><div class="case-row-head"><span>#${esc(String(r.caseId||'-'))} ${esc(r.noteName?'· '+r.noteName:'')}</span><span class="deliv-badge ${r.handoverStatus==='returned'?'returned':'delivered'}">${r.handoverStatus==='returned'?'↩️ مرتجع':r.handoverStatus==='delivered'?'✅ تم التسليم':'أرشيف'}</span></div><div style="font-size:12px;color:var(--text3)">${esc(r.product||'-')} · ${esc(r.archivedAt?new Date(r.archivedAt).toISOString().split('T')[0]:r.date||'-')} ${+r.remaining>0?`· <span style="color:var(--red)">متبقي: ${fmt(r.remaining)}</span>`:''}</div></div>`).join('')}
         </div>`:''}
-        ${(()=>{const cr=_clientCommRate(cl);return `<div style="font-size:12px;color:var(--text3);margin-top:10px;border-top:1px solid var(--border);padding-top:8px;display:flex;justify-content:space-between;align-items:center;gap:8px">
-          <span>💰 عمولة هذا الطبيب: <b style="color:${cr.rate>0?'var(--gold2)':'var(--red)'}">${cr.rate}%</b>${cr.registered?' (مسجّلة في بيانات العميل)':' (نسبتك العامة — غير مسجّلة تفصيليًا لهذا العميل)'}</span>
-          <button class="btn btn-ghost btn-sm" style="flex:none;padding:3px 8px;font-size:11px" onclick="event.stopPropagation();showRawClient('${esc(cl.id)}')">🛠️ فحص خام</button>
+        ${(()=>{const cr=_clientCommRate(cl);return `<div style="font-size:12px;color:var(--text3);margin-top:10px;border-top:1px solid var(--border);padding-top:8px">
+          💰 عمولة هذا الطبيب: <b style="color:${cr.rate>0?'var(--gold2)':'var(--red)'}">${cr.rate}%</b>${cr.registered?' (مسجّلة في ربط العملاء بالمناديب)':' (نسبتك العامة — غير مخصّصة لهذا العميل)'}
         </div>`;})()}
       </div>
     </div>`;
@@ -765,23 +770,6 @@ function renderClients(){
 
   c.innerHTML=pills+`<div style="font-size:14px;color:var(--text3);margin-bottom:10px">${visibleCount} عميل${activeMonth!=='all'?' — '+(activeMonth===curMonthKey?'الشهر الحالي':_monthLabel(activeMonth)):''}</div>`+
     (cards.replace(/\s/g,'')?cards:`<div class="empty"><div class="empty-icon">📅</div><p>لا يوجد نشاط لعملاءك في الشهر المختار</p></div>`);
-}
-// ⚠️ مؤقت للتشخيص فقط — يوري بيانات العميل الخام زي ما هي متخزنة في Firebase
-// عشان نعرف اسم الحقل الصح اللي بيتسجل فيه % العمولة المخصصة من صفحة "ربط العملاء بالمناديب"
-// (يُحذف بعد ما نضبط اسم الحقل في _clientCommRate)
-// ⚠️ مؤقت للتشخيص فقط — يوري سجل المندوب الخام (فيه غالبًا خريطة العملاء/النسب المخصصة)
-function showRawDelegate(){
-  fbGet('data/shared/delegates').then(delegates=>{
-    const list=toArr(delegates);
-    const del=list.find(d=>d.name===_user.name||d.id===_user.id);
-    if(!del){toast('لم يتم العثور على سجل المندوب','err');return;}
-    alert('بيانات المندوب الخام:\n\n'+JSON.stringify(del,null,2));
-  }).catch(e=>{console.error(e);toast('خطأ في الجلب','err');});
-}
-function showRawClient(clientId){
-  const cl=_myClients.find(c=>String(c.id)===String(clientId));
-  if(!cl){toast('العميل غير موجود','err');return;}
-  alert('بيانات العميل الخام:\n\n'+JSON.stringify(cl,null,2));
 }
 function setClientMonth(k){_clientMonth=k;renderClients();}
 
