@@ -369,7 +369,7 @@ const FB_CONFIG={
 // ═══════════════════════════════════════
 let _db=null,_user=null,_curTab='clients';
 let _searchQuery='';
-let _myClients=[],_dafter=[],_proof=[],_archive=[],_myVisits=[],_myProspects=[],_treasury=[],_mySettlements=[],_myDelegateClientMap={};
+let _myClients=[],_dafter=[],_proof=[],_archive=[],_myVisits=[],_myProspects=[],_treasury=[],_mySettlements=[],_myDelegateClientMap={},_deliveryLog=[];
 
 // ═══════════════════════════════════════
 // 🔌 FIREBASE — اتصال حقيقي بنفس قاعدة بيانات السيستم الكبير
@@ -657,7 +657,7 @@ async function loadTab(tab){
   content.innerHTML='';spinner.style.display='block';
   try{
     // تحميل البيانات المشتركة من data/shared الحقيقي
-    const [clients,dafter,proof,archive,prospects,prospectVisits,delegates,treasury,settlements]=await Promise.all([
+    const [clients,dafter,proof,archive,prospects,prospectVisits,delegates,treasury,settlements,handoverLog]=await Promise.all([
       fbGet('data/shared/clients'),
       fbGet('data/shared/dafter'),
       fbGet('data/shared/proof'),
@@ -666,12 +666,14 @@ async function loadTab(tab){
       fbGet('data/shared/prospect_visits'),
       fbGet('data/shared/delegates'),
       fbGet('data/shared/treasury'),
-      fbGet('data/shared/settlements')
+      fbGet('data/shared/settlements'),
+      fbGet('data/shared/delegateHandoverLog') // ⚠️ مسار منفصل تمامًا ومعزول عن دفتر/بروفة/أرشيف السيستم الكبير — قراءة فقط، لسجل تأكيدات المندوب
     ]);
     _myClients=toArr(clients).filter(c=>_belongsToDelegate(c));
     _dafter=toArr(dafter).filter(r=>_sameDelegateName(r.delegate,_user.name));
     _proof=toArr(proof).filter(r=>_sameDelegateName(r.delegate,_user.name));
     _archive=toArr(archive).filter(r=>_sameDelegateName(r.delegate,_user.name));
+    _deliveryLog=toArr(handoverLog).filter(r=>_sameDelegateName(r.delegate,_user.name));
     _myProspects=toArr(prospects).filter(p=>_belongsToDelegate(p)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
     _myVisits=toArr(prospectVisits).filter(v=>_sameDelegateName(v.delegate,_user.name)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
     // كارت حساب العميل: نحمّل فقط حركات الخزنة والتسويات الخاصة بعملاء هذا المندوب (خصوصية)
@@ -728,7 +730,7 @@ function _monthLabel(key){
   const [y,m]=key.split('-').map(Number);
   return AR_MONTHS[m-1]+(y!==new Date().getFullYear()?' '+y:'');
 }
-function _caseMonthKey(r){ return _monthKey(r.date)||_monthKey(r.archivedAt)||_monthKey(r.createdAt); }
+function _caseMonthKey(r){ return _monthKey(r.archivedAt)||_monthKey(r.date)||_monthKey(r.createdAt); }
 
 // ═══════════════════════════════════════
 // كارت حساب العميل — نفس منطق _clientAccountSummary بالسيستم الكبير بالظبط
@@ -840,7 +842,7 @@ function renderClients(){
         <!-- الحالات المنتهية (مؤرشفة) — قسم مميز -->
         ${cArchive.length?`<div style="border-top:2px solid var(--gold);margin-top:10px;padding-top:8px">
           <div style="font-size:13px;font-weight:900;color:var(--gold2);margin-bottom:6px">✅ الحالات المنتهية (مؤرشفة)</div>
-          ${cArchive.map(r=>`<div class="case-row"><div class="case-row-head"><span>#${esc(String(r.caseId||'-'))} ${esc(r.noteName?'· '+r.noteName:'')}</span><span class="deliv-badge ${r.handoverStatus==='returned'?'returned':'delivered'}">${r.handoverStatus==='returned'?'↩️ مرتجع':r.handoverStatus==='delivered'?'✅ تم التسليم':'أرشيف'}</span></div><div style="font-size:12px;color:var(--text3)">${esc(r.product||'-')} · ${esc(r.archivedAt?new Date(r.archivedAt).toISOString().split('T')[0]:r.date||'-')} ${+r.remaining>0?`· <span style="color:var(--red)">متبقي: ${fmt(r.remaining)}</span>`:''}</div></div>`).join('')}
+          ${cArchive.map(r=>{const h=_deliveryLog.find(x=>x.sourceId===r.id);const hs=h?h.handoverStatus:null;return`<div class="case-row"><div class="case-row-head"><span>#${esc(String(r.caseId||'-'))} ${esc(r.noteName?'· '+r.noteName:'')}</span><span class="deliv-badge ${hs==='returned'?'returned':'delivered'}">${hs==='returned'?'↩️ مرتجع':hs==='delivered'?'✅ تم التسليم':'أرشيف'}</span></div><div style="font-size:12px;color:var(--text3)">${esc(r.product||'-')} · ${esc(r.archivedAt?new Date(r.archivedAt).toISOString().split('T')[0]:r.date||'-')} ${+r.remaining>0?`· <span style="color:var(--red)">متبقي: ${fmt(r.remaining)}</span>`:''}</div></div>`}).join('')}
         </div>`:''}
         <!-- 🃏 كارت حساب العميل — نفس منطق السيستم الكبير -->
         <div style="border-top:2px solid var(--gold);margin-top:10px;padding-top:8px">
@@ -1015,16 +1017,20 @@ function renderCases(){
 function buildDailyReportMsg(){
   // "اليوم" هنا = يوم شغل المندوب (من ٣ العصر لـ٣ الفجر)، مش نص الليل لنص الليل
   const shiftDate=shiftToday();
-  const todayArchive=_archive.filter(r=>r.archivedAt&&shiftToday(r.archivedAt)===shiftDate);
-  const delivered=todayArchive.filter(r=>r.handoverStatus==='delivered');
-  const returned=todayArchive.filter(r=>r.handoverStatus==='returned');
+  // المصدر هنا لوج التأكيد المعزول (delegateHandoverLog) مش أرشيف السيستم الكبير —
+  // التاب مجرد بيوثّق إن المندوب أكّد التسليم/الارتجاع، من غير أي لمس لسجلات الأرشيف الحقيقية
+  const todayLog=_deliveryLog.filter(r=>shiftToday(r.createdAt)===shiftDate);
+  const delivered=todayLog.filter(r=>r.handoverStatus==='delivered');
+  const returned=todayLog.filter(r=>r.handoverStatus==='returned');
+  // تحصيل/استلام من عميل مالوش تسليم النهارده أصلاً — مسجّل يدويًا من أزرار العملاء الجانبية
+  const manual=todayLog.filter(r=>r.handoverStatus==='manual');
   const visitsToday=_myVisits.filter(v=>v.date===shiftDate);
 
   let msg=`📋 *تقرير يومي — ${_user.name}*\n`;
   msg+=`📅 ${shiftDate}\n\n`;
 
-  const totalCollected=delivered.reduce((s,r)=>s+ +(r.delegateReportedAmount||0),0);
-  const totalNewCases=delivered.reduce((s,r)=>s+ +(r.reportedNewCasesCount||0),0);
+  const totalCollected=[...delivered,...manual].reduce((s,r)=>s+ +(r.delegateReportedAmount||0),0);
+  const totalNewCases=[...delivered,...manual].reduce((s,r)=>s+ +(r.reportedNewCasesCount||0),0);
   msg+=`🧾 *سند تسليم اليوم — ${delivered.length} حالة*\n\n`;
   delivered.forEach(r=>{
     msg+=`👤 ${r.client||'-'}${r.noteName?' — '+r.noteName:''}\n`;
@@ -1033,6 +1039,15 @@ function buildDailyReportMsg(){
     if(+(r.reportedNewCasesCount||0)>0)msg+=`📥 تم استلام ${r.reportedNewCasesCount} حالة جديدة\n`;
     msg+=`\n`;
   });
+  if(manual.length){
+    msg+=`💼 *تحصيل/استلام من عملاء بدون تسليم اليوم:* ${manual.length}\n\n`;
+    manual.forEach(r=>{
+      msg+=`👤 ${r.client||'-'}\n`;
+      if(+(r.delegateReportedAmount||0)>0)msg+=`💰 تم تحصيل ${r.delegateReportedAmount}ج (محتاج اعتماد الخزنة)\n`;
+      if(+(r.reportedNewCasesCount||0)>0)msg+=`📥 تم استلام ${r.reportedNewCasesCount} حالة جديدة\n`;
+      msg+=`\n`;
+    });
+  }
   if(totalCollected>0||totalNewCases>0){
     msg+=`— الإجمالي —\n`;
     if(totalCollected>0)msg+=`💰 إجمالي التحصيل: ${totalCollected}ج\n`;
@@ -1136,28 +1151,49 @@ function sendDailyReportToAdmin(){
 // ═══════════════════════════════════════
 // DELIVERIES TAB — تسليم / ارتجاع (بروفه أو نهائي)
 // ═══════════════════════════════════════
-// المنتجات اللي بتاخد مرحلة "بروفه" الأول (زيركون/معدن/بورسلين/فيس)
-// أي منتج تاني (متحرك/تقويم..) بيعتبر "نهائي" وبيروح للتسليم على طول من الدفتر
-function needsProofStage(product){
-  const n=(product||'').toLowerCase();
-  return n.includes('زيركون')||n.includes('معدن')||n.includes('بورسلين')||n.includes('فيس');
+// ⚠️ ملحوظة مهمة جدًا عن فلسفة التاب ده:
+// التاب ده مش بيعمل أي نقل حالات ولا بيلمس دفتر/بروفة/أرشيف السيستم الكبير خالص.
+// النقل الفعلي (دفتر→بروفه، دفتر→أرشيف، بروفه→أرشيف) بيحصل فقط جوه السيستم الكبير
+// من الموظف. التاب ده مجرد "مراقب" (read-only على البيانات المشتركة): بيشوف إن حالة
+// معينة اتنقلت فعلاً في السيستم الكبير (يعني بقت موجودة دلوقتي في _proof أو _archive)
+// وبيعرضها هنا عشان المندوب يأكّد إنه فعلاً سلّم/استرجع الحالة دي على الأرض.
+// التأكيد ده بيتسجّل في مسار منفصل تمامًا (data/shared/delegateHandoverLog) — لوج
+// توثيقي بس، من غير ما نعدّل ولا نضيف ولا نمسح أي سجل في dafter/proof/archive
+// الحقيقيين، ومن غير ما نأثر على أي حساب مديونية عميل أو خزنة.
+function isHandoverConfirmed(sourceId){
+  return _deliveryLog.some(h=>h.sourceId===sourceId);
 }
 
 function renderDeliveries(){
   const c=document.getElementById('tab-content');
-  // بروفه: حالات محوّلة للبروفه وجاهزة للتسليم
-  const proofItems=_proof.map(r=>({...r,delivType:'بروفة'}));
-  // نهائي: حالات في الدفتر لمنتجات مالهاش مراحل فني (بتتسلم مباشرة بدون بروفه)
-  const finalItems=_dafter.filter(r=>!needsProofStage(r.product)).map(r=>({...r,delivType:'نهائي'}));
+  // بروفه: حالات موجودة فعلاً في بروفة السيستم الكبير دلوقتي ولسه المندوب ما أكّدش تسليمها
+  const proofItems=_proof.filter(r=>!isHandoverConfirmed(r.id)).map(r=>({...r,delivType:'بروفة'}));
+  // نهائي: حالات اتأرشفت فعلاً في السيستم الكبير (سواء جاية من بروفه أو من دفتر مباشر)
+  // ولسه المندوب ما أكّدش التسليم النهائي بتاعها. بنحصر آخر 30 يوم بس عشان الصفحة
+  // تفضل قائمة "مهام معلّقة" ولا تتكدّس بتاريخ أرشيف قديم من قبل الميزة دي.
+  const cutoff=Date.now()-30*24*60*60*1000;
+  const finalItems=_archive.filter(r=>!isHandoverConfirmed(r.id)&&(+r.archivedAt||0)>=cutoff).map(r=>({...r,delivType:'نهائي'}));
   const source=[...proofItems,...finalItems].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
   const pending=source.filter(r=>matchesSearch([r.client,r.noteName,r.caseId,r.product])&&matchesDateRange(r.date));
 
+  // أزرار جانبية بأسماء عملاء المندوب — لتسجيل تحصيل/استلام حالة من عميل مالوش
+  // أي تسليم ظاهر اليوم في القائمة فوق. توثيقي بس (زي أي بلاغ تاني)، مش هيأثر
+  // على حساب العميل مباشرة.
+  const clientsWithPendingToday=new Set(pending.map(r=>r.client));
+  const quickClients=_myClients.filter(cl=>!clientsWithPendingToday.has(cl.name)).filter(cl=>matchesSearch([cl.name]));
+  const quickClientsHtml=quickClients.length?`
+    <div style="font-size:13px;font-weight:700;color:var(--teal);margin:14px 0 8px">💼 تسجيل تحصيل/استلام من عميل بدون تسليم اليوم</div>
+    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:6px;scrollbar-width:none">`+
+      quickClients.map(cl=>`<button class="btn btn-ghost btn-sm" style="flex:none" onclick="openManualClientAction('${esc(cl.id)}')">${esc(cl.name)}</button>`).join('')+
+    `</div>`:'';
+
   if(!source.length){
-    c.innerHTML=`<button class="btn btn-teal btn-sm btn-block" style="margin-bottom:12px" onclick="sendDailyReportToAdmin()">📱 إرسال تقرير اليوم للإدارة (واتساب)</button>
-      <div class="empty"><div class="empty-icon">🚚</div><p>مفيش حالات جاهزة للتسليم دلوقتي</p></div>`;return;
+    c.innerHTML=`<button class="btn btn-teal btn-sm btn-block" style="margin-bottom:12px" onclick="sendDailyReportToAdmin()">📱 إرسال تقرير اليوم للإدارة (واتساب)</button>`+
+      quickClientsHtml+
+      `<div class="empty"><div class="empty-icon">🚚</div><p>مفيش حالات جاهزة للتسليم دلوقتي</p></div>`;return;
   }
   if(!pending.length){
-    c.innerHTML=`<div class="empty"><div class="empty-icon">🔍</div><p>لا توجد نتائج مطابقة للبحث</p></div>`;return;
+    c.innerHTML=quickClientsHtml+`<div class="empty"><div class="empty-icon">🔍</div><p>لا توجد نتائج مطابقة للبحث</p></div>`;return;
   }
 
   c.innerHTML=`<button class="btn btn-teal btn-sm btn-block" style="margin-bottom:12px" onclick="sendDailyReportToAdmin()">📱 إرسال تقرير اليوم للإدارة (واتساب)</button>
@@ -1177,7 +1213,7 @@ function renderDeliveries(){
         <button class="btn btn-green" onclick="confirmDelivery('${esc(r.id)}','${esc(r.delivType)}')">✅ تأكيد التسليم</button>
         <button class="btn btn-red" onclick="confirmReturn('${esc(r.id)}','${esc(r.delivType)}')">↩️ تأكيد الارتجاع</button>
       </div>
-    </div>`).join('');
+    </div>`).join('')+quickClientsHtml;
 }
 
 function showModal(title,msg,onOk,extraHtml,onCancel){
@@ -1199,41 +1235,105 @@ function showModal(title,msg,onOk,extraHtml,onCancel){
 }
 function closeModal(){document.getElementById('confirm-modal').classList.add('hidden');}
 
+// تسجيل تحصيل/استلام من عميل مالوش تسليم مسجّل النهارده — بره تسلسل تأكيد
+// التسليم العادي. برضه معزول تمامًا: بيتسجّل في نفس delegateHandoverLog بحقل
+// handoverStatus:'manual' (مش تسليم ولا ارتجاع)، وبيغذّي قوائم المراجعة المعزولة
+// (delegatePendingCollections/delegatePendingNewCases) بالظبط زي أي بلاغ عادي —
+// من غير أي لمس لحساب العميل أو الخزنة الحقيقية.
+async function logManualClientAction(cl,amount,count){
+  const entry={
+    id:'h_manual_'+cl.id+'_'+Date.now(),
+    sourceId:null,
+    sourceType:'manual',
+    caseId:'-',
+    client:cl.name||'-',
+    clientId:cl.id||null,
+    noteName:'',
+    product:'-',
+    deliveryType:'-',
+    handoverStatus:'manual',
+    delegateReportedAmount:amount||0,
+    reportedNewCasesCount:count||0,
+    delegateId:_user.id||_user.delegateId||null,
+    delegate:_user.name||'-',
+    date:shiftToday(),
+    createdAt:Date.now()
+  };
+  const path='data/shared/delegateHandoverLog';
+  const all=toArr(await fbGet(path));
+  await fbSet(path,[...all,entry]);
+  _deliveryLog=[..._deliveryLog,entry];
+  if(amount>0){try{await logDelegateReportedCollection(entry,amount);}catch(e){}}
+  if(count>0){try{await logDelegateNewCases(entry,count);}catch(e){}}
+  return entry;
+}
+
+function openManualClientAction(clientId){
+  const cl=_myClients.find(c=>c.id===clientId);
+  if(!cl)return;
+  const extraHtml=`<div class="form-group" style="margin:0 0 10px">
+      <label>💰 المبلغ المحصّل الآن (سيبها فاضية لو مفيش)</label>
+      <input type="number" id="manual-amount-input" inputmode="decimal" placeholder="0" style="width:100%;font-size:16px">
+    </div>
+    <div class="form-group" style="margin:0">
+      <label>📥 عدد المقاسات/الحالات الجديدة المستلمة (سيبها فاضية لو مفيش)</label>
+      <input type="number" id="manual-newcases-input" inputmode="numeric" min="0" placeholder="0" style="width:100%;font-size:16px">
+    </div>`;
+  showModal('تسجيل من عميل بدون تسليم',`عميل "${cl.name}" — التسجيل ده توثيقي بس ومحتاج اعتماد الإدارة، ومش هيأثر على حساب العميل مباشرة`,async()=>{
+    const amtInput=document.getElementById('manual-amount-input');
+    const countInput=document.getElementById('manual-newcases-input');
+    const amount=Math.max(0,+((amtInput&&amtInput.value)||0));
+    const count=Math.max(0,Math.round(+((countInput&&countInput.value)||0)));
+    if(amount<=0&&count<=0){toast('اكتب مبلغ أو عدد الأول','err');return;}
+    try{
+      await logManualClientAction(cl,amount,count);
+      toast('✅ تم التسجيل (توثيقي — محتاج اعتماد الإدارة)');
+      closeModal();
+      loadTab('deliveries');
+    }catch(e){toast('خطأ أثناء التسجيل','err');}
+  },extraHtml);
+}
+
 function findDelivItem(id,delivType){
-  return delivType==='بروفة'?_proof.find(x=>x.id===id):_dafter.find(x=>x.id===id);
+  // بروفة/نهائي: الحالة أصلاً موجودة في بروفة أو أرشيف السيستم الكبير — إحنا بس بنقرا منها، مش بننقلها
+  return delivType==='بروفة'?_proof.find(x=>x.id===id):_archive.find(x=>x.id===id);
 }
 
 async function confirmDelivery(id,delivType){
   const r=findDelivItem(id,delivType);
   if(!r)return;
-  showModal('تأكيد التسليم',`هل تم تسليم حالة "${r.client}" · #${r.caseId||'-'} (${delivType}) فعلاً للعميل؟`,async()=>{
+  showModal('تأكيد التسليم',`هل تم تسليم حالة "${r.client}" · #${r.caseId||'-'} (${delivType}) فعلاً للعميل؟\n(التأكيد ده تسجيل توثيقي بس — مش هيلمس ولا سجل في دفتر/بروفة/أرشيف السيستم الكبير)`,async()=>{
     try{
-      const archived=await moveToArchive(r,'delivered',delivType);
+      const logEntry=await logHandover(r,'delivered',delivType);
       loadTab('deliveries'); // الصفحة تفضل فاضية من الحالة دي بعد التأكيد
-      askCollection(archived); // بعد التسليم مباشرة: نافذة تلقائية — هل فيه تحصيل؟
+      askCollection(logEntry); // بعد التسليم مباشرة: نافذة تلقائية — هل فيه تحصيل؟
     }catch(e){toast('خطأ أثناء التأكيد','err');closeModal();}
   });
 }
 
 // خطوة ٢ (اتوماتيك بعد التسليم): هل حصّل المندوب مبلغ من العميل؟
-function askCollection(archived){
+// ⚠️ ملحوظة: المبلغ ده "بلاغ" من المندوب بس، بينسجل في لوج منفصل ومعلَّم "pending"،
+// ولا بيتسجّل في حساب العميل ولا الخزنة الحقيقية مباشرة أبدًا — الاعتماد والترحيل يدوي من الإدارة.
+function askCollection(logEntry){
   const extraHtml=`<div class="form-group" style="margin:0">
     <label>💰 اكتب المبلغ اللي حصّلته من العميل الآن (سيبها فاضية أو دوس إلغاء لو مفيش تحصيل)</label>
     <input type="number" id="collect-amount-input" inputmode="decimal" placeholder="0" style="width:100%;font-size:16px">
   </div>`;
-  showModal('فيه تحصيل؟',`حالة "${archived.client}" — تم التسليم ✅`,async()=>{
+  showModal('فيه تحصيل؟',`حالة "${logEntry.client}" — تم التسليم ✅`,async()=>{
     const input=document.getElementById('collect-amount-input');
     const amount=Math.max(0,+((input&&input.value)||0));
     if(amount>0){
-      archived.delegateReportedAmount=amount; // بيتحدّث في _archive المحلي عشان يظهر في تقرير اليوم
-      try{await logDelegateReportedCollection(archived,amount);}catch(e){}
+      logEntry.delegateReportedAmount=amount; // بيتحدّث محليًا عشان يظهر في تقرير اليوم
+      try{await logDelegateReportedCollection(logEntry,amount);await updateHandoverLogEntry(logEntry);}catch(e){}
     }
-    askNewCases(archived);
-  },extraHtml,()=>askNewCases(archived)); // إلغاء = مفيش تحصيل، وكمِّل للخطوة الجاية
+    askNewCases(logEntry);
+  },extraHtml,()=>askNewCases(logEntry)); // إلغاء = مفيش تحصيل، وكمِّل للخطوة الجاية
 }
 
 // خطوة ٣ (اتوماتيك بعد التحصيل): هل استلم مقاسات/حالات جديدة (مش بروفة) من نفس العميل؟
-function askNewCases(archived){
+// ⚠️ ملحوظة: العدد ده "بلاغ" بس عشان موظف الدفتر يفتح سجلات جديدة يدويًا — مفيش
+// أي إضافة تلقائية لحالات في دفتر السيستم الكبير من هنا.
+function askNewCases(logEntry){
   const extraHtml=`<div class="form-group" style="margin:0">
     <label>📥 استلمت مقاسات جديدة من نفس العميل؟ اكتب العدد (سيبها فاضية أو دوس إلغاء لو مفيش)</label>
     <input type="number" id="newcases-count-input" inputmode="numeric" min="0" placeholder="0" style="width:100%;font-size:16px">
@@ -1242,12 +1342,12 @@ function askNewCases(archived){
     const input=document.getElementById('newcases-count-input');
     const count=Math.max(0,Math.round(+((input&&input.value)||0)));
     if(count>0){
-      archived.reportedNewCasesCount=count; // بيتحدّث في _archive المحلي عشان يظهر في تقرير اليوم
-      try{await logDelegateNewCases(archived,count);}catch(e){}
+      logEntry.reportedNewCasesCount=count; // بيتحدّث محليًا عشان يظهر في تقرير اليوم
+      try{await logDelegateNewCases(logEntry,count);await updateHandoverLogEntry(logEntry);}catch(e){}
     }
     closeModal();
   };
-  showModal('استلمت مقاسات جديدة؟',`عميل "${archived.client}"`,finish,extraHtml,finish);
+  showModal('استلمت مقاسات جديدة؟',`عميل "${logEntry.client}"`,finish,extraHtml,finish);
 }
 
 // تسجيل مبلغ بلَّغ عنه المندوب وقت تسليم حالة معيّنة — قائمة منفصلة تمامًا عن data/shared/treasury
@@ -1305,53 +1405,61 @@ async function logDelegateNewCases(r,count){
 async function confirmReturn(id,delivType){
   const r=findDelivItem(id,delivType);
   if(!r)return;
-  showModal('تأكيد الارتجاع',`هل تم ارتجاع حالة "${r.client}" · #${r.caseId||'-'} (${delivType}) من العميل؟`,async()=>{
+  showModal('تأكيد الارتجاع',`هل تم ارتجاع حالة "${r.client}" · #${r.caseId||'-'} (${delivType}) من العميل؟\n(التأكيد ده تسجيل توثيقي بس — مش هيلمس ولا سجل في دفتر/بروفة/أرشيف السيستم الكبير)`,async()=>{
     try{
-      await moveToArchive(r,'returned',delivType);
-      toast('↩️ تم تسجيل الارتجاع');
+      await logHandover(r,'returned',delivType);
+      toast('↩️ تم تسجيل الارتجاع (توثيقي)');
       loadTab('deliveries');
     }catch(e){toast('خطأ أثناء التأكيد','err');}
     closeModal();
   });
 }
 
-// نقل حالة (بروفه أو نهائي من الدفتر) إلى الأرشيف — بنفس شكل doArchive() الحقيقي بالظبط
-// ⚠️ ملاحظة أمان: dafter/proof متخزّنين كمصفوفة كاملة في فايربيز (زي السيستم الكبير
-// بالظبط)، فالعملية دي بتقرا المصفوفة كاملة وتكتبها تاني بعد الحذف — لو حصل تعديل
-// من جهاز تاني في نفس اللحظة بالظبط ممكن يحصل تعارض. نفس المخاطرة الموجودة أصلاً
-// في moveToProof()/doArchive() بالسيستم الكبير، فمفيش تغيير في مستوى الأمان الحالي.
-//
-// ⚠️ مهم جدًا: حقل "status" في الأرشيف الحقيقي بيعني حالة السداد (unpaid/paid) —
-// مش حالة التسليم! فبنستخدم حقل مستقل "handoverStatus" عشان "تم التسليم/تم الارتجاع"
-// من غير ما نلخبط حساب مديونية العميل في السيستم الكبير.
-async function moveToArchive(r,handoverStatus,delivType){
-  const srcPath=delivType==='بروفة'?'data/shared/proof':'data/shared/dafter';
-  // 1) شيل الحالة من مصدرها المشترك (بروفه أو دفتر)
-  const srcAll=toArr(await fbGet(srcPath));
-  const newSrc=srcAll.filter(p=>p.id!==r.id);
-  await fbSet(srcPath,newSrc);
-  // 2) ضيفها للأرشيف — نفس شكل doArchive() في السيستم الكبير بالظبط
-  const archiveAll=toArr(await fbGet('data/shared/archive'));
-  const arcTs=Date.now();
-  const archived={
-    ...r,
-    id:'a_'+r.id+'_'+arcTs,
-    sourceId:r.id,
-    handoverStatus, // 'delivered' | 'returned' — حقلنا الخاص، منفصل عن حساب السداد
-    deliveryType:delivType,
-    technicians:r.technicians||{},
-    paid:0,
-    remaining:r.total||0,
-    status:'unpaid', // نفس قيمة doArchive() الافتراضية — بيتغيّر لاحقًا من صفحة الخزنة عند التحصيل
-    archivedAt:arcTs,
-    createdAt:r.createdAt||arcTs
+// ═══════════════════════════════════════
+// لوج تأكيد التسليم/الارتجاع — معزول تمامًا عن dafter/proof/archive الحقيقيين
+// ═══════════════════════════════════════
+// ⚠️ الدالة دي لا تقرأ ولا تكتب في data/shared/dafter أو data/shared/proof أو
+// data/shared/archive أبدًا. هي بس بتسجّل "تأكيد من المندوب" في مسار مستقل
+// (data/shared/delegateHandoverLog) بيشاور على الحالة الأصلية بحقل sourceId،
+// من غير أي نقل أو حذف أو تعديل على السجل الأصلي، ومن غير أي تأثير على حساب
+// مديونية العميل أو الخزنة. النقل الفعلي للحالة بين دفتر/بروفه/أرشيف يفضل بالكامل
+// مسؤولية السيستم الكبير وموظفيه.
+async function logHandover(r,handoverStatus,delivType){
+  const path='data/shared/delegateHandoverLog';
+  const all=toArr(await fbGet(path));
+  const entry={
+    id:'h_'+r.id+'_'+Date.now(),
+    sourceId:r.id, // إشارة فقط لحالة موجودة أصلاً في proof/archive — بدون لمسها
+    sourceType:delivType==='بروفة'?'proof':'archive',
+    caseId:r.caseId||'-',
+    client:r.client||'-',
+    clientId:r.clientId||r.delegateClientId||null,
+    noteName:r.noteName||'',
+    product:r.product||'-',
+    deliveryType:delivType, // 'بروفة' | 'نهائي'
+    handoverStatus, // 'delivered' | 'returned'
+    delegateReportedAmount:0,
+    reportedNewCasesCount:0,
+    delegateId:_user.id||_user.delegateId||null,
+    delegate:_user.name||'-',
+    date:shiftToday(),
+    createdAt:Date.now()
   };
-  await fbSet('data/shared/archive',[...archiveAll,archived]);
-  // 3) تحديث الحالة المحلية فورًا
-  if(delivType==='بروفة')_proof=_proof.filter(p=>p.id!==r.id);
-  else _dafter=_dafter.filter(p=>p.id!==r.id);
-  _archive=[..._archive,archived];
-  return archived;
+  await fbSet(path,[...all,entry]);
+  _deliveryLog=[..._deliveryLog,entry];
+  return entry;
+}
+
+// تحديث لاحق (تحصيل/مقاسات جديدة) على نفس سجل التأكيد — بيعيد كتابة المصفوفة
+// كاملة بنفس نمط الكتابة المستخدم في باقي الملف ده، وبرضه معزول تمامًا عن أي
+// مسار حقيقي في السيستم الكبير.
+async function updateHandoverLogEntry(entry){
+  try{
+    const path='data/shared/delegateHandoverLog';
+    const all=toArr(await fbGet(path));
+    const updated=all.map(h=>h.id===entry.id?{...h,delegateReportedAmount:entry.delegateReportedAmount||0,reportedNewCasesCount:entry.reportedNewCasesCount||0}:h);
+    await fbSet(path,updated);
+  }catch(e){/* فشل تحديث اللوج التوثيقي ما يمنعش استمرار العملية */}
 }
 
 
@@ -1540,7 +1648,8 @@ function renderCommission(){
 
   // بطاقة اليوم — بنفس تعريف يوم الشغل (٣ العصر لـ٣ الفجر)
   const shiftDate=shiftToday();
-  const todayDelivered=_archive.filter(r=>r.archivedAt&&shiftToday(r.archivedAt)===shiftDate&&r.handoverStatus==='delivered');
+  const deliveredSourceIds=new Set(_deliveryLog.filter(h=>h.handoverStatus==='delivered'&&shiftToday(h.createdAt)===shiftDate).map(h=>h.sourceId));
+  const todayDelivered=_archive.filter(r=>deliveredSourceIds.has(r.id));
   const todaySales=todayDelivered.reduce((s,r)=>s+(+r.total||0),0);
   const todayComm=todayDelivered.reduce((s,r)=>{
     const cl=_myClients.find(c=>c.name===r.client);
