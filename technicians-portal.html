@@ -27,28 +27,68 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
-/* ═══ THEME 1 — أزرق فيسبوك (فاتح) — الافتراضي ═══ */
-:root, body[data-theme="blue"]{
-  --bg:#f0f2f5;--bg2:#ffffff;--bg3:#f0f2f5;--bg4:#e4e6eb;
-  --text:#050505;--text2:#65676b;--text3:#8a8d91;
-  --gold:#1877f2;--gold2:#42a5f5;
-  --teal:#00a884;--green:#31a24c;--red:#e41e3f;
-  --orange:#f7b928;--blue:#1877f2;--purple:#8c7ae6;
-  --border:#dadde1;--radius:14px;
-  --grad:linear-gradient(135deg,var(--gold),var(--gold2));
-  --ontext:#ffffff;
+/* ═══ THEME 1 — أصفر ملكي على أبيض ساطع — الافتراضي ═══ */
+:root, body[data-theme="whitegold"]{
+  --bg:#ffffff;--bg2:#ffffff;--bg3:#fff8e1;--bg4:#fdecb8;
+  --text:#000000;--text2:#8a6d00;--text3:#4a4a4a;
+  --gold:#e6b800;--gold2:#ffd700;
+  --teal:#0d9488;--green:#16a34a;--red:#dc2626;
+  --orange:#ea580c;--blue:#2563eb;--purple:#7c3aed;
+  --border:#f0e2a0;--radius:14px;
+  --grad:linear-gradient(135deg,#e6b800,var(--gold2));
+  --ontext:#241a04;
 }
-/* ═══ THEME 2 — داكن (فيسبوك دارك مود) ═══ */
-body[data-theme="darknavy"]{
-  --bg:#18191a;--bg2:#242526;--bg3:#3a3b3c;--bg4:#4e4f50;
-  --text:#e4e6eb;--text2:#b0b3b8;--text3:#8a8d91;
-  --gold:#2374e1;--gold2:#4599ff;
-  --teal:#00a884;--green:#4bd07d;--red:#f3425f;
-  --orange:#ffb74d;--blue:#2374e1;--purple:#a29bfe;
-  --border:#3e4042;--radius:14px;
-  --grad:linear-gradient(135deg,var(--gold),var(--gold2));
-  --ontext:#ffffff;
+/* خط أكبر في ثيم "أصفر ملكي وأبيض ساطع" حسب الطلب */
+body[data-theme="whitegold"]{font-size:18px}
+body[data-theme="whitegold"] .header-title{font-size:19px}
+body[data-theme="whitegold"] .tab{font-size:16px}
+body[data-theme="whitegold"] .case-client{font-size:18px}
+body[data-theme="whitegold"] .case-patient,
+body[data-theme="whitegold"] .case-product{font-size:15px}
+body[data-theme="whitegold"] .case-id,
+body[data-theme="whitegold"] .case-date{font-size:13px}
+body[data-theme="whitegold"] .stage-label{font-size:12px}
+body[data-theme="whitegold"] .stage-circle{font-size:13px}
+body[data-theme="whitegold"] .summary-title,
+body[data-theme="whitegold"] .hist-client{font-size:16px}
+body[data-theme="whitegold"] .stat-row,
+body[data-theme="whitegold"] .summary-sub,
+body[data-theme="whitegold"] .hist-meta{font-size:15px}
+body[data-theme="whitegold"] .search-box input,
+body[data-theme="whitegold"] .btn,
+body[data-theme="whitegold"] .empty p,
+body[data-theme="whitegold"] #toast{font-size:16px}
+/* ═══ THEME 2 — أسود لامع وذهبي ملكي ═══ */
+body[data-theme="blackgold"]{
+  --bg:#050505;--bg2:#121212;--bg3:#1c1c1c;--bg4:#282828;
+  --text:#ffffff;--text2:#ffd76a;--text3:#c9c9c9;
+  --gold:#d4af37;--gold2:#ffd76a;
+  --teal:#2bb3a0;--green:#3fd08a;--red:#ff6b6f;
+  --orange:#ef9f4e;--blue:#5b8fe8;--purple:#a688f2;
+  --border:#2c2c2c;--radius:14px;
+  --grad:linear-gradient(135deg,#b8860b,var(--gold2));
+  --ontext:#241a04;
 }
+/* خط أكبر في ثيم "أسود لامع وذهبي ملكي" حسب الطلب */
+body[data-theme="blackgold"]{font-size:18px}
+body[data-theme="blackgold"] .header-title{font-size:19px}
+body[data-theme="blackgold"] .tab{font-size:16px}
+body[data-theme="blackgold"] .case-client{font-size:18px}
+body[data-theme="blackgold"] .case-patient,
+body[data-theme="blackgold"] .case-product{font-size:15px}
+body[data-theme="blackgold"] .case-id,
+body[data-theme="blackgold"] .case-date{font-size:13px}
+body[data-theme="blackgold"] .stage-label{font-size:12px}
+body[data-theme="blackgold"] .stage-circle{font-size:13px}
+body[data-theme="blackgold"] .summary-title,
+body[data-theme="blackgold"] .hist-client{font-size:16px}
+body[data-theme="blackgold"] .stat-row,
+body[data-theme="blackgold"] .summary-sub,
+body[data-theme="blackgold"] .hist-meta{font-size:15px}
+body[data-theme="blackgold"] .search-box input,
+body[data-theme="blackgold"] .btn,
+body[data-theme="blackgold"] .empty p,
+body[data-theme="blackgold"] #toast{font-size:16px}
 body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-height:100vh;transition:background .3s}
 .theme-btn{background:var(--bg3);border:1px solid var(--border);color:var(--gold2);border-radius:10px;width:30px;height:30px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 
@@ -214,6 +254,7 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
 <div class="tabs" id="main-tabs" style="display:none">
   <div class="tab on" onclick="switchTab('dafter',this)">📒 الدفتر</div>
   <div class="tab" onclick="switchTab('proof',this)">🔬 البروفه</div>
+  <div class="tab" onclick="switchTab('missed',this)">📦 حالات فائتة</div>
   <div class="tab" onclick="switchTab('history',this)">📋 سجلي</div>
   <div class="tab" onclick="switchTab('summary',this)">💰 مستحقاتي</div>
 </div>
@@ -328,10 +369,15 @@ function getStagesForProduct(productName){
   return[]; // متحرك/تقويم — بدون مراحل
 }
 
-// مراحل كل قسم — لتقييد الفني على مراحل قسمه فقط
+// مراحل كل تخصص — لتقييد الفني على مراحل تخصصه فقط. التخصص في السيستم الكبير مسجّل
+// بالخطوة (تصميم / بناء / تفنيش) مش بالخامة، فتخصص "تصميم" مثلاً بيغطي تصميم زيركون
+// وتصميم معدن مع بعض. ملحوظة: "ليزر" (خطوة وسيطة في تشغيلات المعدن) اتحطت مبدئيًا
+// تحت تخصص "بناء" لأنها أقرب خطوة ليه — لو فعليًا ليها تخصص منفصل في السيستم الكبير
+// قولّي وأفصلها.
 const DEPARTMENT_STAGES={
-  'زيركون':['تصميم زيركون','بناء زيركون','تفنيش زيركون'],
-  'معدن':['تصميم معدن','ليزر','بناء بورسلين','تفنيش معدن']
+  'تصميم':['تصميم زيركون','تصميم معدن'],
+  'بناء':['بناء زيركون','ليزر','بناء بورسلين'],
+  'تفنيش':['تفنيش زيركون','تفنيش معدن']
 };
 // المراحل اللي يقدر الفني الحالي يشتغل عليها فعلاً (حسب قسمه)
 function getStagesForTech(productName){
@@ -355,7 +401,7 @@ let _toothCaseId=null,_toothSelected=[];
 // STATE
 // ═══════════════════════════════════════════════
 let _db=null,_user=null,_curTab='dafter';
-let _dafter=[],_proof=[],_myLogs=[];
+let _dafter=[],_proof=[],_archive=[],_myLogs=[];
 let _searchQuery='';
 // (رقم الإدارة بقى ديناميكي من data/shared/labinfo — شوف _getAdminNumbers أسفل)
 
@@ -441,16 +487,16 @@ async function verifyPassword(pass,stored){
 // ═══════════════════════════════════════════════
 // THEME SWITCHER — 3 ألوان دافئة عصرية
 // ═══════════════════════════════════════════════
-const THEMES=['blue','darknavy'];
-const THEME_NAMES={blue:'☀️ أبيض وأزرق',darknavy:'🌙 داكن'};
+const THEMES=['whitegold','blackgold'];
+const THEME_NAMES={whitegold:'☀️ أصفر ملكي وأبيض ساطع',blackgold:'⚫ أسود لامع وذهبي ملكي'};
 function applyTheme(t){document.body.setAttribute('data-theme',t);localStorage.setItem('tp_theme',t);}
 function cycleTheme(){
-  const cur=localStorage.getItem('tp_theme')||'blue';
+  const cur=localStorage.getItem('tp_theme')||'whitegold';
   const next=THEMES[(THEMES.indexOf(cur)+1)%THEMES.length];
   applyTheme(next);
   toast(THEME_NAMES[next]);
 }
-(function(){applyTheme(localStorage.getItem('tp_theme')||'blue');})();
+(function(){applyTheme(localStorage.getItem('tp_theme')||'whitegold');})();
 
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function toast(msg,type='ok'){
@@ -545,7 +591,7 @@ function switchTab(tab,el){
   const si=document.getElementById('search-input');
   if(si)si.value='';
   document.getElementById('search-clear-btn')?.classList.remove('show');
-  const searchable=(tab==='dafter'||tab==='proof'||tab==='history');
+  const searchable=(tab==='dafter'||tab==='proof'||tab==='missed'||tab==='history');
   document.getElementById('search-wrap').style.display=searchable?'block':'none';
   loadTab(tab);
 }
@@ -555,6 +601,7 @@ function onSearchInput(val){
   document.getElementById('search-clear-btn')?.classList.toggle('show',!!_searchQuery);
   if(_curTab==='dafter')renderCaseList(_dafter,'dafter');
   else if(_curTab==='proof')renderCaseList(_proof,'proof');
+  else if(_curTab==='missed')renderMissed();
   else if(_curTab==='history')renderHistory();
 }
 
@@ -565,6 +612,7 @@ function clearSearch(){
   document.getElementById('search-clear-btn')?.classList.remove('show');
   if(_curTab==='dafter')renderCaseList(_dafter,'dafter');
   else if(_curTab==='proof')renderCaseList(_proof,'proof');
+  else if(_curTab==='missed')renderMissed();
   else if(_curTab==='history')renderHistory();
 }
 
@@ -583,6 +631,7 @@ function onDateFilterChange(){
   document.getElementById('date-clear-btn').style.display=(_dateFrom||_dateTo)?'inline-block':'none';
   if(_curTab==='dafter')renderCaseList(_dafter,'dafter');
   else if(_curTab==='proof')renderCaseList(_proof,'proof');
+  else if(_curTab==='missed')renderMissed();
   else if(_curTab==='history')renderHistory();
 }
 function clearDateFilter(){
@@ -592,6 +641,7 @@ function clearDateFilter(){
   document.getElementById('date-clear-btn').style.display='none';
   if(_curTab==='dafter')renderCaseList(_dafter,'dafter');
   else if(_curTab==='proof')renderCaseList(_proof,'proof');
+  else if(_curTab==='missed')renderMissed();
   else if(_curTab==='history')renderHistory();
 }
 function matchesDateRange(dateStr){
@@ -620,6 +670,13 @@ async function loadTab(tab){
       _proof=data?(Array.isArray(data)?data:Object.values(data)):[];
       spinner.style.display='none';
       renderCaseList(_proof,'proof');
+    }
+    else if(tab==='missed'){
+      const data=await fbGet('data/shared/archive');
+      _archive=data?(Array.isArray(data)?data:Object.values(data)):[];
+      await loadMyLogs();
+      spinner.style.display='none';
+      renderMissed();
     }
     else if(tab==='history'){
       await loadMyLogs();
@@ -689,8 +746,52 @@ function renderCaseList(list,source){
 }
 
 // ═══════════════════════════════════════════════
-// TEETH CHART — طقم أسنان علوي/سفلي لكل حالة
+// 📦 فاتتني — حالات اتنقلت للأرشيف في السيستم الكبير قبل ما الفني يسجّل خطوته
+// (زي لو الفني غاب يوم والحالة كملت ومشيت). المفروض تفضل قابلة للتسجيل هنا
+// حتى بعد الأرشفة، عشان محدش يفقد تسجيل شغل عمله فعلاً.
 // ═══════════════════════════════════════════════
+function renderMissed(){
+  const content=document.getElementById('tab-content');
+  const myLoggedKeys=new Set(_myLogs.map(l=>`${l.caseId}_${l.stage}`));
+  const candidates=_archive.map(r=>{
+    const stages=getStagesForTech(r.product).filter(s=>!myLoggedKeys.has(`${r.id}_${s}`));
+    return{r,stages};
+  }).filter(x=>x.stages.length);
+  const filtered=candidates.filter(x=>matchesSearch([x.r.client,x.r.noteName,x.r.caseId,x.r.product])&&matchesDateRange(x.r.date));
+
+  if(!candidates.length){
+    content.innerHTML=`<div class="empty"><div class="empty-icon">✅</div><p>مفيش حالات فاتتك — كل خطواتك مسجّلة</p></div>`;
+    return;
+  }
+  if(!filtered.length){
+    content.innerHTML=`<div class="empty"><div class="empty-icon">🔍</div><p>لا توجد نتائج مطابقة للبحث</p></div>`;
+    return;
+  }
+
+  const sorted=[...filtered].sort((a,b)=>(b.r.archivedAt||b.r.createdAt||0)-(a.r.archivedAt||a.r.createdAt||0));
+
+  content.innerHTML=`<div style="font-size:13px;color:var(--text3);margin-bottom:10px">📦 دول حالات خلصت واتنقلت للأرشيف، وفيها خطوة (أو أكتر) بتاعتك لسه معندكش سجل ليها — سجّلها هنا عادي وهتتحسب طبيعي.</div>`+
+  sorted.map(({r,stages})=>`<div class="case-card" id="card-${esc(r.id)}">
+      <div class="case-head">
+        <div>
+          <div class="case-client">${esc(r.client)}</div>
+          ${r.noteName?`<div class="case-patient">👤 ${esc(r.noteName)}</div>`:''}
+          <div class="case-id">#${esc(String(r.caseId||'-'))} · ${esc(r.date||'-')}</div>
+          <div class="case-product">🦷 ${esc(r.product||'-')} ${r.qty>1?`× ${r.qty}`:''}</div>
+        </div>
+        <div style="text-align:left">
+          <span class="case-source" style="background:var(--gold,#c9a227);color:#000">مؤرشفة</span>
+        </div>
+      </div>
+      <div class="stages-row" id="stages-${esc(r.id)}">
+        ${renderStageCircles(r,stages,'archive')}
+      </div>
+    </div>`).join('');
+
+  loadStageStatuses(sorted.map(x=>x.r),'archive');
+}
+
+
 async function loadTeethSummaries(list){
   try{
     const all=await fbGet('data/shared/caseTeeth');
@@ -810,7 +911,7 @@ async function toggleStage(caseId,stage,source,btnEl){
   }
 
   // تسجيل جديد
-  const list=source==='dafter'?_dafter:_proof;
+  const list=source==='dafter'?_dafter:source==='proof'?_proof:_archive;
   const rec=list.find(r=>r.id===caseId);
   if(!rec)return;
 
