@@ -1427,7 +1427,7 @@ async function debugSearchCase(){
   if(!q)return;
   toast('⏳ جارِ البحث...');
   try{
-    const[dafter,proof,archive]=await Promise.all([fbGet('data/shared/dafter'),fbGet('data/shared/proof'),fbGet('data/shared/archive')]);
+    const[dafter,proof,archive,clients]=await Promise.all([fbGet('data/shared/dafter'),fbGet('data/shared/proof'),fbGet('data/shared/archive'),fbGet('data/shared/clients')]);
     const all=[
       ...toArr(dafter).map(r=>({...r,_src:'📗 دفتر'})),
       ...toArr(proof).map(r=>({...r,_src:'📘 بروفة'})),
@@ -1441,12 +1441,21 @@ async function debugSearchCase(){
       String(r.invId||'').toLowerCase().includes(ql)
     );
     if(!matches.length){alert('❌ مفيش أي حالة مطابقة في دفتر/بروفة/أرشيف خالص (حتى بدون فلترة مندوب) — يبقى المشكلة إن الحالة أصلًا لسه متسجلتش، مش مسألة فلترة.');return;}
+    const allClients=toArr(clients);
     const lines=matches.map(r=>{
-      const match=_sameDelegateName(r.delegate,_user.name);
+      const caseMatch=_sameDelegateName(r.delegate,_user.name);
+      const cl=allClients.find(x=>x.id===r.clientId||x.name===r.client);
+      let clLine;
+      if(!cl){
+        clLine=`⚠️ العميل "${r.client||'-'}" مش موجود أصلًا في قائمة العملاء (data/shared/clients) — عشان كده معندوش كارت في "عملائي" مهما كانت الحالة متطابقة`;
+      }else{
+        const clMatch=_belongsToDelegate(cl);
+        clLine=`سجل العميل نفسه: delegateId="${cl.delegateId||'-'}" | delegate="${cl.delegate||'-'}" | delegateName="${cl.delegateName||'-'}"\n`+
+          `${clMatch?'✅ العميل مرتبط بيك — لازم يظهر':'❌ العميل مش مرتبط بيك — ده سبب اختفاء كل حالاته من "عملائي"'}`;
+      }
       return `${r._src} | #${r.caseId||'-'} | ${r.client||'-'}${r.noteName?' — '+r.noteName:''}\n`+
-        `مندوب مسجّل على الحالة: "${r.delegate||'(فاضي/غير موجود)'}"\n`+
-        `اسمك المسجّل دخول: "${_user.name}"\n`+
-        `${match?'✅ متطابقين — المفروض تظهر عندك':'❌ غير متطابقين — ده سبب الاختفاء'}`;
+        `مندوب مسجّل على الحالة: "${r.delegate||'(فاضي/غير موجود)'}" (اسمك: "${_user.name}") ${caseMatch?'✅':'❌'}\n`+
+        clLine;
     });
     alert(`لقيت ${matches.length} نتيجة:\n\n`+lines.join('\n\n———————————\n\n'));
   }catch(e){console.error(e);toast('خطأ أثناء البحث','err');}
