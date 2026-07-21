@@ -1005,10 +1005,10 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
         <span class="nav-group-arrow">❯</span>
       </div>
       <div class="nav-group-body open">
-        <div class="nav-item active" data-page="dafter"><span class="ni">📒</span>الدفتر<span class="nav-badge" id="nb-dafter">0</span></div>
+        <div class="nav-item active" data-page="dafter"><span class="ni">📒</span>الدفتر<span class="nav-badge" id="nb-dafter">0</span><span class="nav-badge" id="nb-dafter-delegate" style="display:none;background:var(--red)" title="حالات جديدة من مندوبين لسه محتاجة تسجيل">🚚 0</span></div>
         <div class="nav-item" data-page="proof"><span class="ni">🔬</span>البروفه<span class="nav-badge gold" id="nb-proof">0</span></div>
         <div class="nav-item" data-page="archive"><span class="ni">📁</span>الأرشيف</div>
-        <div class="nav-item" data-page="treasury"><span class="ni">💰</span>الخزنة</div>
+        <div class="nav-item" data-page="treasury"><span class="ni">💰</span>الخزنة<span class="nav-badge" id="nb-treasury-delegate" style="display:none;background:var(--red)" title="تحصيلات من مندوبين لسه محتاجة ترحيل للخزنة">💰 0</span></div>
       </div>
     </div>
 
@@ -4801,6 +4801,8 @@ const firebaseConfig = {
 let _fbRTDB = null;
 let _fbInitDone = false;
 let _fbAuthPending = false;
+let _fbAuthFailCount = 0;
+let _fbLastAuthAttempt = 0;
 // FIX #AUTH-SECURITY: بدل ما نضبط _fbRTDB فور تحميل الـ SDK، بننتظر نجاح تسجيل
 // الدخول المجهول (Anonymous Auth) الأول. كل نقاط الاتصال بفايربيز في التطبيق (أكتر
 // من 15 مكان) بتتأكد أصلاً من وجود _fbRTDB قبل ما تستخدمه — فبتأجيل ضبطه للحظة ما
@@ -4812,35 +4814,46 @@ function _initFirebase() {
   // database و auth SDKs قد لا يكونا اكتملا التحميل بعد حتى لو app SDK جاهز — هذا متوقع، لا نطبع تحذير له
   if (typeof firebase.database !== 'function') return false;
   if (typeof firebase.auth !== 'function') return false;
+  // FIX #AUTH-BACKOFF: عند انقطاع الشبكة كانت المحاولة بتتكرر كل 100ms (حتى 100 مرة)،
+  // يعني ~100 محاولة اتصال فعلية و100 خطأ متطابق في الكونسول خلال 10 ثواني بالظبط.
+  // بعد كل فشل، ننتظر فترة متزايدة (2s, 4s, 6s... لحد أقصى 10s) قبل أي محاولة تانية.
+  if (_fbAuthFailCount > 0) {
+    const backoff = Math.min(2000 * _fbAuthFailCount, 10000);
+    if (Date.now() - _fbLastAuthAttempt < backoff) return false;
+  }
   try {
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     _fbAuthPending = true;
+    _fbLastAuthAttempt = Date.now();
     firebase.auth().signInAnonymously().then(function(){
       _fbRTDB = firebase.database();
       _fbInitDone = true;
       _fbAuthPending = false;
+      _fbAuthFailCount = 0;
       console.log('✅ Firebase: تسجيل دخول مجهول ناجح، الاتصال جاهز');
     }).catch(function(e){
       _fbAuthPending = false;
+      _fbAuthFailCount++;
       // FIX #AUTH-SECURITY: لو الـ Anonymous Sign-in مش مفعّل من Firebase Console
       // (Authentication → Sign-in method → Anonymous)، كل محاولة هتفشل بنفس الخطأ ده —
       // التطبيق هيرجع تلقائياً لوضع localStorage فقط بدل ما يتعلّق، زي سلوكه الأصلي
       // وقت انقطاع الإنترنت.
-      console.error('Firebase anonymous auth failed:', e && (e.code || e.message));
+      // نطبع أول محاولة فاشلة بس، وبعدين كل 5 محاولات، بدل ما نغرق الكونسول بنفس السطر
+      if (_fbAuthFailCount === 1 || _fbAuthFailCount % 5 === 0) {
+        console.error('Firebase anonymous auth failed:', e && (e.code || e.message), '— محاولة رقم', _fbAuthFailCount);
+      }
+      if (_fbAuthFailCount === 3 && typeof toast === 'function') {
+        toast('⚠️ تعذّر الاتصال بالسيرفر — تحقق من الإنترنت. العمل مستمر محليًا وهيتزامن تلقائيًا عند رجوع الاتصال','err');
+      }
     });
     return false;
   } catch(e) { console.warn('Firebase init error:', e); return false; }
 }
-// Try immediately, then retry up to 100 times (10 seconds) — رفعناها من 50 لأن
-// خطوة تسجيل الدخول المجهول بتضيف رحلة شبكة إضافية فوق وقت تحميل الـ SDK نفسه
+// نحاول باستمرار (فحص كل 100ms رخيص جداً — المحاولات الفعلية على الشبكة نفسها
+// محكومة بالـ backoff جوه _initFirebase، فمفيش إغراق للشبكة حتى لو الفحص فضل شغال)
 if (!_initFirebase()) {
-  let _fbRetry = 0;
   const _fbInterval = setInterval(function() {
-    _fbRetry++;
-    if (_initFirebase() || _fbRetry > 100) {
-      clearInterval(_fbInterval);
-      if (!_fbInitDone) console.error('Firebase SDK failed to load after 10s');
-    }
+    if (_initFirebase()) clearInterval(_fbInterval);
   }, 100);
 }
 
@@ -5053,14 +5066,6 @@ const DB = {
           const v = KEYED_LIST_KEYS.includes(k) ? _treasuryValToArray(data[k]) : data[k];
           this._c[k] = v;
           try { localStorage.setItem('plp_' + k, JSON.stringify(v)); } catch(e) {}
-          // FIX #KEYEDLIST-PREVSNAPSHOT-INIT: كان _keyedPrevSnapshot[k] فاضٍ طول الجلسة
-          // لحد أول عملية حفظ — فأول حفظ بعد فتح التطبيق كان بيعامل كل السجلات القديمة
-          // (بصورها base64) على إنها "جديدة" ويعالجها كلها مرة واحدة synchronous، وده
-          // سبب التجميد لثوانٍ وتذبذب حالة الاتصال بفايربيز بعده. تهيئتها هنا من نفس
-          // بيانات المزامنة الأولية يخلي أول حفظ يقارن صح من الأول.
-          if(typeof KEYED_LIST_KEYS !== 'undefined' && KEYED_LIST_KEYS.includes(k) && Array.isArray(v)){
-            try{ _keyedPrevSnapshot[k] = v.map(r=>({...r})); }catch(e){}
-          }
         });
         console.log('✅ Firebase sync: ' + Object.keys(data).length + ' keys');
       }
@@ -5183,12 +5188,6 @@ const DB = {
       const val = KEYED_LIST_KEYS.includes(k) ? _treasuryValToArray(v) : v;
       this._c[k] = val;
       try { localStorage.setItem('plp_' + k, JSON.stringify(val)); } catch(e) {}
-      // FIX #KEYEDLIST-PREVSNAPSHOT-INIT (استمرار): نحدّث البصمة السابقة هنا كمان
-      // لما يوصل تحديث حقيقي من جهاز تاني، وإلا أول حفظ محلي بعدها كان هيعامل
-      // تعديل الجهاز التاني على إنه "جديد" ويعالج صوره كلها من الأول تاني.
-      if(typeof KEYED_LIST_KEYS !== 'undefined' && KEYED_LIST_KEYS.includes(k) && Array.isArray(val)){
-        try{ _keyedPrevSnapshot[k] = val.map(r=>({...r})); }catch(e){}
-      }
       this._scheduleRealtimeRender();
     };
     this._realtimeRef.on('child_changed', snap => _applyIncomingKey(snap.key, snap.val()), _rtErr);
@@ -5234,6 +5233,7 @@ const DB = {
   },
   _doRealtimeRender() {
     try {
+      updateBadges(); // البادچات الدائمة (زي تذكير حالات/تحصيلات المندوبين) لازم تتحدّث في كل مزامنة، بغض النظر عن الصفحة المفتوحة
       const activePg = document.querySelector('.page.active');
       if (activePg) {
         const pgId = activePg.id?.replace('pg-', '');
@@ -5728,6 +5728,10 @@ function _normalizePhone(raw){
   let n=(raw||'').replace(/[\s\-()]/g,'');
   if(!n)return null;
   n=n.replace(/^\+/,'');
+  // FIX #PHONE-02-PREFIX: أرقام اتسجلت بمفتاح دولة زايد بالغلط قبل رقم الموبايل
+  // العادي (0020xxxxxxxxxxx أو 020xxxxxxxxxxx) — لازم تتنضف الأول قبل أي فحص تاني
+  n=n.replace(/^00/,''); // 00201xxxxxxxxx -> 201xxxxxxxxx
+  if(/^0201[0-9]{9}$/.test(n))n=n.slice(1); // 0201xxxxxxxxx (13 رقم) -> 201xxxxxxxxx
   if(n.startsWith('0')&&n.length===11&&/^01[0-9]/.test(n))n='20'+n.slice(1);
   return /^\d{7,15}$/.test(n)?n:null;
 }
@@ -5740,6 +5744,9 @@ function wa(phone,text,meta){
   if(!n){toast('لا يوجد رقم هاتف','err');return}
   n=n.replace(/^\+/,'');
   // FIX #47: only convert Egyptian numbers (01x with 11 digits) — leave other country codes untouched
+  // FIX #PHONE-02-PREFIX: نفس تنضيف _normalizePhone — أرقام بمفتاح دولة زايد بالغلط
+  n=n.replace(/^00/,'');
+  if(/^0201[0-9]{9}$/.test(n))n=n.slice(1);
   if(n.startsWith('0')&&n.length===11&&/^01[0-9]/.test(n))n='20'+n.slice(1);
   // Validate: must be 7-15 digits
   if(!/^\d{7,15}$/.test(n)){toast('رقم الهاتف غير صحيح','err');return}
@@ -6247,7 +6254,7 @@ function goPage(pg, fromHistory){
   }
   document.getElementById('ptitle').textContent=pgNames[pg]||pg;
   // FIX: run render first, then scroll to top after render completes
-  const renders={dashboard:renderDash,dafter:renderDafter,proof:renderProof,archive:renderArchive,treasury:renderTreasury,reports:renderReports,debts:renderDebts,inventory:renderInventory,masterdata:renderMasterData,activitylog:renderActivityLog,
+  const renders={dashboard:renderDash,dafter:()=>{renderDafter();checkDelegatePendingNewCases();},proof:renderProof,archive:renderArchive,treasury:()=>{renderTreasury();checkDelegatePendingCollections();},reports:renderReports,debts:renderDebts,inventory:renderInventory,masterdata:renderMasterData,activitylog:renderActivityLog,
     notifications:()=>{renderNotificationsPage();loadNsSettings();},notes:renderNotes,
     suppliers:renderSuppliers,purchases:()=>{renderPurchases();renderPurStats()},supdebts:renderSupDebts,
     batches:renderBatches,
@@ -6362,6 +6369,15 @@ function _doUpdateBadges(){
   const notifs=DB.get('notifications')||[];
   const unread=notifs.filter(n=>!n.read).length;
   _set('nb-notif',unread||'—');
+  // بادچات تذكير دائمة (بتفضل نابضة لحد ما تتسجل/تتلغى) — مش مربوطة بالصفحة المفتوحة
+  // حاليًا، عشان تفضل ظاهرة وتتحدّث حتى لو المستخدم واقف في صفحة تانية
+  const pendingNewCases=(DB.get('delegatePendingNewCases')||[]).filter(x=>x.status==='pending');
+  const pendingNewCasesTotal=pendingNewCases.reduce((s,p)=>s+Math.max(0,Math.round(+(p.reportedCount||0))),0);
+  const nbDD=document.getElementById('nb-dafter-delegate');
+  if(nbDD){if(pendingNewCasesTotal>0){nbDD.textContent='🚚 '+pendingNewCasesTotal;nbDD.style.display='';}else{nbDD.style.display='none';}}
+  const pendingCollections=(DB.get('delegatePendingCollections')||[]).filter(x=>x.status==='pending');
+  const nbTD=document.getElementById('nb-treasury-delegate');
+  if(nbTD){if(pendingCollections.length>0){nbTD.textContent='💰 '+pendingCollections.length;nbTD.style.display='';}else{nbTD.style.display='none';}}
 }
 
 // LAB INFO
@@ -7914,15 +7930,46 @@ function renderDgDocs(){
   const el=document.getElementById('dg-docs');if(!el)return;
   el.innerHTML=_dgDocs.map((d,i)=>`<div class="doc-item">📄 ${d.name}<div style="display:flex;gap:6px"><a href="${d.data}" download="${d.name}">⬇️</a><span style="cursor:pointer;color:var(--red)" onclick="_dgDocs.splice(${i},1);renderDgDocs()">🗑️</span></div></div>`).join('');
 }
+// FIX #DELEGATE-RENAME-ORPHAN: تغيير اسم المندوب هنا كان بيتحدث بس في سجل المندوب نفسه،
+// من غير ما ينتشر لأي سجل قديم كان مربوط بالاسم القديم (دفتر/بروفه/أرشيف/عملاء محتملين/
+// زيارات متابعة/كارت العميل delegateName) — فتفضل كل الحالات والعملاء دي "يتيمة" بالاسم
+// القديم للأبد، وتختفي بصمت من بورتال المندوب (اللي بيطابق بالاسم) رغم إنها لسه ليه.
+// نفس فكرة _propagateClientNameChange بالظبط لكن لتغيير اسم المندوب.
+function _propagateDelegateNameChange(delegateId,oldName,newName){
+  if(!oldName||oldName===newName)return;
+  ['dafter','proof','archive','prospects','prospect_visits'].forEach(key=>{
+    const list=DB.get(key)||[];
+    let changed=false;
+    const fixed=list.map(r=>{
+      if(r.delegate===oldName&&r.delegate!==newName){changed=true;return {...r,delegate:newName};}
+      return r;
+    });
+    if(changed)DB.set(key,fixed);
+  });
+  const clients=DB.get('clients')||[];
+  let clChanged=false;
+  const fixedClients=clients.map(c=>{
+    if((c.delegateId===delegateId||c.delegateName===oldName)&&c.delegateName!==newName){
+      clChanged=true;
+      return {...c,delegateName:newName};
+    }
+    return c;
+  });
+  if(clChanged)DB.set('clients',fixedClients);
+}
 function saveDelegate(){
   if(!can('masterdata.delegates')){toast('ليس لديك صلاحية إدارة المناديب','err');return;}
   const name=document.getElementById('dg-name').value.trim();if(!name){toast('يرجى إدخال الاسم','err');return}
   // الحفاظ على قائمة العملاء المرتبطين عند التعديل
   const existingDelegate = _dgId ? (DB.get('delegates')||[]).find(x=>x.id===_dgId) : null;
+  const oldName=existingDelegate?existingDelegate.name:null;
   const data={id:_dgId||('dg_'+Date.now()),name,phone:document.getElementById('dg-phone').value,comm:+document.getElementById('dg-comm').value||0,salary:+document.getElementById('dg-salary').value||0,status:document.getElementById('dg-status').value,hired:document.getElementById('dg-hired').value,notes:document.getElementById('dg-notes').value,img:document.getElementById('dg-img-data').value,docs:[..._dgDocs],clients:existingDelegate?.clients||[]};
   let list=DB.get('delegates')||[];
   if(_dgId)list=list.map(x=>x.id===_dgId?data:x);else list.push(data);
   DB.set('delegates',list);
+  // نشر تغيير اسم المندوب على كل السجلات القديمة المرتبطة (دفتر/بروفه/أرشيف/عملاء محتملين/
+  // زيارات متابعة/كارت العميل) — وإلا فضلت تظهر بالاسم القديم وتختفي من بورتال المندوب
+  if(oldName&&oldName!==name)_propagateDelegateNameChange(data.id,oldName,name);
   // ===== تتبع: تسجيل إضافة/تعديل مندوب (خاصة الراتب والعمولة) =====
   logActivity(_dgId?'delegate.edit':'delegate.add',{
     client:name,
@@ -8727,6 +8774,18 @@ function saveDafter(){
   closeOv('ov-dafter');renderDafter();updateBadges();
   const typesCount=1+(_dfId?0:_dfExtraTypes.length);
   toast(_dfId?'تم التعديل ✅':(typesCount>1?`تمت الإضافة ✅ (${typesCount} أنواع لنفس الحالة)`:'تمت الإضافة ✅'));
+  // متابعة طابور "حالات المندوب" لو شغال — بيفتح نافذة الحالة الجاية تلقائيًا لحد ما
+  // تخلص كل الحالات المُبلَّغة في الدفعة دي (راجع startDelegateCaseQueue فوق)
+  if(!_dfId && window._delegateCaseQueue && window._delegateCaseQueue.length){
+    const finished=window._delegateCaseQueue.shift();
+    _decrementDelegatePendingNewCases(finished.pendingId);
+    if(window._delegateCaseQueue.length){
+      setTimeout(_openNextDelegateCaseFromQueue,250);
+    } else {
+      window._delegateCaseQueue=null;
+      toast('✅ تم إدخال كل حالات المندوب من الدفعة دي');
+    }
+  }
 }
 function renderDafter(){
   qdrInjectBar('dafter-date-from','dafter-date-to','filterDafterCombined');
@@ -8809,6 +8868,94 @@ function renderDafter(){
   tb.querySelectorAll('tr[data-id]').forEach(tr=>tr.style.display='');
   refreshCatTabs('dafter',list);
   if(_catFilter.dafter&&_catFilter.dafter!=='all')filterDafterCombined(); // إعادة تطبيق فلتر الفئة النشط بعد الرسم
+}
+
+// ═══════════════════════════════════════
+// نافذة تلقائية عند فتح صفحة الدفتر: حالات/مقاسات جديدة بلَّغ عنها المندوبين من
+// بورتال المندوبين (مسار data/shared/delegatePendingNewCases). مجمّعة حسب
+// المندوب (ممكن يكون بلَّغ عن أكتر من عميل في نفس الدفعة). زرار "ابدأ الإدخال"
+// بيفتح نافذة "إضافة حالة" بالعميل جاهز، وبعد كل حفظ بتتقفل وتفتح اللي بعدها
+// تلقائيًا لحد ما تخلص كل الحالات المُبلَّغة (راجع الهوك في saveDafter).
+// ═══════════════════════════════════════
+function checkDelegatePendingNewCases(){
+  if(!can('dafter.edit'))return; // مفيش داعي نزعج مستخدم مايقدرش يضيف أصلاً
+  const pendingAll=(DB.get('delegatePendingNewCases')||[]).filter(x=>x.status==='pending');
+  const existing=document.getElementById('ov-delegate-newcases');if(existing)existing.remove();
+  if(!pendingAll.length)return;
+  const byDelegate={};
+  pendingAll.forEach(p=>{const key=p.delegateName||'-';(byDelegate[key]=byDelegate[key]||[]).push(p);});
+  const cards=Object.entries(byDelegate).map(([dName,items])=>{
+    const total=items.reduce((s,p)=>s+Math.max(0,Math.round(+(p.reportedCount||0))),0);
+    const clientsLine=items.map(p=>`${esc(p.client)} (${Math.max(0,Math.round(+(p.reportedCount||0)))})`).join('، ');
+    return `<div class="fg" style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:10px" data-delegate="${esc(dName)}">
+      <div style="margin-bottom:6px"><strong>🚚 المندوب: ${esc(dName)}</strong> — <span style="color:var(--gold2);font-weight:800">${total} حالة</span> من ${items.length} عميل</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:8px">${clientsLine}</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-gold btn-sm" onclick="startDelegateCaseQueue('${esc(dName)}')">▶ ابدأ الإدخال (${total} نافذة تباعًا)</button>
+        <button class="btn btn-ghost btn-sm" onclick="cancelDelegateNewCasesForDelegate('${esc(dName)}')">❌ إلغاء الكل</button>
+      </div>
+    </div>`;
+  }).join('');
+  const html=`<div class="overlay open" id="ov-delegate-newcases" onclick="if(event.target===this)closeOv('ov-delegate-newcases')">
+    <div class="modal">
+      <div class="mh"><h3>📥 حالات جديدة بلّغ عنها المندوبين</h3><div class="mc-btn" onclick="closeOv('ov-delegate-newcases')">✕</div></div>
+      <div class="mb">${cards}</div>
+      <div class="mf"><button class="btn btn-ghost" onclick="closeOv('ov-delegate-newcases')">إغلاق</button></div>
+    </div>
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend',html);
+}
+// بيبني طابور: عنصر واحد لكل حالة مفردة (مش لكل عميل) — عشان لو بلال بلَّغ عن
+// 8 عند عميل و5 عند عميل تاني، الطابور يبقى 13 عنصر ويفتح 13 نافذة تباعًا.
+function startDelegateCaseQueue(delegateName){
+  const pendingAll=(DB.get('delegatePendingNewCases')||[]).filter(x=>x.status==='pending'&&(x.delegateName||'-')===delegateName);
+  if(!pendingAll.length)return;
+  const queue=[];
+  pendingAll.forEach(p=>{
+    const n=Math.max(0,Math.round(+(p.reportedCount||0)));
+    for(let i=0;i<n;i++)queue.push({pendingId:p.id,client:p.client,clientId:p.clientId,delegateName:p.delegateName,seq:i+1,total:n});
+  });
+  if(!queue.length)return;
+  closeOv('ov-delegate-newcases');
+  window._delegateCaseQueue=queue;
+  _openNextDelegateCaseFromQueue();
+}
+// بتفتح "إضافة حالة" للعنصر الأول في الطابور — الموظف يكمل بيانات المنتج/السعر
+// ويحفظ زي أي حالة عادية؛ saveDafter() هي اللي بتنده على الدالة دي تاني للي بعده.
+function _openNextDelegateCaseFromQueue(){
+  const q=window._delegateCaseQueue;
+  if(!q||!q.length){window._delegateCaseQueue=null;return;}
+  const item=q[0];
+  openDafter();
+  const clSel=document.getElementById('df-client');
+  const cls=DB.get('clients')||[];
+  const cl=cls.find(c=>c.id===item.clientId)||cls.find(c=>c.name===item.client);
+  if(clSel&&cl){clSel.value=cl.id;onDfClient();}
+  const notesEl=document.getElementById('df-notes');
+  if(notesEl)notesEl.value=`حالة جديدة من المندوب ${item.delegateName||''} (${item.seq}/${item.total})`;
+  const ttlEl=document.getElementById('df-ttl');
+  if(ttlEl)ttlEl.textContent=`إضافة حالة — ${item.client} (${item.seq}/${item.total}) · باقي ${q.length} في الطابور`;
+}
+// بتنقص واحد من عدد الحالة المتبقية في السجل بعد كل حفظ ناجح — لو وصلت صفر تتعلّم
+// confirmed. الطريقة دي (بدل ما نعلّمها confirmed دفعة واحدة في الآخر) بتضمن إنه لو
+// حصل قطع (قفل المتصفح / نافذة اتقفلت من غير حفظ) في نص الطابور، المرة الجاية اللي
+// تفتح فيها صفحة الدفتر هتلاقي بس العدد الفعلي المتبقي، مش هتتكرر الحالات اللي اتسجلت خلاص.
+function _decrementDelegatePendingNewCases(pendingId){
+  const all=DB.get('delegatePendingNewCases')||[];
+  const idx=all.findIndex(x=>x.id===pendingId);
+  if(idx===-1)return;
+  const remaining=Math.max(0,Math.round(+(all[idx].reportedCount||0))-1);
+  all[idx]=remaining<=0
+    ?{...all[idx],reportedCount:0,status:'confirmed',confirmedAt:Date.now(),confirmedBy:window._currentUser?.name||'-'}
+    :{...all[idx],reportedCount:remaining};
+  DB.set('delegatePendingNewCases',all);
+}
+function cancelDelegateNewCasesForDelegate(delegateName){
+  const all=DB.get('delegatePendingNewCases')||[];
+  const updated=all.map(x=>(x.status==='pending'&&(x.delegateName||'-')===delegateName)?{...x,status:'cancelled',cancelledAt:Date.now(),cancelledBy:window._currentUser?.name||'-'}:x);
+  DB.set('delegatePendingNewCases',updated);
+  document.querySelector(`#ov-delegate-newcases [data-delegate="${delegateName}"]`)?.remove();
+  if(!document.querySelector('#ov-delegate-newcases [data-delegate]'))closeOv('ov-delegate-newcases');
 }
 // FIX #DAFTER-ROW-EDIT: بعد ما بقى تحديد أي صف من حالة مقسّمة بيحدد كل صفوفها مع بعض
 // (عشان النقل الجماعي الآمن)، زرار "تعديل" في الشريط العلوي بقى غير كافي لتعديل نوع واحد
@@ -9457,6 +9604,69 @@ function renderTreasury(bypassLimit){
   const hasActiveFilter=['tr-flt-from','tr-flt-to','tr-flt-type','tr-flt-box','tr-flt-acctype','tr-flt-text'].some(id=>document.getElementById(id)?.value);
   if(hasActiveFilter)filterTreasury();
 }
+
+// ═══════════════════════════════════════
+// نافذة تلقائية عند فتح صفحة الخزنة: تحصيلات بلَّغ عنها المندوبين من بورتال
+// المندوبين (مسار data/shared/delegatePendingCollections). بسيطة عن قصد — بس
+// اختصار لفتح "حركة خزنة جديدة" ببيانات العميل/المبلغ/اسم المندوب جاهزة، وموظف
+// الخزنة يكمل نوع الخزنة والملاحظات ويحفظ زي أي حركة عادية.
+// ═══════════════════════════════════════
+function checkDelegatePendingCollections(){
+  if(!can('treasury.add'))return;
+  const pending=(DB.get('delegatePendingCollections')||[]).filter(x=>x.status==='pending');
+  const existing=document.getElementById('ov-delegate-collections');if(existing)existing.remove();
+  if(!pending.length)return;
+  const rows=pending.map(p=>`
+    <div class="fg" style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:10px" data-pending-id="${esc(p.id)}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <strong>👤 ${esc(p.client||'-')}</strong>
+        <span style="font-size:11px;color:var(--text3)">المندوب: ${esc(p.delegateName||'-')} · ${esc(p.date||'-')}</span>
+      </div>
+      <div style="font-size:13px;color:var(--gold2);font-weight:800;margin-bottom:8px">💰 ${fmt(p.amount)} ج.م</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-gold btn-sm" onclick="postDelegateCollection('${esc(p.id)}')">➕ ترحيل للخزنة</button>
+        <button class="btn btn-ghost btn-sm" onclick="cancelDelegateCollection('${esc(p.id)}')">❌ إلغاء</button>
+      </div>
+    </div>`).join('');
+  const html=`<div class="overlay open" id="ov-delegate-collections" onclick="if(event.target===this)closeOv('ov-delegate-collections')">
+    <div class="modal">
+      <div class="mh"><h3>💰 تحصيلات بلَّغ عنها المندوبين</h3><div class="mc-btn" onclick="closeOv('ov-delegate-collections')">✕</div></div>
+      <div class="mb">${rows}</div>
+      <div class="mf"><button class="btn btn-ghost" onclick="closeOv('ov-delegate-collections')">إغلاق</button></div>
+    </div>
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend',html);
+}
+function _updateDelegatePendingCollection(id,patch){
+  const all=DB.get('delegatePendingCollections')||[];
+  const idx=all.findIndex(x=>x.id===id);
+  if(idx===-1)return;
+  all[idx]={...all[idx],...patch};
+  DB.set('delegatePendingCollections',all);
+}
+function postDelegateCollection(id){
+  const all=DB.get('delegatePendingCollections')||[];
+  const p=all.find(x=>x.id===id);if(!p)return;
+  _updateDelegatePendingCollection(id,{status:'posted',postedAt:Date.now(),postedBy:window._currentUser?.name||'-'});
+  document.querySelector(`#ov-delegate-collections [data-pending-id="${id}"]`)?.remove();
+  if(!document.querySelector('#ov-delegate-collections [data-pending-id]'))closeOv('ov-delegate-collections');
+  openTrModal();
+  document.getElementById('tr-type').value='in';
+  document.getElementById('tr-acc-type').value='client';fillTrAcc();
+  const cls=DB.get('clients')||[];
+  const cl=cls.find(c=>c.id===p.clientId)||cls.find(c=>c.name===p.client);
+  const accSel=document.getElementById('tr-acc-name');
+  if(accSel&&cl)accSel.value=cl.id;
+  document.getElementById('tr-amount').value=p.amount||0;
+  document.getElementById('tr-receiver').value=p.delegateName||'';
+  document.getElementById('tr-notes').value=`تحصيل مندوب — ${p.delegateName||'-'} — حالة #${p.caseId||'-'} (${p.product||'-'})`;
+}
+function cancelDelegateCollection(id){
+  _updateDelegatePendingCollection(id,{status:'cancelled',cancelledAt:Date.now(),cancelledBy:window._currentUser?.name||'-'});
+  document.querySelector(`#ov-delegate-collections [data-pending-id="${id}"]`)?.remove();
+  if(!document.querySelector('#ov-delegate-collections [data-pending-id]'))closeOv('ov-delegate-collections');
+}
+
 function sendTrNotif(id){
   const tr=(DB.get('treasury')||[]).find(t=>t.id===id);
   if(!tr){toast('حركة غير موجودة','err');return;}
@@ -9467,9 +9677,9 @@ function sendTrNotif(id){
   // بنفس منطق printTrReceipt: نجرب clientId الأول، وبعدين الاسم كـ fallback بس.
   const clientsAll=DB.get('clients')||[];
   const matchedClient=clientsAll.find(c=>c.id===tr.clientId)||clientsAll.find(c=>c.name===tr.accName);
-  const phone=matchedClient?.phone||'';
-  const url=phone?`https://wa.me/2${phone.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`:`https://wa.me/?text=${encodeURIComponent(msg)}`;
-  window.open(url,'_blank');
+  const phone=_firstValidPhone(matchedClient?.wa,matchedClient?.phone);
+  if(!phone){toast('لا يوجد رقم واتساب صحيح لهذا العميل','err');return;}
+  wa(phone,msg,{client:tr.accName,type:'wa-fin',page:'الخزنة'});
 }
 
 function printTrReceipt(id){
@@ -14376,8 +14586,7 @@ function sendSupWA(id){
   const lab=DB.get('labinfo')||{};
   const c2=cur();
   const msg=`🏢 *${lab.name||'Perfect Lab Pro'}*\n━━━━━━━━━━━━━━━\n📋 *كشف حساب — ${s.name}*\n📅 ${today()}\n\n💰 إجمالي المشتريات: ${fmt(d.total)} ${c2}\n✅ المدفوع: ${fmt(d.paid)} ${c2}${d.matSales>0?`\n🔄 خامات مباعة له: ${fmt(d.matSales)} ${c2}`:''}\n${d.debt>0?`⚠️ المتبقي: ${fmt(d.debt)} ${c2}`:'✅ الحساب مسدد'}\n\nشكراً لتعاملكم معنا 🙏`;
-  let ph=(s.wa||s.phone).replace(/[\s\-()]/g,'');if(ph.startsWith('+'))ph=ph.slice(1);if(ph.startsWith('0')&&ph.length===11)ph='20'+ph.slice(1);
-  window.open('https://wa.me/'+ph+'?text='+encodeURIComponent(msg),'_blank');
+  wa(_firstValidPhone(s.wa,s.phone),msg);
 }
 
 // ===== FIX #SUP-MATERIAL-SALE: بيع خامة (اشتريناها من مورد) لمورد آخر =====
@@ -22108,9 +22317,6 @@ function renderProspectsList(){
     const d=filterDel?p.delegate===filterDel:true;
     return q&&r&&d;
   });
-  // FIX #PROSPECTS-NEWEST-FIRST: كانت بتتعرض بترتيب الإضافة الطبيعي (الأقدم فوق،
-  // الأحدث تحت) — رتّبناها بالأحدث فوق (createdAt تنازلياً) زي باقي شاشات النظام.
-  list=list.sort((a,b)=>(b.createdAt||b.id||0)-(a.createdAt||a.id||0));
   const tb=document.getElementById('pros-tb');const empty=document.getElementById('pros-empty');
   if(!list.length){tb.innerHTML='';if(empty)empty.style.display='';return;}
   if(empty)empty.style.display='none';
@@ -22157,9 +22363,7 @@ function renderProspectVisits(){
     const d=filterDel?v.delegate===filterDel:true;
     const dt=filterDate?v.date===filterDate:true;
     return d&&dt;
-  // FIX #PROSPECTS-NEWEST-FIRST: كانت بترتب باليوم بس، فزيارتين في نفس اليوم كان
-  // ترتيبهم بينهم عشوائي (بيبقى الأقدم فوق أحياناً) — ضفنا id كمعيار ترتيب ثانوي.
-  }).sort((a,b)=>b.date.localeCompare(a.date)||(b.id||0)-(a.id||0));
+  }).sort((a,b)=>b.date.localeCompare(a.date));
   const tb=document.getElementById('pros-visits-tb');const empty=document.getElementById('pros-visits-empty');
   if(!list.length){tb.innerHTML='';if(empty)empty.style.display='';return;}
   if(empty)empty.style.display='none';
