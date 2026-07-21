@@ -790,7 +790,8 @@ function renderClients(){
   const pills=`<div class="month-pills">
     <div class="month-pill ${_clientMonth==='all'?'on':''}" onclick="setClientMonth('all')">📅 الكل</div>
     ${monthKeys.map(k=>`<div class="month-pill ${_clientMonth===k?'on':''}" onclick="setClientMonth('${k}')">${k===curMonthKey?'الشهر الحالي':_monthLabel(k)}</div>`).join('')}
-  </div>`;
+  </div>
+  <div style="text-align:left;margin-bottom:8px"><a href="javascript:void(0)" onclick="debugClientCard()" style="font-size:12px;color:var(--text3);text-decoration:underline">❓ عميل مش ظاهر عندك؟ اضغط هنا</a></div>`;
 
   const {activeMonth,accFrom,accTo}=_accPeriodFromMonth(curMonthKey);
 
@@ -808,12 +809,15 @@ function renderClients(){
       cProof=cProof.filter(r=>_caseMonthKey(r)===activeMonth);
       cArchive=cArchive.filter(r=>_caseMonthKey(r)===activeMonth);
     }
-    if(activeMonth!=='all'&&!cDafter.length&&!cProof.length&&!cArchive.length)return ''; // مفيش نشاط للعميل في الشهر المختار
+    // ملحوظة: قبل كده كنا بنخفي كارت العميل بالكامل لو مفيش نشاط في الشهر المختار —
+    // اتغيّر عشان "عملائي" يفضل يعرض كل عملاء المندوب المرتبطين بيه دايمًا، حتى لو
+    // مسجلش شغل الفترة دي، بدل ما يختفي العميل من القائمة خالص.
     // ملحوظة: المبالغ (متبقي/مبيعات) مصدرها الأرشيف فقط، لأنه هو مصدر البيانات المالية المعتمد بنفس منطق السيستم الكبير
     const debt=cArchive.reduce((s,r)=>s+(+r.remaining||0),0);
     const range=_clientCustomRange[cl.id]||{from:accFrom,to:accTo};
     const acc=_clientAccountSummaryD(cl,range.from,range.to);
-    return`<div class="client-card">
+    const hasActivity=cDafter.length||cProof.length||cArchive.length||debt>0;
+    return`<div class="client-card" style="${hasActivity?'':'opacity:.55'}">
       <div class="client-head" onclick="toggleClient('cl-${esc(cl.id)}')">
         <div style="flex:1">
           <div class="client-name">${esc(cl.name)}</div>
@@ -823,6 +827,7 @@ function renderClients(){
             ${cProof.length?`<span class="stat-pill pill-orange">🔬 ${cProof.length} بروفه</span>`:''}
             ${cArchive.length?`<span class="stat-pill pill-green">📁 ${cArchive.length} أرشيف</span>`:''}
             ${debt>0?`<span class="stat-pill pill-red">💸 ${fmt(debt)}</span>`:''}
+            ${hasActivity?'':`<span class="stat-pill" style="background:var(--bg3);color:var(--text3)">لا يوجد نشاط ${activeMonth!=='all'?'في '+(activeMonth===curMonthKey?'الشهر الحالي':_monthLabel(activeMonth)):''}</span>`}
           </div>
         </div>
         <span style="color:var(--text3);font-size:19px" id="arr-cl-${esc(cl.id)}">▾</span>
@@ -880,11 +885,7 @@ function renderClients(){
     </div>`;
   }).join('');
 
-  const visibleCount=list.filter(cl=>{
-    if(activeMonth==='all')return true;
-    const has=[..._dafter,..._proof,..._archive].some(r=>(r.clientId===cl.id||r.client===cl.name)&&_caseMonthKey(r)===activeMonth);
-    return has;
-  }).length;
+  const visibleCount=list.length;
 
   c.innerHTML=pills+`<div style="font-size:14px;color:var(--text3);margin-bottom:10px">${visibleCount} عميل${activeMonth!=='all'?' — '+(activeMonth===curMonthKey?'الشهر الحالي':_monthLabel(activeMonth)):''}</div>`+
     (cards.replace(/\s/g,'')?cards:`<div class="empty"><div class="empty-icon">📅</div><p>لا يوجد نشاط لعملاءك في الشهر المختار</p></div>`);
@@ -1419,7 +1420,35 @@ async function backfillOldVisits(){
   }catch(e){console.error(e);toast('خطأ أثناء التعبئة الرجعية','err');}
 }
 
-// أداة تشخيص: بتدوّر في دفتر/بروفة/أرشيف *من غير فلترة اسم المندوب* عشان تلاقي
+// أداة تشخيص تانية: بتحاكي بالظبط نفس المنطق اللي renderClients بيستخدمه (بما فيه
+// فلتر الشهر النشط) على البيانات الحقيقية المحمّلة دلوقتي، عشان تحدد بدقة هل
+// العميل مخفي بسبب فلتر الشهر، ولا مش موجود في _myClients أصلًا لسبب تاني.
+function debugClientCard(){
+  const q=(prompt('اسم العميل (أو جزء منه) اللي مش ظاهر عندك:')||'').trim();
+  if(!q)return;
+  const ql=q.toLowerCase();
+  const cl=_myClients.find(c=>String(c.name||'').toLowerCase().includes(ql));
+  if(!cl){
+    alert(`❌ العميل مش موجود في قائمة "عملائك" المحمّلة دلوقتي (${_myClients.length} عميل) — يعني مش مسألة فلتر شهر، المشكلة في الربط نفسه. استخدم زر 🔍 اللي في الهيدر (تشخيص الحالة) عشان تفحص ربط العميل بالتفصيل.`);
+    return;
+  }
+  const curMonthKey=new Date().toISOString().slice(0,7);
+  const{activeMonth}=_accPeriodFromMonth(curMonthKey);
+  let cArchive=_archive.filter(r=>r.clientId===cl.id||r.client===cl.name);
+  let cDafter=_dafter.filter(r=>r.clientId===cl.id||r.client===cl.name);
+  let cProof=_proof.filter(r=>r.clientId===cl.id||r.client===cl.name);
+  const before=`قبل فلتر الشهر: دفتر ${cDafter.length} · بروفة ${cProof.length} · أرشيف ${cArchive.length}`;
+  if(activeMonth!=='all'){
+    cArchive=cArchive.filter(r=>_caseMonthKey(r)===activeMonth);
+    cDafter=cDafter.filter(r=>_caseMonthKey(r)===activeMonth);
+    cProof=cProof.filter(r=>_caseMonthKey(r)===activeMonth);
+  }
+  const after=`بعد فلتر الشهر (${activeMonth}): دفتر ${cDafter.length} · بروفة ${cProof.length} · أرشيف ${cArchive.length}`;
+  const willShow=!(activeMonth!=='all'&&!cDafter.length&&!cProof.length&&!cArchive.length);
+  alert(`العميل: ${cl.name}\nموجود في _myClients: ✅\nالفلتر الحالي: ${_clientMonth==='all'?'📅 الكل':'📅 '+activeMonth}\n\n${before}\n${after}\n\n${willShow?'✅ الكارت المفروض يظهر — لو مش ظاهر فعليًا، جرب دور باسمه في مربع البحث فوق':'❌ الكارت مخفي بسبب فلتر الشهر النشط — دوس "📅 الكل" فوق عشان تشوفه'}`);
+}
+
+
 // حالة معيّنة (برقمها أو اسم عميلها) وتوريك بالظبط قيمة حقل "delegate" المسجّلة
 // عليها فعليًا في قاعدة البيانات، عشان نقارنها باسمك المسجّل هنا ونعرف مصدر الاختفاء.
 async function debugSearchCase(){
@@ -1450,8 +1479,14 @@ async function debugSearchCase(){
         clLine=`⚠️ العميل "${r.client||'-'}" مش موجود أصلًا في قائمة العملاء (data/shared/clients) — عشان كده معندوش كارت في "عملائي" مهما كانت الحالة متطابقة`;
       }else{
         const clMatch=_belongsToDelegate(cl);
+        const idEq=String(r.clientId||'')===String(cl.id||'')&&!!r.clientId;
+        const nameEq=String(r.client||'')===String(cl.name||'');
+        const mk=_caseMonthKey(r);
+        const curMK=new Date().toISOString().slice(0,7);
         clLine=`سجل العميل نفسه: delegateId="${cl.delegateId||'-'}" | delegate="${cl.delegate||'-'}" | delegateName="${cl.delegateName||'-'}"\n`+
-          `${clMatch?'✅ العميل مرتبط بيك — لازم يظهر':'❌ العميل مش مرتبط بيك — ده سبب اختفاء كل حالاته من "عملائي"'}`;
+          `${clMatch?'✅ العميل مرتبط بيك — لازم يظهر':'❌ العميل مش مرتبط بيك — ده سبب اختفاء كل حالاته من "عملائي"'}\n`+
+          `ربط الحالة بالعميل: r.clientId="${r.clientId||'-'}" vs cl.id="${cl.id||'-'}" → ${idEq?'✅ متطابقين':'❌'} | r.client="${r.client||'-'}" vs cl.name="${cl.name||'-'}" → ${nameEq?'✅ متطابقين':'❌'} ${(idEq||nameEq)?'':'⚠️⚠️ ده سبب الاختفاء — الحالة مش هتترتبط بكارت العميل خالص'}\n`+
+          `تاريخ الحالة: r.date="${r.date||'(فاضي)'}" → شهرها المحسوب="${mk||'(معرفش يحسبه)'}" مقابل الشهر الحالي="${curMK}" ${mk&&mk!==curMK?'⚠️ الشهر مختلف — لو الفلتر على "الشهر الحالي" هتختفي، دوس "📅 الكل"':''}`;
       }
       return `${r._src} | #${r.caseId||'-'} | ${r.client||'-'}${r.noteName?' — '+r.noteName:''}\n`+
         `مندوب مسجّل على الحالة: "${r.delegate||'(فاضي/غير موجود)'}" (اسمك: "${_user.name}") ${caseMatch?'✅':'❌'}\n`+
@@ -1483,6 +1518,12 @@ function renderCommission(){
   // حساب العمولة بنسبة كل عميل (دكتور) المسجّلة في بياناته الأساسية — مش نسبة موحّدة لكل الحالات
   let totalComm=0;
   const byClient={};
+  // نبدأ بكل عملاء المندوب المرتبطين بيه (حتى لو معندهمش أي حالة/فاتورة في الفترة دي) عشان
+  // القائمة تعكس كل عملاءه الحقيقيين، مش بس اللي شغلوا في الفترة المختارة
+  _myClients.forEach(cl=>{
+    const cr=_clientCommRate(cl);
+    byClient[cl.name]={cases:0,total:0,comm:0,rate:cr.rate,registered:cr.registered};
+  });
   scoped.forEach(r=>{
     const total=+r.total||0;
     const cl=_myClients.find(c=>c.name===r.client);
@@ -1530,12 +1571,12 @@ function renderCommission(){
       <div class="comm-row"><span style="color:var(--text3)">نسبتك العامة الافتراضية</span><span style="font-weight:700;color:var(--gold2)">${rate}%</span></div>
     </div>
     <div class="comm-card">
-      <div style="font-size:14px;color:var(--text3);margin-bottom:10px">👥 تفصيل حسب العميل</div>
-      ${Object.entries(byClient).map(([name,d])=>`
-        <div class="comm-row">
+      <div style="font-size:14px;color:var(--text3);margin-bottom:10px">👥 تفصيل حسب العميل (${Object.keys(byClient).length} عميل)</div>
+      ${Object.entries(byClient).sort((a,b)=>b[1].comm-a[1].comm||a[0].localeCompare(b[0])).map(([name,d])=>`
+        <div class="comm-row" style="${d.cases?'':'opacity:.55'}">
           <div>
             <div style="font-size:14px;font-weight:700">${esc(name)}</div>
-            <div style="font-size:12px;color:var(--text3)">${d.cases} حالة · ${fmt(d.total)} ج.م مبيعات · نسبة ${d.rate}%${d.registered?'':' (افتراضية)'}</div>
+            <div style="font-size:12px;color:var(--text3)">${d.cases?`${d.cases} حالة · ${fmt(d.total)} ج.م مبيعات`:'لا يوجد نشاط في هذه الفترة'} · نسبة ${d.rate}%${d.registered?'':' (افتراضية)'}</div>
           </div>
           <div style="font-weight:900;color:var(--gold2)">${fmt(d.comm)} ج.م</div>
         </div>`).join('')}
