@@ -240,6 +240,7 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
   <div style="display:flex;align-items:center;gap:8px">
     <span style="font-size:14px;color:var(--text3)" id="hd-name"></span>
     <button class="theme-btn" onclick="cycleTheme()" title="تغيير الألوان">🎨</button>
+    <button class="theme-btn" onclick="debugSearchCase()" title="تشخيص: البحث عن حالة غير ظاهرة">🔍</button>
     <div class="avatar" id="hd-avatar">م</div>
     <button class="logout-btn" onclick="doLogout()">خروج</button>
   </div>
@@ -1418,6 +1419,39 @@ async function backfillOldVisits(){
   }catch(e){console.error(e);toast('خطأ أثناء التعبئة الرجعية','err');}
 }
 
+// أداة تشخيص: بتدوّر في دفتر/بروفة/أرشيف *من غير فلترة اسم المندوب* عشان تلاقي
+// حالة معيّنة (برقمها أو اسم عميلها) وتوريك بالظبط قيمة حقل "delegate" المسجّلة
+// عليها فعليًا في قاعدة البيانات، عشان نقارنها باسمك المسجّل هنا ونعرف مصدر الاختفاء.
+async function debugSearchCase(){
+  const q=(prompt('دور برقم الحالة، اسم العميل، أو اسم المريض:')||'').trim();
+  if(!q)return;
+  toast('⏳ جارِ البحث...');
+  try{
+    const[dafter,proof,archive]=await Promise.all([fbGet('data/shared/dafter'),fbGet('data/shared/proof'),fbGet('data/shared/archive')]);
+    const all=[
+      ...toArr(dafter).map(r=>({...r,_src:'📗 دفتر'})),
+      ...toArr(proof).map(r=>({...r,_src:'📘 بروفة'})),
+      ...toArr(archive).map(r=>({...r,_src:'📦 أرشيف'}))
+    ];
+    const ql=q.toLowerCase();
+    const matches=all.filter(r=>
+      String(r.caseId||'').toLowerCase().includes(ql)||
+      String(r.client||'').toLowerCase().includes(ql)||
+      String(r.noteName||'').toLowerCase().includes(ql)||
+      String(r.invId||'').toLowerCase().includes(ql)
+    );
+    if(!matches.length){alert('❌ مفيش أي حالة مطابقة في دفتر/بروفة/أرشيف خالص (حتى بدون فلترة مندوب) — يبقى المشكلة إن الحالة أصلًا لسه متسجلتش، مش مسألة فلترة.');return;}
+    const lines=matches.map(r=>{
+      const match=_sameDelegateName(r.delegate,_user.name);
+      return `${r._src} | #${r.caseId||'-'} | ${r.client||'-'}${r.noteName?' — '+r.noteName:''}\n`+
+        `مندوب مسجّل على الحالة: "${r.delegate||'(فاضي/غير موجود)'}"\n`+
+        `اسمك المسجّل دخول: "${_user.name}"\n`+
+        `${match?'✅ متطابقين — المفروض تظهر عندك':'❌ غير متطابقين — ده سبب الاختفاء'}`;
+    });
+    alert(`لقيت ${matches.length} نتيجة:\n\n`+lines.join('\n\n———————————\n\n'));
+  }catch(e){console.error(e);toast('خطأ أثناء البحث','err');}
+}
+
 // ═══════════════════════════════════════
 // COMMISSION TAB
 // ═══════════════════════════════════════
@@ -1585,7 +1619,7 @@ async function submitNewProspect(){
     _myProspects=[rec,..._myProspects];
 
     // تسجيل أول زيارة تلقائيًا مع إضافة العميل — عشان تظهر في تاب "متابعة زيارة" وفي التقرير اليومي
-    const visitId=id+1;
+    const visitId='nv'+id;
     const visitRec={id:visitId,delegate:_user.name,prospectId:id,doctor,date:shiftToday(),result:'new',notes:rec.notes,createdAt:Date.now()};
     await fbUpdate('data/shared/prospect_visits',{[visitId]:visitRec});
     _myVisits=[visitRec,..._myVisits];
