@@ -345,11 +345,6 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
   </div>
 </div>
 
-<!-- 🔌 Firebase مُعطّل — نسخة محلية بالكامل (بدون إنترنت) للمراجعة فقط -->
-<script>
-function initFirebase(){ /* no-op — offline build */ }
-</script>
-
 <script>
 // ═══════════════════════════════════════
 // CONFIG
@@ -491,7 +486,6 @@ function cycleTheme(){
 
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function fmt(n){return Number(n||0).toLocaleString('ar-EG');}
-function today(){return new Date().toISOString().split('T')[0];}
 // يوم شغل المندوب: من ٣ العصر لـ٣ الفجر — أي وقت قبل الساعة ٣ فجرًا لسه بيتحسب على يوم الشغل اللي فات
 function shiftToday(ts){
   const d=new Date((ts||Date.now())-3*3600*1000);
@@ -670,12 +664,12 @@ async function loadTab(tab){
       fbGet('data/shared/delegateHandoverLog') // ⚠️ مسار منفصل تمامًا ومعزول عن دفتر/بروفة/أرشيف السيستم الكبير — قراءة فقط، لسجل تأكيدات المندوب
     ]);
     _myClients=toArr(clients).filter(c=>_belongsToDelegate(c));
-    _dafter=toArr(dafter).filter(r=>_sameDelegateName(r.delegate,_user.name));
-    _proof=toArr(proof).filter(r=>_sameDelegateName(r.delegate,_user.name));
-    _archive=toArr(archive).filter(r=>_sameDelegateName(r.delegate,_user.name));
-    _deliveryLog=toArr(handoverLog).filter(r=>_sameDelegateName(r.delegate,_user.name));
+    _dafter=toArr(dafter).filter(r=>_belongsToDelegate(r));
+    _proof=toArr(proof).filter(r=>_belongsToDelegate(r));
+    _archive=toArr(archive).filter(r=>_belongsToDelegate(r));
+    _deliveryLog=toArr(handoverLog).filter(r=>_belongsToDelegate(r));
     _myProspects=toArr(prospects).filter(p=>_belongsToDelegate(p)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-    _myVisits=toArr(prospectVisits).filter(v=>_sameDelegateName(v.delegate,_user.name)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    _myVisits=toArr(prospectVisits).filter(v=>_belongsToDelegate(v)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
     // كارت حساب العميل: نحمّل فقط حركات الخزنة والتسويات الخاصة بعملاء هذا المندوب (خصوصية)
     {
       const myClientIds=new Set(_myClients.map(cl=>cl.id));
@@ -1015,23 +1009,27 @@ function renderCases(){
 // تقرير واتساب يومي للإدارة (شغل اليوم + حساب اليوم)
 // ═══════════════════════════════════════
 function buildDailyReportMsg(){
-  // "اليوم" هنا = يوم شغل المندوب (من ٣ العصر لـ٣ الفجر)، مش نص الليل لنص الليل
-  const shiftDate=shiftToday();
+  // لو المندوب حدد فلتر تاريخ (من/لحد) فوق في الهيدر، التقرير بياخد نفس الفترة دي.
+  // لو مفيش فلتر متحدد، الافتراضي زي ما كان: يوم شغل المندوب النهارده بس (من ٣ العصر لـ٣ الفجر)
+  const fromDate=_dateFrom||shiftToday();
+  const toDate=_dateTo||_dateFrom||shiftToday();
+  const isSingleToday=fromDate===toDate&&fromDate===shiftToday();
   // المصدر هنا لوج التأكيد المعزول (delegateHandoverLog) مش أرشيف السيستم الكبير —
   // التاب مجرد بيوثّق إن المندوب أكّد التسليم/الارتجاع، من غير أي لمس لسجلات الأرشيف الحقيقية
-  const todayLog=_deliveryLog.filter(r=>shiftToday(r.createdAt)===shiftDate);
+  const todayLog=_deliveryLog.filter(r=>{const d=shiftToday(r.createdAt);return d>=fromDate&&d<=toDate;});
   const delivered=todayLog.filter(r=>r.handoverStatus==='delivered');
   const returned=todayLog.filter(r=>r.handoverStatus==='returned');
   // تحصيل/استلام من عميل مالوش تسليم النهارده أصلاً — مسجّل يدويًا من أزرار العملاء الجانبية
   const manual=todayLog.filter(r=>r.handoverStatus==='manual');
-  const visitsToday=_myVisits.filter(v=>v.date===shiftDate);
+  const visitsToday=_myVisits.filter(v=>v.date>=fromDate&&v.date<=toDate);
 
-  let msg=`📋 *تقرير يومي — ${_user.name}*\n`;
-  msg+=`📅 ${shiftDate}\n\n`;
+  let msg=`📋 *${isSingleToday?'تقرير يومي':'تقرير الفترة'} — ${_user.name}*\n`;
+  msg+=isSingleToday?`📅 ${fromDate}\n\n`:`📅 من ${fromDate} إلى ${toDate}\n\n`;
 
   const totalCollected=[...delivered,...manual].reduce((s,r)=>s+ +(r.delegateReportedAmount||0),0);
   const totalNewCases=[...delivered,...manual].reduce((s,r)=>s+ +(r.reportedNewCasesCount||0),0);
-  msg+=`🧾 *سند تسليم اليوم — ${delivered.length} حالة*\n\n`;
+  const periodWord=isSingleToday?'اليوم':'الفترة';
+  msg+=`🧾 *سند تسليم ${periodWord} — ${delivered.length} حالة*\n\n`;
   delivered.forEach(r=>{
     msg+=`👤 ${r.client||'-'}${r.noteName?' — '+r.noteName:''}\n`;
     msg+=`✅ تم التسليم — ${r.product||'-'} (${r.deliveryType||'-'})\n`;
@@ -1040,7 +1038,7 @@ function buildDailyReportMsg(){
     msg+=`\n`;
   });
   if(manual.length){
-    msg+=`💼 *تحصيل/استلام من عملاء بدون تسليم اليوم:* ${manual.length}\n\n`;
+    msg+=`💼 *تحصيل/استلام من عملاء بدون تسليم ${periodWord}:* ${manual.length}\n\n`;
     manual.forEach(r=>{
       msg+=`👤 ${r.client||'-'}\n`;
       if(+(r.delegateReportedAmount||0)>0)msg+=`💰 تم تحصيل ${r.delegateReportedAmount}ج (محتاج اعتماد الخزنة)\n`;
@@ -1055,7 +1053,7 @@ function buildDailyReportMsg(){
     msg+=`\n`;
   }
   if(returned.length){
-    msg+=`↩️ *مرتجعات اليوم:* ${returned.length}\n`;
+    msg+=`↩️ *مرتجعات ${periodWord}:* ${returned.length}\n`;
     returned.forEach(r=>{
       msg+=`  • ${r.client||'-'}${r.noteName?' — 👤 اسم المريض: '+r.noteName:''}\n`;
     });
@@ -1076,19 +1074,19 @@ function buildDailyReportMsg(){
   const followVisits=visitsToday.filter(v=>v.result!=='new');
 
   if(newVisits.length){
-    msg+=`\n🆕✨ *عملاء جدد تمت زيارتهم اليوم:* ${newVisits.length}\n`;
+    msg+=`\n🆕✨ *عملاء جدد تمت زيارتهم ${periodWord}:* ${newVisits.length}\n`;
     newVisits.forEach(v=>msg+=fmtVisitLine(v));
   }else{
-    msg+=`\n🆕✨ *عملاء جدد تمت زيارتهم اليوم:* 0\n`;
+    msg+=`\n🆕✨ *عملاء جدد تمت زيارتهم ${periodWord}:* 0\n`;
   }
   if(followVisits.length){
-    msg+=`\n🔄 *متابعة زيارة اليوم:* ${followVisits.length}\n`;
+    msg+=`\n🔄 *متابعة زيارة ${periodWord}:* ${followVisits.length}\n`;
     followVisits.forEach(v=>msg+=fmtVisitLine(v));
   }else{
-    msg+=`\n🔄 *متابعة زيارة اليوم:* 0\n`;
+    msg+=`\n🔄 *متابعة زيارة ${periodWord}:* 0\n`;
   }
 
-  if(!delivered.length&&!returned.length&&!visitsToday.length)msg+=`\n— لا يوجد نشاط مسجّل اليوم —`;
+  if(!delivered.length&&!returned.length&&!visitsToday.length)msg+=`\n— لا يوجد نشاط مسجّل ${isSingleToday?'اليوم':'في الفترة دي'} —`;
   return msg;
 }
 
@@ -1143,6 +1141,13 @@ function _sendAdminMsgTo(idx){
 }
 function closeAdminPick(){document.getElementById('admin-pick-modal').classList.add('hidden');}
 
+function _reportBtnLabel(){
+  if(_dateFrom||_dateTo){
+    const f=_dateFrom||_dateTo,t=_dateTo||_dateFrom;
+    return f===t?`📱 إرسال تقرير يوم ${f} للإدارة (واتساب)`:`📱 إرسال تقرير الفترة (${f} → ${t}) للإدارة (واتساب)`;
+  }
+  return '📱 إرسال تقرير اليوم للإدارة (واتساب)';
+}
 function sendDailyReportToAdmin(){
   const msg=buildDailyReportMsg();
   sendToAdminWithPicker(msg);
@@ -1164,14 +1169,21 @@ function isHandoverConfirmed(sourceId){
   return _deliveryLog.some(h=>h.sourceId===sourceId);
 }
 
+// ⚠️ تصفير صفحة التسليمات (٢٠٢٦-٠٧-٢٢): أي حالة بروفة أو أرشيف اتسجّلت قبل التاريخ ده
+// معتبرة "قديمة من قبل الميزة" ومش هتظهر في التسليمات المعلّقة تاني، حتى لو محدّش أكّد
+// تسليمها فعليًا. الحالات الجديدة اللي بتتسجّل من بعد التاريخ ده هتفضل تشتغل عادي وتظهر
+// لحد ما المندوب يأكّد تسليمها. ده تصفير لمرة واحدة بس — مش محتاج نلمسه تاني.
+const DELIVERY_RESET_CUTOFF=new Date('2026-07-22T00:00:00').getTime();
+
 function renderDeliveries(){
   const c=document.getElementById('tab-content');
   // بروفه: حالات موجودة فعلاً في بروفة السيستم الكبير دلوقتي ولسه المندوب ما أكّدش تسليمها
-  const proofItems=_proof.filter(r=>!isHandoverConfirmed(r.id)).map(r=>({...r,delivType:'بروفة'}));
+  // (بنستبعد أي حالة قديمة من قبل تاريخ التصفير، حتى لو معندهاش تأكيد تسليم)
+  const proofItems=_proof.filter(r=>!isHandoverConfirmed(r.id)&&(+r.createdAt||0)>=DELIVERY_RESET_CUTOFF).map(r=>({...r,delivType:'بروفة'}));
   // نهائي: حالات اتأرشفت فعلاً في السيستم الكبير (سواء جاية من بروفه أو من دفتر مباشر)
-  // ولسه المندوب ما أكّدش التسليم النهائي بتاعها. بنحصر آخر 30 يوم بس عشان الصفحة
-  // تفضل قائمة "مهام معلّقة" ولا تتكدّس بتاريخ أرشيف قديم من قبل الميزة دي.
-  const cutoff=Date.now()-30*24*60*60*1000;
+  // ولسه المندوب ما أكّدش التسليم النهائي بتاعها. بنحصر آخر 30 يوم، وبرضه مبنتخطاش تحت
+  // تاريخ التصفير — عشان الصفحة تفضل قائمة "مهام معلّقة" ولا تتكدّس بتاريخ أرشيف قديم.
+  const cutoff=Math.max(Date.now()-30*24*60*60*1000,DELIVERY_RESET_CUTOFF);
   const finalItems=_archive.filter(r=>!isHandoverConfirmed(r.id)&&(+r.archivedAt||0)>=cutoff).map(r=>({...r,delivType:'نهائي'}));
   const source=[...proofItems,...finalItems].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
   const pending=source.filter(r=>matchesSearch([r.client,r.noteName,r.caseId,r.product])&&matchesDateRange(r.date));
@@ -1188,7 +1200,7 @@ function renderDeliveries(){
     `</div>`:'';
 
   if(!source.length){
-    c.innerHTML=`<button class="btn btn-teal btn-sm btn-block" style="margin-bottom:12px" onclick="sendDailyReportToAdmin()">📱 إرسال تقرير اليوم للإدارة (واتساب)</button>`+
+    c.innerHTML=`<button class="btn btn-teal btn-sm btn-block" style="margin-bottom:12px" onclick="sendDailyReportToAdmin()">${_reportBtnLabel()}</button>`+
       quickClientsHtml+
       `<div class="empty"><div class="empty-icon">🚚</div><p>مفيش حالات جاهزة للتسليم دلوقتي</p></div>`;return;
   }
@@ -1196,8 +1208,9 @@ function renderDeliveries(){
     c.innerHTML=quickClientsHtml+`<div class="empty"><div class="empty-icon">🔍</div><p>لا توجد نتائج مطابقة للبحث</p></div>`;return;
   }
 
-  c.innerHTML=`<button class="btn btn-teal btn-sm btn-block" style="margin-bottom:12px" onclick="sendDailyReportToAdmin()">📱 إرسال تقرير اليوم للإدارة (واتساب)</button>
-    <div style="font-size:14px;color:var(--text3);margin-bottom:10px">${pending.length} حالة جاهزة للتسليم (بروفه: ${proofItems.length} · نهائي: ${finalItems.length})</div>`+
+  c.innerHTML=`<button class="btn btn-teal btn-sm btn-block" style="margin-bottom:12px" onclick="sendDailyReportToAdmin()">${_reportBtnLabel()}</button>`+
+    quickClientsHtml+
+    `<div style="font-size:14px;color:var(--text3);margin-bottom:10px">${pending.length} حالة جاهزة للتسليم (بروفه: ${proofItems.length} · نهائي: ${finalItems.length})</div>`+
   pending.map(r=>`
     <div class="deliv-card" id="deliv-${esc(r.id)}">
       <div class="deliv-head">
@@ -1213,7 +1226,7 @@ function renderDeliveries(){
         <button class="btn btn-green" onclick="confirmDelivery('${esc(r.id)}','${esc(r.delivType)}')">✅ تأكيد التسليم</button>
         <button class="btn btn-red" onclick="confirmReturn('${esc(r.id)}','${esc(r.delivType)}')">↩️ تأكيد الارتجاع</button>
       </div>
-    </div>`).join('')+quickClientsHtml;
+    </div>`).join('');
 }
 
 function showModal(title,msg,onOk,extraHtml,onCancel){
@@ -1225,7 +1238,13 @@ function showModal(title,msg,onOk,extraHtml,onCancel){
   const okBtn=document.getElementById('cm-ok');
   const newOk=okBtn.cloneNode(true); // إزالة أي مستمعين سابقين
   okBtn.parentNode.replaceChild(newOk,okBtn);
-  newOk.addEventListener('click',()=>{onOk&&onOk();});
+  newOk.disabled=false; // نتأكد إنه شغّال دايمًا مع أي ظهور جديد للمودال، حتى لو الاستخدام اللي فات سابه معطّل بالغلط
+  newOk.addEventListener('click',async()=>{
+    if(newOk.disabled)return; // يمنع دبل-تاب من تنفيذ onOk مرتين ويسجّل نفس العملية مرتين
+    newOk.disabled=true;
+    try{ if(onOk)await onOk(); }
+    finally{ newOk.disabled=false; } // لو onOk سابت المودال مفتوح (مثلاً بسبب خطأ) الزرار يرجع شغّال تاني
+  });
   const cancelBtn=document.getElementById('cm-cancel');
   const newCancel=cancelBtn.cloneNode(true);
   cancelBtn.parentNode.replaceChild(newCancel,cancelBtn);
@@ -1242,7 +1261,6 @@ function closeModal(){document.getElementById('confirm-modal').classList.add('hi
 // من غير أي لمس لحساب العميل أو الخزنة الحقيقية.
 async function logManualClientAction(cl,amount,count){
   const entry={
-    id:'h_manual_'+cl.id+'_'+Date.now(),
     sourceId:null,
     sourceType:'manual',
     caseId:'-',
@@ -1260,8 +1278,7 @@ async function logManualClientAction(cl,amount,count){
     createdAt:Date.now()
   };
   const path='data/shared/delegateHandoverLog';
-  const all=toArr(await fbGet(path));
-  await fbSet(path,[...all,entry]);
+  entry.id=await fbPush(path,entry); // push بيدّي مفتاح فريد من Firebase نفسه — من غير قراءة/إعادة كتابة المصفوفة كلها (بيتفادى تعارض كتابتين في نفس اللحظة)
   _deliveryLog=[..._deliveryLog,entry];
   if(amount>0){try{await logDelegateReportedCollection(entry,amount);}catch(e){}}
   if(count>0){try{await logDelegateNewCases(entry,count);}catch(e){}}
@@ -1358,9 +1375,7 @@ function askNewCases(logEntry){
 async function logDelegateReportedCollection(r,amount){
   try{
     const path='data/shared/delegatePendingCollections';
-    const all=toArr(await fbGet(path));
     const entry={
-      id:'pc_'+r.id+'_'+Date.now(),
       sourceId:r.sourceId||r.id,
       caseId:r.caseId||'-',
       client:r.client||'-',
@@ -1373,7 +1388,7 @@ async function logDelegateReportedCollection(r,amount){
       status:'pending', // pending → لسه محتاج اعتماد الإدارة وترحيله للخزنة يدويًا
       createdAt:Date.now()
     };
-    await fbSet(path,[...all,entry]);
+    await fbPush(path,entry); // فريد من Firebase — من غير قراءة/إعادة كتابة كل القائمة
   }catch(e){/* فشل تسجيل المبلغ للمراجعة ما يمنعش إتمام التسليم نفسه */}
 }
 
@@ -1384,9 +1399,7 @@ async function logDelegateReportedCollection(r,amount){
 async function logDelegateNewCases(r,count){
   try{
     const path='data/shared/delegatePendingNewCases';
-    const all=toArr(await fbGet(path));
     const entry={
-      id:'nc_'+r.sourceId+'_'+Date.now(),
       sourceId:r.sourceId||r.id,
       client:r.client||'-',
       clientId:r.clientId||r.delegateClientId||null,
@@ -1398,7 +1411,7 @@ async function logDelegateNewCases(r,count){
       status:'pending', // pending → لسه محتاج فتح ٨ سجلات دفتر جديدة باسم العميل
       createdAt:Date.now()
     };
-    await fbSet(path,[...all,entry]);
+    await fbPush(path,entry); // فريد من Firebase — من غير قراءة/إعادة كتابة كل القائمة
   }catch(e){/* فشل التسجيل ما يمنعش إتمام التسليم نفسه */}
 }
 
@@ -1426,9 +1439,7 @@ async function confirmReturn(id,delivType){
 // مسؤولية السيستم الكبير وموظفيه.
 async function logHandover(r,handoverStatus,delivType){
   const path='data/shared/delegateHandoverLog';
-  const all=toArr(await fbGet(path));
   const entry={
-    id:'h_'+r.id+'_'+Date.now(),
     sourceId:r.id, // إشارة فقط لحالة موجودة أصلاً في proof/archive — بدون لمسها
     sourceType:delivType==='بروفة'?'proof':'archive',
     caseId:r.caseId||'-',
@@ -1445,20 +1456,18 @@ async function logHandover(r,handoverStatus,delivType){
     date:shiftToday(),
     createdAt:Date.now()
   };
-  await fbSet(path,[...all,entry]);
+  entry.id=await fbPush(path,entry); // مفتاح فريد من Firebase — بيقفل الباب على تعارض كتابتين في نفس اللحظة (مندوبين مع بعض أو نفس المندوب فاتح تابين)
   _deliveryLog=[..._deliveryLog,entry];
   return entry;
 }
 
-// تحديث لاحق (تحصيل/مقاسات جديدة) على نفس سجل التأكيد — بيعيد كتابة المصفوفة
-// كاملة بنفس نمط الكتابة المستخدم في باقي الملف ده، وبرضه معزول تمامًا عن أي
-// مسار حقيقي في السيستم الكبير.
+// تحديث لاحق (تحصيل/مقاسات جديدة) على نفس سجل التأكيد — تحديث مباشر على مفتاح
+// السجل نفسه فقط (entry.id هو مفتاح fbPush الأصلي)، من غير قراءة/إعادة كتابة
+// اللوج كله، وبرضه معزول تمامًا عن أي مسار حقيقي في السيستم الكبير.
 async function updateHandoverLogEntry(entry){
   try{
-    const path='data/shared/delegateHandoverLog';
-    const all=toArr(await fbGet(path));
-    const updated=all.map(h=>h.id===entry.id?{...h,delegateReportedAmount:entry.delegateReportedAmount||0,reportedNewCasesCount:entry.reportedNewCasesCount||0}:h);
-    await fbSet(path,updated);
+    if(!entry.id)return;
+    await fbUpdate('data/shared/delegateHandoverLog',{[entry.id]:{...entry,delegateReportedAmount:entry.delegateReportedAmount||0,reportedNewCasesCount:entry.reportedNewCasesCount||0}});
   }catch(e){/* فشل تحديث اللوج التوثيقي ما يمنعش استمرار العملية */}
 }
 
@@ -1580,7 +1589,8 @@ async function debugSearchCase(){
     if(!matches.length){alert('❌ مفيش أي حالة مطابقة في دفتر/بروفة/أرشيف خالص (حتى بدون فلترة مندوب) — يبقى المشكلة إن الحالة أصلًا لسه متسجلتش، مش مسألة فلترة.');return;}
     const allClients=toArr(clients);
     const lines=matches.map(r=>{
-      const caseMatch=_sameDelegateName(r.delegate,_user.name);
+      const overallMatch=_belongsToDelegate(r); // نفس المنطق اللي بيستخدمه الفلتر الحقيقي دلوقتي (delegateId أولاً وبعدين الاسم)
+      const nameMatch=_sameDelegateName(r.delegate,_user.name);
       const cl=allClients.find(x=>x.id===r.clientId||x.name===r.client);
       let clLine;
       if(!cl){
@@ -1597,7 +1607,7 @@ async function debugSearchCase(){
           `تاريخ الحالة: r.date="${r.date||'(فاضي)'}" → شهرها المحسوب="${mk||'(معرفش يحسبه)'}" مقابل الشهر الحالي="${curMK}" ${mk&&mk!==curMK?'⚠️ الشهر مختلف — لو الفلتر على "الشهر الحالي" هتختفي، دوس "📅 الكل"':''}`;
       }
       return `${r._src} | #${r.caseId||'-'} | ${r.client||'-'}${r.noteName?' — '+r.noteName:''}\n`+
-        `مندوب مسجّل على الحالة: "${r.delegate||'(فاضي/غير موجود)'}" (اسمك: "${_user.name}") ${caseMatch?'✅':'❌'}\n`+
+        `ربط المندوب: delegateId="${r.delegateId||'(فاضي)'}" (اليوزر: "${_user.id||'(فاضي)'}") | اسم مسجّل: "${r.delegate||'(فاضي)'}" (اسمك: "${_user.name}") تطابق اسم=${nameMatch?'✅':'❌'} → ${overallMatch?'✅ الحالة هتظهر عندك':'❌ الحالة مش هتظهر عندك — دي حالة الاختفاء'}\n`+
         clLine;
     });
     alert(`لقيت ${matches.length} نتيجة:\n\n`+lines.join('\n\n———————————\n\n'));
