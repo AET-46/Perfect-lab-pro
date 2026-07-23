@@ -48,24 +48,70 @@
 </script>
 <style>
 :root{--bg:#0a0c10;--bg2:#111318;--bg3:#1a1d24;--bg4:#22252f;--border:#2a2e3a;--border2:#353a48;--text:#e8eaf0;--text2:#9aa0b4;--text3:#5c6278;--gold:#c9a84c;--gold2:#e8c96a;--blue:#3b82f6;--blue2:#60a5fa;--green:#22c55e;--red:#ef4444;--orange:#f97316;--purple:#a855f7;--teal:#14b8a6;--sidebar-w:250px;--top-h:56px}
-.theme-light{--bg:#f0f2f7;--bg2:#fff;--bg3:#f5f6fa;--bg4:#eaecf4;--border:#dde0ee;--border2:#c5c9e0;--text:#1a1d2e;--text2:#5c6280;--text3:#9aa0b8;--gold:#b8922a;--gold2:#c9a84c;--blue:#2563eb;--blue2:#3b82f6;--green:#16a34a;--red:#dc2626;--orange:#ea580c;--purple:#9333ea;--teal:#0d9488}
-.theme-qasetly{--bg:#eef1f7;--bg2:#ffffff;--bg3:#f4f6fb;--bg4:#e9edf5;--border:#e1e5f0;--border2:#c9cfe0;--text:#16213e;--text2:#5b6478;--text3:#98a1b5;--gold:#0f766e;--gold2:#14b8a6;--blue:#2563eb;--blue2:#3b82f6;--green:#20b358;--red:#dc2626;--orange:#ea580c;--purple:#9333ea;--teal:#0f766e}
-/* ===== نظام تصميم قشطلي — كروت وأزرار وحقول بروح التصميم المرجعي ===== */
-body.theme-qasetly .card{border:1px solid var(--border);border-radius:16px;box-shadow:0 1px 3px rgba(15,30,60,.06),0 1px 2px rgba(15,30,60,.04)}
-body.theme-qasetly .card-head::after{background:linear-gradient(to left,var(--teal),var(--green))}
-body.theme-qasetly .btn{border-radius:10px}
-body.theme-qasetly .btn-gold{background:linear-gradient(135deg,var(--green),#16a34a);color:#fff}
-body.theme-qasetly .btn-teal{background:linear-gradient(135deg,var(--teal),var(--gold2));color:#fff}
-body.theme-qasetly .ua{border-radius:10px;background:linear-gradient(135deg,var(--teal),var(--green));color:#fff}
-body.theme-qasetly .user-chip{border-radius:10px}
-body.theme-qasetly .search-box input{border-radius:20px;background:var(--bg2);border-color:var(--border2)}
-body.theme-qasetly input[type=text],body.theme-qasetly input[type=number],body.theme-qasetly input[type=date],body.theme-qasetly input[type=tel],body.theme-qasetly input[type=email],body.theme-qasetly input[type=password],body.theme-qasetly select,body.theme-qasetly textarea{border-radius:9px}
-body.theme-qasetly .badge{border-radius:20px;font-weight:800}
-body.theme-qasetly tr:hover td{background:rgba(15,118,110,.05)}
-body.theme-qasetly .dg-subtab.on,body.theme-qasetly .tab.on{color:var(--teal);border-bottom-color:var(--green)}
-body.theme-qasetly .master-tab.on{background:linear-gradient(135deg,rgba(15,118,110,.1),transparent);border-color:var(--teal);color:var(--teal)}
-body.theme-qasetly .sidebar-cover-ph{background:linear-gradient(135deg,#0f766e 0%,#134e6f 50%,#0d3b52 100%)}
-body.theme-qasetly .empty .ei{filter:grayscale(.2) opacity(.7)}
+.theme-light{--bg:#f0f2f7;--bg2:#fff;--bg3:#f5f6fa;--bg4:#eaecf4;--border:#c9cee2;--border2:#a8afd0;--text:#12141f;--text2:#3d4260;--text3:#6b7290;--gold:#b8922a;--gold2:#c9a84c;--blue:#2563eb;--blue2:#3b82f6;--green:#16a34a;--red:#dc2626;--orange:#ea580c;--purple:#9333ea;--teal:#0d9488}
+.theme-glass{--bg:#0a0e1c;--bg2:rgba(255,255,255,.86);--bg3:rgba(255,255,255,.94);--bg4:rgba(237,242,255,.92);--border:rgba(37,99,235,.24);--border2:rgba(37,99,235,.42);--text:#0d1220;--text2:#333c5c;--text3:#5c688f;--gold:#2563eb;--gold2:#3b82f6;--blue:#2563eb;--blue2:#60a5fa;--green:#16a34a;--red:#dc2626;--orange:#ea580c;--purple:#9333ea;--teal:#2563eb}
+/* ===== نظام تصميم زجاجي (Glass) — كحلي غامق + كروت زجاجية شفافة + أزرق/أخضر/أحمر بروح لوحة تحكم عصرية ===== */
+body.theme-glass{background:
+    radial-gradient(1100px 700px at 88% -8%, rgba(37,99,235,.35), transparent 60%),
+    radial-gradient(900px 600px at -10% 15%, rgba(37,99,235,.18), transparent 55%),
+    radial-gradient(1200px 800px at 50% 115%, rgba(22,163,74,.12), transparent 60%),
+    linear-gradient(160deg,#0a0e1c 0%,#0c1226 45%,#0a0e1c 100%)}
+body.theme-glass .card,body.theme-glass .sidebar,body.theme-glass .topbar,body.theme-glass .modal,
+body.theme-glass .stat,body.theme-glass .stat-card,body.theme-glass .notif-card,body.theme-glass .tabs,
+body.theme-glass .dg-subtabs,body.theme-glass #page-memo-panel,body.theme-glass #row-detail-modal .rdm-box,
+body.theme-glass .conf-box,body.theme-glass #pg-fixed-assets .fa2-panel,body.theme-glass #pg-fixed-assets .fa2-card{
+  backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);
+  box-shadow:0 8px 32px rgba(10,14,28,.18),inset 0 1px 0 rgba(255,255,255,.5)}
+body.theme-glass .card{border:1px solid var(--border);border-radius:18px;box-shadow:0 8px 32px rgba(10,14,28,.16),inset 0 1px 0 rgba(255,255,255,.55)}
+body.theme-glass .card-head::after{background:linear-gradient(to left,var(--blue),var(--green))}
+body.theme-glass .btn{border-radius:12px}
+body.theme-glass .btn-gold{background:linear-gradient(135deg,var(--blue),#1d4ed8);color:#fff;box-shadow:0 4px 14px rgba(37,99,235,.35)}
+body.theme-glass .btn-teal{background:linear-gradient(135deg,var(--blue),var(--green));color:#fff}
+body.theme-glass .btn-green{box-shadow:0 4px 14px rgba(22,163,74,.3)}
+body.theme-glass .ua{border-radius:12px;background:linear-gradient(135deg,var(--blue),var(--green));color:#fff}
+body.theme-glass .user-chip{border-radius:12px}
+body.theme-glass .search-box input{border-radius:20px;background:var(--bg3);border-color:var(--border2)}
+body.theme-glass input[type=text],body.theme-glass input[type=number],body.theme-glass input[type=date],body.theme-glass input[type=tel],body.theme-glass input[type=email],body.theme-glass input[type=password],body.theme-glass select,body.theme-glass textarea{border-radius:10px;background:var(--bg3)}
+body.theme-glass .badge{border-radius:20px;font-weight:800}
+body.theme-glass tr:hover td{background:rgba(37,99,235,.06)}
+body.theme-glass .dg-subtab.on,body.theme-glass .tab.on{color:var(--blue);border-bottom-color:var(--green)}
+body.theme-glass .master-tab.on{background:linear-gradient(135deg,rgba(37,99,235,.12),transparent);border-color:var(--blue);color:var(--blue)}
+body.theme-glass .sidebar-cover-ph{background:linear-gradient(135deg,#2563eb 0%,#1e3a8a 55%,#0b1220 100%)}
+body.theme-glass .empty .ei{filter:grayscale(.2) opacity(.7)}
+/* FIX: .ph sits directly on the dark glass backdrop (not a light glass card), so
+   btn-ghost's default var(--text) (dark, meant for light cards) was unreadable here. */
+body.theme-glass .ph .btn-ghost{color:#eef2ff;border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.06)}
+body.theme-glass .ph .btn-ghost:hover{color:#fff;border-color:var(--blue2);background:rgba(255,255,255,.12)}
+body.theme-glass ::-webkit-scrollbar-track{background:transparent}
+/* ===== FIX #BLACK-GLASS-DEFAULT: الثيمة الأولى (الافتراضية) أسود زجاجي بدل أسود لامع =====
+   نفس منطق .theme-glass (خلفيات شفافة + ضبابية) لكن بدرجات سوداء/ذهبية بدل الأزرق الفاتح.
+   الحدود body:not(.theme-light):not(.theme-glass) بتستثني الثيمتين التانيتين فتنطبق بس على
+   الافتراضية، ومحطوطة بعد قاعدة .theme-glass عشان الترتيب في الكاسكيد يكون واضح. */
+body:not(.theme-light):not(.theme-glass){
+  --bg2:rgba(17,19,24,.62);--bg3:rgba(26,29,36,.72);--bg4:rgba(34,37,47,.78);
+  background:
+    radial-gradient(1100px 700px at 88% -8%,rgba(201,168,76,.10),transparent 60%),
+    radial-gradient(900px 600px at -8% 12%,rgba(59,130,246,.05),transparent 55%),
+    radial-gradient(1200px 800px at 50% 115%,rgba(34,197,94,.04),transparent 60%),
+    linear-gradient(160deg,#0a0c10 0%,#0d0f14 45%,#0a0c10 100%);
+  background-attachment:fixed;
+}
+body:not(.theme-light):not(.theme-glass) .card,
+body:not(.theme-light):not(.theme-glass) .sidebar,
+body:not(.theme-light):not(.theme-glass) .modal,
+body:not(.theme-light):not(.theme-glass) .stat,
+body:not(.theme-light):not(.theme-glass) .stat-card,
+body:not(.theme-light):not(.theme-glass) .notif-card,
+body:not(.theme-light):not(.theme-glass) .tabs,
+body:not(.theme-light):not(.theme-glass) .dg-subtabs,
+body:not(.theme-light):not(.theme-glass) #page-memo-panel,
+body:not(.theme-light):not(.theme-glass) #row-detail-modal .rdm-box,
+body:not(.theme-light):not(.theme-glass) .conf-box{
+  backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);
+  box-shadow:0 8px 28px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.04);
+}
+body:not(.theme-light):not(.theme-glass) .sidebar{border-left:1px solid rgba(201,168,76,.16)}
+body:not(.theme-light):not(.theme-glass) .modal{border:1px solid rgba(201,168,76,.2)}
 /* ===== ROW DETAIL MODAL ===== */
 #row-detail-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);z-index:2000;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .2s}
 #row-detail-modal.open{opacity:1;pointer-events:all}
@@ -91,8 +137,8 @@ tr.row-returned-from-proof{background:rgba(249,115,22,.08)!important;border-righ
 /* FIX #CASE-GROUP-COMPACT: خلية بيانات العميل المشتركة (rowspan) بقت مضغوطة الحجم
    بدل ما تاخد نفس ارتفاع الصف الطبيعي بالكامل — مع الحفاظ على إمكانية تحديد كل نوع
    بمفرده عن طريق الـ checkbox الخاص بيه (rowClick) */
-.grp-shared-compact{padding:6px 10px!important;font-size:11px;line-height:1.5}
-.grp-shared-compact strong{font-size:12px}
+.grp-shared-compact{padding:6px 10px!important;font-size:12.5px;line-height:1.6}
+.grp-shared-compact strong{font-size:14px;color:var(--text);font-weight:800}
 /* FIX #CASE-GROUP-BOX-HEADER: صندوق مضغوط لبيانات الحالة المرتبطة + صفوف عادية الحجم تحته */
 tr.case-grp-head-row td{padding:0!important;border-bottom:none!important}
 .grp-head-box{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
@@ -123,25 +169,29 @@ tr.row-duplicate:hover{background:rgba(234,179,8,.16)!important}
    خطوة، والخط بينها يتلوّن كل ما الخطوة تخلص، بيانات من node تقدم الفنيين
    (tech_progress) اللي بتكتبه أداة "خطوات الفنيين" المستقلة. */
 .tp-dots{display:inline-flex;align-items:center;margin-top:6px;cursor:help;vertical-align:middle}
-.tp-dot2{width:9px;height:9px;border-radius:50%;background:var(--bg4);border:2px solid var(--border2);flex-shrink:0}
+.tp-dot2{width:11px;height:11px;border-radius:50%;background:#fff;border:2.5px solid #94a3b8;flex-shrink:0;box-shadow:0 0 0 1px rgba(0,0,0,.08)}
 .tp-dot2.tp-on{background:var(--teal);border-color:var(--teal)}
 .tp-dot2.tp-mid{background:var(--orange);border-color:var(--orange)}
-.tp-line{height:2px;width:14px;background:var(--bg4)}
+.tp-line{height:2.5px;width:14px;background:#94a3b8}
 .tp-line.tp-on{background:var(--teal)}
+body.theme-glass .tp-dot2,body.theme-light .tp-dot2{background:#e2e8f0;border-color:#94a3b8}
+body.theme-glass .tp-dot2.tp-on,body.theme-light .tp-dot2.tp-on{background:var(--teal);border-color:var(--teal)}
+body.theme-glass .tp-dot2.tp-mid,body.theme-light .tp-dot2.tp-mid{background:var(--orange);border-color:var(--orange)}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
-body{font-family:"Cairo",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body{font-family:"Cairo",sans-serif;font-weight:700;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
 /* FIX-LAYOUT: main must offset by sidebar width on desktop */
-.app{display:flex;min-height:100vh;min-height:-webkit-fill-available;}
-.main{margin-right:var(--sidebar-w);display:flex;flex-direction:column;height:100vh;height:-webkit-fill-available;height:100dvh;overflow:hidden;flex:1;min-width:0;max-width:calc(100vw - var(--sidebar-w));}
+.app{display:flex;min-height:100vh;min-height:-webkit-fill-available;width:100%;overflow-x:hidden}
+html{overflow-x:hidden}
+.main{margin-right:var(--sidebar-w);display:flex;flex-direction:column;height:100vh;height:-webkit-fill-available;height:100dvh;overflow:hidden;flex:1;min-width:0;}
 /* FIX: sidebar pointer-events on mobile — CSS handles it, no JS needed */
-@media(max-width:700px){.sidebar{pointer-events:none}.sidebar.mob{pointer-events:auto}}
+@media(max-width:820px){.sidebar{pointer-events:none}.sidebar.mob{pointer-events:auto}}
 
 /* ===== MODERN SIDEBAR ===== */
 .sidebar{width:var(--sidebar-w);background:var(--bg2);border-left:1px solid var(--border);position:fixed;top:0;right:0;bottom:0;z-index:85;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--border2) transparent;-webkit-overflow-scrolling:touch;transition:transform .3s cubic-bezier(.4,0,.2,1)}
 .sidebar.desktop-hidden{transform:translate3d(105%,0,0)}
 .main{transition:margin-right .3s cubic-bezier(.4,0,.2,1)}
-.main.sidebar-collapsed{margin-right:0!important;max-width:100vw!important}
+.main.sidebar-collapsed{margin-right:0!important;max-width:none!important}
 .sidebar-overlay.desktop-show{display:block}
 .sidebar::-webkit-scrollbar{width:3px}
 .sidebar::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
@@ -179,18 +229,18 @@ body{font-family:"Cairo",sans-serif;background:var(--bg);color:var(--text);min-h
 .nav-standalone:hover{background:var(--bg3);color:var(--text)}
 .nav-standalone.active{background:linear-gradient(90deg,rgba(201,168,76,.15),transparent);color:var(--gold2);border-right:3px solid var(--gold)}
 .nav-standalone .ni{font-size:15px;width:20px;text-align:center;flex-shrink:0}
-.topbar{height:var(--top-h);background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:10px;position:sticky;top:0;z-index:90}
-.page-title{font-weight:800;font-size:16px;flex:1}
-.tb-btn{width:34px;height:34px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--text2);transition:all .15s}
+.topbar{height:var(--top-h);background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:10px;position:sticky;top:0;z-index:90;overflow:hidden}
+.page-title{font-weight:800;font-size:16px;flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.tb-btn{width:34px;height:34px;flex-shrink:0;background:var(--bg3);border:1px solid var(--border);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--text2);transition:all .15s}
 .tb-btn:hover{border-color:var(--gold);color:var(--gold)}
-.theme-dots{display:flex;gap:4px}
-.td{width:18px;height:18px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s}
+.theme-dots{display:flex;gap:4px;flex-shrink:0}
+.td{width:18px;height:18px;flex-shrink:0;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s}
 .td.on{border-color:var(--gold);transform:scale(1.2)}
-.user-chip{display:flex;align-items:center;gap:7px;padding:5px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;cursor:pointer}
+.user-chip{display:flex;align-items:center;gap:7px;padding:5px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;cursor:pointer;flex-shrink:0}
 .ua{width:26px;height:26px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#000}
 .content{flex:1;padding:18px;padding-bottom:140px;overflow-y:auto;overflow-x:hidden;height:0;min-height:0;-webkit-overflow-scrolling:touch;-webkit-flex:1;}
 /* ===== PAGE MEMO BUTTON (topbar) ===== */
-#page-memo-btn{position:relative;width:34px;height:34px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--text2);transition:all .15s}
+#page-memo-btn{position:relative;width:34px;height:34px;flex-shrink:0;background:var(--bg3);border:1px solid var(--border);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--text2);transition:all .15s}
 #page-memo-btn:hover{border-color:var(--gold);color:var(--gold)}
 #page-memo-btn.has-memo{border-color:rgba(245,158,11,.5);color:var(--gold);background:rgba(245,158,11,.1)}
 #page-memo-btn .pm-badge{position:absolute;top:-4px;left:-4px;background:var(--red);color:#fff;border-radius:8px;font-size:8px;font-weight:900;padding:0 4px;min-width:14px;height:14px;display:none;align-items:center;justify-content:center}
@@ -227,7 +277,7 @@ body{font-family:"Cairo",sans-serif;background:var(--bg);color:var(--text);min-h
 .ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px;flex-wrap:wrap}
 .ph h2{font-weight:800;font-size:19px}
 .btn-row{display:flex;gap:7px;flex-wrap:wrap}
-.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:7px;border:none;cursor:pointer;font-family:"Cairo",sans-serif;font-size:12px;font-weight:600;transition:all .15s;white-space:nowrap}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:7px;border:none;cursor:pointer;font-family:"Cairo",sans-serif;font-size:13px;font-weight:700;transition:all .15s;white-space:nowrap}
 .btn:hover{opacity:.9;transform:translateY(-1px)}.btn:active{transform:translateY(1px);opacity:.8}
 .btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000}
 .btn-blue{background:var(--blue);color:#fff}.btn-green{background:var(--green);color:#fff}
@@ -253,15 +303,15 @@ input[type=date]::-webkit-calendar-picker-indicator:hover{background:rgba(201,16
 .search-icon{position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:12px;pointer-events:none}
 .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;/* FIX #TOUCH-SCROLL: السماح للمستخدم بالتمرير العمودي للصفحة حتى عند لمس الجدول */touch-action:pan-y pan-x}
 table{width:100%;border-collapse:collapse;touch-action:pan-y pan-x}
-thead{background:var(--bg3)}
-th{padding:9px 13px;text-align:right;font-size:11px;font-weight:700;color:var(--text3);border-bottom:1px solid var(--border);white-space:nowrap}
-td{padding:10px 13px;font-size:12px;border-bottom:1px solid var(--border)}
+thead{background:var(--bg4)}
+th{padding:11px 13px;text-align:right;font-size:12.5px;font-weight:800;color:var(--text);border-bottom:2px solid var(--border2);white-space:nowrap;letter-spacing:.2px}
+td{padding:11px 13px;font-size:13.5px;font-weight:700;color:var(--text);border-bottom:1px solid var(--border)}
 tr:last-child td{border-bottom:none}
 tbody tr{transition:background .12s}tbody tr:hover td{background:var(--bg3)}
 tbody tr.selected td{background:rgba(201,168,76,.1);transition:background .15s}
 .chk-col{width:34px;text-align:center}
 input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:pointer}
-.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700}
 .bg-gold{background:rgba(201,168,76,.15);color:var(--gold2)}
 .bg-green{background:rgba(34,197,94,.15);color:var(--green)}
 .bg-red{background:rgba(239,68,68,.15);color:var(--red)}
@@ -276,7 +326,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 
 /* ============ FIXED ASSETS — REDESIGN v2 (تصميم مستقل عن باقي النظام) ============ */
 #pg-fixed-assets{--fa-glass:rgba(255,255,255,.045);--fa-glass2:rgba(255,255,255,.08);--fa-line:rgba(255,255,255,.1);--fa-violet:#8b5cf6;--fa-emerald:#10e0a0;--fa-amber:#f5c045}
-.theme-light #pg-fixed-assets,.theme-qasetly #pg-fixed-assets{--fa-glass:rgba(20,25,45,.04);--fa-glass2:rgba(20,25,45,.07);--fa-line:rgba(20,25,45,.12)}
+.theme-light #pg-fixed-assets,.theme-glass #pg-fixed-assets{--fa-glass:rgba(20,25,45,.04);--fa-glass2:rgba(20,25,45,.07);--fa-line:rgba(20,25,45,.12)}
 #pg-fixed-assets{background:radial-gradient(1100px 480px at 12% -10%,rgba(139,92,246,.14),transparent),radial-gradient(900px 460px at 100% 0%,rgba(16,224,160,.10),transparent);border-radius:18px;padding:16px;margin:-6px}
 #pg-fixed-assets .fa2-hero{position:relative;border-radius:22px;padding:26px 28px;margin-bottom:18px;background:linear-gradient(135deg,#0d1224 0%,#171b33 55%,#0f1a22 100%);border:1px solid var(--fa-line);overflow:hidden}
 #pg-fixed-assets .fa2-hero::before{content:'';position:absolute;inset:0;background:linear-gradient(120deg,transparent 40%,rgba(139,92,246,.16) 55%,transparent 72%);pointer-events:none}
@@ -380,10 +430,12 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 .rate-input{width:64px;padding:4px 6px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-family:Cairo,sans-serif;font-size:12px;text-align:center}
 .rate-default{color:var(--text3);font-size:10px}
 .rate-custom{color:var(--gold2);font-size:10px}
-.cat-tabs{margin:0 0 10px;padding:0 2px;flex-wrap:wrap}
-.cat-tabs .tab{padding:6px 11px;font-size:11.5px}
+.cat-tabs{margin:0 0 10px;padding:5px 7px;flex-wrap:wrap;background:var(--bg);border-color:var(--border2);border-radius:11px}
+.cat-tabs .tab{padding:6px 11px;font-size:11.5px;color:var(--text2)}
 .cat-tabs .cat-cnt{font-size:9.5px;color:var(--text3);margin-right:3px}
 .cat-tabs .tab.on .cat-cnt{color:var(--gold2)}
+body.theme-light .cat-tabs{background:var(--bg4)}
+body.theme-glass .cat-tabs{background:rgba(37,99,235,.07);border-color:rgba(37,99,235,.22)}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg4);border:1px solid var(--border2);border-radius:9px;padding:10px 20px;font-size:13px;font-weight:600;z-index:999;opacity:0;transition:all .3s;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.ok{border-color:var(--green);color:var(--green)}.toast.err{border-color:var(--red);color:var(--red)}
@@ -424,7 +476,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 .dg-transfer-box.bulk .ttl{color:var(--orange)}
 .dg-mini-sel{flex:1;min-width:120px;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:6px 9px;border-radius:6px;font-size:11px;font-family:'Cairo',sans-serif}
 /* FIX #55: print CSS consolidated below near invoice styles */
-@media(max-width:700px){#bal-print-area{grid-template-columns:1fr!important}:root{--sidebar-w:0}.overlay{right:0!important}.sidebar{transform:translate3d(105%,0,0);transition:transform .3s cubic-bezier(.4,0,.2,1)}.sidebar.mob{transform:translate3d(0,0,0);width:280px;box-shadow:-12px 0 40px rgba(0,0,0,.5);z-index:1200}
+@media(max-width:820px){#bal-print-area{grid-template-columns:1fr!important}:root{--sidebar-w:0}.overlay{right:0!important}.sidebar{transform:translate3d(105%,0,0);transition:transform .3s cubic-bezier(.4,0,.2,1)}.sidebar.mob{transform:translate3d(0,0,0);width:280px;box-shadow:-12px 0 40px rgba(0,0,0,.5);z-index:1200}
 /* FIX #ANDROID-SCROLL-V2: استبدال height:0+overflow:hidden بـ height:auto لحل مشكلة Android */
 .main{margin-right:0!important;height:auto!important;min-height:100dvh!important;overflow:visible!important;}
 .content{height:auto!important;min-height:calc(100dvh - var(--top-h))!important;overflow-y:visible!important;overflow-x:hidden!important;padding-bottom:160px!important;}
@@ -572,7 +624,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 .login-btn:active{transform:translateY(0)}
 .login-hint{margin-top:16px;font-size:10px;color:var(--text3)}
 .user-chip{cursor:pointer;position:relative}
-.user-menu{position:absolute;top:calc(100% + 8px);left:0;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:6px;min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:500;display:none}
+.user-menu{position:absolute;top:calc(100% + 8px);right:0;left:auto;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:6px;min-width:160px;max-width:calc(100vw - 24px);box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:500;display:none}
 .user-chip:hover .user-menu,.user-chip:focus-within .user-menu{display:block}
 .user-menu-item{padding:8px 12px;border-radius:7px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:8px;color:var(--text2);transition:background .12s}
 .user-menu-item:hover{background:var(--bg3);color:var(--text)}
@@ -644,7 +696,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 .nqp-add input{flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:7px 11px;border-radius:8px;font-family:Cairo,sans-serif;font-size:12px;outline:none;direction:rtl}
 .nqp-add input:focus{border-color:rgba(245,158,11,.5)}
 .nqp-send{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#f59e0b,#d97706);border:none;cursor:pointer;color:#fff;font-size:14px;display:flex;align-items:center;justify-content:center}
-@media(max-width:700px){#note-quick-panel{width:calc(100vw - 20px);left:10px}#note-fab{bottom:90px;left:18px}}
+@media(max-width:820px){#note-quick-panel{width:auto;left:10px;right:10px}#note-fab{bottom:90px;left:18px}}
 
 /* AI Panel */
 #ai-panel{
@@ -766,9 +818,63 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 .ai-api-setup p{font-size:11px;color:var(--text2);margin-bottom:12px;line-height:1.8}
 .ai-api-setup input{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:9px;font-family:"Cairo",monospace;font-size:11px;outline:none;direction:ltr;margin-bottom:10px;transition:border-color .15s}
 .ai-api-setup input:focus{border-color:rgba(99,102,241,.5)}
-@media(max-width:700px){
-  #ai-panel{width:calc(100vw - 16px);left:8px;bottom:88px;max-height:75vh}
+@media(max-width:820px){
+  #ai-panel{width:auto;left:8px;right:8px;bottom:88px;max-height:75vh}
   #ai-fab{bottom:20px;left:14px;width:52px;height:52px;font-size:22px}
+}
+
+/* ===== FIX: الشريط العلوي (topbar) — كل الأيقونات/الأدوات في سطر واحد مضغوط، وعنوان الصفحة في سطر مستقل تحته ===== */
+@media(max-width:820px){
+  .topbar{
+    height:auto!important;
+    min-height:var(--top-h);
+    flex-wrap:wrap!important;
+    overflow:visible!important;
+    row-gap:6px;
+    column-gap:5px;
+    padding:6px 10px;
+    position:sticky;
+    top:0;
+  }
+  .topbar > *{flex-shrink:0}
+
+  /* عنوان الصفحة: سطر مستقل بعرض كامل تحت صف الأدوات */
+  .topbar .page-title{
+    order:99;
+    flex:1 1 100%!important;
+    width:100%;
+    white-space:normal;
+    overflow:visible;
+    text-overflow:clip;
+    font-size:15px;
+    margin-top:0;
+  }
+
+  /* FIX #TOPBAR-MENU-SIZE: تكبير زر القايمة الثلاثية (الهامبرجر) واستغلال المساحة الفاضية في الشريط */
+  .topbar .tb-btn{width:44px;height:44px;font-size:21px;border-radius:9px}
+
+  /* شريحة المستخدم: نظهر الاسم كامل (مع حد أقصى للعرض) بدل ما نخفيه */
+  .topbar .user-chip{padding:4px 6px;gap:6px}
+  .topbar .user-chip #top-uname{display:inline-block;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
+  .topbar .user-chip .ua{width:24px;height:24px;font-size:10px}
+
+  /* شارة الإصدار v25: بادينج أصغر */
+  .topbar #tb-version-badge{padding:2px 5px;font-size:8px}
+
+  /* حالة اتصال Firebase: نظهر النص كامل (جاري الاتصال / متصل / غير متصل) */
+  .topbar #fb-status{width:auto;padding:2px 7px;overflow:visible;white-space:nowrap;text-overflow:clip;font-size:9px;text-align:center}
+
+  /* التحكم بالزوم: نخفي نسبة الـ % ونسيب زراير -/+ بس */
+  .topbar .zoom-ctrl{padding:1px;gap:0}
+  .topbar .zoom-ctrl button{width:20px!important;height:20px!important;font-size:13px!important}
+  .topbar .zoom-ctrl #zoom-pct{display:none}
+
+  /* نقاط الثيمات: أصغر شوية */
+  .topbar .theme-dots{gap:3px}
+  .topbar .theme-dots .td{width:14px;height:14px}
+
+  /* الحاوية اللي فيها الزوم + الثيمات */
+  .topbar > div[style*="display:flex"]{gap:5px!important}
 }
 
 @page{margin:1.5cm;size:A4}
@@ -810,6 +916,14 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
   height:1px;
   background:linear-gradient(90deg,transparent 0%,rgba(201,168,76,.35) 30%,rgba(201,168,76,.6) 50%,rgba(201,168,76,.35) 70%,transparent 100%);
 }
+/* FIX #TOPBAR-BLACK-GLASS: تأثير زجاجي أسود للشريط العلوي في الثيمة الافتراضية (الداكنة) مع حدود واضحة */
+body:not(.theme-light):not(.theme-glass) .topbar{
+  background:linear-gradient(160deg, rgba(15,17,22,.72) 0%, rgba(7,8,12,.92) 100%);
+  backdrop-filter:blur(16px) saturate(150%);
+  -webkit-backdrop-filter:blur(16px) saturate(150%);
+  border-bottom:1px solid rgba(201,168,76,.45);
+  box-shadow:0 1px 0 rgba(201,168,76,.18), 0 8px 26px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.05);
+}
 
 /* Sidebar — deeper shadow + subtle grain */
 .sidebar{
@@ -834,11 +948,11 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 
 /* Page heading highlight */
 .ph h2{
-  background:linear-gradient(135deg,var(--text) 0%,var(--gold2) 100%);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  background-clip:text;
+  color:var(--gold2);
+  font-weight:800;
 }
+body.theme-light .ph h2{color:var(--text)}
+body.theme-glass .ph h2{color:var(--blue2)}
 
 /* Sidebar logo glow pulse */
 .logo-icon{
@@ -884,7 +998,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 @keyframes toast-out{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(-10px) scale(.95)}}
 
 /* Mobile: hamburger button — golden on mobile */
-@media(max-width:700px){
+@media(max-width:820px){
   .tb-btn:first-child{
     color:var(--gold);
     border-color:rgba(201,168,76,.3);
@@ -902,7 +1016,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 .sel-search-wrap select{border-radius:0 0 9px 9px!important}
 </style>
 </head>
-<body>
+<body class="theme-glass">
 <!-- ===== LOGIN SCREEN ===== -->
 <div id="login-screen">
   <div class="login-box">
@@ -1118,29 +1232,30 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 <main class="main">
   <header class="topbar">
     <button class="tb-btn" onclick="openSidebar()">&#x2630;</button>
-    <div class="page-title" id="ptitle">&#x644;&#x648;&#x62D;&#x629; &#x627;&#x644;&#x62A;&#x62D;&#x643;&#x645;</div>
-    <span style="font-size:9px;padding:2px 7px;background:rgba(201,168,76,.15);color:var(--gold);border-radius:10px;border:1px solid rgba(201,168,76,.3);font-weight:700;letter-spacing:.5px">v25</span>
-    <span id="fb-status" title="حالة الاتصال بـ Firebase" style="font-size:9px;padding:2px 7px;border-radius:10px;border:1px solid rgba(100,100,100,.3);background:rgba(100,100,100,.1);color:var(--text3);font-weight:700">⏳ جاري الاتصال</span>
-    <div style="display:flex;align-items:center;gap:8px">
-      <!-- PAGE MEMO BUTTON -->
-      <button id="page-memo-btn" onclick="togglePageMemo()" title="مذكرة هذه الصفحة">
-        🗒️<span class="pm-badge" id="pm-badge">0</span>
-      </button>
-      <div class="theme-dots">
-        <div class="td on" style="background:#c9a84c" onclick="setTheme('')"></div>
-        <div class="td" style="background:#e8eaf0;border:1px solid #ccc" onclick="setTheme('theme-light')"></div>
-        <div class="td" style="background:linear-gradient(135deg,#0f766e,#20b358);border:1px solid #0f766e" onclick="setTheme('theme-qasetly')" title="قشطلي"></div>
-      </div>
-      <div class="user-chip" tabindex="0">
-        <div class="ua" id="top-avatar">م</div><span style="font-size:12px;font-weight:600" id="top-uname">المدير</span>
-        <div class="user-menu">
-          <div style="padding:8px 12px;border-bottom:1px solid var(--border);margin-bottom:4px">
-            <div style="font-size:12px;font-weight:700;color:var(--text)" id="menu-uname">المدير</div>
-            <div class="user-role-badge" id="menu-role">مدير</div>
-          </div>
-          <div class="user-menu-item" onclick="openChangePass()">🔑 تغيير كلمة المرور</div>
-          <div class="user-menu-item" onclick="doLogout()">🚪 تسجيل الخروج</div>
+    <div class="user-chip" tabindex="0">
+      <div class="ua" id="top-avatar">م</div><span style="font-size:12px;font-weight:600" id="top-uname">المدير</span>
+      <div class="user-menu">
+        <div style="padding:8px 12px;border-bottom:1px solid var(--border);margin-bottom:4px">
+          <div style="font-size:12px;font-weight:700;color:var(--text)" id="menu-uname">المدير</div>
+          <div class="user-role-badge" id="menu-role">مدير</div>
         </div>
+        <div class="user-menu-item" onclick="openChangePass()">🔑 تغيير كلمة المرور</div>
+        <div class="user-menu-item" onclick="doLogout()">🚪 تسجيل الخروج</div>
+      </div>
+    </div>
+    <div class="page-title" id="ptitle">&#x644;&#x648;&#x62D;&#x629; &#x627;&#x644;&#x62A;&#x62D;&#x643;&#x645;</div>
+    <span id="tb-version-badge" style="flex-shrink:0;font-size:9px;padding:2px 7px;background:rgba(201,168,76,.15);color:var(--gold);border-radius:10px;border:1px solid rgba(201,168,76,.3);font-weight:700;letter-spacing:.5px">v25</span>
+    <span id="fb-status" title="حالة الاتصال بـ Firebase" style="flex-shrink:0;font-size:9px;padding:2px 7px;border-radius:10px;border:1px solid rgba(100,100,100,.3);background:rgba(100,100,100,.1);color:var(--text3);font-weight:700">⏳ جاري الاتصال</span>
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:1;min-width:0;overflow:hidden">
+      <div class="zoom-ctrl" style="display:flex;align-items:center;gap:2px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:2px;flex-shrink:0" title="حجم عرض الشاشة">
+        <button onclick="zoomOut()" style="width:24px;height:24px;border:none;background:none;color:var(--text2);font-size:15px;font-weight:800;cursor:pointer;line-height:1;border-radius:6px" title="تصغير">−</button>
+        <span id="zoom-pct" onclick="zoomReset()" style="font-size:10px;color:var(--text3);min-width:32px;text-align:center;cursor:pointer;user-select:none" title="استعادة الحجم الأصلي (100%)">100%</span>
+        <button onclick="zoomIn()" style="width:24px;height:24px;border:none;background:none;color:var(--text2);font-size:15px;font-weight:800;cursor:pointer;line-height:1;border-radius:6px" title="تكبير">+</button>
+      </div>
+      <div class="theme-dots">
+        <div class="td" style="background:linear-gradient(135deg,#0a0c10,#1a1d24 55%,#c9a84c 140%);border:1px solid rgba(201,168,76,.5)" onclick="setTheme('')" title="أسود زجاجي"></div>
+        <div class="td" style="background:#e8eaf0;border:1px solid #ccc" onclick="setTheme('theme-light')"></div>
+        <div class="td on" style="background:linear-gradient(135deg,#0a0e1c,#2563eb 60%,#16a34a);border:1px solid #1d4ed8" onclick="setTheme('theme-glass')" title="زجاجي"></div>
       </div>
     </div>
   </header>
@@ -1591,7 +1706,6 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
       <div id="tech-rep-stats" class="stats" style="margin-bottom:14px"></div>
       <div id="tech-rep-out"></div>
     </div>
-  </div>
 
 
     <!-- SALARY REPORT TAB -->
@@ -2246,7 +2360,6 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
           <div id="pnl-rev-breakdown"></div>
         </div>
       </div>
-    </div>
     <div id="pnl-empty" style="text-align:center;padding:40px;color:var(--text3)">
       <div style="font-size:48px;margin-bottom:12px">📈</div>
       <p>اختر الفترة الزمنية وانقر <strong style="color:var(--gold2)">عرض التقرير</strong></p>
@@ -3730,6 +3843,7 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
     <!-- ACTIVITY LOG -->
     <!-- BACKUP -->
     <div id="md-backup" class="ms">
+          <div class="backup-card">
             <div class="bc-icon">📤</div>
             <h4>تصدير نسخة احتياطية</h4>
             <p>احفظ جميع بيانات المختبر في ملف JSON على جهازك</p>
@@ -3764,10 +3878,8 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
           <div class="card-head"><h3>📋 Snapshots المحفوظة</h3><button class="btn btn-ghost btn-sm" onclick="renderBackup()">🔄 تحديث</button></div>
           <div id="snap-list-container"><div class="empty"><div class="ei">📭</div><p>لا توجد snapshots محفوظة</p></div></div>
         </div>
-      </div>
-    </div>
 
-  <!-- ===== DEPT-PRODCAT MAP SECTION ===== -->
+    <!-- ===== DEPT-PRODCAT MAP SECTION ===== -->
   <div id="md-dept-map" class="ms">
     <div class="card">
       <div class="card-head">
@@ -3996,10 +4108,10 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 <!-- ⛔ حالات مكررة (نفس اسم المريض لنفس العميل) — يمنع إضافة حالة جديدة في الدفتر لحد ما تتراجع -->
 <div class="overlay" id="ov-dup-patients">
   <div class="modal modal-lg">
-    <div class="mh"><h3>⛔ حالات مكررة — نفس المريض لنفس العميل</h3><div class="mc-btn" onclick="closeOv('ov-dup-patients')">✕</div></div>
+    <div class="mh"><h3>⛔ حالات مكررة — نفس رقم الحالة لنفس العميل</h3><div class="mc-btn" onclick="closeOv('ov-dup-patients')">✕</div></div>
     <div class="mb">
       <div style="background:var(--bg4);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--text3)">
-        فيه أكتر من حالة بنفس اسم العميل ونفس اسم المريض (دفتر/بروفه/أرشيف) — ده ممكن يبقى تسجيل مكرر غلط وله أثر حسابي. إضافة حالات جديدة في الدفتر متوقفة مؤقتًا لحد ما تراجع كل حالة وتحذف/تعدّل المكرر منها.
+        فيه أكتر من حالة بنفس رقم الحالة (مثل 55/6) لنفس العميل (دفتر/بروفه/أرشيف) — ده ممكن يبقى تسجيل مكرر غلط وله أثر حسابي. إضافة حالات جديدة في الدفتر متوقفة مؤقتًا لحد ما تراجع كل حالة وتحذف/تعدّل المكرر منها.
       </div>
       <div id="dup-patients-list"></div>
     </div>
@@ -6186,7 +6298,7 @@ const pgGroup={
 
 function openSidebar(){
   const sb=document.getElementById('sidebar');
-  const isMobile=window.innerWidth<=700;
+  const isMobile=window.innerWidth<=820;
   if(isMobile){
     sb.classList.add('mob');
     document.getElementById('sidebar-overlay').classList.add('show');
@@ -6207,7 +6319,7 @@ function openSidebar(){
 }
 function closeSidebar(){
   const sb=document.getElementById('sidebar');
-  const isMobile=window.innerWidth<=700;
+  const isMobile=window.innerWidth<=820;
   if(isMobile){
     sb.classList.remove('mob');
     document.getElementById('sidebar-overlay').classList.remove('show');
@@ -6306,9 +6418,9 @@ function goPage(pg, fromHistory){
   // FIX #STICKY-BLANK-GAP: بعض متصفحات أندرويد بتسيب مسافة فاضية فوق الهيدر الـ sticky
   // لو الصفحة اتفتحت من رابط فيه Hash مباشرة (مثلاً #fixed-assets) وكان الكيبورد
   // لسه بيتقفل وقتها — بنصفّر سكرول الـ window كمان مش بس .content، ومحاولة متأخرة إضافية.
-  requestAnimationFrame(()=>{requestAnimationFrame(()=>{const c=document.querySelector('.content');if(c)c.scrollTop=0;window.scrollTo(0,0);});});
-  setTimeout(()=>{const c=document.querySelector('.content');if(c)c.scrollTop=0;window.scrollTo(0,0);},100);
-  setTimeout(()=>{const c=document.querySelector('.content');if(c)c.scrollTop=0;window.scrollTo(0,0);},450);
+  requestAnimationFrame(()=>{requestAnimationFrame(()=>{const c=document.querySelector('.content');if(c)c.scrollTop=0;window.scrollTo(0,0);if(typeof _forceRepaint==='function')_forceRepaint();});});
+  setTimeout(()=>{const c=document.querySelector('.content');if(c)c.scrollTop=0;window.scrollTo(0,0);if(typeof _forceRepaint==='function')_forceRepaint();},100);
+  setTimeout(()=>{const c=document.querySelector('.content');if(c)c.scrollTop=0;window.scrollTo(0,0);if(typeof _forceRepaint==='function')_forceRepaint();},450);
 }
 
 // Event delegation على الـ sidebar كله — أكثر موثوقية من listeners فردية
@@ -8660,7 +8772,7 @@ function openDafter(editId=null){
   if(!editId) _autoFixDuplicateArchiveInvoices();
   // ⛔ قفل إجباري: مينفعش نضيف حالة جديدة لحد ما الحالات المكررة (نفس العميل + نفس المريض) تتراجع
   if(!editId && _findDuplicatePatientCases().length){
-    toast('⛔ في حالات مكررة (نفس العميل والمريض) — لازم تتراجع الأول قبل إضافة حالة جديدة','err');
+    toast('⛔ في حالات مكررة (نفس رقم الحالة لنفس العميل) — لازم تتراجع الأول قبل إضافة حالة جديدة','err');
     _showDuplicatePatientsModal();
     return;
   }
@@ -8767,12 +8879,15 @@ function _findDuplicatePatientCases(){
   const all=[];
   sources.forEach(src=>{
     (DB.get(src.key)||[]).forEach(r=>{
-      if(r.client&&r.noteName) all.push({...r,_src:src.key,_srcLabel:src.label});
+      // المقياس: رقم الحالة (زي 55/6) المستخرج من اسم المريض — مش نص الاسم بالكامل.
+      // لو الاسم اتغيّر أو اتضاف له حاجة لكن الرقم نفسه اتكرر لنفس العميل، برضه تكرار حقيقي.
+      const caseNo=_extractCaseNo(r.noteName);
+      if(r.client&&caseNo) all.push({...r,_src:src.key,_srcLabel:src.label,_caseNo:caseNo});
     });
   });
   const groups={};
   all.forEach(r=>{
-    const key=(r.client||'').trim().toLowerCase()+'|'+(r.noteName||'').trim().toLowerCase();
+    const key=(r.client||'').trim().toLowerCase()+'|'+r._caseNo;
     (groups[key]=groups[key]||[]).push(r);
   });
   return Object.values(groups).filter(list=>list.length>1);
@@ -8785,11 +8900,11 @@ function _showDuplicatePatientsModal(){
     wrap.innerHTML='<div style="text-align:center;color:var(--green);padding:20px;font-weight:700">✅ مفيش حالات مكررة دلوقتي — الإضافة هتشتغل عادي</div>';
   }else{
     wrap.innerHTML=dups.map(list=>{
-      const head=`${esc(list[0].client)} — ${esc(list[0].noteName)}`;
+      const head=`${esc(list[0].client)} — رقم الحالة ${esc(list[0]._caseNo)}`;
       const rows=list.map(r=>`
         <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 10px;border-bottom:1px solid var(--border2)">
           <div>
-            <div style="font-weight:700">${esc(r._srcLabel)} — #${esc(String(r.caseId||'-'))}</div>
+            <div style="font-weight:700">${esc(r._srcLabel)} — #${esc(String(r.caseId||'-'))} — ${esc(r.noteName||'-')}</div>
             <div style="font-size:11px;color:var(--text3)">${esc(r.product||'-')} · ${esc(r.date||'-')} · ${fmt(+r.total||0)} ج.م</div>
           </div>
           <button class="btn btn-sm btn-gold" onclick="_goToDupPatientCase('${r._src}','${esc(r.id)}')">📂 فتح ومراجعة</button>
@@ -8802,7 +8917,7 @@ function _showDuplicatePatientsModal(){
   }
   openOv('ov-dup-patients');
 }
-// يودّي المستخدم لصفحة الحالة المكررة عشان يعدّلها أو يحذفها بنفسه بأدوات الصفحة العادية
+// يودّي المستخدم لصفحة الحالة المكررة ويفتحها هي بالذات مباشرة (مش مجرد الصفحة العامة)
 function _goToDupPatientCase(src,id){
   closeOv('ov-dup-patients');
   openPage(src);
@@ -8810,7 +8925,7 @@ function _goToDupPatientCase(src,id){
     if(src==='dafter'&&typeof openDafter==='function')openDafter(id);
     else if(src==='proof'&&typeof openProof==='function')openProof(id);
     else if(src==='archive'&&typeof openRowDetail==='function')openRowDetail(id,'archive');
-  },150);
+  },250);
 }
 function _showDuplicateInvoicesModal(){
   const dups=_findDuplicateArchiveInvoices();
@@ -8870,7 +8985,7 @@ function saveDafter(){
   if(!_dfId) _autoFixDuplicateArchiveInvoices();
   // ⛔ قفل إجباري احتياطي: لو الفورم كان مفتوح قبل ما حالة مكررة (نفس العميل والمريض) تظهر
   if(!_dfId && _findDuplicatePatientCases().length){
-    toast('⛔ في حالات مكررة (نفس العميل والمريض) — لازم تتراجع الأول قبل إضافة حالة جديدة','err');
+    toast('⛔ في حالات مكررة (نفس رقم الحالة لنفس العميل) — لازم تتراجع الأول قبل إضافة حالة جديدة','err');
     closeOv('ov-dafter');
     _showDuplicatePatientsModal();
     return;
@@ -9014,7 +9129,7 @@ function renderDafter(){
       // FIX #CASE-GROUP-BOX-HEADER: للحالات المرتبطة/المكررة بس (isGrp) — صندوق مضغوط
       // منفصل فوق + صف عادي الحجم مستقل لكل نوع (بدل الخلية الممتدة rowspan). الحالات
       // العادية (مش مقسّمة) تفضل بنفس الشكل القديم تمامًا من غير أي تغيير.
-      const sharedHead=(!isGrp&&idx===0)?`<td class="grp-shared-compact" rowspan="${rows.length}"><span style="font-size:11px;color:var(--text3)">#${esc(String(r.caseId))}</span><br><strong>${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:10px;color:var(--teal)">${esc(r.noteName)}</span>`:''}${techProgressBadge(r)}</td><td rowspan="${rows.length}">${esc(r.phone||'-')}</td>`:'';
+      const sharedHead=(!isGrp&&idx===0)?`<td class="grp-shared-compact" rowspan="${rows.length}"><span style="font-size:12.5px;color:var(--text2);font-weight:700">#${esc(String(r.caseId))}</span><br><strong style="font-size:14px">${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:11.5px;color:var(--teal);font-weight:600">${esc(r.noteName)}</span>`:''}${techProgressBadge(r)}</td><td rowspan="${rows.length}">${esc(r.phone||'-')}</td>`:'';
       const delegateCell=(!isGrp&&idx===0)?`<td rowspan="${rows.length}">${r.delegate?badge(esc(r.delegate),'bg-teal'):'—'}</td>`:'';
       const typeCells=isGrp?`<td class="type-pill-cell"><span class="type-pill">${idx+1}/${rows.length}</span> ${esc(r.product)}</td><td>${esc(r.color||'-')}</td><td>${esc(String(r.qty))}</td>
     <td><strong style="color:var(--gold2)">${fmt(r.grossTotal!=null?r.grossTotal:r.total)}</strong></td>
@@ -9211,7 +9326,7 @@ function renderProof(){
       const retBadge=(isRetFromArchive?`<span class="return-badge from-archive" title="أُرجع من الأرشيف بتاريخ ${esc(r.returnedAt||'')}">↩ أرشيف ${esc(r.returnedAt||'')}</span>${pfBadge}`:'')+dupBadge;
       const linkBadge=isGrp?`<span class="case-link-badge">🔗 ${idx+1}/${rows.length}</span>`:'';
       const ownChk=`<td class="chk-col"><input type="checkbox" onclick="event.stopPropagation();rowClick(this.closest('tr'))"></td>`;
-      const sharedHead=(!isGrp&&idx===0)?`<td class="grp-shared-compact" rowspan="${rows.length}"><span style="font-size:11px;color:var(--text3)">#${esc(String(r.caseId))}</span><br><strong>${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:10px;color:var(--teal)">${esc(r.noteName)}</span>`:''}${techProgressBadge(r)}</td>`:'';
+      const sharedHead=(!isGrp&&idx===0)?`<td class="grp-shared-compact" rowspan="${rows.length}"><span style="font-size:12.5px;color:var(--text2);font-weight:700">#${esc(String(r.caseId))}</span><br><strong style="font-size:14px">${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:11.5px;color:var(--teal);font-weight:600">${esc(r.noteName)}</span>`:''}${techProgressBadge(r)}</td>`:'';
       const delegateCell=(!isGrp&&idx===0)?`<td rowspan="${rows.length}">${r.delegate?badge(esc(r.delegate),'bg-teal'):'—'}</td>`:'';
       const typeCells=isGrp?`<td class="type-pill-cell"><span class="type-pill">${idx+1}/${rows.length}</span> ${esc(r.product)}</td><td>${esc(r.color||'-')}</td><td>${esc(String(r.qty))}</td>
     <td><strong style="color:var(--gold2)">${fmt(r.grossTotal!=null?r.grossTotal:r.total)}</strong></td>
@@ -9456,7 +9571,7 @@ function renderArchive(bypassLimit){
       const settledBadge=_settledInfo?`<span class="return-badge" style="background:rgba(147,51,234,.18);color:#a855f7" title="مسوّاة بمبلغ ${fmt(+_settledInfo.amount||0)} — السبب: ${esc(_settledInfo.reason||'')}">⚖️ مسوّاة</span>`:'';
       const linkBadge=isGrp?`<span class="case-link-badge">🔗 ${idx+1}/${rows.length}</span> `:'';
       const ownChk=`<td class="chk-col"><input type="checkbox" onclick="event.stopPropagation();rowClick(this.closest('tr'))"></td>`;
-      const sharedHead=(!isGrp&&idx===0)?`<td class="grp-shared-compact" rowspan="${rows.length}"><span style="font-size:11px;color:var(--text3)">#${esc(String(r.caseId||'-'))}</span><br><strong style="font-size:12px">${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:10px;color:var(--teal)">${esc(r.noteName)}</span>`:''}${dupBadge}${settledBadge}</td>
+      const sharedHead=(!isGrp&&idx===0)?`<td class="grp-shared-compact" rowspan="${rows.length}"><span style="font-size:12.5px;color:var(--text2);font-weight:700">#${esc(String(r.caseId||'-'))}</span><br><strong style="font-size:14px">${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:11.5px;color:var(--teal);font-weight:600">${esc(r.noteName)}</span>`:''}${dupBadge}${settledBadge}</td>
       <td rowspan="${rows.length}">${r.delegate?badge(esc(r.delegate),'bg-teal'):'—'}</td>`:'';
       const dataRow=`<tr data-id="${esc(r.id)}" data-case="${esc(_groupKey(r))}" data-cat="${getProductionCat(r.product)}" class="${isDup?'row-duplicate':''}${_settledInfo?' row-settled':''}${isGrp?' case-grp-type-row':''}" onclick="${isGrp?'rowClick(this)':'groupAwareRowClick(this)'}">
       ${ownChk}${sharedHead}
@@ -11112,7 +11227,7 @@ const ChartEngine={
     if(c){const ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);}
   },
   colors:['#c9a84c','#6366f1','#22c55e','#ef4444','#f59e0b','#06b6d4','#8b5cf6','#ec4899','#14b8a6','#f97316'],
-  isDark(){return !document.body.classList.contains('theme-light')&&!document.body.classList.contains('theme-qasetly')},
+  isDark(){return !document.body.classList.contains('theme-light')&&!document.body.classList.contains('theme-glass')},
   textColor(){return this.isDark()?'#555555':'#444444'},
   gridColor(){return this.isDark()?'rgba(255,255,255,.06)':'rgba(0,0,0,.07)'},
 
@@ -11830,12 +11945,48 @@ function toggleDgDetail(id){
 }
 
 // THEME & INIT
-const _themeOrder=['','theme-light','theme-qasetly'];
+const _themeOrder=['','theme-light','theme-glass'];
 function setTheme(cls){document.body.className=cls;const idx=_themeOrder.indexOf(cls);document.querySelectorAll('.td').forEach((d,i)=>d.classList.toggle('on',i===idx));localStorage.setItem('plp_theme',cls);
   // Redraw charts on theme change
   setTimeout(()=>{if(document.getElementById('pg-dashboard')?.classList.contains('active') && can('dashboard.view'))renderDash();},100);
 }
-const _st=localStorage.getItem('plp_theme')||'';if(_st)setTheme(_st);
+const _st=localStorage.getItem('plp_theme')||'theme-glass';setTheme(_st);
+// ===== 🔍 تحكم في حجم عرض السيستم (تكبير/تصغير) — إعداد محلي لكل جهاز، محفوظ في localStorage =====
+let _appZoom=parseInt(localStorage.getItem('plp_zoom')||'100',10);
+if(isNaN(_appZoom)||_appZoom<60||_appZoom>150)_appZoom=100;
+function _applyZoom(){
+  const val=_appZoom/100;
+  // zoom مدعومة في كروم/سامسونج انترنت/إدج (أغلب أجهزة الموظفين) وبتحافظ على الـ layout والـ position:fixed سليمة
+  if('zoom' in document.documentElement.style){
+    document.documentElement.style.zoom=val;
+  }else{
+    // فallback لأي متصفح مش داعم zoom (مثل فايرفوكس)
+    document.body.style.transformOrigin='top right';
+    document.body.style.transform='scale('+val+')';
+    document.body.style.width=(100/val)+'%';
+  }
+  const pctEl=document.getElementById('zoom-pct');
+  if(pctEl)pctEl.textContent=_appZoom+'%';
+  localStorage.setItem('plp_zoom',_appZoom);
+  _forceRepaint();
+}
+function zoomIn(){ if(_appZoom<150){_appZoom+=10;_applyZoom();} }
+function zoomOut(){ if(_appZoom>60){_appZoom-=10;_applyZoom();} }
+function zoomReset(){ _appZoom=100;_applyZoom(); }
+// FIX #STICKY-BLANK-GAP-2: document.documentElement.style.zoom بيكسر إعادة الرسم (repaint) في
+// متصفحات أندرويد (خصوصًا Sticky/Fixed)، فبيسيب فراغ أو محتوى الصفحة القديمة ظاهر لحد ما يحصل
+// تفاعل يدوي. الحل: إجبار المتصفح على إعادة رسم الطبقة (GPU layer) فورًا بنقلة transform وهمية
+// مش مرئية للعين، بدل الاعتماد على سكرول بس.
+function _forceRepaint(){
+  [document.querySelector('.topbar'),document.querySelector('.content'),document.querySelector('.main')].forEach(el=>{
+    if(!el)return;
+    const prev=el.style.transform;
+    el.style.transform='translateZ(0)';
+    void el.offsetHeight; // إجبار reflow فعلي
+    requestAnimationFrame(()=>{el.style.transform=prev||'';});
+  });
+}
+_applyZoom();
 
 // Redraw charts on resize
 let _dashResizeTimer;
@@ -12152,8 +12303,10 @@ function _fmtNotifRow(r,opts={}){
   let line=`●${label} × ${r.qty||0}`;
   // اللاحقة تتطبق في الحالتين: الاسم ناقص بالكامل، أو موجود بس من غير رقم حالة داخله
   if(!cn) line+=' (بدون رقم حالة)';
+  // FIX #WA-UNIT-PRICE: إظهار سعر الوحدة قبل الإجمالي في رسالة الواتس (المنتج × الكمية × السعر = الإجمالي)
   if(opts.withTotal&&r.total){
-    line+=`  |  ${fmtAr(r.total)} ${cur()}`;
+    const unitPrice=r.price!=null&&r.price!==''?+r.price:(r.qty?(+r.total/+r.qty):0);
+    line+=`  ×  ${fmtAr(unitPrice)} ${cur()}  =  ${fmtAr(r.total)} ${cur()}`;
   }
   return line;
 }
@@ -17206,15 +17359,16 @@ function renderClientCard(){
         </div>
         <h4 style="margin-bottom:8px;color:var(--gold2)">📋 الفواتير خلال الفترة (${periodArc.length})</h4>
         <div class="tbl-wrap"><table>
-          <thead><tr><th>رقم الفاتورة</th><th>البيان</th><th>المنتج</th><th>ك</th><th>الإجمالي</th><th>التاريخ</th></tr></thead>
+          <thead><tr><th>رقم الفاتورة</th><th>البيان</th><th>المنتج</th><th>ك</th><th>السعر</th><th>الإجمالي</th><th>التاريخ</th></tr></thead>
           <tbody>${periodArc.map(r=>{
             return`<tr>
             <td><strong>${r.invId||('#'+r.caseId)}</strong></td>
             <td>${r.noteName||r.caseId||'—'}</td>
             <td>${r.product}</td><td>${r.qty}</td>
+            <td>${fmt(r.price||0)} ${c}</td>
             <td style="color:var(--gold2)"><strong>${fmt(r.total)} ${c}</strong></td>
             <td>${r.archivedAt?new Date(r.archivedAt).toISOString().split('T')[0]:(r.date||'—')}</td>
-          </tr>`;}).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--text3)">لا توجد فواتير</td></tr>'}
+          </tr>`;}).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--text3)">لا توجد فواتير</td></tr>'}
           </tbody>
         </table></div>
         ${periodTrs.length?`<h4 style="margin:14px 0 8px;color:var(--gold2)">💵 التعاملات المالية (${periodTrs.length})</h4>
