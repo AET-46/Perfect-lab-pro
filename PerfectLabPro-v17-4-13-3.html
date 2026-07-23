@@ -3993,6 +3993,20 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
   </div>
 </div>
 
+<!-- ⛔ حالات مكررة (نفس اسم المريض لنفس العميل) — يمنع إضافة حالة جديدة في الدفتر لحد ما تتراجع -->
+<div class="overlay" id="ov-dup-patients">
+  <div class="modal modal-lg">
+    <div class="mh"><h3>⛔ حالات مكررة — نفس المريض لنفس العميل</h3><div class="mc-btn" onclick="closeOv('ov-dup-patients')">✕</div></div>
+    <div class="mb">
+      <div style="background:var(--bg4);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--text3)">
+        فيه أكتر من حالة بنفس اسم العميل ونفس اسم المريض (دفتر/بروفه/أرشيف) — ده ممكن يبقى تسجيل مكرر غلط وله أثر حسابي. إضافة حالات جديدة في الدفتر متوقفة مؤقتًا لحد ما تراجع كل حالة وتحذف/تعدّل المكرر منها.
+      </div>
+      <div id="dup-patients-list"></div>
+    </div>
+    <div class="mf"><button class="btn btn-ghost" onclick="closeOv('ov-dup-patients')">إغلاق</button></div>
+  </div>
+</div>
+
 <!-- PROOF EDIT -->
 <div class="overlay" id="ov-proof">
   <div class="modal modal-lg">
@@ -6240,12 +6254,8 @@ function goPage(pg, fromHistory){
     toast('ليس لديك صلاحية للوصول لهذه الصفحة','err');
     return;
   }
-  // ⛔ قفل إجباري: مينفعش نفتح الدفتر لحد ما فواتير الأرشيف المكررة تتصحح
-  if(pg==='dafter' && _findDuplicateArchiveInvoices().length){
-    toast('⛔ في فواتير مكررة بالأرشيف — لازم تتصحح الأول قبل فتح الدفتر','err');
-    _showDuplicateInvoicesModal();
-    return;
-  }
+  // ✅ معالجة تلقائية صامتة لأي فواتير أرشيف مكررة (نفس العميل + نفس الرقم) — بدون حظر أو مراجعة يدوية
+  if(pg==='dafter') _autoFixDuplicateArchiveInvoices();
   // ── Hash Navigation: تحديث الـ URL للرجوع للخلف ──
   if(!fromHistory){ try{ history.pushState({page:pg},'','#'+pg); }catch(e){} }
   // FIX #LASTPAGE: حفظ الصفحة الحالية
@@ -8646,10 +8656,12 @@ function calcDfTotal(){
   } else { bd.style.display='none'; }
 }
 function openDafter(editId=null){
-  // ⛔ قفل إجباري: مينفعش نضيف حالة جديدة لحد ما فواتير الأرشيف المكررة تتصحح (التعديل على حالة موجودة مسموح)
-  if(!editId && _findDuplicateArchiveInvoices().length){
-    toast('⛔ في فواتير مكررة بالأرشيف — لازم تتصحح الأول قبل إضافة حالة جديدة','err');
-    _showDuplicateInvoicesModal();
+  // ✅ معالجة تلقائية صامتة لأي فواتير أرشيف مكررة (نفس العميل + نفس الرقم) — بدون حظر أو مراجعة يدوية
+  if(!editId) _autoFixDuplicateArchiveInvoices();
+  // ⛔ قفل إجباري: مينفعش نضيف حالة جديدة لحد ما الحالات المكررة (نفس العميل + نفس المريض) تتراجع
+  if(!editId && _findDuplicatePatientCases().length){
+    toast('⛔ في حالات مكررة (نفس العميل والمريض) — لازم تتراجع الأول قبل إضافة حالة جديدة','err');
+    _showDuplicatePatientsModal();
     return;
   }
   _dfId=editId;document.getElementById('df-ttl').textContent=editId?'تعديل حالة':'إضافة حالة جديدة';
@@ -8711,11 +8723,94 @@ function _findDuplicateArchiveInvoices(){
   const arc=DB.get('archive')||[];
   const groups={};
   arc.forEach(r=>{
-    const key=r.invId||'';
-    if(!key)return; // حالات من غير رقم فاتورة مش جزء من الفحص ده
+    if(!r.invId)return; // حالات من غير رقم فاتورة مش جزء من الفحص ده
+    // مقياس التكرار الحقيقي: نفس رقم الفاتورة + نفس العميل معاً.
+    // نفس الرقم لعميلين مختلفين مش تكرار (كل عميل له ترقيم فواتيره الخاص) — ده كان بيولّد إنذارات كاذبة.
+    const key=(r.client||'')+'|||'+r.invId;
     (groups[key]=groups[key]||[]).push(r);
   });
   return Object.values(groups).filter(list=>list.length>1);
+}
+// ===== معالجة تلقائية صامتة: بدل ما نوقف المستخدم ونطلب منه المراجعة، نصحح التكرار الحقيقي
+// (نفس العميل + نفس رقم الفاتورة) تلقائيًا بترقيم جديد فريد للسجلات الزيادة، بدون أي تدخل يدوي.
+function _autoFixDuplicateArchiveInvoices(){
+  const dups=_findDuplicateArchiveInvoices();
+  if(!dups.length)return 0;
+  let arc=DB.get('archive')||[];
+  let fixedCount=0;
+  dups.forEach(list=>{
+    // نرتب حسب تاريخ الأرشفة ونسيب أول سجل زي ما هو، والباقي ياخد رقم جديد فريد
+    const sorted=[...list].sort((a,b)=>(a.archivedAt||0)-(b.archivedAt||0));
+    sorted.slice(1).forEach(dup=>{
+      const oldInvId=dup.invId;
+      const newInvId='ARC-'+nid('arcInv');
+      arc=arc.map(r=>r.id===dup.id?{...r,invId:newInvId}:r);
+      logActivity('archive.edit',{note:'تصحيح تلقائي لرقم فاتورة مكرر (نفس العميل)',caseId:dup.caseId,client:dup.client,before:{invId:oldInvId},after:{invId:newInvId}});
+      fixedCount++;
+    });
+  });
+  if(fixedCount){
+    DB.set('archive',arc);DB._c['archive']=arc;
+    renderArchive();
+  }
+  return fixedCount;
+}
+// ===== ⛔ حالات مكررة (نفس العميل + نفس اسم المريض) عبر الدفتر/البروفه/الأرشيف مجتمعين =====
+// دي مشكلة حسابية حقيقية (احتمال تسجيل نفس الحالة مرتين) ومحتاجة مراجعة بشرية فعلية،
+// عكس تكرار رقم الفاتورة اللي بيتصحح تلقائيًا. فبنمنع إضافة حالة جديدة في الدفتر لحد ما تتراجع.
+function _findDuplicatePatientCases(){
+  const sources=[
+    {key:'dafter',label:'دفتر اليومية'},
+    {key:'proof',label:'البروفه'},
+    {key:'archive',label:'الأرشيف'}
+  ];
+  const all=[];
+  sources.forEach(src=>{
+    (DB.get(src.key)||[]).forEach(r=>{
+      if(r.client&&r.noteName) all.push({...r,_src:src.key,_srcLabel:src.label});
+    });
+  });
+  const groups={};
+  all.forEach(r=>{
+    const key=(r.client||'').trim().toLowerCase()+'|'+(r.noteName||'').trim().toLowerCase();
+    (groups[key]=groups[key]||[]).push(r);
+  });
+  return Object.values(groups).filter(list=>list.length>1);
+}
+function _showDuplicatePatientsModal(){
+  const dups=_findDuplicatePatientCases();
+  const wrap=document.getElementById('dup-patients-list');
+  if(!wrap)return;
+  if(!dups.length){
+    wrap.innerHTML='<div style="text-align:center;color:var(--green);padding:20px;font-weight:700">✅ مفيش حالات مكررة دلوقتي — الإضافة هتشتغل عادي</div>';
+  }else{
+    wrap.innerHTML=dups.map(list=>{
+      const head=`${esc(list[0].client)} — ${esc(list[0].noteName)}`;
+      const rows=list.map(r=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 10px;border-bottom:1px solid var(--border2)">
+          <div>
+            <div style="font-weight:700">${esc(r._srcLabel)} — #${esc(String(r.caseId||'-'))}</div>
+            <div style="font-size:11px;color:var(--text3)">${esc(r.product||'-')} · ${esc(r.date||'-')} · ${fmt(+r.total||0)} ج.م</div>
+          </div>
+          <button class="btn btn-sm btn-gold" onclick="_goToDupPatientCase('${r._src}','${esc(r.id)}')">📂 فتح ومراجعة</button>
+        </div>`).join('');
+      return `<div style="margin-bottom:14px;border:1.5px solid var(--red);border-radius:10px;overflow:hidden">
+        <div style="background:rgba(239,68,68,.12);color:var(--red);font-weight:800;padding:6px 10px">⚠️ ${head} (${list.length} حالات)</div>
+        ${rows}
+      </div>`;
+    }).join('');
+  }
+  openOv('ov-dup-patients');
+}
+// يودّي المستخدم لصفحة الحالة المكررة عشان يعدّلها أو يحذفها بنفسه بأدوات الصفحة العادية
+function _goToDupPatientCase(src,id){
+  closeOv('ov-dup-patients');
+  openPage(src);
+  setTimeout(()=>{
+    if(src==='dafter'&&typeof openDafter==='function')openDafter(id);
+    else if(src==='proof'&&typeof openProof==='function')openProof(id);
+    else if(src==='archive'&&typeof openRowDetail==='function')openRowDetail(id,'archive');
+  },150);
 }
 function _showDuplicateInvoicesModal(){
   const dups=_findDuplicateArchiveInvoices();
@@ -8771,11 +8866,13 @@ function saveDafter(){
   // تحقق فعلي من الصلاحية (مش بس إخفاء الزر)
   const action=_dfId?'dafter.edit':'dafter.add';
   if(!can(action) && !canOwn(action,_dfId,'dafter')){toast('ليس لديك صلاحية لهذه العملية','err');return;}
-  // ⛔ قفل إجباري إضافي (احتياطي): لو الفورم كان مفتوح قبل ما فاتورة مكررة تظهر
-  if(!_dfId && _findDuplicateArchiveInvoices().length){
-    toast('⛔ في فواتير مكررة بالأرشيف — لازم تتصحح الأول قبل إضافة حالة جديدة','err');
+  // ✅ معالجة تلقائية صامتة احتياطية (نفس العميل + نفس رقم الفاتورة) — بدون حظر
+  if(!_dfId) _autoFixDuplicateArchiveInvoices();
+  // ⛔ قفل إجباري احتياطي: لو الفورم كان مفتوح قبل ما حالة مكررة (نفس العميل والمريض) تظهر
+  if(!_dfId && _findDuplicatePatientCases().length){
+    toast('⛔ في حالات مكررة (نفس العميل والمريض) — لازم تتراجع الأول قبل إضافة حالة جديدة','err');
     closeOv('ov-dafter');
-    _showDuplicateInvoicesModal();
+    _showDuplicatePatientsModal();
     return;
   }
   const clSel=document.getElementById('df-client');const opt=clSel.options[clSel.selectedIndex];
