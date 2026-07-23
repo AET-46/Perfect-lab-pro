@@ -1005,10 +1005,10 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
         <span class="nav-group-arrow">❯</span>
       </div>
       <div class="nav-group-body open">
-        <div class="nav-item active" data-page="dafter"><span class="ni">📒</span>الدفتر<span class="nav-badge" id="nb-dafter">0</span><span class="nav-badge" id="nb-dafter-delegate" style="display:none;background:var(--red)" title="حالات جديدة من مندوبين لسه محتاجة تسجيل">🚚 0</span></div>
+        <div class="nav-item active" data-page="dafter"><span class="ni">📒</span>الدفتر<span class="nav-badge" id="nb-dafter">0</span></div>
         <div class="nav-item" data-page="proof"><span class="ni">🔬</span>البروفه<span class="nav-badge gold" id="nb-proof">0</span></div>
         <div class="nav-item" data-page="archive"><span class="ni">📁</span>الأرشيف</div>
-        <div class="nav-item" data-page="treasury"><span class="ni">💰</span>الخزنة<span class="nav-badge" id="nb-treasury-delegate" style="display:none;background:var(--red)" title="تحصيلات من مندوبين لسه محتاجة ترحيل للخزنة">💰 0</span></div>
+        <div class="nav-item" data-page="treasury"><span class="ni">💰</span>الخزنة</div>
       </div>
     </div>
 
@@ -3979,6 +3979,20 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
   </div>
 </div>
 
+<!-- ⛔ فواتير مكررة في الأرشيف — يمنع فتح/الإضافة في الدفتر لحد ما تتصلّح -->
+<div class="overlay" id="ov-dup-invoices">
+  <div class="modal modal-lg">
+    <div class="mh"><h3>⛔ فواتير مكررة في الأرشيف</h3><div class="mc-btn" onclick="closeOv('ov-dup-invoices')">✕</div></div>
+    <div class="mb">
+      <div style="background:var(--bg4);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--text3)">
+        الدفتر مقفول مؤقتًا لحد ما كل رقم فاتورة مكرر تحته يتصحّح (يبقى فريد). دوس "رقم جديد تلقائي" أو اكتب رقم يدوي لكل حالة.
+      </div>
+      <div id="dup-inv-list"></div>
+    </div>
+    <div class="mf"><button class="btn btn-ghost" onclick="closeOv('ov-dup-invoices')">إغلاق</button></div>
+  </div>
+</div>
+
 <!-- PROOF EDIT -->
 <div class="overlay" id="ov-proof">
   <div class="modal modal-lg">
@@ -5233,7 +5247,6 @@ const DB = {
   },
   _doRealtimeRender() {
     try {
-      updateBadges(); // البادچات الدائمة (زي تذكير حالات/تحصيلات المندوبين) لازم تتحدّث في كل مزامنة، بغض النظر عن الصفحة المفتوحة
       const activePg = document.querySelector('.page.active');
       if (activePg) {
         const pgId = activePg.id?.replace('pg-', '');
@@ -6227,6 +6240,12 @@ function goPage(pg, fromHistory){
     toast('ليس لديك صلاحية للوصول لهذه الصفحة','err');
     return;
   }
+  // ⛔ قفل إجباري: مينفعش نفتح الدفتر لحد ما فواتير الأرشيف المكررة تتصحح
+  if(pg==='dafter' && _findDuplicateArchiveInvoices().length){
+    toast('⛔ في فواتير مكررة بالأرشيف — لازم تتصحح الأول قبل فتح الدفتر','err');
+    _showDuplicateInvoicesModal();
+    return;
+  }
   // ── Hash Navigation: تحديث الـ URL للرجوع للخلف ──
   if(!fromHistory){ try{ history.pushState({page:pg},'','#'+pg); }catch(e){} }
   // FIX #LASTPAGE: حفظ الصفحة الحالية
@@ -6254,7 +6273,7 @@ function goPage(pg, fromHistory){
   }
   document.getElementById('ptitle').textContent=pgNames[pg]||pg;
   // FIX: run render first, then scroll to top after render completes
-  const renders={dashboard:renderDash,dafter:()=>{renderDafter();checkDelegatePendingNewCases();},proof:renderProof,archive:renderArchive,treasury:()=>{renderTreasury();checkDelegatePendingCollections();},reports:renderReports,debts:renderDebts,inventory:renderInventory,masterdata:renderMasterData,activitylog:renderActivityLog,
+  const renders={dashboard:renderDash,dafter:renderDafter,proof:renderProof,archive:renderArchive,treasury:renderTreasury,reports:renderReports,debts:renderDebts,inventory:renderInventory,masterdata:renderMasterData,activitylog:renderActivityLog,
     notifications:()=>{renderNotificationsPage();loadNsSettings();},notes:renderNotes,
     suppliers:renderSuppliers,purchases:()=>{renderPurchases();renderPurStats()},supdebts:renderSupDebts,
     batches:renderBatches,
@@ -6369,15 +6388,6 @@ function _doUpdateBadges(){
   const notifs=DB.get('notifications')||[];
   const unread=notifs.filter(n=>!n.read).length;
   _set('nb-notif',unread||'—');
-  // بادچات تذكير دائمة (بتفضل نابضة لحد ما تتسجل/تتلغى) — مش مربوطة بالصفحة المفتوحة
-  // حاليًا، عشان تفضل ظاهرة وتتحدّث حتى لو المستخدم واقف في صفحة تانية
-  const pendingNewCases=(DB.get('delegatePendingNewCases')||[]).filter(x=>x.status==='pending');
-  const pendingNewCasesTotal=pendingNewCases.reduce((s,p)=>s+Math.max(0,Math.round(+(p.reportedCount||0))),0);
-  const nbDD=document.getElementById('nb-dafter-delegate');
-  if(nbDD){if(pendingNewCasesTotal>0){nbDD.textContent='🚚 '+pendingNewCasesTotal;nbDD.style.display='';}else{nbDD.style.display='none';}}
-  const pendingCollections=(DB.get('delegatePendingCollections')||[]).filter(x=>x.status==='pending');
-  const nbTD=document.getElementById('nb-treasury-delegate');
-  if(nbTD){if(pendingCollections.length>0){nbTD.textContent='💰 '+pendingCollections.length;nbTD.style.display='';}else{nbTD.style.display='none';}}
 }
 
 // LAB INFO
@@ -8636,6 +8646,12 @@ function calcDfTotal(){
   } else { bd.style.display='none'; }
 }
 function openDafter(editId=null){
+  // ⛔ قفل إجباري: مينفعش نضيف حالة جديدة لحد ما فواتير الأرشيف المكررة تتصحح (التعديل على حالة موجودة مسموح)
+  if(!editId && _findDuplicateArchiveInvoices().length){
+    toast('⛔ في فواتير مكررة بالأرشيف — لازم تتصحح الأول قبل إضافة حالة جديدة','err');
+    _showDuplicateInvoicesModal();
+    return;
+  }
   _dfId=editId;document.getElementById('df-ttl').textContent=editId?'تعديل حالة':'إضافة حالة جديدة';
   fillClSel('df-client');fillProdSel('df-product');fillDgSel('df-delegate');fillColorSel('df-color');
   ['df-phone','df-notename','df-notes'].forEach(id=>document.getElementById(id).value='');
@@ -8687,10 +8703,81 @@ function _findDuplicateCaseNo(caseNo,excludeId){
   }
   return null;
 }
+// ===== ⛔ حماية إجبارية: منع فتح/الإضافة في الدفتر لحد ما فواتير الأرشيف المكررة تتصحح =====
+// السبب الجذري: nid() بتزوّد عداد رقم الفاتورة محليًا على جهاز الموظف وتستخدمه فورًا، وبترجع
+// تتأكد من فايربيز بعدين (async) — لو موظفين فتحوا أرشفة في نفس اللحظة تقريبًا ممكن ياخدوا نفس
+// الرقم. الحل هنا بيصحح النتيجة (الفواتير المكررة الموجودة فعلاً)، مش السبب نفسه لسه.
+function _findDuplicateArchiveInvoices(){
+  const arc=DB.get('archive')||[];
+  const groups={};
+  arc.forEach(r=>{
+    const key=r.invId||'';
+    if(!key)return; // حالات من غير رقم فاتورة مش جزء من الفحص ده
+    (groups[key]=groups[key]||[]).push(r);
+  });
+  return Object.values(groups).filter(list=>list.length>1);
+}
+function _showDuplicateInvoicesModal(){
+  const dups=_findDuplicateArchiveInvoices();
+  const wrap=document.getElementById('dup-inv-list');
+  if(!dups.length){
+    wrap.innerHTML='<div style="text-align:center;color:var(--green);padding:20px;font-weight:700">✅ مفيش فواتير مكررة دلوقتي — الدفتر هيشتغل عادي</div>';
+  }else{
+    wrap.innerHTML=dups.map(list=>{
+      const invId=esc(list[0].invId);
+      const rows=list.map(r=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 10px;border-bottom:1px solid var(--border2)">
+          <div>
+            <div style="font-weight:700">${esc(r.client||'-')}${r.noteName?' — '+esc(r.noteName):''}</div>
+            <div style="font-size:11px;color:var(--text3)">#${esc(String(r.caseId||'-'))} · ${r.archivedAt?new Date(r.archivedAt).toISOString().split('T')[0]:esc(r.date||'-')} · ${fmt(+r.total||0)} ج.م</div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <button class="btn btn-sm btn-gold" onclick="_fixDuplicateInvoice('${r.id}','auto')">🔁 رقم جديد تلقائي</button>
+            <input id="dup-manual-${esc(r.id)}" type="text" placeholder="رقم يدوي" style="width:110px;padding:4px 6px;font-size:11px">
+            <button class="btn btn-sm btn-ghost" onclick="_fixDuplicateInvoice('${r.id}','manual')">💾 حفظ</button>
+          </div>
+        </div>`).join('');
+      return `<div style="margin-bottom:14px;border:1.5px solid var(--red);border-radius:10px;overflow:hidden">
+        <div style="background:rgba(239,68,68,.12);color:var(--red);font-weight:800;padding:6px 10px">🧾 رقم الفاتورة المكرر: ${invId} (${list.length} حالات)</div>
+        ${rows}
+      </div>`;
+    }).join('');
+  }
+  openOv('ov-dup-invoices');
+}
+function _fixDuplicateInvoice(archiveId,mode){
+  if(!can('archive.edit')){toast('ليس لديك صلاحية تعديل الأرشيف','err');return;}
+  let arc=DB.get('archive')||[];
+  const idx=arc.findIndex(r=>r.id===archiveId);
+  if(idx<0){toast('لم يتم العثور على الحالة','err');return;}
+  const oldInvId=arc[idx].invId;
+  let newInvId;
+  if(mode==='auto'){
+    newInvId='ARC-'+nid('arcInv'); // نفس دالة توليد أرقام الأرشيف العادية
+  }else{
+    const inputEl=document.getElementById('dup-manual-'+archiveId);
+    newInvId=(inputEl?.value||'').trim();
+    if(!newInvId){toast('اكتب رقم فاتورة الأول','err');return;}
+    if(arc.some((r,i)=>i!==idx&&r.invId===newInvId)){toast('⛔ الرقم ده مستخدم بالفعل في حالة تانية — اختار رقم مختلف','err');return;}
+  }
+  arc=arc.map((r,i)=>i===idx?{...r,invId:newInvId}:r);
+  DB.set('archive',arc);
+  logActivity('archive.edit',{note:'تصحيح رقم فاتورة مكرر',caseId:arc[idx].caseId,before:{invId:oldInvId},after:{invId:newInvId}});
+  toast('تم تصحيح رقم الفاتورة ✅');
+  renderArchive();
+  _showDuplicateInvoicesModal(); // إعادة تحميل القايمة — المجموعة دي هتختفي لو اتصلحت خلاص
+}
 function saveDafter(){
   // تحقق فعلي من الصلاحية (مش بس إخفاء الزر)
   const action=_dfId?'dafter.edit':'dafter.add';
   if(!can(action) && !canOwn(action,_dfId,'dafter')){toast('ليس لديك صلاحية لهذه العملية','err');return;}
+  // ⛔ قفل إجباري إضافي (احتياطي): لو الفورم كان مفتوح قبل ما فاتورة مكررة تظهر
+  if(!_dfId && _findDuplicateArchiveInvoices().length){
+    toast('⛔ في فواتير مكررة بالأرشيف — لازم تتصحح الأول قبل إضافة حالة جديدة','err');
+    closeOv('ov-dafter');
+    _showDuplicateInvoicesModal();
+    return;
+  }
   const clSel=document.getElementById('df-client');const opt=clSel.options[clSel.selectedIndex];
   const client=opt?.dataset?.name||opt?.textContent||'';
   // FIX #CLIENTID: استخدم dataset.id كاحتياط إذا كانت .value فارغة بسبب makeSearchableSelect
@@ -8774,18 +8861,6 @@ function saveDafter(){
   closeOv('ov-dafter');renderDafter();updateBadges();
   const typesCount=1+(_dfId?0:_dfExtraTypes.length);
   toast(_dfId?'تم التعديل ✅':(typesCount>1?`تمت الإضافة ✅ (${typesCount} أنواع لنفس الحالة)`:'تمت الإضافة ✅'));
-  // متابعة طابور "حالات المندوب" لو شغال — بيفتح نافذة الحالة الجاية تلقائيًا لحد ما
-  // تخلص كل الحالات المُبلَّغة في الدفعة دي (راجع startDelegateCaseQueue فوق)
-  if(!_dfId && window._delegateCaseQueue && window._delegateCaseQueue.length){
-    const finished=window._delegateCaseQueue.shift();
-    _decrementDelegatePendingNewCases(finished.pendingId);
-    if(window._delegateCaseQueue.length){
-      setTimeout(_openNextDelegateCaseFromQueue,250);
-    } else {
-      window._delegateCaseQueue=null;
-      toast('✅ تم إدخال كل حالات المندوب من الدفعة دي');
-    }
-  }
 }
 function renderDafter(){
   qdrInjectBar('dafter-date-from','dafter-date-to','filterDafterCombined');
@@ -8868,94 +8943,6 @@ function renderDafter(){
   tb.querySelectorAll('tr[data-id]').forEach(tr=>tr.style.display='');
   refreshCatTabs('dafter',list);
   if(_catFilter.dafter&&_catFilter.dafter!=='all')filterDafterCombined(); // إعادة تطبيق فلتر الفئة النشط بعد الرسم
-}
-
-// ═══════════════════════════════════════
-// نافذة تلقائية عند فتح صفحة الدفتر: حالات/مقاسات جديدة بلَّغ عنها المندوبين من
-// بورتال المندوبين (مسار data/shared/delegatePendingNewCases). مجمّعة حسب
-// المندوب (ممكن يكون بلَّغ عن أكتر من عميل في نفس الدفعة). زرار "ابدأ الإدخال"
-// بيفتح نافذة "إضافة حالة" بالعميل جاهز، وبعد كل حفظ بتتقفل وتفتح اللي بعدها
-// تلقائيًا لحد ما تخلص كل الحالات المُبلَّغة (راجع الهوك في saveDafter).
-// ═══════════════════════════════════════
-function checkDelegatePendingNewCases(){
-  if(!can('dafter.edit'))return; // مفيش داعي نزعج مستخدم مايقدرش يضيف أصلاً
-  const pendingAll=(DB.get('delegatePendingNewCases')||[]).filter(x=>x.status==='pending');
-  const existing=document.getElementById('ov-delegate-newcases');if(existing)existing.remove();
-  if(!pendingAll.length)return;
-  const byDelegate={};
-  pendingAll.forEach(p=>{const key=p.delegateName||'-';(byDelegate[key]=byDelegate[key]||[]).push(p);});
-  const cards=Object.entries(byDelegate).map(([dName,items])=>{
-    const total=items.reduce((s,p)=>s+Math.max(0,Math.round(+(p.reportedCount||0))),0);
-    const clientsLine=items.map(p=>`${esc(p.client)} (${Math.max(0,Math.round(+(p.reportedCount||0)))})`).join('، ');
-    return `<div class="fg" style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:10px" data-delegate="${esc(dName)}">
-      <div style="margin-bottom:6px"><strong>🚚 المندوب: ${esc(dName)}</strong> — <span style="color:var(--gold2);font-weight:800">${total} حالة</span> من ${items.length} عميل</div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:8px">${clientsLine}</div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-gold btn-sm" onclick="startDelegateCaseQueue('${esc(dName)}')">▶ ابدأ الإدخال (${total} نافذة تباعًا)</button>
-        <button class="btn btn-ghost btn-sm" onclick="cancelDelegateNewCasesForDelegate('${esc(dName)}')">❌ إلغاء الكل</button>
-      </div>
-    </div>`;
-  }).join('');
-  const html=`<div class="overlay open" id="ov-delegate-newcases" onclick="if(event.target===this)closeOv('ov-delegate-newcases')">
-    <div class="modal">
-      <div class="mh"><h3>📥 حالات جديدة بلّغ عنها المندوبين</h3><div class="mc-btn" onclick="closeOv('ov-delegate-newcases')">✕</div></div>
-      <div class="mb">${cards}</div>
-      <div class="mf"><button class="btn btn-ghost" onclick="closeOv('ov-delegate-newcases')">إغلاق</button></div>
-    </div>
-  </div>`;
-  document.body.insertAdjacentHTML('beforeend',html);
-}
-// بيبني طابور: عنصر واحد لكل حالة مفردة (مش لكل عميل) — عشان لو بلال بلَّغ عن
-// 8 عند عميل و5 عند عميل تاني، الطابور يبقى 13 عنصر ويفتح 13 نافذة تباعًا.
-function startDelegateCaseQueue(delegateName){
-  const pendingAll=(DB.get('delegatePendingNewCases')||[]).filter(x=>x.status==='pending'&&(x.delegateName||'-')===delegateName);
-  if(!pendingAll.length)return;
-  const queue=[];
-  pendingAll.forEach(p=>{
-    const n=Math.max(0,Math.round(+(p.reportedCount||0)));
-    for(let i=0;i<n;i++)queue.push({pendingId:p.id,client:p.client,clientId:p.clientId,delegateName:p.delegateName,seq:i+1,total:n});
-  });
-  if(!queue.length)return;
-  closeOv('ov-delegate-newcases');
-  window._delegateCaseQueue=queue;
-  _openNextDelegateCaseFromQueue();
-}
-// بتفتح "إضافة حالة" للعنصر الأول في الطابور — الموظف يكمل بيانات المنتج/السعر
-// ويحفظ زي أي حالة عادية؛ saveDafter() هي اللي بتنده على الدالة دي تاني للي بعده.
-function _openNextDelegateCaseFromQueue(){
-  const q=window._delegateCaseQueue;
-  if(!q||!q.length){window._delegateCaseQueue=null;return;}
-  const item=q[0];
-  openDafter();
-  const clSel=document.getElementById('df-client');
-  const cls=DB.get('clients')||[];
-  const cl=cls.find(c=>c.id===item.clientId)||cls.find(c=>c.name===item.client);
-  if(clSel&&cl){clSel.value=cl.id;onDfClient();}
-  const notesEl=document.getElementById('df-notes');
-  if(notesEl)notesEl.value=`حالة جديدة من المندوب ${item.delegateName||''} (${item.seq}/${item.total})`;
-  const ttlEl=document.getElementById('df-ttl');
-  if(ttlEl)ttlEl.textContent=`إضافة حالة — ${item.client} (${item.seq}/${item.total}) · باقي ${q.length} في الطابور`;
-}
-// بتنقص واحد من عدد الحالة المتبقية في السجل بعد كل حفظ ناجح — لو وصلت صفر تتعلّم
-// confirmed. الطريقة دي (بدل ما نعلّمها confirmed دفعة واحدة في الآخر) بتضمن إنه لو
-// حصل قطع (قفل المتصفح / نافذة اتقفلت من غير حفظ) في نص الطابور، المرة الجاية اللي
-// تفتح فيها صفحة الدفتر هتلاقي بس العدد الفعلي المتبقي، مش هتتكرر الحالات اللي اتسجلت خلاص.
-function _decrementDelegatePendingNewCases(pendingId){
-  const all=DB.get('delegatePendingNewCases')||[];
-  const idx=all.findIndex(x=>x.id===pendingId);
-  if(idx===-1)return;
-  const remaining=Math.max(0,Math.round(+(all[idx].reportedCount||0))-1);
-  all[idx]=remaining<=0
-    ?{...all[idx],reportedCount:0,status:'confirmed',confirmedAt:Date.now(),confirmedBy:window._currentUser?.name||'-'}
-    :{...all[idx],reportedCount:remaining};
-  DB.set('delegatePendingNewCases',all);
-}
-function cancelDelegateNewCasesForDelegate(delegateName){
-  const all=DB.get('delegatePendingNewCases')||[];
-  const updated=all.map(x=>(x.status==='pending'&&(x.delegateName||'-')===delegateName)?{...x,status:'cancelled',cancelledAt:Date.now(),cancelledBy:window._currentUser?.name||'-'}:x);
-  DB.set('delegatePendingNewCases',updated);
-  document.querySelector(`#ov-delegate-newcases [data-delegate="${delegateName}"]`)?.remove();
-  if(!document.querySelector('#ov-delegate-newcases [data-delegate]'))closeOv('ov-delegate-newcases');
 }
 // FIX #DAFTER-ROW-EDIT: بعد ما بقى تحديد أي صف من حالة مقسّمة بيحدد كل صفوفها مع بعض
 // (عشان النقل الجماعي الآمن)، زرار "تعديل" في الشريط العلوي بقى غير كافي لتعديل نوع واحد
@@ -9604,69 +9591,6 @@ function renderTreasury(bypassLimit){
   const hasActiveFilter=['tr-flt-from','tr-flt-to','tr-flt-type','tr-flt-box','tr-flt-acctype','tr-flt-text'].some(id=>document.getElementById(id)?.value);
   if(hasActiveFilter)filterTreasury();
 }
-
-// ═══════════════════════════════════════
-// نافذة تلقائية عند فتح صفحة الخزنة: تحصيلات بلَّغ عنها المندوبين من بورتال
-// المندوبين (مسار data/shared/delegatePendingCollections). بسيطة عن قصد — بس
-// اختصار لفتح "حركة خزنة جديدة" ببيانات العميل/المبلغ/اسم المندوب جاهزة، وموظف
-// الخزنة يكمل نوع الخزنة والملاحظات ويحفظ زي أي حركة عادية.
-// ═══════════════════════════════════════
-function checkDelegatePendingCollections(){
-  if(!can('treasury.add'))return;
-  const pending=(DB.get('delegatePendingCollections')||[]).filter(x=>x.status==='pending');
-  const existing=document.getElementById('ov-delegate-collections');if(existing)existing.remove();
-  if(!pending.length)return;
-  const rows=pending.map(p=>`
-    <div class="fg" style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:10px" data-pending-id="${esc(p.id)}">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-        <strong>👤 ${esc(p.client||'-')}</strong>
-        <span style="font-size:11px;color:var(--text3)">المندوب: ${esc(p.delegateName||'-')} · ${esc(p.date||'-')}</span>
-      </div>
-      <div style="font-size:13px;color:var(--gold2);font-weight:800;margin-bottom:8px">💰 ${fmt(p.amount)} ج.م</div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-gold btn-sm" onclick="postDelegateCollection('${esc(p.id)}')">➕ ترحيل للخزنة</button>
-        <button class="btn btn-ghost btn-sm" onclick="cancelDelegateCollection('${esc(p.id)}')">❌ إلغاء</button>
-      </div>
-    </div>`).join('');
-  const html=`<div class="overlay open" id="ov-delegate-collections" onclick="if(event.target===this)closeOv('ov-delegate-collections')">
-    <div class="modal">
-      <div class="mh"><h3>💰 تحصيلات بلَّغ عنها المندوبين</h3><div class="mc-btn" onclick="closeOv('ov-delegate-collections')">✕</div></div>
-      <div class="mb">${rows}</div>
-      <div class="mf"><button class="btn btn-ghost" onclick="closeOv('ov-delegate-collections')">إغلاق</button></div>
-    </div>
-  </div>`;
-  document.body.insertAdjacentHTML('beforeend',html);
-}
-function _updateDelegatePendingCollection(id,patch){
-  const all=DB.get('delegatePendingCollections')||[];
-  const idx=all.findIndex(x=>x.id===id);
-  if(idx===-1)return;
-  all[idx]={...all[idx],...patch};
-  DB.set('delegatePendingCollections',all);
-}
-function postDelegateCollection(id){
-  const all=DB.get('delegatePendingCollections')||[];
-  const p=all.find(x=>x.id===id);if(!p)return;
-  _updateDelegatePendingCollection(id,{status:'posted',postedAt:Date.now(),postedBy:window._currentUser?.name||'-'});
-  document.querySelector(`#ov-delegate-collections [data-pending-id="${id}"]`)?.remove();
-  if(!document.querySelector('#ov-delegate-collections [data-pending-id]'))closeOv('ov-delegate-collections');
-  openTrModal();
-  document.getElementById('tr-type').value='in';
-  document.getElementById('tr-acc-type').value='client';fillTrAcc();
-  const cls=DB.get('clients')||[];
-  const cl=cls.find(c=>c.id===p.clientId)||cls.find(c=>c.name===p.client);
-  const accSel=document.getElementById('tr-acc-name');
-  if(accSel&&cl)accSel.value=cl.id;
-  document.getElementById('tr-amount').value=p.amount||0;
-  document.getElementById('tr-receiver').value=p.delegateName||'';
-  document.getElementById('tr-notes').value=`تحصيل مندوب — ${p.delegateName||'-'} — حالة #${p.caseId||'-'} (${p.product||'-'})`;
-}
-function cancelDelegateCollection(id){
-  _updateDelegatePendingCollection(id,{status:'cancelled',cancelledAt:Date.now(),cancelledBy:window._currentUser?.name||'-'});
-  document.querySelector(`#ov-delegate-collections [data-pending-id="${id}"]`)?.remove();
-  if(!document.querySelector('#ov-delegate-collections [data-pending-id]'))closeOv('ov-delegate-collections');
-}
-
 function sendTrNotif(id){
   const tr=(DB.get('treasury')||[]).find(t=>t.id===id);
   if(!tr){toast('حركة غير موجودة','err');return;}
