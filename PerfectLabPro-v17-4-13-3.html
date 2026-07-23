@@ -8879,6 +8879,9 @@ function _findDuplicatePatientCases(){
   const all=[];
   sources.forEach(src=>{
     (DB.get(src.key)||[]).forEach(r=>{
+      // الفواتير المسوّاة (تسوية) مستبعدة بالكامل من حساب العميل ماليًا (isArchRowSettled) —
+      // فتكرارها لم يعد له أثر حسابي، ومحتسبتش كتكرار فعّال هنا.
+      if(src.key==='archive'&&isArchRowSettled(r.id))return;
       // المقياس: رقم الحالة (زي 55/6) المستخرج من اسم المريض — مش نص الاسم بالكامل.
       // لو الاسم اتغيّر أو اتضاف له حاجة لكن الرقم نفسه اتكرر لنفس العميل، برضه تكرار حقيقي.
       const caseNo=_extractCaseNo(r.noteName);
