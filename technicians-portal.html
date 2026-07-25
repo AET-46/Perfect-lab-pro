@@ -27,75 +27,49 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
-/* ═══ THEME 1 — أصفر ملكي على أبيض ساطع — الافتراضي ═══ */
+/* ═══ THEME 1 — أبيض وبنفسجي/إنديجو (زي واجهة السيستم الكبير) — الافتراضي ═══ */
 :root, body[data-theme="whitegold"]{
-  --bg:#ffffff;--bg2:#ffffff;--bg3:#fff8e1;--bg4:#fdecb8;
-  --text:#000000;--text2:#8a6d00;--text3:#4a4a4a;
-  --gold:#e6b800;--gold2:#ffd700;
+  --bg:#ffffff;--bg2:#ffffff;--bg3:#f5f1ff;--bg4:#ece3fd;
+  --text:#1c1a29;--text2:#6d28d9;--text3:#8a8d91;
+  --gold:#7c3aed;--gold2:#8b5cf6;
   --teal:#0d9488;--green:#16a34a;--red:#dc2626;
   --orange:#ea580c;--blue:#2563eb;--purple:#7c3aed;
-  --border:#f0e2a0;--radius:14px;
-  --grad:linear-gradient(135deg,#e6b800,var(--gold2));
-  --ontext:#241a04;
+  --border:#e6def9;--radius:14px;
+  --card:#ffffff;
+  --grad:linear-gradient(135deg,#7c3aed,#a78bfa);
+  --ontext:#ffffff;
 }
-/* خط أكبر في ثيم "أصفر ملكي وأبيض ساطع" حسب الطلب */
-body[data-theme="whitegold"]{font-size:18px}
-body[data-theme="whitegold"] .header-title{font-size:19px}
-body[data-theme="whitegold"] .tab{font-size:16px}
-body[data-theme="whitegold"] .case-client{font-size:18px}
-body[data-theme="whitegold"] .case-patient,
-body[data-theme="whitegold"] .case-product{font-size:15px}
-body[data-theme="whitegold"] .case-id,
-body[data-theme="whitegold"] .case-date{font-size:13px}
-body[data-theme="whitegold"] .stage-label{font-size:12px}
-body[data-theme="whitegold"] .stage-circle{font-size:13px}
-body[data-theme="whitegold"] .summary-title,
-body[data-theme="whitegold"] .hist-client{font-size:16px}
-body[data-theme="whitegold"] .stat-row,
-body[data-theme="whitegold"] .summary-sub,
-body[data-theme="whitegold"] .hist-meta{font-size:15px}
-body[data-theme="whitegold"] .search-box input,
-body[data-theme="whitegold"] .btn,
-body[data-theme="whitegold"] .empty p,
-body[data-theme="whitegold"] #toast{font-size:16px}
 /* ═══ THEME 2 — أسود لامع وذهبي ملكي ═══ */
 body[data-theme="blackgold"]{
   --bg:#050505;--bg2:#121212;--bg3:#1c1c1c;--bg4:#282828;
-  --text:#ffffff;--text2:#ffd76a;--text3:#c9c9c9;
+  --text:#f6f1e2;--text2:#e3bd4a;--text3:#9b9b9b;
   --gold:#d4af37;--gold2:#ffd76a;
   --teal:#2bb3a0;--green:#3fd08a;--red:#ff6b6f;
   --orange:#ef9f4e;--blue:#5b8fe8;--purple:#a688f2;
   --border:#2c2c2c;--radius:14px;
+  --card:#121212;
   --grad:linear-gradient(135deg,#b8860b,var(--gold2));
   --ontext:#241a04;
 }
-/* خط أكبر في ثيم "أسود لامع وذهبي ملكي" حسب الطلب */
-body[data-theme="blackgold"]{font-size:18px}
-body[data-theme="blackgold"] .header-title{font-size:19px}
-body[data-theme="blackgold"] .tab{font-size:16px}
-body[data-theme="blackgold"] .case-client{font-size:18px}
-body[data-theme="blackgold"] .case-patient,
-body[data-theme="blackgold"] .case-product{font-size:15px}
-body[data-theme="blackgold"] .case-id,
-body[data-theme="blackgold"] .case-date{font-size:13px}
-body[data-theme="blackgold"] .stage-label{font-size:12px}
-body[data-theme="blackgold"] .stage-circle{font-size:13px}
-body[data-theme="blackgold"] .summary-title,
-body[data-theme="blackgold"] .hist-client{font-size:16px}
-body[data-theme="blackgold"] .stat-row,
-body[data-theme="blackgold"] .summary-sub,
-body[data-theme="blackgold"] .hist-meta{font-size:15px}
-body[data-theme="blackgold"] .search-box input,
-body[data-theme="blackgold"] .btn,
-body[data-theme="blackgold"] .empty p,
-body[data-theme="blackgold"] #toast{font-size:16px}
+/* ═══ THEME 3 — كحلي داكن وأزرق ملكي على بطاقات فاتحة (زجاجي) ═══ */
+body[data-theme="navyblue"]{
+  --bg:#0a0e1f;--bg2:#0a0e1f;--bg3:#eef1f6;--bg4:#dde2ea;
+  --text:#141826;--text2:#2f6fed;--text3:#7b8496;
+  --gold:#2f6fed;--gold2:#2f6fed;
+  --teal:#0d9488;--green:#16a34a;--red:#dc2626;
+  --orange:#ea580c;--blue:#2f6fed;--purple:#7c3aed;
+  --border:rgba(255,255,255,.08);--radius:16px;
+  --card:#f2f5f9;
+  --grad:linear-gradient(135deg,#2f6fed,#5c8dff);
+  --ontext:#ffffff;
+}
 body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-height:100vh;transition:background .3s}
 .theme-btn{background:var(--bg3);border:1px solid var(--border);color:var(--gold2);border-radius:10px;width:30px;height:30px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 
 /* LOGIN */
 #login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;padding:20px}
 #login-screen.hidden{display:none}
-.login-card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:32px 24px;width:100%;max-width:360px;text-align:center}
+.login-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px 24px;width:100%;max-width:360px;text-align:center}
 .login-card h1{font-size:24px;color:var(--gold2);margin-bottom:4px}
 .login-card p{font-size:14px;color:var(--text3);margin-bottom:24px}
 .login-card input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:16px;font-family:inherit;margin-bottom:12px;direction:rtl}
@@ -134,7 +108,7 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
 .content{padding:14px;max-width:600px;margin:0 auto}
 
 /* CASE CARD */
-.case-card{background:color-mix(in srgb, var(--bg2) 90%, transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,.18)}
+.case-card{background:color-mix(in srgb, var(--card) 92%, transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,.18)}
 .case-head{padding:12px 14px;display:flex;justify-content:space-between;align-items:flex-start}
 .case-client{font-size:16px;font-weight:900;color:var(--text)}
 .case-patient{font-size:13px;color:var(--teal);margin-top:2px}
@@ -152,6 +126,7 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
 .stage-circle.active{border-color:var(--green);background:rgba(34,197,94,.15);color:var(--green)}
 .stage-circle.pending{border-color:var(--orange);background:rgba(249,115,22,.15);color:var(--orange)}
 .stage-circle.approved{border-color:var(--teal);background:rgba(45,212,191,.15);color:var(--teal)}
+.stage-circle.rejected{border-color:var(--red);background:rgba(239,68,68,.15);color:var(--red)}
 .stage-label{font-size:11px;color:var(--text3);text-align:center;max-width:60px}
 
 /* STATUS BADGE */
@@ -161,7 +136,7 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
 .badge-rejected{background:rgba(239,68,68,.15);color:var(--red)}
 
 /* SUMMARY CARD */
-.summary-card{background:color-mix(in srgb, var(--bg2) 90%, transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:0 4px 18px rgba(0,0,0,.18)}
+.summary-card{background:color-mix(in srgb, var(--card) 92%, transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:0 4px 18px rgba(0,0,0,.18)}
 .summary-title{font-size:14px;color:var(--text3);margin-bottom:10px}
 .summary-amount{font-size:30px;font-weight:900;color:var(--gold2)}
 .summary-sub{font-size:13px;color:var(--text3);margin-top:2px}
@@ -186,7 +161,7 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
 /* CONFIRM MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:flex-end;justify-content:center;z-index:999;padding:20px}
 .modal-overlay.hidden{display:none}
-.modal-box{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:20px;width:100%;max-width:400px;text-align:center}
+.modal-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;width:100%;max-width:400px;text-align:center}
 .modal-box h3{font-size:17px;font-weight:900;margin-bottom:8px}
 .modal-box p{font-size:14px;color:var(--text3);margin-bottom:16px}
 .modal-btns{display:flex;gap:10px}
@@ -199,8 +174,27 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
 .btn-ghost{background:var(--bg3);color:var(--text);border:1px solid var(--border)}
 .btn-red{background:rgba(239,68,68,.2);color:var(--red);border:1px solid var(--red)}
 
+/* DUES DETAIL TABLE — تبويب تفصيلي داخل مستحقاتي */
+.summary-subtabs{display:flex;gap:8px;margin-bottom:12px}
+.summary-subtab{flex:1;text-align:center;padding:8px;border-radius:10px;font-size:13px;font-weight:700;background:var(--bg3);color:var(--text3);border:1px solid var(--border);cursor:pointer}
+.summary-subtab.on{background:var(--grad);color:var(--ontext);border-color:var(--gold2)}
+.dues-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.dues-table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:640px}
+.dues-table th{background:var(--bg3);color:var(--text3);padding:8px 6px;text-align:center;font-weight:900;border-bottom:1px solid var(--border);white-space:nowrap}
+.dues-table td{padding:7px 6px;text-align:center;border-bottom:1px solid var(--border)}
+.dues-table tfoot td{font-weight:900;color:var(--gold2);background:var(--bg3)}
+
+/* CLIENT SIDEBAR — قائمة جانبية صغيرة داخل الدفتر لتسجيل حالة جديدة */
+.dafter-sidebar-toggle{position:fixed;top:120px;left:0;background:var(--grad);color:var(--ontext);border:none;border-radius:0 10px 10px 0;padding:10px 7px;font-size:12px;font-weight:900;writing-mode:vertical-rl;cursor:pointer;z-index:80;box-shadow:2px 0 10px rgba(0,0,0,.2)}
+.dafter-sidebar{position:fixed;top:0;bottom:0;left:0;width:130px;background:var(--card);border-right:1px solid var(--border);z-index:150;padding:14px 8px;overflow-y:auto;box-shadow:2px 0 20px rgba(0,0,0,.35);transition:transform .2s}
+.dafter-sidebar.hidden{transform:translateX(-100%)}
+.dafter-sidebar-head{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:900;color:var(--gold2);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.dafter-sidebar-head button{background:none;border:none;color:var(--text3);font-size:15px;cursor:pointer}
+.dafter-client-btn{display:block;width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 6px;font-size:12px;font-family:inherit;font-weight:700;margin-bottom:6px;cursor:pointer;text-align:center}
+.dafter-sidebar-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:140}
+
 /* HISTORY TAB */
-.hist-card{background:color-mix(in srgb, var(--bg2) 90%, transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;padding:12px 14px;box-shadow:0 4px 18px rgba(0,0,0,.18)}
+.hist-card{background:color-mix(in srgb, var(--card) 92%, transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;padding:12px 14px;box-shadow:0 4px 18px rgba(0,0,0,.18)}
 .hist-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .hist-client{font-size:15px;font-weight:900}
 .hist-meta{font-size:12px;color:var(--text3)}
@@ -210,15 +204,16 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
 .hist-stage.pending{background:rgba(249,115,22,.15);color:var(--orange)}
 .hist-stage.rejected{background:rgba(239,68,68,.15);color:var(--red)}
 
-/* TEETH CHART — طقم أسنان علوي وسفلي */
+/* TEETH CHART — شكل قوس الفك (طراز exoCAD) — سن واحد يمثل الفكين في بيضاوي واحد */
 .teeth-btn{margin-top:10px;width:100%;background:var(--bg3);border:1px dashed var(--border);color:var(--gold2);border-radius:10px;padding:8px;font-size:13px;font-family:inherit;cursor:pointer;font-weight:700}
 .teeth-summary{font-size:12px;color:var(--teal);margin-top:4px}
-.tooth-modal-box{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:18px;width:100%;max-width:420px;max-height:92vh;overflow-y:auto}
-.tooth-arch{display:flex;flex-direction:column;align-items:center;gap:6px;margin:10px 0 16px}
-.tooth-arch-label{font-size:13px;color:var(--text3);font-weight:700;margin-bottom:4px}
-.tooth-row{display:flex;gap:4px;justify-content:center}
-.tooth{width:26px;height:32px;border-radius:8px 8px 10px 10px;border:2px solid var(--border);background:var(--bg3);color:var(--text3);font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s}
-.tooth.sel{background:var(--grad);border-color:var(--gold2);color:var(--ontext);transform:translateY(-3px)}
+.tooth-modal-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;width:100%;max-width:420px;max-height:92vh;overflow-y:auto}
+.tooth-optional-note{font-size:11px;color:var(--text3);text-align:center;margin-bottom:10px}
+.tooth-oval-wrap{position:relative;width:300px;max-width:100%;height:360px;margin:6px auto 14px}
+.tooth-oval-wrap::before{content:'';position:absolute;inset:22px;border:1.5px dashed var(--border);border-radius:50%;opacity:.5}
+.tooth-oval-wrap::after{content:'';position:absolute;left:50%;top:0;bottom:0;width:0;border-right:1px dashed var(--border);opacity:.3}
+.tooth{position:absolute;width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:var(--bg3);color:var(--text3);font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s;transform:translate(-50%,-50%)}
+.tooth.sel{background:var(--grad);border-color:var(--gold2);color:var(--ontext);transform:translate(-50%,-50%) scale(1.18);box-shadow:0 2px 10px color-mix(in srgb, var(--gold) 45%, transparent)}
 .tooth-quad-gap{width:8px}
 </style>
 </head>
@@ -252,10 +247,10 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
 
 <!-- TABS -->
 <div class="tabs" id="main-tabs" style="display:none">
-  <div class="tab on" onclick="switchTab('dafter',this)">📒 الدفتر</div>
+  <div class="tab on" onclick="switchTab('dafter',this)">📋 الدفتر</div>
   <div class="tab" onclick="switchTab('proof',this)">🔬 البروفه</div>
-  <div class="tab" onclick="switchTab('missed',this)">📦 حالات فائتة</div>
-  <div class="tab" onclick="switchTab('history',this)">📋 سجلي</div>
+  <div class="tab" onclick="switchTab('missed',this)">📁 حالات فائتة</div>
+  <div class="tab" onclick="switchTab('history',this)">📝 سجلي</div>
   <div class="tab" onclick="switchTab('summary',this)">💰 مستحقاتي</div>
 </div>
 
@@ -266,7 +261,7 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
     <input type="text" id="search-input" placeholder="بحث بالاسم أو رقم الحالة أو المنتج..." oninput="onSearchInput(this.value)">
     <button class="search-clear" id="search-clear-btn" onclick="clearSearch()">✕</button>
   </div>
-  <div class="date-filter-row">
+  <div class="date-filter-row" id="date-filter-row">
     <label class="date-filter-lbl">من:</label>
     <input type="date" id="date-from" class="date-input" onchange="onDateFilterChange()">
     <label class="date-filter-lbl">إلى:</label>
@@ -308,24 +303,41 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
   </div>
 </div>
 
-<!-- TOOTH CHART MODAL -->
+<!-- TOOTH CHART MODAL — قوس فكي واحد بشكل exoCAD -->
 <div class="modal-overlay hidden" id="tooth-modal">
   <div class="tooth-modal-box">
     <h3 style="font-size:17px;font-weight:900;margin-bottom:4px;color:var(--gold2)">🦷 اختيار الأسنان</h3>
-    <p style="font-size:13px;color:var(--text3);margin-bottom:10px" id="tooth-case-label"></p>
-    <div class="tooth-arch">
-      <div class="tooth-arch-label">علوي (Upper)</div>
-      <div class="tooth-row" id="tooth-upper-r"></div>
-    </div>
-    <div style="border-top:1px dashed var(--border);margin:4px 0 10px"></div>
-    <div class="tooth-arch">
-      <div class="tooth-arch-label">سفلي (Lower)</div>
-      <div class="tooth-row" id="tooth-lower-r"></div>
-    </div>
+    <p style="font-size:13px;color:var(--text3);margin-bottom:2px" id="tooth-case-label"></p>
+    <p class="tooth-optional-note">اختياري — يمكنك الحفظ بدون تحديد أي سن</p>
+    <div class="tooth-oval-wrap" id="tooth-oval"></div>
     <div style="font-size:12px;color:var(--text3);text-align:center;margin-bottom:10px" id="tooth-count-label"></div>
     <div class="modal-btns">
       <button class="btn btn-ghost" onclick="closeToothModal()">إلغاء</button>
       <button class="btn btn-gold" onclick="saveTeeth()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW CASE QUICK REQUEST MODAL -->
+<div class="modal-overlay hidden" id="newcase-modal">
+  <div class="modal-box">
+    <h3 style="font-size:16px;font-weight:900;margin-bottom:4px;color:var(--gold2)">➕ تسجيل حالة جديدة</h3>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:10px">تسجيل سريع بالعميل والمنتج والعدد فقط — المشرف بيكمّل باقي بيانات الحالة في السيستم</p>
+    <div style="text-align:right;margin-bottom:8px">
+      <label style="font-size:12px;color:var(--text3)">العميل</label>
+      <div style="font-weight:900;font-size:15px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px" id="nc-client-name"></div>
+    </div>
+    <div style="text-align:right;margin-bottom:8px">
+      <label style="font-size:12px;color:var(--text3)">نوع المنتج</label>
+      <select id="nc-product" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px;color:var(--text);font-size:14px;font-family:inherit"></select>
+    </div>
+    <div style="text-align:right;margin-bottom:12px">
+      <label style="font-size:12px;color:var(--text3)">العدد</label>
+      <input type="number" id="nc-qty" value="1" min="1" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px;color:var(--text);font-size:14px;font-family:inherit">
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeNewCaseModal()">إلغاء</button>
+      <button class="btn btn-gold" onclick="submitNewCaseRequest()">📤 إرسال للمشرف</button>
     </div>
   </div>
 </div>
@@ -352,56 +364,68 @@ const FB_CONFIG={
 // مراحل الفنيين — نفس ما في السيستم الأصلي
 const STAGE_LABELS={
   'تصميم زيركون':'تصميم\nزيركون',
+  'خراطة':'خراطة',
   'بناء زيركون':'بناء\nزيركون',
   'تفنيش زيركون':'تفنيش\nزيركون',
   'تصميم معدن':'تصميم\nمعدن',
   'ليزر':'ليزر',
-  'بناء بورسلين':'بناء\nبورسلين',
   'تفنيش معدن':'تفنيش\nمعدن',
-  'خراطة':'خراطة'
+  'بناء بورسلين':'بناء\nبورسلين'
 };
 
-// المراحل المناسبة لكل نوع منتج
-function getStagesForProduct(productName){
+// ═══════════════════════════════════════════════
+// فئة الإنتاج — نفس منطق getProductionCat/getTechStagesForProduct بالظبط من
+// السيستم الكبير (ماستر داتا prices.prodCat أولاً، بعدين كلمات مفتاحية) — عشان
+// أي منتج بيتصنّف هنا بنفس الطريقة بالظبط اللي بيتصنّف بيها هناك، من غير اختلاف.
+// ═══════════════════════════════════════════════
+let _prices=[];
+const PROD_CAT_KEYWORDS={
+  zirconia:['زيركون','زركون','zirc','zirconia','zirconi'],
+  porcelain:['بورسلين','بورسلان','معدن','فيس','emax','pfm','porcelain','metal','vm'],
+  orthodontic:['تقويم','سبرنج','هاولي','هيركس','حافظ','ريتينر','ريتيز','لوح','retainer','hawley','herbst','ortho'],
+  removable:['متحرك','removable']
+};
+function getProductionCat(productName){
+  const match=_prices.find(p=>p.name===productName);
+  if(match&&match.prodCat)return match.prodCat;
   const n=(productName||'').toLowerCase();
-  if(n.includes('زيركون'))return['تصميم زيركون','بناء زيركون','تفنيش زيركون'];
-  if(n.includes('معدن')||n.includes('بورسلين')||n.includes('فيس'))return['تصميم معدن','ليزر','بناء بورسلين','تفنيش معدن'];
-  return[]; // متحرك/تقويم — بدون مراحل
+  for(const[cat,kws]of Object.entries(PROD_CAT_KEYWORDS)){
+    if(kws.some(kw=>n.includes(kw)))return cat;
+  }
+  return 'unknown'; // غير محدد — يعرض كل المراحل
+}
+function getStagesForProduct(productName){
+  const cat=getProductionCat(productName);
+  if(cat==='zirconia')return['تصميم زيركون','خراطة','بناء زيركون','تفنيش زيركون'];
+  if(cat==='porcelain')return['تصميم معدن','ليزر','تفنيش معدن','بناء بورسلين'];
+  if(cat==='removable'||cat==='orthodontic')return[]; // بدون فنيين — نفس السيستم الكبير
+  return['تصميم زيركون','خراطة','بناء زيركون','تفنيش زيركون','تصميم معدن','ليزر','تفنيش معدن','بناء بورسلين'];
 }
 
-// مراحل كل تخصص — لتقييد الفني على مراحل تخصصه فقط. التخصص في السيستم الكبير مسجّل
-// بالخطوة (تصميم / بناء / تفنيش) مش بالخامة، فتخصص "تصميم" مثلاً بيغطي تصميم زيركون
-// وتصميم معدن مع بعض. ملحوظة: "ليزر" (خطوة وسيطة في تشغيلات المعدن) اتحطت مبدئيًا
-// تحت تخصص "بناء" لأنها أقرب خطوة ليه — لو فعليًا ليها تخصص منفصل في السيستم الكبير
-// قولّي وأفصلها.
-const DEPARTMENT_STAGES={
-  'تصميم':['تصميم زيركون','تصميم معدن'],
-  'بناء':['بناء زيركون','ليزر','بناء بورسلين'],
-  'تفنيش':['تفنيش زيركون','تفنيش معدن']
-};
-// المراحل اللي يقدر الفني الحالي يشتغل عليها فعلاً (حسب قسمه)
+// FIX #TECH-SPEC-EXACT-MATCH: التخصص (tc-spec) في السيستم الكبير قيمة مرحلة واحدة
+// محددة بالظبط (زي "بناء زيركون")، مش قسم عام (تصميم/بناء/تفنيش) — التطابق القديم
+// هنا كان بيقارن بقيم قسم مش موجودة أصلاً في الماستر داتا، فكل فني كان بيشوف كل
+// المراحل دايمًا بالغلط (فني عام). الفني اللي تخصصه "عام" لسه بيشوف كل مراحل المنتج.
 function getStagesForTech(productName){
   const stages=getStagesForProduct(productName);
-  const dept=_user&&_user.department;
-  if(!dept||!DEPARTMENT_STAGES[dept])return stages; // فني عام (بدون قسم محدد) يشوف كل المراحل
-  const allowed=DEPARTMENT_STAGES[dept];
-  return stages.filter(s=>allowed.includes(s));
+  const spec=_user&&_user.department;
+  if(!spec||spec==='عام')return stages;
+  return stages.filter(s=>s===spec);
 }
 
+
 // ═══════════════════════════════════════════════
-// طقم الأسنان — ترقيم FDI (عالمي) — 32 سن
+// طقم الأسنان — ترقيم FDI (عالمي) — 32 سن، مرتبة حول قوس بيضاوي واحد
+// (يمين علوي → يسار علوي → يسار سفلي → يمين سفلي) بنفس منطق عرض exoCAD
 // ═══════════════════════════════════════════════
-const TEETH_UPPER_R=[18,17,16,15,14,13,12,11]; // علوي يمين (يعرض معكوس بصريًا RTL)
-const TEETH_UPPER_L=[21,22,23,24,25,26,27,28]; // علوي يسار
-const TEETH_LOWER_R=[48,47,46,45,44,43,42,41]; // سفلي يمين
-const TEETH_LOWER_L=[31,32,33,34,35,36,37,38]; // سفلي يسار
+const TEETH_OVAL=[18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28,38,37,36,35,34,33,32,31,41,42,43,44,45,46,47,48];
 let _toothCaseId=null,_toothSelected=[];
 
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
 let _db=null,_user=null,_curTab='dafter';
-let _dafter=[],_proof=[],_archive=[],_myLogs=[];
+let _dafter=[],_proof=[],_archive=[],_myLogs=[],_allLogs=[],_clients=[],_myCaseRequests=[];
 let _searchQuery='';
 // (رقم الإدارة بقى ديناميكي من data/shared/labinfo — شوف _getAdminNumbers أسفل)
 
@@ -487,8 +511,8 @@ async function verifyPassword(pass,stored){
 // ═══════════════════════════════════════════════
 // THEME SWITCHER — 3 ألوان دافئة عصرية
 // ═══════════════════════════════════════════════
-const THEMES=['whitegold','blackgold'];
-const THEME_NAMES={whitegold:'☀️ أصفر ملكي وأبيض ساطع',blackgold:'⚫ أسود لامع وذهبي ملكي'};
+const THEMES=['whitegold','blackgold','navyblue'];
+const THEME_NAMES={whitegold:'☀️ أصفر ملكي وأبيض ساطع',blackgold:'⚫ أسود لامع وذهبي ملكي',navyblue:'🌊 كحلي وأزرق ملكي'};
 function applyTheme(t){document.body.setAttribute('data-theme',t);localStorage.setItem('tp_theme',t);}
 function cycleTheme(){
   const cur=localStorage.getItem('tp_theme')||'whitegold';
@@ -541,6 +565,8 @@ async function doLogin(){
     // 💰 الراتب الثابت (لو موجود) بيتخزّن في data/shared/employees مش في technicians
     const employees=toArr(await fbGet('data/shared/employees'));
     const emp=employees.find(e=>e.name===u.name)||{};
+    // ماستر داتا المنتجات (فئة الإنتاج) — نفس مصدر السيستم الكبير لتصنيف المنتج
+    _prices=toArr(await fbGet('data/shared/prices'));
     _user={name:u.name,id:tech.id||u.uid||u.name,rates:tech.rates||{},productRates:tech.productRates||[],department:tech.spec||'',salary:+emp.salary||0};
     localStorage.setItem('tp_user',JSON.stringify(_user));
     showApp();
@@ -576,10 +602,31 @@ function showApp(){
   document.getElementById('hd-name').textContent=_user.name;
   document.getElementById('hd-avatar').textContent=(_user.name||'ف')[0];
   const deptEl=document.getElementById('hd-dept');
-  if(_user.department){deptEl.textContent='قسم '+_user.department;deptEl.style.display='inline-block';}
+  if(_user.department&&_user.department!=='عام'){deptEl.textContent='تخصص '+_user.department;deptEl.style.display='inline-block';}
   else deptEl.style.display='none';
   document.getElementById('search-wrap').style.display='block';
   loadTab('dafter');
+  _checkNewRejections();
+}
+
+// تنبيه الفني بأي تسجيل اترفض من الإدارة من آخر مرة فتح فيها البوابة —
+// عشان مايفضلش يعرف غير لو دخل تبويب "سجلي" بنفسه.
+async function _checkNewRejections(){
+  try{
+    const logs=await fbGet('techLogs');
+    if(!logs)return;
+    const arr=Array.isArray(logs)?logs:Object.values(logs);
+    const mine=arr.filter(l=>l.techName===_user.name&&l.status==='rejected');
+    if(!mine.length)return;
+    const lastSeenKey='tp_rejseen_'+(_user.id||_user.name);
+    const lastSeen=Number(localStorage.getItem(lastSeenKey)||0);
+    const newRejected=mine.filter(l=>(l.reviewedAt||0)>lastSeen);
+    if(newRejected.length){
+      toast(`⚠️ تم رفض ${newRejected.length} تسجيل من الإدارة — راجع تبويب "سجلي"`,'err');
+    }
+    const maxReviewed=mine.reduce((m,l)=>Math.max(m,l.reviewedAt||0),lastSeen);
+    localStorage.setItem(lastSeenKey,String(maxReviewed));
+  }catch(e){}
 }
 
 function switchTab(tab,el){
@@ -593,6 +640,8 @@ function switchTab(tab,el){
   document.getElementById('search-clear-btn')?.classList.remove('show');
   const searchable=(tab==='dafter'||tab==='proof'||tab==='missed'||tab==='history');
   document.getElementById('search-wrap').style.display=searchable?'block':'none';
+  document.getElementById('date-filter-row').style.display='flex';
+  document.getElementById('search-input').placeholder='بحث بالاسم أو رقم الحالة أو المنتج...';
   loadTab(tab);
 }
 
@@ -662,12 +711,15 @@ async function loadTab(tab){
     if(tab==='dafter'){
       const data=await fbGet('data/shared/dafter');
       _dafter=data?(Array.isArray(data)?data:Object.values(data)):[];
+      await loadMyLogs();
+      await ensureClientsLoaded();
       spinner.style.display='none';
       renderCaseList(_dafter,'dafter');
     }
     else if(tab==='proof'){
       const data=await fbGet('data/shared/proof');
       _proof=data?(Array.isArray(data)?data:Object.values(data)):[];
+      await loadMyLogs();
       spinner.style.display='none';
       renderCaseList(_proof,'proof');
     }
@@ -700,23 +752,35 @@ async function loadTab(tab){
 function renderCaseList(list,source){
   const content=document.getElementById('tab-content');
   const filtered=list.filter(r=>matchesSearch([r.client,r.noteName,r.caseId,r.product])&&matchesDateRange(r.date));
+  const sidebarHtml=source==='dafter'?dafterSidebarHtml():'';
+
   if(!list.length){
-    content.innerHTML=`<div class="empty"><div class="empty-icon">${source==='dafter'?'📒':'🔬'}</div><p>لا توجد حالات حالياً</p></div>`;
+    content.innerHTML=sidebarHtml+`<div class="empty"><div class="empty-icon">${source==='dafter'?'📒':'🔬'}</div><p>لا توجد حالات حالياً</p></div>`;
     return;
   }
   if(!filtered.length){
-    content.innerHTML=`<div class="empty"><div class="empty-icon">🔍</div><p>لا توجد نتائج مطابقة للبحث</p></div>`;
+    content.innerHTML=sidebarHtml+`<div class="empty"><div class="empty-icon">🔍</div><p>لا توجد نتائج مطابقة للبحث</p></div>`;
     return;
   }
+
+  // المراحل المسجّلة فعلاً من أي فني (غير مرفوضة) — تُستخدم لإخفاء الحالة من
+  // الدفتر/البروفه عند كل فنيي نفس المرحلة بمجرد ما حد منهم يسجّلها (مثلاً لو
+  // فيه 3 فنيين تصميم، تسجيل واحد منهم يخفيها عند التلاتة). المفتاح caseId_stage
+  // بيفرّق تلقائيًا بين المراحل، فمرحلة فني تاني مختلفة (زي بناء بورسلين) مش
+  // بتتأثر خالص وبتفضل ظاهرة عادي لحد ما تتسجّل هي بالذات.
+  const myLoggedKeys=new Set(_allLogs.filter(l=>l.status!=='rejected').map(l=>`${l.caseId}_${l.stage}`));
 
   // ترتيب حسب التاريخ (الأحدث أولاً)
   const sorted=[...filtered].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
 
-  content.innerHTML=sorted.map(r=>{
+  const visible=[];
+  const cardsHtml=sorted.map(r=>{
     const stages=getStagesForTech(r.product);
     if(!stages.length)return''; // متحرك/تقويم — لا تظهر للفني
+    const remaining=stages.filter(s=>!myLoggedKeys.has(`${r.id}_${s}`));
+    if(!remaining.length)return''; // كل مراحل الفني على الحالة دي مسجّلة بالفعل — اتنقلت لسجلي
 
-    // سجلات الفني الحالية على هذه الحالة (من techLogs في Firebase)
+    visible.push(r);
     return`<div class="case-card" id="card-${esc(r.id)}">
       <div class="case-head">
         <div>
@@ -739,10 +803,13 @@ function renderCaseList(list,source){
     </div>`;
   }).join('');
 
+  const anyCards=visible.length>0;
+  content.innerHTML=sidebarHtml+(anyCards?cardsHtml:`<div class="empty"><div class="empty-icon">✅</div><p>كل حالاتك مسجّلة — راجع تبويب "سجلي"</p></div>`);
+
   // تحميل حالة كل مرحلة (pending/approved) من Firebase
-  loadStageStatuses(sorted,source);
+  loadStageStatuses(visible,source);
   // تحميل ملخص الأسنان المحفوظة لكل حالة
-  loadTeethSummaries(sorted);
+  loadTeethSummaries(visible);
 }
 
 // ═══════════════════════════════════════════════
@@ -752,7 +819,10 @@ function renderCaseList(list,source){
 // ═══════════════════════════════════════════════
 function renderMissed(){
   const content=document.getElementById('tab-content');
-  const myLoggedKeys=new Set(_myLogs.map(l=>`${l.caseId}_${l.stage}`));
+  // ملحوظة: بنستبعد بس المراحل المعلّقة/المعتمدة من هنا. المرفوضة بالذات لازم
+  // تفضل ظاهرة عشان الفني يقدر يعيد تسجيلها — قبل كده كانت بتتخفي زي المعتمدة
+  // تمامًا، فالفني كان مالوش أي طريقة يشوف أو يصلّح مرحلة اترفضت بعد الأرشفة.
+  const myLoggedKeys=new Set(_myLogs.filter(l=>l.status!=='rejected').map(l=>`${l.caseId}_${l.stage}`));
   const candidates=_archive.map(r=>{
     const stages=getStagesForTech(r.product).filter(s=>!myLoggedKeys.has(`${r.id}_${s}`));
     return{r,stages};
@@ -780,7 +850,7 @@ function renderMissed(){
           <div class="case-product">🦷 ${esc(r.product||'-')} ${r.qty>1?`× ${r.qty}`:''}</div>
         </div>
         <div style="text-align:left">
-          <span class="case-source" style="background:var(--gold,#c9a227);color:#000">مؤرشفة</span>
+          <span class="case-source" style="background:var(--gold);color:var(--ontext)">مؤرشفة</span>
         </div>
       </div>
       <div class="stages-row" id="stages-${esc(r.id)}">
@@ -817,17 +887,22 @@ async function openToothModal(caseId,label){
 function closeToothModal(){document.getElementById('tooth-modal').classList.add('hidden');}
 
 function renderToothRows(){
-  const rowHtml=(right,left)=>`
-    ${right.map(t=>toothBtn(t)).join('')}
-    <div class="tooth-quad-gap"></div>
-    ${left.map(t=>toothBtn(t)).join('')}`;
-  document.getElementById('tooth-upper-r').innerHTML=rowHtml(TEETH_UPPER_R,TEETH_UPPER_L);
-  document.getElementById('tooth-lower-r').innerHTML=rowHtml(TEETH_LOWER_R,TEETH_LOWER_L);
+  const wrap=document.getElementById('tooth-oval');
+  const w=300,h=360; // يطابق أبعاد .tooth-oval-wrap الثابتة في الـCSS
+  const cx=w/2,cy=h/2,rx=w/2-18,ry=h/2-18;
+  const n=TEETH_OVAL.length;
+  wrap.innerHTML=TEETH_OVAL.map((t,i)=>{
+    // البداية من أعلى القوس (12 اتجاه الساعة) والدوران مع اتجاه عقارب الساعة
+    const angle=(i/n)*2*Math.PI-Math.PI/2;
+    const x=cx+rx*Math.cos(angle);
+    const y=cy+ry*Math.sin(angle);
+    return toothBtn(t,x,y);
+  }).join('');
   updateToothCountLabel();
 }
-function toothBtn(t){
+function toothBtn(t,x,y){
   const sel=_toothSelected.includes(t);
-  return `<div class="tooth ${sel?'sel':''}" onclick="toggleTooth(${t})">${t}</div>`;
+  return `<div class="tooth ${sel?'sel':''}" style="left:${x}px;top:${y}px" onclick="toggleTooth(${t})">${t}</div>`;
 }
 function toggleTooth(t){
   const i=_toothSelected.indexOf(t);
@@ -873,7 +948,7 @@ async function loadStageStatuses(list,source){
       const key=`${log.caseId}_${log.stage}`;
       const circle=document.getElementById('sc-'+key);
       if(circle){
-        circle.className=`stage-circle ${log.status==='approved'?'approved':log.status==='rejected'?'':'pending'}`;
+        circle.className=`stage-circle ${log.status==='approved'?'approved':log.status==='rejected'?'rejected':'pending'}`;
       }
     });
   }catch(e){}
@@ -898,7 +973,17 @@ async function toggleStage(caseId,stage,source,btnEl){
       toast('هذه المرحلة معتمدة من الأدمن ولا يمكن إلغاؤها','warn');
       return;
     }
-    // إلغاء التسجيل
+    if(existing.status==='rejected'){
+      // تم رفضها من الإدارة سابقًا — نتيح إعادة التسجيل مباشرة لمراجعة جديدة
+      showModal('إعادة التسجيل',`تم رفض تسجيلك في مرحلة "${stage}" من الإدارة سابقًا. هل تريد تسجيلها مرة أخرى للمراجعة؟`,async()=>{
+        try{
+          await fbSet(`techLogs/${existing.id}`,null);
+          await _createStageLog(caseId,stage,source);
+        }catch(e){toast('خطأ في إعادة التسجيل','err');}
+      });
+      return;
+    }
+    // إلغاء التسجيل (لسه معلّق)
     showModal('إلغاء التسجيل',`هل تريد إلغاء تسجيلك في مرحلة "${stage}"؟`,async()=>{
       try{
         await fbSet(`techLogs/${existing.id}`,null);
@@ -910,7 +995,10 @@ async function toggleStage(caseId,stage,source,btnEl){
     return;
   }
 
-  // تسجيل جديد
+  await _createStageLog(caseId,stage,source);
+}
+
+async function _createStageLog(caseId,stage,source){
   const list=source==='dafter'?_dafter:source==='proof'?_proof:_archive;
   const rec=list.find(r=>r.id===caseId);
   if(!rec)return;
@@ -941,15 +1029,91 @@ async function toggleStage(caseId,stage,source,btnEl){
 }
 
 // ═══════════════════════════════════════════════
+// حالة جديدة — طلب سريع من الفني (عميل + منتج + عدد فقط)
+// المشرف يكمّل باقي بيانات الحالة (السعر، التاريخ، المرحلة...) في السيستم الكبير
+// — بنفس فكرة نافذة المناديب. بيتخزن في مسار Firebase مستقل تمامًا "techCaseRequests"
+// (زي techLogs بالظبط) عشان مايلمسش أو يتعارض مع بنية بيانات السيستم الكبير خالص.
+// ═══════════════════════════════════════════════
+let _ncSelectedClient='';
+let _dafterSidebarOpen=false,_clientsLoaded=false;
+
+// تحميل العملاء والأسعار مرة واحدة فقط (يُستخدم بواسطة القائمة الجانبية في الدفتر)
+async function ensureClientsLoaded(){
+  if(_clientsLoaded)return;
+  try{
+    const cdata=await fbGet('data/shared/clients');
+    _clients=cdata?(Array.isArray(cdata)?cdata:Object.values(cdata)):[];
+    if(!_prices.length){
+      const pdata=await fbGet('data/shared/prices');
+      _prices=pdata?(Array.isArray(pdata)?pdata:Object.values(pdata)):[];
+    }
+    _clientsLoaded=true;
+  }catch(e){}
+}
+
+// القائمة الجانبية الصغيرة داخل تبويب الدفتر — زر باسم كل عميل، وبالضغط عليه
+// تفتح نافذة الإدخال مباشرة (عميل + منتج + عدد) من غير أي صفحة منفصلة
+function dafterSidebarHtml(){
+  return`
+  <button class="dafter-sidebar-toggle" onclick="toggleDafterSidebar()">➕ حالة</button>
+  ${_dafterSidebarOpen?`<div class="dafter-sidebar-backdrop" onclick="toggleDafterSidebar()"></div>`:''}
+  <div class="dafter-sidebar ${_dafterSidebarOpen?'':'hidden'}" id="dafter-sidebar">
+    <div class="dafter-sidebar-head"><span>👤 اختر العميل</span><button onclick="toggleDafterSidebar()">✕</button></div>
+    ${_clients.length?_clients.map(c=>`<button class="dafter-client-btn" onclick="openNewCaseModal('${esc(c.name).replace(/'/g,"\\'")}')">${esc(c.name)}</button>`).join(''):`<div style="font-size:12px;color:var(--text3);text-align:center;padding:10px">لا توجد بيانات عملاء</div>`}
+  </div>`;
+}
+
+async function toggleDafterSidebar(){
+  _dafterSidebarOpen=!_dafterSidebarOpen;
+  if(_dafterSidebarOpen)await ensureClientsLoaded();
+  if(_curTab==='dafter')renderCaseList(_dafter,'dafter');
+}
+
+function openNewCaseModal(clientName){
+  _ncSelectedClient=clientName;
+  document.getElementById('nc-client-name').textContent=clientName;
+  const sel=document.getElementById('nc-product');
+  sel.innerHTML=_prices.map(p=>`<option>${esc(p.name)}</option>`).join('')||'<option value="">لا توجد منتجات محمّلة</option>';
+  document.getElementById('nc-qty').value=1;
+  document.getElementById('newcase-modal').classList.remove('hidden');
+}
+function closeNewCaseModal(){document.getElementById('newcase-modal').classList.add('hidden');}
+
+async function submitNewCaseRequest(){
+  const product=document.getElementById('nc-product').value;
+  const qty=Number(document.getElementById('nc-qty').value)||1;
+  if(!_ncSelectedClient){toast('اختر عميل أولاً','err');return;}
+  if(!product){toast('اختر نوع المنتج','err');return;}
+  try{
+    await fbPush('techCaseRequests',{
+      client:_ncSelectedClient,
+      product,
+      qty,
+      techName:_user.name,
+      techId:_user.id,
+      reqDate:today(),
+      reqTime:timeNow(),
+      status:'pending', // بانتظار إكمال المشرف في السيستم الكبير
+      createdAt:Date.now()
+    });
+    closeNewCaseModal();
+    _dafterSidebarOpen=false;
+    toast('✅ تم إرسال الحالة للمشرف لاستكمالها');
+    if(_curTab==='dafter')renderCaseList(_dafter,'dafter');
+  }catch(e){toast('خطأ في الإرسال','err');}
+}
+
+// ═══════════════════════════════════════════════
 // HISTORY
 // ═══════════════════════════════════════════════
 async function loadMyLogs(){
   try{
     const logs=await fbGet('techLogs');
-    if(!logs){_myLogs=[];return;}
+    if(!logs){_myLogs=[];_allLogs=[];return;}
     const arr=Array.isArray(logs)?logs:Object.values(logs);
+    _allLogs=arr;
     _myLogs=arr.filter(l=>l.techName===_user.name).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-  }catch(e){_myLogs=[];}
+  }catch(e){_myLogs=[];_allLogs=[];}
 }
 
 function renderHistory(){
@@ -1062,6 +1226,9 @@ function sendDailyReportToAdmin(){
   sendToAdminWithPicker(msg);
 }
 
+let _summaryView='overview';
+function setSummaryView(v){_summaryView=v;renderSummary();}
+
 function renderSummary(){
   const content=document.getElementById('tab-content');
 
@@ -1086,7 +1253,18 @@ function renderSummary(){
 
   const pendingAmt=pending.reduce((s,l)=>s+getMyRate(l.stage)*(l.qty||1),0);
 
-  content.innerHTML=`
+  const subtabsHtml=`
+    <div class="summary-subtabs">
+      <div class="summary-subtab ${_summaryView==='overview'?'on':''}" onclick="setSummaryView('overview')">📊 الملخص</div>
+      <div class="summary-subtab ${_summaryView==='detail'?'on':''}" onclick="setSummaryView('detail')">📋 تفصيلي</div>
+    </div>`;
+
+  if(_summaryView==='detail'){
+    content.innerHTML=subtabsHtml+renderDuesDetailTable(approved);
+    return;
+  }
+
+  content.innerHTML=subtabsHtml+`
     <button class="btn btn-teal btn-sm btn-block" style="margin-bottom:12px" onclick="sendDailyReportToAdmin()">📱 إرسال تقرير اليوم للإدارة (واتساب)</button>
     <div class="summary-card">
       <div class="summary-title">📊 إجمالي الحالات والنسب</div>
@@ -1139,13 +1317,50 @@ function renderSummary(){
   `;
 }
 
+// جدول تفصيلي لمستحقاتي — بناءً على المراحل المعتمدة فقط (بعد المراجعة والتأكيد
+// في السيستم الكبير)؛ المراحل المعلّقة أو المرفوضة لا تظهر هنا ولا تُحسب.
+function renderDuesDetailTable(approved){
+  if(!approved.length){
+    return`<div class="empty"><div class="empty-icon">📋</div><p>لا توجد مراحل معتمدة بعد لعرضها في الجدول التفصيلي</p></div>`;
+  }
+  const sorted=[...approved].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  let grand=0;
+  const rows=sorted.map(l=>{
+    const rate=getMyRate(l.stage);
+    const total=rate*(l.qty||1);
+    grand+=total;
+    return`<tr>
+      <td>${esc(l.client||'-')}</td>
+      <td>${esc(l.noteName||'-')}</td>
+      <td>${esc(l.stage||'-')}</td>
+      <td>${l.qty||1}</td>
+      <td>${esc(l.logDate||'-')}</td>
+      <td>${fmt(rate)}</td>
+      <td>${fmt(total)}</td>
+    </tr>`;
+  }).join('');
+  return`<div class="dues-table-wrap"><table class="dues-table">
+    <thead><tr>
+      <th>اسم العميل</th><th>اسم المريض</th><th>النوع</th><th>العدد</th><th>التاريخ</th><th>سعر الفني للمرحلة</th><th>الإجمالي</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr><td colspan="6">الإجمالي الكلي</td><td>${fmt(grand)} ج.م</td></tr></tfoot>
+  </table></div>`;
+}
+
 // ═══════════════════════════════════════════════
 // AUTO LOGIN (لو فيه جلسة محفوظة على نفس الجهاز فقط)
 // ═══════════════════════════════════════════════
 window.addEventListener('load',async ()=>{
   const saved=localStorage.getItem('tp_user');
   if(saved){
-    try{_user=JSON.parse(saved);await waitForFirebase();showApp();return;}
+    try{
+      _user=JSON.parse(saved);
+      await waitForFirebase();
+      if(_fbRTDB)_prices=toArr(await fbGet('data/shared/prices'));
+      showApp();
+      return;
+    }
     catch(e){localStorage.removeItem('tp_user');}
   }
   // مفيش جلسة محفوظة — يفضل شاشة تسجيل الدخول ظاهرة وينتظر إدخال بيانات حقيقية
