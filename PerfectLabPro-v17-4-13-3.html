@@ -5807,6 +5807,14 @@ function _renderTechReviewBody(source, caseId){
   body.innerHTML = Object.entries(byCase).map(([cid, clogs]) => {
     const lookup = _caseLookup(cid);
     const label = lookup ? `#${esc(String(lookup.rec.caseId||'-'))} — ${esc(lookup.rec.client||'')}` : cid;
+    // FIX #TECHREVIEW-DETAILS: عرض اسم المريض ورقم الهاتف والمنتج (النوع) والعدد جنب
+    // اسم العميل، عشان موظف المراجعة يعرف الحالة بالظبط من غير ما يفتح الدفتر لوحده
+    const detailBits = lookup ? [
+      lookup.rec.noteName ? `👤 المريض: ${esc(lookup.rec.noteName)}` : '',
+      lookup.rec.phone ? `📞 ${esc(lookup.rec.phone)}` : '',
+      lookup.rec.product ? `🦷 ${esc(lookup.rec.product)}` : '',
+      (lookup.rec.qty!=null) ? `العدد: ${esc(String(lookup.rec.qty))}` : ''
+    ].filter(Boolean).join(' · ') : '';
     const conflictStages = _stageConflicts(cid);
     if (conflictStages.length) hasConflict = true;
     const rows = clogs.map(l => {
@@ -5824,8 +5832,11 @@ function _renderTechReviewBody(source, caseId){
       </div>`;
     }).join('');
     return `<div style="margin-bottom:10px;border:1px solid var(--border);border-radius:10px;overflow:hidden">
-      <div style="padding:8px 10px;background:var(--bg3);display:flex;justify-content:space-between;align-items:center">
-        <strong style="font-size:12.5px">${label}</strong>
+      <div style="padding:8px 10px;background:var(--bg3);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div>
+          <strong style="font-size:12.5px">${label}</strong>
+          ${detailBits?`<div style="font-size:10.5px;color:var(--text3);margin-top:2px">${detailBits}</div>`:''}
+        </div>
         ${can('techlogs.review')?`<button class="btn btn-sm btn-ghost" onclick="tlApproveAllForCase('${esc(cid)}',this)">اعتماد الكل لهذه الحالة</button>`:''}
       </div>
       ${rows}
