@@ -194,6 +194,7 @@ body.theme-glass .tl-dot,body.theme-light .tl-dot{background:#e2e8f0;border-colo
 @keyframes tlBadgeShake{0%,100%{transform:translateX(0)}10%,50%,90%{transform:translateX(-4px)}30%,70%{transform:translateX(4px)}}
 .tl-review-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(249,115,22,.15);color:var(--orange);border:1px solid rgba(249,115,22,.4);border-radius:20px;padding:4px 12px;font-size:11.5px;font-weight:700;cursor:pointer;margin-right:8px;vertical-align:middle;animation:badge-pulse 2s ease-in-out infinite}
 .tl-review-badge.tl-shake-now{animation:badge-pulse 2s ease-in-out infinite,tlBadgeShake .5s ease}
+.tl-review-badge.dg-review-badge{background:rgba(59,130,246,.15);color:var(--blue);border-color:rgba(59,130,246,.4)}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
 body{font-family:"Cairo",sans-serif;font-weight:700;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
@@ -408,15 +409,6 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 .mc-btn:hover{border-color:var(--red);color:var(--red)}
 .mb{padding:18px}.mf{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:7px;flex-wrap:wrap}
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-/* TEETH CHART — قوس فكي واحد بشكل exoCAD (نفس شكل بوابة الفنيين) */
-.plp-tooth-optional-note{font-size:11px;color:var(--text3);text-align:center;margin-bottom:8px}
-.plp-tooth-oval-wrap{position:relative;width:300px;max-width:100%;height:360px;margin:6px auto 14px}
-.plp-tooth-oval-wrap::before{content:'';position:absolute;inset:22px;border:1.5px dashed var(--border);border-radius:50%;opacity:.5}
-.plp-tooth{position:absolute;width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:var(--bg3);color:var(--text3);font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s;transform:translate(-50%,-50%)}
-.plp-tooth.sel{background:linear-gradient(135deg,var(--gold),var(--gold2));border-color:var(--gold2);color:#241a04;transform:translate(-50%,-50%) scale(1.18);box-shadow:0 2px 10px rgba(0,0,0,.3)}
-.teeth-row-btn{padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);cursor:pointer;border-radius:6px}
-.teeth-row-btn.has-teeth{color:var(--teal);border-color:var(--teal)}
-.teeth-row-btn:not(.has-teeth){color:var(--text2)}
 .ffull{grid-column:1/-1}
 .fg{display:flex;flex-direction:column;gap:4px}
 .fg label{font-size:11px;font-weight:600;color:var(--text3)}
@@ -1358,7 +1350,7 @@ body.theme-glass .ph h2{color:var(--blue2)}
   <!-- DAFTER -->
   <div class="page" id="pg-dafter">
     <div class="ph">
-      <h2>الدفتر <small id="dafter-cnt"></small> <span class="tl-review-badge" id="dafter-techlogs-badge" style="display:none" onclick="openTechLogsReviewModal('dafter')"></span></h2>
+      <h2>الدفتر <small id="dafter-cnt"></small> <span class="tl-review-badge" id="dafter-techlogs-badge" style="display:none" onclick="openTechLogsReviewModal('dafter')"></span> <span class="tl-review-badge dg-review-badge" id="dafter-dgreview-badge" style="display:none" onclick="openDgReviewModal('cases')"></span></h2>
       <div class="btn-row">
         <button class="btn btn-gold" onclick="openDafter()" data-perm-hide="dafter.add">+ إضافة</button>
         <button class="btn btn-ghost" onclick="editSelDafter()" data-perm-hide="dafter.edit">تعديل</button>
@@ -1507,7 +1499,7 @@ body.theme-glass .ph h2{color:var(--blue2)}
   <!-- TREASURY -->
   <div class="page" id="pg-treasury">
     <div class="ph">
-      <h2>الخزنة</h2>
+      <h2>الخزنة <span class="tl-review-badge dg-review-badge" id="treasury-dgreview-badge" style="display:none" onclick="openDgReviewModal('collections')"></span></h2>
       <div class="btn-row">
         <button class="btn btn-gold" onclick="openTrModal()" data-perm-hide="treasury.add">➕ حركة جديدة</button>
         <button class="btn btn-teal" onclick="openTrTransferModal()" data-perm-hide="treasury.add">🔄 تحويل بين الخزائن</button>
@@ -4197,6 +4189,15 @@ body.theme-glass .ph h2{color:var(--blue2)}
   </div>
 </div>
 
+<!-- DELEGATE PENDING REPORTS REVIEW (بلاغات المناديب) -->
+<div class="overlay" id="ov-dgreview">
+  <div class="modal modal-md">
+    <div class="mh"><h3 id="dgr-ttl">🔔 بلاغات المناديب</h3><div class="mc-btn" onclick="closeOv('ov-dgreview')">✕</div></div>
+    <div class="mb" id="dgr-list" style="max-height:65vh;overflow-y:auto"></div>
+    <div class="mf"><button class="btn btn-ghost" onclick="closeOv('ov-dgreview')">إغلاق</button></div>
+  </div>
+</div>
+
 <!-- INVOICE NOTIF -->
 <div class="overlay" id="ov-inv-notif">
   <div class="modal modal-md">
@@ -4302,6 +4303,8 @@ body.theme-glass .ph h2{color:var(--blue2)}
       <input type="hidden" id="extra-box-edit-id">
       <div class="fg"><label>اسم الخزنة <span class="req">*</span></label><input id="extra-box-name" type="text" placeholder="مثال: خزنة فرع الجيزة"></div>
       <div class="fg"><label>أيقونة (اختياري)</label><input id="extra-box-icon" type="text" placeholder="💼" maxlength="4"></div>
+      <div class="fg" style="display:flex;align-items:center;gap:8px"><input id="extra-box-exclude-total" type="checkbox" style="width:auto"><label style="margin:0" for="extra-box-exclude-total">Ø استبعاد من الإجمالي (لا تُحسب ضمن إجمالي باقي الخزن)</label></div>
+      <div class="fg" style="display:flex;align-items:center;gap:8px"><input id="extra-box-hidden" type="checkbox" style="width:auto"><label style="margin:0" for="extra-box-hidden">🔒 إخفاء عن باقي المستخدمين (لا تظهر حتى في التحويل، إلا لمن معه صلاحية عرض الخزائن المخفية)</label></div>
     </div>
     <div class="mf">
       <button class="btn btn-gold" onclick="saveExtraBox()">💾 حفظ</button>
@@ -5482,34 +5485,6 @@ function getTechLogsArray(){
 function getTechLogsForCase(caseId){
   return getTechLogsArray().filter(l=>l.caseId===caseId);
 }
-
-// ════════════════════════════════════════════════════════════
-// مزامنة اختيار الأسنان (caseTeeth) — نفس مسار Firebase اللي بتكتب/تقرأ منه
-// بوابة الفنيين (data/shared/caseTeeth/{caseId})، فأي اختيار يظهر فورًا في الاتجاهين.
-// ════════════════════════════════════════════════════════════
-let _caseTeethCache = {};
-(function _loadCaseTeethLocal(){
-  try {
-    const raw = localStorage.getItem('plp_caseTeeth');
-    _caseTeethCache = raw ? JSON.parse(raw) : {};
-  } catch(e) { _caseTeethCache = {}; }
-})();
-function _startCaseTeethSync(){
-  if (!_fbRTDB) { setTimeout(_startCaseTeethSync, 300); return; }
-  _fbRTDB.ref('data/shared/caseTeeth').on('value', snap => {
-    _caseTeethCache = snap.val() || {};
-    try { localStorage.setItem('plp_caseTeeth', JSON.stringify(_caseTeethCache)); } catch(e) {}
-    if (typeof renderDafter==='function' && document.getElementById('pg-dafter')?.classList.contains('active')) renderDafter();
-    if (typeof renderProof==='function' && document.getElementById('pg-proof')?.classList.contains('active')) renderProof();
-  }, err => console.warn('caseTeeth sync error:', err.message));
-}
-if (!_initFirebase()) {
-  const _ctInterval = setInterval(function(){ if(_fbRTDB){ clearInterval(_ctInterval); _startCaseTeethSync(); } }, 200);
-} else { _startCaseTeethSync(); }
-function getCaseTeeth(caseId){
-  const arr = _caseTeethCache[caseId];
-  return Array.isArray(arr) ? arr : [];
-}
 function getPendingTechLogs(){
   return getTechLogsArray().filter(l=>l.status==='pending');
 }
@@ -5603,6 +5578,166 @@ function updateTechLogsBadges(){
   setBadge('dafter-techlogs-badge', bySrc.dafter);
   setBadge('proof-techlogs-badge', bySrc.proof);
   setBadge('archive-techlogs-badge', bySrc.archive);
+}
+
+// ════════════════════════════════════════════════════════════════
+//  بلاغات المناديب (Delegate Pending Reports) — بلاغ حالة جديدة أو
+//  تحصيل من المندوب في الميدان، بينتظر موظف الدفتر/الخزنة يكمّله.
+//  نفس فكرة مراجعة تسجيلات الفنيين (tl-review-badge) بس بلون مختلف
+//  (أزرق) عشان تتفرق بصريًا، ومخزّنة في Firebase تحت المفاتيح:
+//  delegatePendingNewCases (بلاغات حالات جديدة) و delegatePendingCollections (بلاغات تحصيل).
+// ════════════════════════════════════════════════════════════════
+// FIX #DGREVIEW-REALPATHS: بوابة المناديب (delegates-portal.html) بتكتب فعليًا على
+// data/shared/delegatePendingNewCases و data/shared/delegatePendingCollections —
+// هي المصدر الحقيقي الوحيد لهذه البلاغات، فلازم نقرا نفس المسارين بالظبط.
+function getDgPendingNewCases(){return DB.get('delegatePendingNewCases')||[];}
+function getDgPendingCollections(){return DB.get('delegatePendingCollections')||[];}
+
+let _dgLinkedNewCaseReportId=null;
+let _dgLinkedCollectionReportId=null;
+
+function updateDgReviewBadges(){
+  const newCases=getDgPendingNewCases().filter(r=>r.status==='pending');
+  const collections=getDgPendingCollections().filter(r=>r.status==='pending');
+  const setBadge=(id,n,label)=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    const wasHidden=el.style.display==='none'||!el.style.display;
+    el.textContent=n?`🔔 ${n} ${label}`:'';
+    el.style.display=n?'inline-flex':'none';
+    if(n&&wasHidden){el.classList.add('tl-shake-now');setTimeout(()=>el.classList.remove('tl-shake-now'),600);}
+  };
+  setBadge('dafter-dgreview-badge',newCases.length,'بلاغ حالة من المناديب');
+  setBadge('treasury-dgreview-badge',collections.length,'بلاغ تحصيل من المناديب');
+}
+
+// يحاول يلاقي عميل مطابق للاسم اللي كتبه المندوب في البلاغ (مطابقة تامة، وإلا جزئية)
+function _dgMatchClientByName(name){
+  if(!name)return null;
+  const cls=DB.get('clients')||[];
+  const norm=s=>(s||'').trim().toLowerCase();
+  return cls.find(c=>norm(c.name)===norm(name)) || cls.find(c=>norm(c.name).includes(norm(name))||norm(name).includes(norm(c.name))) || null;
+}
+// يفضّل الربط بـ clientId المرسل من بوابة المناديب (لو موجود ومطابق فعليًا)، وإلا يرجع
+// لمطابقة الاسم كخطة بديلة — البوابة بترسل clientId لو كانت الحالة الأصلية مربوطة بعميل مُسجَّل
+function _dgResolveClient(r){
+  if(r.clientId){
+    const cls=DB.get('clients')||[];
+    const byId=cls.find(c=>c.id===r.clientId);
+    if(byId)return byId;
+  }
+  return _dgMatchClientByName(r.client);
+}
+
+function _dgMarkReportStatus(key,id,status,extra){
+  const list=(DB.get(key)||[]).map(r=>r.id===id?{...r,...(extra||{}),status,[status+'By']:window._currentUser?.name||'مجهول',[status+'At']:Date.now()}:r);
+  DB.set(key,list);
+  updateDgReviewBadges();
+}
+
+function openDgReviewModal(kind){
+  // kind: 'cases' (دفتر) أو 'collections' (خزنة)
+  if(!can('dgreview.review')){toast('ليس لديك صلاحية مراجعة بلاغات المناديب','err');return;}
+  document.getElementById('dgr-ttl').textContent = kind==='cases' ? '🔔 بلاغات المناديب — حالات جديدة' : '🔔 بلاغات المناديب — تحصيل';
+  document.getElementById('ov-dgreview').dataset.kind=kind;
+  _renderDgReviewList(kind);
+  openOv('ov-dgreview');
+}
+
+function _renderDgReviewList(kind){
+  const wrap=document.getElementById('dgr-list');
+  if(!wrap)return;
+  const key = kind==='cases' ? 'delegatePendingNewCases' : 'delegatePendingCollections';
+  const items=(DB.get(key)||[]).filter(r=>r.status==='pending').sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  if(!items.length){
+    wrap.innerHTML='<div style="text-align:center;color:var(--green);padding:20px;font-weight:700">✅ مفيش بلاغات معلّقة دلوقتي</div>';
+    return;
+  }
+  wrap.innerHTML=items.map(r=>{
+    const amountOrCount = kind==='cases'
+      ? `العدد المُبلَّغ: <strong>${esc(String(r.reportedCount??'—'))}</strong>`
+      : `المبلغ: <strong style="color:var(--gold2)">${fmt(+r.amount||0)} ${cur()}</strong>`;
+    const subline = kind==='cases'
+      ? ''
+      : (r.product||r.caseId&&r.caseId!=='-' ? `${esc(r.product||'')} ${r.caseId&&r.caseId!=='-'?'· #'+esc(r.caseId):''}<br>` : '');
+    const actionBtn = kind==='cases'
+      ? `<button class="btn btn-sm btn-gold" onclick="_dgCompleteCase('${r.id}')">📝 استكمال القيد</button>`
+      : `<button class="btn btn-sm btn-gold" onclick="_dgCompleteCollection('${r.id}')">💰 استكمال التحصيل</button>`;
+    return `<div style="margin-bottom:10px;border:1.5px solid var(--blue);border-radius:10px;overflow:hidden">
+      <div style="background:rgba(59,130,246,.12);color:var(--blue);font-weight:800;padding:6px 10px">🤝 ${esc(r.delegateName||'مندوب')} — ${esc(r.client||'—')}</div>
+      <div style="padding:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <div style="font-size:12.5px">
+          ${amountOrCount}<br>
+          <span style="color:var(--text3)">${subline}${esc(r.date||'-')}</span>
+        </div>
+        <div style="display:flex;gap:6px">
+          ${actionBtn}
+          <button class="btn btn-sm btn-ghost" style="color:var(--red)" onclick="_dgRejectReport('${kind}','${r.id}')">🚫 تجاهل</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function _dgRejectReport(kind,id){
+  const key = kind==='cases' ? 'delegatePendingNewCases' : 'delegatePendingCollections';
+  confirm2('تجاهل البلاغ','هل أنت متأكد من تجاهل هذا البلاغ (مكرر أو غلط من المندوب)؟',()=>{
+    _dgMarkReportStatus(key,id,'rejected');
+    _renderDgReviewList(kind);
+    toast('تم تجاهل البلاغ');
+  });
+}
+
+// يفتح فورم "إضافة حالة دفتر" مع تعبئة العميل تلقائيًا من بيانات البلاغ
+function _dgCompleteCase(id){
+  const r=getDgPendingNewCases().find(x=>x.id===id);
+  if(!r)return;
+  closeOv('ov-dgreview');
+  openDafter();
+  setTimeout(()=>{
+    const cl=_dgResolveClient(r);
+    if(cl){
+      const sel=document.getElementById('df-client');
+      if(sel){sel.value=cl.id;document.getElementById('df-phone').value=cl.phone||'';}
+    } else {
+      toast('⚠️ لم يتم إيجاد العميل تلقائيًا ("'+(r.client||'')+'") — اختره يدويًا','err');
+    }
+    // العدد المُبلَّغ تلميح بس — موظف الدفتر يتأكد من العدد الفعلي وقت الإدخال
+    const hint = 'بلاغ مندوب: '+(r.delegateName||'')+(r.reportedCount!=null?(' — العدد المُبلَّغ: '+r.reportedCount):'');
+    const notesEl=document.getElementById('df-notes');
+    if(notesEl)notesEl.value=hint;
+    if(r.reportedCount!=null){
+      const qtyEl=document.getElementById('df-qty');
+      if(qtyEl)qtyEl.value=r.reportedCount;
+    }
+    _dgLinkedNewCaseReportId=id;
+  },250);
+}
+
+// يفتح فورم "سند قبض" في الخزنة مع تعبئة العميل والمبلغ تلقائيًا من بيانات البلاغ
+function _dgCompleteCollection(id){
+  const r=getDgPendingCollections().find(x=>x.id===id);
+  if(!r)return;
+  closeOv('ov-dgreview');
+  openTrModal();
+  setTimeout(()=>{
+    document.getElementById('tr-type').value='in';
+    document.getElementById('tr-acc-type').value='client';
+    fillTrAcc();
+    const cl=_dgResolveClient(r);
+    if(cl){
+      const sel=document.getElementById('tr-acc-name');
+      if(sel)sel.value=cl.id;
+    } else {
+      toast('⚠️ لم يتم إيجاد العميل تلقائيًا ("'+(r.client||'')+'") — اختره يدويًا','err');
+    }
+    const amtEl=document.getElementById('tr-amount');
+    if(amtEl)amtEl.value=r.amount||'';
+    const notesEl=document.getElementById('tr-notes');
+    const caseRef=r.caseId&&r.caseId!=='-'?(' #'+r.caseId):'';
+    if(notesEl)notesEl.value='تحصيل مبلّغ من المندوب: '+(r.delegateName||'')+caseRef+(r.product?(' — '+r.product):'');
+    _dgLinkedCollectionReportId=id;
+  },250);
 }
 
 // دوائر مراحل الفنيين تحت اسم العميل — من techLogs (مختلفة عن techProgressBadge
@@ -6816,6 +6951,7 @@ function _doUpdateBadges(){
   const unread=notifs.filter(n=>!n.read).length;
   _set('nb-notif',unread||'—');
   try{ updateTechLogsBadges(); }catch(e){}
+  try{ updateDgReviewBadges(); }catch(e){}
 }
 
 // LAB INFO
@@ -6928,7 +7064,16 @@ function saveTrSetup(){
 }
 
 // ===== EXTRA BOXES =====
-function getExtraBoxes(){return DB.get('extra_boxes')||[];}
+// FIX #HIDDEN-BOX: خزنة إضافية ممكن تتعلّم 'hidden' (تظهر بس لمين معاه صلاحية
+// treasury.hidden_box، افتراضيًا المدير فقط) — بتختفي من كل قوائم الاختيار/العرض
+// لباقي المستخدمين. getAllExtraBoxesRaw() بترجع الكل بدون فلترة (لأغراض حسابية داخلية
+// زي orphan-balance عشان معرفتش خزنة مخفية كـ"محذوفة" لغير المصرح لهم).
+function getAllExtraBoxesRaw(){return DB.get('extra_boxes')||[];}
+function getExtraBoxes(){
+  const all=getAllExtraBoxesRaw();
+  if(typeof can==='function'&&can('treasury.hidden_box'))return all;
+  return all.filter(b=>!b.hidden);
+}
 // ── دالة مشتركة لبناء خيارات الخزنة (أساسية + إضافية) — تُستخدم في أي select جديد للخزنة ──
 function boxOptionsHTML(){
   const ts=DB.get('trSetup')||{cash:'نقدي',net:'شبكة',bank:'بنكي'};
@@ -6953,7 +7098,7 @@ function renderExtraBoxesList(){
       <div style="display:flex;align-items:center;gap:10px">
         <span style="font-size:18px">${b.icon||'💼'}</span>
         <div>
-          <div style="font-weight:700;font-size:13px">${esc(b.name)}</div>
+          <div style="font-weight:700;font-size:13px">${esc(b.name)} ${b.hidden?'<span style="font-size:10px;color:var(--purple);border:1px solid var(--purple);border-radius:6px;padding:1px 6px;margin-inline-start:4px">🔒 مخفية</span>':''} ${b.excludeFromTotal?'<span style="font-size:10px;color:var(--orange);border:1px solid var(--orange);border-radius:6px;padding:1px 6px;margin-inline-start:4px">Ø مستبعدة من الإجمالي</span>':''}</div>
           <div style="font-size:11px;color:var(--text3)">رصيد: <strong style="color:var(--gold2)">${fmt(bal(b.id))} ${c}</strong></div>
         </div>
       </div>
@@ -6968,12 +7113,18 @@ function openExtraBoxModal(editId){
   document.getElementById('extra-box-edit-id').value=editId||'';
   document.getElementById('extra-box-name').value='';
   document.getElementById('extra-box-icon').value='';
+  document.getElementById('extra-box-exclude-total').checked=false;
+  document.getElementById('extra-box-hidden').checked=false;
   document.getElementById('extra-box-modal-title').textContent=editId?'تعديل الخزنة':'إضافة خزنة جديدة';
   if(editId){
-    const b=getExtraBoxes().find(x=>x.id===editId);
+    // نستخدم النسخة الخام هنا عشان لو المستخدم عنده صلاحية الوصول للمودال أصلاً
+    // (يعني عنده صلاحية الإعدادات) يقدر يعدّل خزنة مخفية موجودة بالفعل
+    const b=getAllExtraBoxesRaw().find(x=>x.id===editId);
     if(b){
       document.getElementById('extra-box-name').value=b.name||'';
       document.getElementById('extra-box-icon').value=b.icon||'';
+      document.getElementById('extra-box-exclude-total').checked=!!b.excludeFromTotal;
+      document.getElementById('extra-box-hidden').checked=!!b.hidden;
     }
   }
   openOv('ov-extra-box');
@@ -6984,14 +7135,16 @@ function saveExtraBox(){
   const name=document.getElementById('extra-box-name').value.trim();
   if(!name){toast('أدخل اسم الخزنة','err');return;}
   const icon=document.getElementById('extra-box-icon').value.trim()||'💼';
+  const excludeFromTotal=!!document.getElementById('extra-box-exclude-total').checked;
+  const hidden=!!document.getElementById('extra-box-hidden').checked;
   const editId=document.getElementById('extra-box-edit-id').value;
-  const boxes=getExtraBoxes();
+  const boxes=getAllExtraBoxesRaw();
   if(editId){
     const i=boxes.findIndex(x=>x.id===editId);
-    if(i>=0)boxes[i]={...boxes[i],name,icon};
-    else boxes.push({id:editId,name,icon});
+    if(i>=0)boxes[i]={...boxes[i],name,icon,excludeFromTotal,hidden};
+    else boxes.push({id:editId,name,icon,excludeFromTotal,hidden});
   } else {
-    boxes.push({id:'box_'+Date.now(),name,icon});
+    boxes.push({id:'box_'+Date.now(),name,icon,excludeFromTotal,hidden});
   }
   DB.set('extra_boxes',boxes);
   closeOv('ov-extra-box');
@@ -7138,6 +7291,15 @@ const PERM_SCHEMA = [
   },
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   {
+    section:'🔔 بلاغات المناديب', key:'dgreview',
+    hint:'مراجعة بلاغات الحالات الجديدة والتحصيل الواردة من المناديب واستكمالها',
+    items:[
+      {id:'dgreview.review',        label:'مراجعة واستكمال بلاغات المناديب', hint:'زر استكمال القيد/التحصيل وزر التجاهل داخل نافذة بلاغات المناديب'},
+      {id:'treasury.hidden_box',    label:'عرض الخزائن المخفية', hint:'يسمح برؤية الخزائن الإضافية المعلّمة "مخفية" واستخدامها (بما فيها التحويل)، افتراضيًا للمدير فقط'},
+    ]
+  },
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {
     section:'🛒 المشتريات والموردون', key:'purchases',
     hint:'إدارة فواتير الشراء والموردين',
     items:[
@@ -7277,7 +7439,7 @@ const PERM_DEFAULTS = {
     'masterdata.view','masterdata.lab','masterdata.clients','masterdata.clients.view_debt',
     'masterdata.prices','masterdata.tech','masterdata.delegates','masterdata.employees',
     'masterdata.trsetup','masterdata.notif_design','masterdata.dept_map','masterdata.actlog',
-    'techlogs.review',
+    'techlogs.review','dgreview.review',
   ],
   // ── المحاسب: يرى كل المالي، يحصّل، لا يضيف/يعدل حالات ──
   accountant: [
@@ -7297,6 +7459,7 @@ const PERM_DEFAULTS = {
     'notes.view','notes.add','notes.edit_own','notes.delete',
     'masterdata.view','masterdata.clients','masterdata.clients.view_debt',
     'masterdata.employees','masterdata.employees.view_salary',
+    'dgreview.review',
   ],
   // ── الموظف: يضيف ويعدل حالات، لا يرى أسعار ولا ماليات ──
   employee: [
@@ -9205,7 +9368,11 @@ function _findDuplicatePatientCases(){
     const key=(r.client||'').trim().toLowerCase()+'|'+r._caseNo;
     (groups[key]=groups[key]||[]).push(r);
   });
-  return Object.values(groups).filter(list=>list.length>1);
+  // FIX #DUP-SETTLE: أي مجموعة مكررة فيها صف مربوط بتسوية فعلية (isArchRowSettled)
+  // تعتبر محلولة حسابيًا بالفعل، فبتتستبعد من كشف التكرار والحظر.
+  return Object.values(groups)
+    .filter(list=>list.length>1)
+    .filter(list=>!list.some(r=>typeof isArchRowSettled==='function'&&isArchRowSettled(r.id)));
 }
 function _showDuplicatePatientsModal(){
   const dups=_findDuplicatePatientCases();
@@ -9235,7 +9402,7 @@ function _showDuplicatePatientsModal(){
 // يودّي المستخدم لصفحة الحالة المكررة ويفتحها هي بالذات مباشرة (مش مجرد الصفحة العامة)
 function _goToDupPatientCase(src,id){
   closeOv('ov-dup-patients');
-  openPage(src);
+  goPage(src);
   setTimeout(()=>{
     if(src==='dafter'&&typeof openDafter==='function')openDafter(id);
     else if(src==='proof'&&typeof openProof==='function')openProof(id);
@@ -9385,6 +9552,11 @@ function saveDafter(){
     DB.set('dafter',list);
   }
   logActivity(action,{client:data.client,caseId:data.caseId,product:data.product,before:ex?snapshotFields(ex,['client','product','qty','price','total','date','noteName']):null,after:snapshotFields(data,['client','product','qty','price','total','date','noteName'])});
+  // FIX #DGREVIEW-MATCH: لو الحفظ ده جه من "استكمال" بلاغ مندوب معلّق، نعلّمه matched
+  if(_dgLinkedNewCaseReportId){
+    _dgMarkReportStatus('delegatePendingNewCases',_dgLinkedNewCaseReportId,'matched',{confirmedCount:data.qty,matchedDafterId:data.id});
+    _dgLinkedNewCaseReportId=null;
+  }
   closeOv('ov-dafter');renderDafter();updateBadges();
   const typesCount=1+(_dfId?0:_dfExtraTypes.length);
   toast(_dfId?'تم التعديل ✅':(typesCount>1?`تمت الإضافة ✅ (${typesCount} أنواع لنفس الحالة)`:'تمت الإضافة ✅'));
@@ -9456,7 +9628,7 @@ function renderDafter(){
       const dataRow=`<tr data-id="${esc(r.id)}" data-case="${esc(_groupKey(r))}" data-cat="${getProductionCat(r.product)}" class="${rowCls}${isGrp?' case-grp-type-row':''}" onclick="${isGrp?'rowClick(this)':'groupAwareRowClick(this)'}">
     ${ownChk}${sharedHead}
     ${typeCells}
-    <td onclick="event.stopPropagation()"><button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2)" onclick="openRowDetail('${r.id}','dafter')" title="عرض التفاصيل">👁️</button> <button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--gold2)" onclick="editRowDafter('${r.id}')" title="تعديل هذا الصف">✏️</button> <button class="teeth-row-btn${getCaseTeeth(r.id).length?' has-teeth':''}" onclick="openToothModalPLP('${r.id}','${esc(String(r.caseId))}','${esc(r.client)}')" title="اختيار الأسنان (اختياري)">🦷${getCaseTeeth(r.id).length?' '+getCaseTeeth(r.id).length:''}</button></td>
+    <td onclick="event.stopPropagation()"><button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2)" onclick="openRowDetail('${r.id}','dafter')" title="عرض التفاصيل">👁️</button> <button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--gold2)" onclick="editRowDafter('${r.id}')" title="تعديل هذا الصف">✏️</button></td>
     <td onclick="event.stopPropagation()"><button class="row-note-btn${rowNoteCount?` has-note`:''}" onclick="openRowNote('${r.id}','${esc(String(r.caseId))}','${esc(r.client)}','dafter')" title="ملاحظات الحالة">${rowNoteCount?`📝${rowNoteCount}`:'📝'}</button></td>
   </tr>`;
       return (isGrp&&idx===0)?_grpHeadHtml(rows,12,isDup)+dataRow:dataRow;
@@ -9653,7 +9825,7 @@ function renderProof(){
       const dataRow=`<tr data-id="${esc(r.id)}" data-case="${esc(_groupKey(r))}" data-cat="${getProductionCat(r.product)}" class="${rowCls}${isGrp?' case-grp-type-row':''}" onclick="${isGrp?'rowClick(this)':'groupAwareRowClick(this)'}">
     ${ownChk}${sharedHead}
     ${typeCells}
-    <td onclick="event.stopPropagation()"><button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2)" onclick="openRowDetail('${r.id}','proof')" title="عرض التفاصيل">👁️</button> <button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--gold2)" onclick="editRowProof('${r.id}')" title="تعديل هذا الصف">✏️</button> <button class="teeth-row-btn${getCaseTeeth(r.id).length?' has-teeth':''}" onclick="openToothModalPLP('${r.id}','${esc(String(r.caseId))}','${esc(r.client)}')" title="اختيار الأسنان (اختياري)">🦷${getCaseTeeth(r.id).length?' '+getCaseTeeth(r.id).length:''}</button></td>
+    <td onclick="event.stopPropagation()"><button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2)" onclick="openRowDetail('${r.id}','proof')" title="عرض التفاصيل">👁️</button> <button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--gold2)" onclick="editRowProof('${r.id}')" title="تعديل هذا الصف">✏️</button></td>
     <td onclick="event.stopPropagation()"><button class="row-note-btn${rowNoteCount?` has-note`:''}" onclick="openRowNote('${r.id}','${esc(String(r.caseId))}','${esc(r.client)}','proof')" title="ملاحظات الحالة">${rowNoteCount?`📝${rowNoteCount}`:'📝'}</button></td>
   </tr>`;
       return (isGrp&&idx===0)?_grpHeadHtml(rows,10,isDup)+dataRow:dataRow;
@@ -10081,10 +10253,14 @@ function renderTreasury(bypassLimit){
   }
   const bal=box=>_getBoxBalance(list,box);
   const c=ts.cur||'ج.م';
-  const extraTotal=extraBoxes.reduce((s,b)=>s+bal(b.id),0);
+  // FIX #EXCLUDE-TOTAL: خزائن التسوية (excludeFromTotal) بترصد لوحدها لكن رصيدها
+  // ميدخلش في إجمالي باقي الخزن.
+  const extraTotal=extraBoxes.filter(b=>!b.excludeFromTotal).reduce((s,b)=>s+bal(b.id),0);
   // FIX #BOX-ORPHAN-SAFETY: خزائن اتحذفت قديماً من extra_boxes لكن لسه فيها حركات —
-  // رصيدها بيتحسب هنا بدل ما يختفي بصمت من الإجمالي (راجع _getOrphanBoxesBalance)
-  const knownBoxIds=['cash','net','bank',...extraBoxes.map(b=>b.id)];
+  // رصيدها بيتحسب هنا بدل ما يختفي بصمت من الإجمالي (راجع _getOrphanBoxesBalance).
+  // بنستخدم القائمة الخام (كل الخزائن حتى المخفية) عشان خزنة مخفية عن مستخدم معين
+  // متتصنفش غلط كـ"خزنة محذوفة" وتظهر في قسم orphan لغير المصرح لهم.
+  const knownBoxIds=['cash','net','bank',...getAllExtraBoxesRaw().map(b=>b.id)];
   const orphanTotal=_getOrphanBoxesBalance(list,knownBoxIds);
   const grandTotal=bal('cash')+bal('net')+bal('bank')+extraTotal+orphanTotal;
   document.getElementById('tr-stats').innerHTML=`
@@ -13309,6 +13485,11 @@ function saveTr(){
     createdAt:Date.now()
   });
   _saveTreasury(list);
+  // FIX #DGREVIEW-POST: لو الحفظ ده جه من "استكمال تحصيل" بلاغ مندوب معلّق، نعلّمه posted
+  if(_dgLinkedCollectionReportId){
+    _dgMarkReportStatus('delegatePendingCollections',_dgLinkedCollectionReportId,'posted',{postedTreasuryId:list[list.length-1]?.id});
+    _dgLinkedCollectionReportId=null;
+  }
   // FIX #SAVTR-FIREBASE: منع realtime listener من استبدال البيانات الجديدة قبل renderTreasury
   // ===== تتبع: تسجيل إضافة حركة مالية (قبض/صرف) — الأهم لمنع تغيير الحسابات دون علم =====
   logActivity('treasury.add',{
@@ -19043,79 +19224,6 @@ function openRowNote(rowId, caseNo, client, pageSrc){
     </div>`;
   openOv('ov-row-note');
   setTimeout(()=>document.getElementById('rn-quick-input')?.focus(), 200);
-}
-
-// ════════════════════════════════════════════════════════════
-// اختيار الأسنان (اختياري) — نفس شكل القوس البيضاوي (exoCAD) وترقيم FDI
-// المستخدم في بوابة الفنيين، وبيكتب/يقرأ من نفس المسار في Firebase
-// (data/shared/caseTeeth/{caseId}) عشان الفني والأدمن يشوفوا نفس الاختيار.
-// ════════════════════════════════════════════════════════════
-const TEETH_OVAL_PLP=[18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28,38,37,36,35,34,33,32,31,41,42,43,44,45,46,47,48];
-let _plpToothCaseId=null,_plpToothSelected=[];
-
-function openToothModalPLP(caseId,caseNo,client){
-  _plpToothCaseId=caseId;
-  _plpToothSelected=getCaseTeeth(caseId).slice();
-  let ov=document.getElementById('ov-tooth');
-  if(!ov){
-    ov=document.createElement('div');
-    ov.id='ov-tooth';
-    ov.className='overlay';
-    document.body.appendChild(ov);
-  }
-  ov.innerHTML=`
-    <div class="modal modal-sm">
-      <div class="mh">
-        <div>
-          <h3>🦷 اختيار الأسنان</h3>
-          <div style="font-size:11px;color:var(--text3);margin-top:2px">#${esc(String(caseNo))} — ${esc(client)}</div>
-        </div>
-        <div class="mc-btn" onclick="closeOv('ov-tooth')">✕</div>
-      </div>
-      <div class="mb">
-        <div class="plp-tooth-optional-note">اختياري — يمكنك الحفظ بدون تحديد أي سن</div>
-        <div class="plp-tooth-oval-wrap" id="plp-tooth-oval"></div>
-        <div style="font-size:12px;color:var(--text3);text-align:center" id="plp-tooth-count"></div>
-      </div>
-      <div class="mf">
-        <button class="btn btn-ghost btn-sm" onclick="closeOv('ov-tooth')">إلغاء</button>
-        <button class="btn btn-gold btn-sm" onclick="saveTeethPLP()">💾 حفظ</button>
-      </div>
-    </div>`;
-  openOv('ov-tooth');
-  renderToothOvalPLP();
-}
-function renderToothOvalPLP(){
-  const wrap=document.getElementById('plp-tooth-oval');
-  const w=300,h=360; // يطابق أبعاد .plp-tooth-oval-wrap الثابتة في الـCSS
-  const cx=w/2,cy=h/2,rx=w/2-18,ry=h/2-18;
-  const n=TEETH_OVAL_PLP.length;
-  wrap.innerHTML=TEETH_OVAL_PLP.map((t,i)=>{
-    const angle=(i/n)*2*Math.PI-Math.PI/2;
-    const x=cx+rx*Math.cos(angle);
-    const y=cy+ry*Math.sin(angle);
-    const sel=_plpToothSelected.includes(t);
-    return `<div class="plp-tooth ${sel?'sel':''}" style="left:${x}px;top:${y}px" onclick="toggleToothPLP(${t})">${t}</div>`;
-  }).join('');
-  const cntEl=document.getElementById('plp-tooth-count');
-  if(cntEl)cntEl.textContent=_plpToothSelected.length?`تم اختيار ${_plpToothSelected.length} سن`:'لم يتم اختيار أي سن بعد';
-}
-function toggleToothPLP(t){
-  const i=_plpToothSelected.indexOf(t);
-  if(i>-1)_plpToothSelected.splice(i,1); else _plpToothSelected.push(t);
-  renderToothOvalPLP();
-}
-async function saveTeethPLP(){
-  if(!_fbRTDB){toast('لا يوجد اتصال بقاعدة البيانات','err');return;}
-  try{
-    const sorted=_plpToothSelected.slice().sort((a,b)=>a-b);
-    await _fbRTDB.ref('data/shared/caseTeeth/'+_plpToothCaseId).set(sorted);
-    _caseTeethCache[_plpToothCaseId]=sorted;
-    toast('✅ تم حفظ الأسنان المحددة');
-    closeOv('ov-tooth');
-    if(document.getElementById('pg-dafter')?.classList.contains('active'))renderDafter();
-    if(document.getElementById('pg-proof')?.classList.contains('active'))renderProof();
-  }catch(e){toast('خطأ في الحفظ','err');}
 }
 
 function saveRowNoteQuick(){
