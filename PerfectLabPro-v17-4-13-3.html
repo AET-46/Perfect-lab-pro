@@ -20505,7 +20505,7 @@ function printPagedReport(opts){
   _doPrint(html);
 }
 
-function printClientCardPaged(){
+function printClientCardPaged(returnPagesOnly){
   const clientKey=document.getElementById('cc-client')?.value||'';
   if(!clientKey){toast('اختر عميلاً أولاً','err');return;}
   const {id:clientId,name:clientName}=_resolveClientKey(clientKey);
@@ -20642,6 +20642,7 @@ function printClientCardPaged(){
     +'<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap">'
     +'<style>*{margin:0;padding:0;box-sizing:border-box;font-family:"Cairo",sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}body{background:#e8edf5;padding:20px}.pp{background:#fff;max-width:210mm;margin:0 auto 24px;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.15)}@media print{body{background:#fff;padding:0}.pp{box-shadow:none;border-radius:0;margin-bottom:0;page-break-after:always}@page{size:A4;margin:10mm}}</style>'
     +'</head><body>'+pages+'\x3cscript>window.onload=function(){setTimeout(function(){window.print();},800);}<\/script></body></html>';
+  if(returnPagesOnly)return{pages:pages,clientName:clientName};
   _doPrint(html);
 }
 
@@ -21056,20 +21057,58 @@ function sendClientCardWA(){
   waOrCopy(msg,{type:'client',name:clientName});
 }
 
-// FIX #CLIENTCARD-PDF-TO-WA: زر يجمع بين تحويل كارت العميل لـ PDF (نفس مسار
-// الطباعة الحالي — المتصفح مفيهوش مكتبة PDF مضمّنة، فـ "حفظ كـ PDF" بييجي من
-// نافذة الطباعة) وفتح واتساب العميل جاهز عشان يرفق الملف المحفوظ يدويًا،
-// لأن واتساب مبيسمحش بإرفاق ملف تلقائيًا عبر رابط wa.me — دي أقصى أتمتة ممكنة.
+// FIX #CLIENTCARD-PDF-TO-WA: توليد PDF فعلي (Blob) لكارت العميل بدل الاعتماد
+// على نافذة الطباعة، ومحاولة مشاركته مباشرة عبر واتساب باستخدام Web Share API
+// (المتاحة على المتصفحات الحديثة على الموبايل) — لو مش مدعومة، بيتم تحميل
+// الملف تلقائيًا ثم فتح واتساب العميل عشان يرفقه يدويًا.
+function _loadHtml2Pdf(cb){
+  if(window.html2pdf){cb();return;}
+  if(window._h2pdfCbs){window._h2pdfCbs.push(cb);return;}
+  window._h2pdfCbs=[cb];
+  const s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js';
+  s.onload=function(){const cbs=window._h2pdfCbs||[];window._h2pdfCbs=null;cbs.forEach(function(f){f();});};
+  s.onerror=function(){window._h2pdfCbs=null;toast('❌ تعذّر تحميل مكتبة PDF — تأكد من الاتصال بالإنترنت','err');};
+  document.head.appendChild(s);
+}
 function sendClientCardPDF(){
   const clientKey=document.getElementById('cc-client')?.value||'';
   if(!clientKey){toast('اختر عميلاً أولاً','err');return;}
   const {name:clientName}=_resolveClientKey(clientKey);
-  printClientCardPaged();
-  toast('📄 هتفتح نافذة الطباعة — احفظه "كـ PDF"، وهيفتح واتساب العميل عشان ترفق الملف','ok');
-  setTimeout(function(){
-    const msg=['🦷 '+_labLine(),_sep(),'📋 كارت حساب العميل: '+clientName,'📎 مرفق ملف PDF بكشف الحساب التفصيلي.',_sep(),_labLine()].join('\n');
-    waOrCopy(msg,{type:'client',name:clientName});
-  },700);
+  toast('⏳ جارِ تجهيز ملف PDF...','ok');
+  _loadHtml2Pdf(function(){
+    const built=printClientCardPaged(true);
+    if(!built)return;
+    const holder=document.createElement('div');
+    holder.style.cssText='position:fixed;top:0;left:-99999px;width:210mm;background:#fff;font-family:Cairo,sans-serif;z-index:-1';
+    holder.innerHTML=built.pages;
+    document.body.appendChild(holder);
+    const fileName='كارت-حساب-'+clientName.replace(/[^ء-ي0-9a-zA-Z]/g,'_')+'-'+today()+'.pdf';
+    window.html2pdf().set({
+      margin:0,filename:fileName,
+      html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff'},
+      jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+      pagebreak:{mode:['css','legacy']}
+    }).from(holder).outputPdf('blob').then(function(blob){
+      document.body.removeChild(holder);
+      const file=new File([blob],fileName,{type:'application/pdf'});
+      if(navigator.canShare&&navigator.canShare({files:[file]})){
+        navigator.share({files:[file],title:'كارت حساب '+clientName,text:'📋 كارت حساب العميل: '+clientName}).catch(function(){});
+      } else {
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');a.href=url;a.download=fileName;document.body.appendChild(a);a.click();a.remove();
+        setTimeout(function(){URL.revokeObjectURL(url);},4000);
+        toast('✅ تم تحميل ملف PDF — أرفقه يدويًا في واتساب اللي هيفتح دلوقتي','ok');
+        setTimeout(function(){
+          const msg=['🦷 '+_labLine(),_sep(),'📋 كارت حساب العميل: '+clientName,'📎 مرفق ملف PDF بكشف الحساب التفصيلي.',_sep(),_labLine()].join('\n');
+          waOrCopy(msg,{type:'client',name:clientName});
+        },500);
+      }
+    }).catch(function(e){
+      if(holder.parentNode)document.body.removeChild(holder);
+      toast('❌ حصل خطأ في توليد PDF: '+(e&&e.message||'غير معروف'),'err');
+    });
+  });
 }
 
 function sendSupCardWA(){
