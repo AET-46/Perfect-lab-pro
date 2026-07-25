@@ -1794,6 +1794,7 @@ body.theme-glass .ph h2{color:var(--blue2)}
             <button class="btn btn-gold" onclick="renderClientCard()">📊 عرض الكارت</button>
             <button class="btn btn-blue btn-sm" onclick="printClientCardPaged()">🖨️ طباعة / PDF</button>
             <button class="btn btn-green btn-sm" onclick="sendClientCardWA()">💬 واتساب ملخص</button>
+            <button class="btn btn-orange btn-sm" onclick="sendClientCardPDF()">📄 PDF للعميل</button>
           </div>
         </div>
       </div>
@@ -21053,6 +21054,22 @@ function sendClientCardWA(){
     '✅ إجمالي المدفوع: '+fmt(res.paid)+' '+c,debtLine,
     _sep(),_labLine()].join('\n');
   waOrCopy(msg,{type:'client',name:clientName});
+}
+
+// FIX #CLIENTCARD-PDF-TO-WA: زر يجمع بين تحويل كارت العميل لـ PDF (نفس مسار
+// الطباعة الحالي — المتصفح مفيهوش مكتبة PDF مضمّنة، فـ "حفظ كـ PDF" بييجي من
+// نافذة الطباعة) وفتح واتساب العميل جاهز عشان يرفق الملف المحفوظ يدويًا،
+// لأن واتساب مبيسمحش بإرفاق ملف تلقائيًا عبر رابط wa.me — دي أقصى أتمتة ممكنة.
+function sendClientCardPDF(){
+  const clientKey=document.getElementById('cc-client')?.value||'';
+  if(!clientKey){toast('اختر عميلاً أولاً','err');return;}
+  const {name:clientName}=_resolveClientKey(clientKey);
+  printClientCardPaged();
+  toast('📄 هتفتح نافذة الطباعة — احفظه "كـ PDF"، وهيفتح واتساب العميل عشان ترفق الملف','ok');
+  setTimeout(function(){
+    const msg=['🦷 '+_labLine(),_sep(),'📋 كارت حساب العميل: '+clientName,'📎 مرفق ملف PDF بكشف الحساب التفصيلي.',_sep(),_labLine()].join('\n');
+    waOrCopy(msg,{type:'client',name:clientName});
+  },700);
 }
 
 function sendSupCardWA(){
