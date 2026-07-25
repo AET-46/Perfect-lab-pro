@@ -177,6 +177,23 @@ tr.row-duplicate:hover{background:rgba(234,179,8,.16)!important}
 body.theme-glass .tp-dot2,body.theme-light .tp-dot2{background:#e2e8f0;border-color:#94a3b8}
 body.theme-glass .tp-dot2.tp-on,body.theme-light .tp-dot2.tp-on{background:var(--teal);border-color:var(--teal)}
 body.theme-glass .tp-dot2.tp-mid,body.theme-light .tp-dot2.tp-mid{background:var(--orange);border-color:var(--orange)}
+
+/* FIX #TECHLOGS-REVIEW: دوائر مراحل الفنيين المبنية على تسجيلات نافذة الفنيين
+   (techLogs) — مستقلة تمامًا عن tp-dots القديمة (tech_progress، أداة منفصلة).
+   برتقالي نابض = تسجيل بانتظار المراجعة، تيل ثابت = معتمد، أحمر = مرفوض. */
+.tl-dots{display:inline-flex;align-items:center;margin-top:6px;cursor:pointer;vertical-align:middle;padding:2px 4px;border-radius:6px;transition:background .15s}
+.tl-dots:hover{background:rgba(249,115,22,.1)}
+.tl-dot{width:11px;height:11px;border-radius:50%;background:#fff;border:2.5px solid #94a3b8;flex-shrink:0;box-shadow:0 0 0 1px rgba(0,0,0,.08)}
+.tl-dot.tl-approved{background:var(--teal);border-color:var(--teal)}
+.tl-dot.tl-pending{background:var(--orange);border-color:var(--orange);animation:tlDotPulse 1.3s ease-in-out infinite}
+.tl-dot.tl-rejected{background:var(--red);border-color:var(--red)}
+.tl-line{height:2.5px;width:14px;background:#94a3b8}
+.tl-line.tl-on{background:var(--teal)}
+body.theme-glass .tl-dot,body.theme-light .tl-dot{background:#e2e8f0;border-color:#94a3b8}
+@keyframes tlDotPulse{0%,100%{box-shadow:0 0 0 0 rgba(249,115,22,.55)}50%{box-shadow:0 0 0 6px rgba(249,115,22,0)}}
+@keyframes tlBadgeShake{0%,100%{transform:translateX(0)}10%,50%,90%{transform:translateX(-4px)}30%,70%{transform:translateX(4px)}}
+.tl-review-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(249,115,22,.15);color:var(--orange);border:1px solid rgba(249,115,22,.4);border-radius:20px;padding:4px 12px;font-size:11.5px;font-weight:700;cursor:pointer;margin-right:8px;vertical-align:middle;animation:badge-pulse 2s ease-in-out infinite}
+.tl-review-badge.tl-shake-now{animation:badge-pulse 2s ease-in-out infinite,tlBadgeShake .5s ease}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
 body{font-family:"Cairo",sans-serif;font-weight:700;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
@@ -391,6 +408,15 @@ input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:poin
 .mc-btn:hover{border-color:var(--red);color:var(--red)}
 .mb{padding:18px}.mf{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:7px;flex-wrap:wrap}
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+/* TEETH CHART — قوس فكي واحد بشكل exoCAD (نفس شكل بوابة الفنيين) */
+.plp-tooth-optional-note{font-size:11px;color:var(--text3);text-align:center;margin-bottom:8px}
+.plp-tooth-oval-wrap{position:relative;width:300px;max-width:100%;height:360px;margin:6px auto 14px}
+.plp-tooth-oval-wrap::before{content:'';position:absolute;inset:22px;border:1.5px dashed var(--border);border-radius:50%;opacity:.5}
+.plp-tooth{position:absolute;width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:var(--bg3);color:var(--text3);font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s;transform:translate(-50%,-50%)}
+.plp-tooth.sel{background:linear-gradient(135deg,var(--gold),var(--gold2));border-color:var(--gold2);color:#241a04;transform:translate(-50%,-50%) scale(1.18);box-shadow:0 2px 10px rgba(0,0,0,.3)}
+.teeth-row-btn{padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);cursor:pointer;border-radius:6px}
+.teeth-row-btn.has-teeth{color:var(--teal);border-color:var(--teal)}
+.teeth-row-btn:not(.has-teeth){color:var(--text2)}
 .ffull{grid-column:1/-1}
 .fg{display:flex;flex-direction:column;gap:4px}
 .fg label{font-size:11px;font-weight:600;color:var(--text3)}
@@ -1332,7 +1358,7 @@ body.theme-glass .ph h2{color:var(--blue2)}
   <!-- DAFTER -->
   <div class="page" id="pg-dafter">
     <div class="ph">
-      <h2>الدفتر <small id="dafter-cnt"></small></h2>
+      <h2>الدفتر <small id="dafter-cnt"></small> <span class="tl-review-badge" id="dafter-techlogs-badge" style="display:none" onclick="openTechLogsReviewModal('dafter')"></span></h2>
       <div class="btn-row">
         <button class="btn btn-gold" onclick="openDafter()" data-perm-hide="dafter.add">+ إضافة</button>
         <button class="btn btn-ghost" onclick="editSelDafter()" data-perm-hide="dafter.edit">تعديل</button>
@@ -1386,7 +1412,7 @@ body.theme-glass .ph h2{color:var(--blue2)}
   <!-- PROOF -->
   <div class="page" id="pg-proof">
     <div class="ph">
-      <h2>البروفه <small id="proof-cnt"></small></h2>
+      <h2>البروفه <small id="proof-cnt"></small> <span class="tl-review-badge" id="proof-techlogs-badge" style="display:none" onclick="openTechLogsReviewModal('proof')"></span></h2>
       <div class="btn-row">
         <button class="btn btn-orange" onclick="sendProofNotif()" data-perm-hide="proof.send_notif">🔬 إشعار بروفه</button>
         <button class="btn btn-ghost" onclick="editSelProof()" data-perm-hide="proof.edit">تعديل</button>
@@ -1426,7 +1452,7 @@ body.theme-glass .ph h2{color:var(--blue2)}
   <!-- ARCHIVE -->
   <div class="page" id="pg-archive">
     <div class="ph">
-      <h2>الأرشيف</h2>
+      <h2>الأرشيف <span class="tl-review-badge" id="archive-techlogs-badge" style="display:none" onclick="openTechLogsReviewModal('archive')"></span></h2>
       <div class="btn-row">
         <button class="btn btn-blue" onclick="sendArcNotifOnly()" data-perm-hide="archive.send_inv">💬 إشعار</button>
         <button class="btn btn-purple" onclick="sendArcInvOnly()" data-perm-hide="archive.invoice">🖨️ فاتورة</button>
@@ -4162,6 +4188,15 @@ body.theme-glass .ph h2{color:var(--blue2)}
   </div>
 </div>
 
+<!-- TECH LOGS REVIEW -->
+<div class="overlay" id="ov-techreview">
+  <div class="modal modal-md">
+    <div class="mh"><h3 id="tr-title">مراجعة تسجيلات الفنيين</h3><div class="mc-btn" onclick="closeOv('ov-techreview')">✕</div></div>
+    <div class="mb" id="tr-body" style="max-height:65vh;overflow-y:auto"></div>
+    <div class="mf" id="tr-footer"></div>
+  </div>
+</div>
+
 <!-- INVOICE NOTIF -->
 <div class="overlay" id="ov-inv-notif">
   <div class="modal modal-md">
@@ -5413,6 +5448,276 @@ const DB = {
 };
 window.DB = DB;
 
+// ════════════════════════════════════════════════════════════
+// TECH LOGS REVIEW — تسجيلات نافذة الفنيين (techLogs)
+// مخزّنة في Firebase تحت مسار جذر منفصل "techLogs" (مش data/shared)، بالضبط زي
+// ما هي مكتوبة من نافذة الفنيين — عشان كده مستمع خاص هنا، مش عن طريق DB.get/set
+// اللي مفترض بادئة data/shared. قراءة + تحديث حالة (اعتماد/رفض) بس، بدون أي لمس
+// لمنطق نافذة الفنيين نفسها.
+// ════════════════════════════════════════════════════════════
+let _techLogsCache = {};
+let _techLogsPrevPendingIds = new Set();
+let _techLogsFirstLoad = true;
+(function _loadTechLogsLocal(){
+  try {
+    const raw = localStorage.getItem('plp_techLogs');
+    _techLogsCache = raw ? JSON.parse(raw) : {};
+  } catch(e) { _techLogsCache = {}; }
+})();
+function _startTechLogsSync(){
+  if (!_fbRTDB) { setTimeout(_startTechLogsSync, 300); return; }
+  _fbRTDB.ref('techLogs').on('value', snap => {
+    _techLogsCache = snap.val() || {};
+    try { localStorage.setItem('plp_techLogs', JSON.stringify(_techLogsCache)); } catch(e) {}
+    _onTechLogsUpdated();
+  }, err => console.warn('techLogs sync error:', err.message));
+}
+if (!_initFirebase()) {
+  const _tlInterval = setInterval(function(){ if(_fbRTDB){ clearInterval(_tlInterval); _startTechLogsSync(); } }, 200);
+} else { _startTechLogsSync(); }
+
+function getTechLogsArray(){
+  return Object.entries(_techLogsCache||{}).map(([id,v])=>({...v,_id:id})).filter(l=>l&&l.caseId&&l.stage);
+}
+function getTechLogsForCase(caseId){
+  return getTechLogsArray().filter(l=>l.caseId===caseId);
+}
+
+// ════════════════════════════════════════════════════════════
+// مزامنة اختيار الأسنان (caseTeeth) — نفس مسار Firebase اللي بتكتب/تقرأ منه
+// بوابة الفنيين (data/shared/caseTeeth/{caseId})، فأي اختيار يظهر فورًا في الاتجاهين.
+// ════════════════════════════════════════════════════════════
+let _caseTeethCache = {};
+(function _loadCaseTeethLocal(){
+  try {
+    const raw = localStorage.getItem('plp_caseTeeth');
+    _caseTeethCache = raw ? JSON.parse(raw) : {};
+  } catch(e) { _caseTeethCache = {}; }
+})();
+function _startCaseTeethSync(){
+  if (!_fbRTDB) { setTimeout(_startCaseTeethSync, 300); return; }
+  _fbRTDB.ref('data/shared/caseTeeth').on('value', snap => {
+    _caseTeethCache = snap.val() || {};
+    try { localStorage.setItem('plp_caseTeeth', JSON.stringify(_caseTeethCache)); } catch(e) {}
+    if (typeof renderDafter==='function' && document.getElementById('pg-dafter')?.classList.contains('active')) renderDafter();
+    if (typeof renderProof==='function' && document.getElementById('pg-proof')?.classList.contains('active')) renderProof();
+  }, err => console.warn('caseTeeth sync error:', err.message));
+}
+if (!_initFirebase()) {
+  const _ctInterval = setInterval(function(){ if(_fbRTDB){ clearInterval(_ctInterval); _startCaseTeethSync(); } }, 200);
+} else { _startCaseTeethSync(); }
+function getCaseTeeth(caseId){
+  const arr = _caseTeethCache[caseId];
+  return Array.isArray(arr) ? arr : [];
+}
+function getPendingTechLogs(){
+  return getTechLogsArray().filter(l=>l.status==='pending');
+}
+// آخر تسجيل معتمد لحالة+مرحلة معيّنة — يُستخدم للتعبئة التلقائية وقت الأرشفة
+function getApprovedTechForStage(caseId, stage){
+  const logs = getTechLogsForCase(caseId).filter(l=>l.stage===stage && l.status==='approved');
+  if (!logs.length) return '';
+  logs.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  return logs[0].techName || '';
+}
+// أحدث تسجيل (أي حالة) لحالة+مرحلة — يُستخدم لعرض دائرة اللون في الصفوف
+function _latestLogForStage(caseId, stage){
+  const logs = getTechLogsForCase(caseId).filter(l=>l.stage===stage);
+  if (!logs.length) return null;
+  logs.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  return logs[0];
+}
+
+async function setTechLogStatus(logId, status){
+  if (!_fbRTDB || !logId) return;
+  try {
+    await _fbRTDB.ref('techLogs/'+logId).update({status, reviewedAt:Date.now(), reviewedBy:(window._user&&window._user.name)||''});
+  } catch(e){ toast('خطأ في تحديث حالة التسجيل','err'); throw e; }
+}
+// اعتماد تسجيل: لو الحالة أصلاً في الأرشيف، نحدّث تعيين الفني الرسمي (technicians[stage])
+// مباشرة بنفس التسمية اللي بيستخدمها doArchive(). لو لسه في دفتر/بروفه، الاعتماد
+// بيتخزن بس، ولما تتعمل أرشفة لاحقًا openTechAssign() هيقرأ منه تلقائيًا (تعبئة، قابلة للتعديل).
+async function approveTechLog(logId){
+  if (!can('techlogs.review')) { toast('ليس لديك صلاحية اعتماد تسجيلات الفنيين','err'); return; }
+  const log = (getTechLogsArray()).find(l=>l._id===logId);
+  if (!log) return;
+  await setTechLogStatus(logId, 'approved');
+  if (log.source === 'archive') {
+    try {
+      delete DB._c['archive'];
+      const arc = DB.get('archive') || [];
+      const rec = arc.find(x=>x.id===log.caseId);
+      if (rec) {
+        rec.technicians = {...(rec.technicians||{}), [log.stage]: log.techName};
+        DB.set('archive', arc);
+        DB._c['archive'] = arc;
+      }
+    } catch(e){}
+  }
+  try{ logActivity('techlog.approve',{note:`${log.stage} — ${log.techName}`,caseId:log.caseId}); }catch(e){}
+  toast('✅ تم اعتماد التسجيل');
+}
+async function rejectTechLog(logId){
+  if (!can('techlogs.review')) { toast('ليس لديك صلاحية رفض تسجيلات الفنيين','err'); return; }
+  const log = (getTechLogsArray()).find(l=>l._id===logId);
+  await setTechLogStatus(logId, 'rejected');
+  try{ if(log) logActivity('techlog.reject',{note:`${log.stage} — ${log.techName}`,caseId:log.caseId}); }catch(e){}
+  toast('تم رفض التسجيل');
+}
+
+function _onTechLogsUpdated(){
+  const pending = getPendingTechLogs();
+  const pendingIds = new Set(pending.map(l=>l._id));
+  let hasNew = false;
+  if (!_techLogsFirstLoad) {
+    pendingIds.forEach(id => { if (!_techLogsPrevPendingIds.has(id)) hasNew = true; });
+  }
+  _techLogsPrevPendingIds = pendingIds;
+  _techLogsFirstLoad = false;
+  updateTechLogsBadges();
+  try { if (document.getElementById('dafter-tb')) renderDafter(); } catch(e){}
+  try { if (document.getElementById('proof-tb')) renderProof(); } catch(e){}
+  try { if (document.getElementById('archive-tb')) renderArchive(); } catch(e){}
+  if (hasNew) {
+    if (navigator.vibrate) navigator.vibrate([70,50,70,50,70]);
+    try {
+      const cfg = getAlertSettings();
+      const techAlert = computeAlerts().filter(a=>a.type==='techreview');
+      if (techAlert.length) showAlertBanner(techAlert, cfg);
+    } catch(e){}
+  }
+}
+
+function updateTechLogsBadges(){
+  const pending = getPendingTechLogs();
+  const bySrc = {dafter:0, proof:0, archive:0};
+  pending.forEach(l => { if (bySrc[l.source]!==undefined) bySrc[l.source]++; });
+  const setBadge = (id, n) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const wasHidden = el.style.display==='none'||!el.style.display;
+    el.textContent = n ? `⏳ ${n} تسجيل فني بانتظار المراجعة` : '';
+    el.style.display = n ? 'inline-flex' : 'none';
+    if (n && wasHidden) { el.classList.add('tl-shake-now'); setTimeout(()=>el.classList.remove('tl-shake-now'), 600); }
+  };
+  setBadge('dafter-techlogs-badge', bySrc.dafter);
+  setBadge('proof-techlogs-badge', bySrc.proof);
+  setBadge('archive-techlogs-badge', bySrc.archive);
+}
+
+// دوائر مراحل الفنيين تحت اسم العميل — من techLogs (مختلفة عن techProgressBadge
+// القديمة اللي مصدرها tech_progress من أداة منفصلة)
+function techLogsRowBadge(r, source){
+  const stages = getTechStagesForProduct(r.product);
+  if (!stages.length) return '';
+  const items = stages.map(s => ({stage:s, log:_latestLogForStage(r.id, s)}));
+  if (!items.some(i=>i.log)) return ''; // مفيش أي تسجيل خالص لهذه الحالة — متعرضش دوائر فاضية
+  const tip = items.map(i => `${i.stage}: ${i.log?(i.log.status==='approved'?'معتمد ('+esc(i.log.techName)+')':i.log.status==='rejected'?'مرفوض':'بانتظار المراجعة ('+esc(i.log.techName)+')'):'لم يُسجَّل'}`).join(' | ');
+  let html = '';
+  items.forEach((it,i) => {
+    if (i>0) {
+      const lineOn = items[i-1].log && items[i-1].log.status==='approved';
+      html += `<div class="tl-line ${lineOn?'tl-on':''}"></div>`;
+    }
+    const cls = it.log ? (it.log.status==='approved'?'tl-approved':it.log.status==='rejected'?'tl-rejected':'tl-pending') : '';
+    html += `<div class="tl-dot ${cls}"></div>`;
+  });
+  return `<div class="tl-dots" title="${esc(tip)}" onclick="event.stopPropagation();openTechLogsReviewModal(null,'${esc(r.id)}')">${html}</div>`;
+}
+
+// ── مودال المراجعة: إما لحالة واحدة (caseId) أو لكل المعلّق في صفحة معيّنة (source) ──
+function openTechLogsReviewModal(source, caseId){
+  window._trCtx = {source, caseId};
+  document.getElementById('tr-title').textContent = caseId ? 'مراجعة تسجيلات هذه الحالة' : source ? 'مراجعة تسجيلات الفنيين — '+({dafter:'الدفتر',proof:'البروفه',archive:'الأرشيف'}[source]||'') : 'مراجعة كل تسجيلات الفنيين المعلّقة';
+  _renderTechReviewBody(source, caseId);
+  openOv('ov-techreview');
+}
+function _caseLookup(caseId){
+  for (const src of ['dafter','proof','archive']) {
+    const rec = (DB.get(src)||[]).find(x=>x.id===caseId);
+    if (rec) return {rec, src};
+  }
+  return null;
+}
+// مراحل فيها أكتر من فني مختلف بين التسجيلات المعلّقة و/أو المعتمدة لنفس الحالة —
+// يشمل تعارض تسجيل معلّق جديد مع فني معتمد بالفعل على نفس المرحلة، مش بس تعارض
+// بين تسجيلين معلّقين مع بعض.
+function _stageConflicts(caseId){
+  const relevant = getTechLogsForCase(caseId).filter(l=>l.status==='pending'||l.status==='approved');
+  const stageGroups = {};
+  relevant.forEach(l => { (stageGroups[l.stage]=stageGroups[l.stage]||new Set()).add(l.techName); });
+  return Object.entries(stageGroups).filter(([,s])=>s.size>1).map(([s])=>s);
+}
+function _renderTechReviewBody(source, caseId){
+  const body = document.getElementById('tr-body');
+  const footer = document.getElementById('tr-footer');
+  let logs;
+  if (caseId) {
+    logs = getTechLogsForCase(caseId);
+  } else if (source) {
+    const ids = new Set((DB.get(source)||[]).map(r=>r.id));
+    logs = getTechLogsArray().filter(l=>l.source===source && ids.has(l.caseId) && l.status==='pending');
+  } else {
+    logs = getPendingTechLogs();
+  }
+  if (!logs.length) {
+    body.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text3);font-size:12px">✅ لا توجد تسجيلات لمراجعتها</div>';
+    footer.innerHTML = '<button class="btn btn-ghost" onclick="closeOv(\'ov-techreview\')">إغلاق</button>';
+    return;
+  }
+  // تجميع حسب الحالة، وكشف التعارض (أكتر من فني على نفس المرحلة لنفس الحالة)
+  const byCase = {};
+  logs.forEach(l => { (byCase[l.caseId] = byCase[l.caseId]||[]).push(l); });
+  let hasConflict = false;
+  body.innerHTML = Object.entries(byCase).map(([cid, clogs]) => {
+    const lookup = _caseLookup(cid);
+    const label = lookup ? `#${esc(String(lookup.rec.caseId||'-'))} — ${esc(lookup.rec.client||'')}` : cid;
+    const conflictStages = _stageConflicts(cid);
+    if (conflictStages.length) hasConflict = true;
+    const rows = clogs.map(l => {
+      const conflict = conflictStages.includes(l.stage);
+      const statusChip = l.status==='approved'?'<span class="badge badge-approved" style="background:rgba(20,184,166,.15);color:var(--teal)">معتمد</span>'
+        : l.status==='rejected'?'<span class="badge" style="background:rgba(239,68,68,.15);color:var(--red)">مرفوض</span>'
+        : '<span class="badge" style="background:rgba(249,115,22,.15);color:var(--orange)">معلّق</span>';
+      return `<div style="display:flex;align-items:center;gap:8px;padding:7px 4px;border-top:1px solid var(--border)${conflict?';background:rgba(239,68,68,.06)':''}">
+        <div style="flex:1;font-size:12px">
+          <strong>${esc(l.stage)}</strong> — ${esc(l.techName)} ${statusChip}
+          ${conflict?'<div style="color:var(--red);font-size:10.5px;margin-top:2px">⚠️ أكتر من فني سجّل نفس المرحلة — راجع قبل الاعتماد</div>':''}
+          <div style="color:var(--text3);font-size:10.5px">${esc(l.logDate||'')} ${esc(l.logTime||'')}</div>
+        </div>
+        ${l.status==='pending'?(can('techlogs.review')?`<button class="btn btn-sm btn-gold" onclick="tlApproveOne('${l._id}')">اعتماد</button><button class="btn btn-sm btn-ghost" onclick="tlRejectOne('${l._id}')">رفض</button>`:'<span style="font-size:10.5px;color:var(--text3)">بانتظار مراجعة مشرف</span>'):''}
+      </div>`;
+    }).join('');
+    return `<div style="margin-bottom:10px;border:1px solid var(--border);border-radius:10px;overflow:hidden">
+      <div style="padding:8px 10px;background:var(--bg3);display:flex;justify-content:space-between;align-items:center">
+        <strong style="font-size:12.5px">${label}</strong>
+        ${can('techlogs.review')?`<button class="btn btn-sm btn-ghost" onclick="tlApproveAllForCase('${esc(cid)}',this)">اعتماد الكل لهذه الحالة</button>`:''}
+      </div>
+      ${rows}
+    </div>`;
+  }).join('');
+  footer.innerHTML = `<button class="btn btn-ghost" onclick="closeOv('ov-techreview')">إغلاق</button>`;
+}
+async function tlApproveOne(logId){
+  await approveTechLog(logId);
+  _refreshOpenTechReview();
+}
+async function tlRejectOne(logId){
+  await rejectTechLog(logId);
+  _refreshOpenTechReview();
+}
+async function tlApproveAllForCase(caseId, btnEl){
+  if (!can('techlogs.review')) { toast('ليس لديك صلاحية اعتماد تسجيلات الفنيين','err'); return; }
+  const clogs = getTechLogsForCase(caseId).filter(l=>l.status==='pending');
+  const hasConflict = _stageConflicts(caseId).length>0;
+  if (hasConflict) { toast('⚠️ فيه تعارض في هذه الحالة — اعتمد كل مرحلة يدويًا بعد المراجعة','err'); return; }
+  for (const l of clogs) await approveTechLog(l._id);
+  _refreshOpenTechReview();
+}
+function _refreshOpenTechReview(){
+  if (window._trCtx) _renderTechReviewBody(window._trCtx.source, window._trCtx.caseId);
+}
+
   // ── Safe aliases for late-defined window functions ──────
   function forgotPassword(){if(window.forgotPassword&&window.forgotPassword!==forgotPassword)window.forgotPassword();}
   function toggleAI(){if(window.toggleAI&&window.toggleAI!==toggleAI)window.toggleAI();}
@@ -6510,6 +6815,7 @@ function _doUpdateBadges(){
   const notifs=DB.get('notifications')||[];
   const unread=notifs.filter(n=>!n.read).length;
   _set('nb-notif',unread||'—');
+  try{ updateTechLogsBadges(); }catch(e){}
 }
 
 // LAB INFO
@@ -6824,6 +7130,14 @@ const PERM_SCHEMA = [
   },
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   {
+    section:'🔬 مراجعة تسجيلات الفنيين', key:'techlogs',
+    hint:'اعتماد أو رفض تسجيلات المراحل الواردة من بوابة الفنيين',
+    items:[
+      {id:'techlogs.review',        label:'اعتماد / رفض تسجيلات الفنيين', hint:'زر الاعتماد والرفض داخل نافذة مراجعة تسجيلات الفنيين'},
+    ]
+  },
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {
     section:'🛒 المشتريات والموردون', key:'purchases',
     hint:'إدارة فواتير الشراء والموردين',
     items:[
@@ -6963,6 +7277,7 @@ const PERM_DEFAULTS = {
     'masterdata.view','masterdata.lab','masterdata.clients','masterdata.clients.view_debt',
     'masterdata.prices','masterdata.tech','masterdata.delegates','masterdata.employees',
     'masterdata.trsetup','masterdata.notif_design','masterdata.dept_map','masterdata.actlog',
+    'techlogs.review',
   ],
   // ── المحاسب: يرى كل المالي، يحصّل، لا يضيف/يعدل حالات ──
   accountant: [
@@ -8879,9 +9194,6 @@ function _findDuplicatePatientCases(){
   const all=[];
   sources.forEach(src=>{
     (DB.get(src.key)||[]).forEach(r=>{
-      // الفواتير المسوّاة (تسوية) مستبعدة بالكامل من حساب العميل ماليًا (isArchRowSettled) —
-      // فتكرارها لم يعد له أثر حسابي، ومحتسبتش كتكرار فعّال هنا.
-      if(src.key==='archive'&&isArchRowSettled(r.id))return;
       // المقياس: رقم الحالة (زي 55/6) المستخرج من اسم المريض — مش نص الاسم بالكامل.
       // لو الاسم اتغيّر أو اتضاف له حاجة لكن الرقم نفسه اتكرر لنفس العميل، برضه تكرار حقيقي.
       const caseNo=_extractCaseNo(r.noteName);
@@ -9132,7 +9444,7 @@ function renderDafter(){
       // FIX #CASE-GROUP-BOX-HEADER: للحالات المرتبطة/المكررة بس (isGrp) — صندوق مضغوط
       // منفصل فوق + صف عادي الحجم مستقل لكل نوع (بدل الخلية الممتدة rowspan). الحالات
       // العادية (مش مقسّمة) تفضل بنفس الشكل القديم تمامًا من غير أي تغيير.
-      const sharedHead=(!isGrp&&idx===0)?`<td class="grp-shared-compact" rowspan="${rows.length}"><span style="font-size:12.5px;color:var(--text2);font-weight:700">#${esc(String(r.caseId))}</span><br><strong style="font-size:14px">${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:11.5px;color:var(--teal);font-weight:600">${esc(r.noteName)}</span>`:''}${techProgressBadge(r)}</td><td rowspan="${rows.length}">${esc(r.phone||'-')}</td>`:'';
+      const sharedHead=(!isGrp&&idx===0)?`<td class="grp-shared-compact" rowspan="${rows.length}"><span style="font-size:12.5px;color:var(--text2);font-weight:700">#${esc(String(r.caseId))}</span><br><strong style="font-size:14px">${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:11.5px;color:var(--teal);font-weight:600">${esc(r.noteName)}</span>`:''}${techProgressBadge(r)}${techLogsRowBadge(r,'dafter')}</td><td rowspan="${rows.length}">${esc(r.phone||'-')}</td>`:'';
       const delegateCell=(!isGrp&&idx===0)?`<td rowspan="${rows.length}">${r.delegate?badge(esc(r.delegate),'bg-teal'):'—'}</td>`:'';
       const typeCells=isGrp?`<td class="type-pill-cell"><span class="type-pill">${idx+1}/${rows.length}</span> ${esc(r.product)}</td><td>${esc(r.color||'-')}</td><td>${esc(String(r.qty))}</td>
     <td><strong style="color:var(--gold2)">${fmt(r.grossTotal!=null?r.grossTotal:r.total)}</strong></td>
@@ -9144,7 +9456,7 @@ function renderDafter(){
       const dataRow=`<tr data-id="${esc(r.id)}" data-case="${esc(_groupKey(r))}" data-cat="${getProductionCat(r.product)}" class="${rowCls}${isGrp?' case-grp-type-row':''}" onclick="${isGrp?'rowClick(this)':'groupAwareRowClick(this)'}">
     ${ownChk}${sharedHead}
     ${typeCells}
-    <td onclick="event.stopPropagation()"><button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2)" onclick="openRowDetail('${r.id}','dafter')" title="عرض التفاصيل">👁️</button> <button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--gold2)" onclick="editRowDafter('${r.id}')" title="تعديل هذا الصف">✏️</button></td>
+    <td onclick="event.stopPropagation()"><button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2)" onclick="openRowDetail('${r.id}','dafter')" title="عرض التفاصيل">👁️</button> <button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--gold2)" onclick="editRowDafter('${r.id}')" title="تعديل هذا الصف">✏️</button> <button class="teeth-row-btn${getCaseTeeth(r.id).length?' has-teeth':''}" onclick="openToothModalPLP('${r.id}','${esc(String(r.caseId))}','${esc(r.client)}')" title="اختيار الأسنان (اختياري)">🦷${getCaseTeeth(r.id).length?' '+getCaseTeeth(r.id).length:''}</button></td>
     <td onclick="event.stopPropagation()"><button class="row-note-btn${rowNoteCount?` has-note`:''}" onclick="openRowNote('${r.id}','${esc(String(r.caseId))}','${esc(r.client)}','dafter')" title="ملاحظات الحالة">${rowNoteCount?`📝${rowNoteCount}`:'📝'}</button></td>
   </tr>`;
       return (isGrp&&idx===0)?_grpHeadHtml(rows,12,isDup)+dataRow:dataRow;
@@ -9329,7 +9641,7 @@ function renderProof(){
       const retBadge=(isRetFromArchive?`<span class="return-badge from-archive" title="أُرجع من الأرشيف بتاريخ ${esc(r.returnedAt||'')}">↩ أرشيف ${esc(r.returnedAt||'')}</span>${pfBadge}`:'')+dupBadge;
       const linkBadge=isGrp?`<span class="case-link-badge">🔗 ${idx+1}/${rows.length}</span>`:'';
       const ownChk=`<td class="chk-col"><input type="checkbox" onclick="event.stopPropagation();rowClick(this.closest('tr'))"></td>`;
-      const sharedHead=(!isGrp&&idx===0)?`<td class="grp-shared-compact" rowspan="${rows.length}"><span style="font-size:12.5px;color:var(--text2);font-weight:700">#${esc(String(r.caseId))}</span><br><strong style="font-size:14px">${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:11.5px;color:var(--teal);font-weight:600">${esc(r.noteName)}</span>`:''}${techProgressBadge(r)}</td>`:'';
+      const sharedHead=(!isGrp&&idx===0)?`<td class="grp-shared-compact" rowspan="${rows.length}"><span style="font-size:12.5px;color:var(--text2);font-weight:700">#${esc(String(r.caseId))}</span><br><strong style="font-size:14px">${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:11.5px;color:var(--teal);font-weight:600">${esc(r.noteName)}</span>`:''}${techProgressBadge(r)}${techLogsRowBadge(r,'proof')}</td>`:'';
       const delegateCell=(!isGrp&&idx===0)?`<td rowspan="${rows.length}">${r.delegate?badge(esc(r.delegate),'bg-teal'):'—'}</td>`:'';
       const typeCells=isGrp?`<td class="type-pill-cell"><span class="type-pill">${idx+1}/${rows.length}</span> ${esc(r.product)}</td><td>${esc(r.color||'-')}</td><td>${esc(String(r.qty))}</td>
     <td><strong style="color:var(--gold2)">${fmt(r.grossTotal!=null?r.grossTotal:r.total)}</strong></td>
@@ -9341,7 +9653,7 @@ function renderProof(){
       const dataRow=`<tr data-id="${esc(r.id)}" data-case="${esc(_groupKey(r))}" data-cat="${getProductionCat(r.product)}" class="${rowCls}${isGrp?' case-grp-type-row':''}" onclick="${isGrp?'rowClick(this)':'groupAwareRowClick(this)'}">
     ${ownChk}${sharedHead}
     ${typeCells}
-    <td onclick="event.stopPropagation()"><button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2)" onclick="openRowDetail('${r.id}','proof')" title="عرض التفاصيل">👁️</button> <button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--gold2)" onclick="editRowProof('${r.id}')" title="تعديل هذا الصف">✏️</button></td>
+    <td onclick="event.stopPropagation()"><button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2)" onclick="openRowDetail('${r.id}','proof')" title="عرض التفاصيل">👁️</button> <button class="btn btn-sm" style="padding:2px 7px;font-size:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--gold2)" onclick="editRowProof('${r.id}')" title="تعديل هذا الصف">✏️</button> <button class="teeth-row-btn${getCaseTeeth(r.id).length?' has-teeth':''}" onclick="openToothModalPLP('${r.id}','${esc(String(r.caseId))}','${esc(r.client)}')" title="اختيار الأسنان (اختياري)">🦷${getCaseTeeth(r.id).length?' '+getCaseTeeth(r.id).length:''}</button></td>
     <td onclick="event.stopPropagation()"><button class="row-note-btn${rowNoteCount?` has-note`:''}" onclick="openRowNote('${r.id}','${esc(String(r.caseId))}','${esc(r.client)}','proof')" title="ملاحظات الحالة">${rowNoteCount?`📝${rowNoteCount}`:'📝'}</button></td>
   </tr>`;
       return (isGrp&&idx===0)?_grpHeadHtml(rows,10,isDup)+dataRow:dataRow;
@@ -9454,11 +9766,25 @@ function openTechAssign(src){
     // FIX #TECH-STAGE-SKILL-LOCK: كل فني بيظهر بس في المراحل اللي عنده سعر مُسجَّل ليها
     // (rates[stage]>0) — يعني لو سعيد سعره صفر في "تصميم زيركون"، مش هيظهر أصلاً في
     // قائمة اختيار فني التصميم، فمينفعش تحصل تعيين غلط (مثلاً مصمم يتحط في مرحلة بناء).
+    // FIX #TECHLOGS-AUTOFILL: نعبّي القائمة تلقائيًا من آخر تسجيل معتمد لكل حالة/مرحلة
+    // في نافذة الفنيين — قابل للتعديل قبل الحفظ. لو أكتر من حالة متعيّنة معًا، نعبّي
+    // بس لو كل الحالات المختارة متفقة على نفس الفني لنفس المرحلة؛ لو فيه اختلاف
+    // (كل حالة سجّلها فني مختلف) نسيبها فاضية عشان المستخدم يراجعها يدويًا بدل ما
+    // نفرض فني واحد على حالات مختلفة.
+    const autoFillTech = (s) => {
+      const vals = _taIds.map(cid=>getApprovedTechForStage(cid,s)).filter(Boolean);
+      if(!vals.length) return '';
+      const uniq=[...new Set(vals)];
+      return uniq.length===1 ? uniq[0] : '';
+    };
     document.getElementById('ta-fields').innerHTML=stages.map(s=>{
       const qualified=techs.filter(t=>(t.rates&&t.rates[s])>0);
       const noneQualified=!qualified.length;
       const opts=noneQualified?techs:qualified; // لو مفيش حد مُسعَّر للمرحلة، نسيب الكل ظاهر مع تحذير بدل قفل الشاشة تمامًا
-      return `<div class="fg"><label>${esc(s)}</label><select id="ta-${esc(s)}" data-stage="${esc(s)}"><option value="">اختياري</option>${opts.map(t=>`<option>${esc(t.name)}</option>`).join('')}</select>${noneQualified?'<div style="font-size:10px;color:var(--orange);margin-top:2px">⚠️ لا يوجد فني مُسعَّر لهذه المرحلة — راجع أسعار الفنيين</div>':''}</div>`;
+      const auto=autoFillTech(s);
+      const loggedVals=_taIds.map(cid=>getApprovedTechForStage(cid,s)).filter(Boolean);
+      const hasConflict=!auto && new Set(loggedVals).size>1;
+      return `<div class="fg"><label>${esc(s)}</label><select id="ta-${esc(s)}" data-stage="${esc(s)}"><option value="">اختياري</option>${opts.map(t=>`<option${t.name===auto?' selected':''}>${esc(t.name)}</option>`).join('')}</select>${noneQualified?'<div style="font-size:10px;color:var(--orange);margin-top:2px">⚠️ لا يوجد فني مُسعَّر لهذه المرحلة — راجع أسعار الفنيين</div>':''}${auto?'<div style="font-size:10px;color:var(--teal);margin-top:2px">✅ معبّأ تلقائيًا من تسجيل الفني المعتمد — قابل للتعديل</div>':''}${hasConflict?'<div style="font-size:10px;color:var(--orange);margin-top:2px">⚠️ الحالات المختارة مسجَّلة لفنيين مختلفين في هذه المرحلة — اختر يدويًا</div>':''}</div>`;
     }).join('');
   }
   document.getElementById('ta-notes').value='';
@@ -9574,7 +9900,7 @@ function renderArchive(bypassLimit){
       const settledBadge=_settledInfo?`<span class="return-badge" style="background:rgba(147,51,234,.18);color:#a855f7" title="مسوّاة بمبلغ ${fmt(+_settledInfo.amount||0)} — السبب: ${esc(_settledInfo.reason||'')}">⚖️ مسوّاة</span>`:'';
       const linkBadge=isGrp?`<span class="case-link-badge">🔗 ${idx+1}/${rows.length}</span> `:'';
       const ownChk=`<td class="chk-col"><input type="checkbox" onclick="event.stopPropagation();rowClick(this.closest('tr'))"></td>`;
-      const sharedHead=(!isGrp&&idx===0)?`<td class="grp-shared-compact" rowspan="${rows.length}"><span style="font-size:12.5px;color:var(--text2);font-weight:700">#${esc(String(r.caseId||'-'))}</span><br><strong style="font-size:14px">${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:11.5px;color:var(--teal);font-weight:600">${esc(r.noteName)}</span>`:''}${dupBadge}${settledBadge}</td>
+      const sharedHead=(!isGrp&&idx===0)?`<td class="grp-shared-compact" rowspan="${rows.length}"><span style="font-size:12.5px;color:var(--text2);font-weight:700">#${esc(String(r.caseId||'-'))}</span><br><strong style="font-size:14px">${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:11.5px;color:var(--teal);font-weight:600">${esc(r.noteName)}</span>`:''}${dupBadge}${settledBadge}${techLogsRowBadge(r,'archive')}</td>
       <td rowspan="${rows.length}">${r.delegate?badge(esc(r.delegate),'bg-teal'):'—'}</td>`:'';
       const dataRow=`<tr data-id="${esc(r.id)}" data-case="${esc(_groupKey(r))}" data-cat="${getProductionCat(r.product)}" class="${isDup?'row-duplicate':''}${_settledInfo?' row-settled':''}${isGrp?' case-grp-type-row':''}" onclick="${isGrp?'rowClick(this)':'groupAwareRowClick(this)'}">
       ${ownChk}${sharedHead}
@@ -13565,6 +13891,24 @@ function computeAlerts(){
     });
   }
 
+  // Pending technician self-log reviews — يظهر من أي صفحة (زي باقي التنبيهات)، مش
+  // مربوط بأي إعداد تفعيل/تعطيل حاليًا عشان ميتفوّتش سهوًا
+  const pendingTechLogs = (typeof getPendingTechLogs==='function') ? getPendingTechLogs() : [];
+  if (pendingTechLogs.length) {
+    const lines = pendingTechLogs.map(l=>{
+      const lookup=(typeof _caseLookup==='function')?_caseLookup(l.caseId):null;
+      const label=lookup?`#${lookup.rec.caseId||'-'} ${lookup.rec.client||''}`:'';
+      return `${label} — ${l.stage} (${l.techName})`;
+    });
+    alerts.push({
+      type:'techreview',icon:'🦷',color:'var(--orange)',
+      title:`${pendingTechLogs.length} تسجيل فني بانتظار المراجعة`,
+      allDetail:lines,
+      detail:lines.slice(0,5),
+      count:pendingTechLogs.length
+    });
+  }
+
   return alerts;
 }
 
@@ -13589,7 +13933,7 @@ function showAlertBanner(alerts,cfg){
   </div>`;
 
   const items=alerts.map(a=>`
-    <div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;cursor:pointer" onclick="goPage('notifications');document.getElementById('alert-banner')?.remove();clearInterval(window._alertRepeatTimer)">
+    <div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;cursor:pointer" onclick="${a.type==='techreview'?"openTechLogsReviewModal()":"goPage('notifications')"};document.getElementById('alert-banner')?.remove();clearInterval(window._alertRepeatTimer)">
       <div style="font-size:22px;flex-shrink:0">${a.icon}</div>
       <div style="flex:1">
         <div style="font-size:13px;font-weight:700;color:${a.color};margin-bottom:4px">${a.title}</div>
@@ -13597,9 +13941,10 @@ function showAlertBanner(alerts,cfg){
       </div>
     </div>`).join('');
 
+  const _onlyTechReview = alerts.length>0 && alerts.every(a=>a.type==='techreview');
   const footer=`<div style="padding:10px 16px;display:flex;gap:8px;justify-content:flex-end">
     <button class="btn btn-ghost btn-sm" onclick="document.getElementById('alert-banner').remove();clearInterval(window._alertRepeatTimer)">تجاهل</button>
-    <button class="btn btn-gold btn-sm" onclick="goPage('notifications');document.getElementById('alert-banner').remove();clearInterval(window._alertRepeatTimer)">عرض التفاصيل ←</button>
+    <button class="btn btn-gold btn-sm" onclick="${_onlyTechReview?"openTechLogsReviewModal()":"goPage('notifications')"};document.getElementById('alert-banner').remove();clearInterval(window._alertRepeatTimer)">عرض التفاصيل ←</button>
   </div>`;
 
   banner.innerHTML=header+items+footer;
@@ -18698,6 +19043,79 @@ function openRowNote(rowId, caseNo, client, pageSrc){
     </div>`;
   openOv('ov-row-note');
   setTimeout(()=>document.getElementById('rn-quick-input')?.focus(), 200);
+}
+
+// ════════════════════════════════════════════════════════════
+// اختيار الأسنان (اختياري) — نفس شكل القوس البيضاوي (exoCAD) وترقيم FDI
+// المستخدم في بوابة الفنيين، وبيكتب/يقرأ من نفس المسار في Firebase
+// (data/shared/caseTeeth/{caseId}) عشان الفني والأدمن يشوفوا نفس الاختيار.
+// ════════════════════════════════════════════════════════════
+const TEETH_OVAL_PLP=[18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28,38,37,36,35,34,33,32,31,41,42,43,44,45,46,47,48];
+let _plpToothCaseId=null,_plpToothSelected=[];
+
+function openToothModalPLP(caseId,caseNo,client){
+  _plpToothCaseId=caseId;
+  _plpToothSelected=getCaseTeeth(caseId).slice();
+  let ov=document.getElementById('ov-tooth');
+  if(!ov){
+    ov=document.createElement('div');
+    ov.id='ov-tooth';
+    ov.className='overlay';
+    document.body.appendChild(ov);
+  }
+  ov.innerHTML=`
+    <div class="modal modal-sm">
+      <div class="mh">
+        <div>
+          <h3>🦷 اختيار الأسنان</h3>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">#${esc(String(caseNo))} — ${esc(client)}</div>
+        </div>
+        <div class="mc-btn" onclick="closeOv('ov-tooth')">✕</div>
+      </div>
+      <div class="mb">
+        <div class="plp-tooth-optional-note">اختياري — يمكنك الحفظ بدون تحديد أي سن</div>
+        <div class="plp-tooth-oval-wrap" id="plp-tooth-oval"></div>
+        <div style="font-size:12px;color:var(--text3);text-align:center" id="plp-tooth-count"></div>
+      </div>
+      <div class="mf">
+        <button class="btn btn-ghost btn-sm" onclick="closeOv('ov-tooth')">إلغاء</button>
+        <button class="btn btn-gold btn-sm" onclick="saveTeethPLP()">💾 حفظ</button>
+      </div>
+    </div>`;
+  openOv('ov-tooth');
+  renderToothOvalPLP();
+}
+function renderToothOvalPLP(){
+  const wrap=document.getElementById('plp-tooth-oval');
+  const w=300,h=360; // يطابق أبعاد .plp-tooth-oval-wrap الثابتة في الـCSS
+  const cx=w/2,cy=h/2,rx=w/2-18,ry=h/2-18;
+  const n=TEETH_OVAL_PLP.length;
+  wrap.innerHTML=TEETH_OVAL_PLP.map((t,i)=>{
+    const angle=(i/n)*2*Math.PI-Math.PI/2;
+    const x=cx+rx*Math.cos(angle);
+    const y=cy+ry*Math.sin(angle);
+    const sel=_plpToothSelected.includes(t);
+    return `<div class="plp-tooth ${sel?'sel':''}" style="left:${x}px;top:${y}px" onclick="toggleToothPLP(${t})">${t}</div>`;
+  }).join('');
+  const cntEl=document.getElementById('plp-tooth-count');
+  if(cntEl)cntEl.textContent=_plpToothSelected.length?`تم اختيار ${_plpToothSelected.length} سن`:'لم يتم اختيار أي سن بعد';
+}
+function toggleToothPLP(t){
+  const i=_plpToothSelected.indexOf(t);
+  if(i>-1)_plpToothSelected.splice(i,1); else _plpToothSelected.push(t);
+  renderToothOvalPLP();
+}
+async function saveTeethPLP(){
+  if(!_fbRTDB){toast('لا يوجد اتصال بقاعدة البيانات','err');return;}
+  try{
+    const sorted=_plpToothSelected.slice().sort((a,b)=>a-b);
+    await _fbRTDB.ref('data/shared/caseTeeth/'+_plpToothCaseId).set(sorted);
+    _caseTeethCache[_plpToothCaseId]=sorted;
+    toast('✅ تم حفظ الأسنان المحددة');
+    closeOv('ov-tooth');
+    if(document.getElementById('pg-dafter')?.classList.contains('active'))renderDafter();
+    if(document.getElementById('pg-proof')?.classList.contains('active'))renderProof();
+  }catch(e){toast('خطأ في الحفظ','err');}
 }
 
 function saveRowNoteQuick(){
