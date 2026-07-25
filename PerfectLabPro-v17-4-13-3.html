@@ -183,11 +183,11 @@ body.theme-glass .tp-dot2.tp-mid,body.theme-light .tp-dot2.tp-mid{background:var
    برتقالي نابض = تسجيل بانتظار المراجعة، تيل ثابت = معتمد، أحمر = مرفوض. */
 .tl-dots{display:inline-flex;align-items:center;margin-top:6px;cursor:pointer;vertical-align:middle;padding:2px 4px;border-radius:6px;transition:background .15s}
 .tl-dots:hover{background:rgba(249,115,22,.1)}
-.tl-dot{width:11px;height:11px;border-radius:50%;background:#fff;border:2.5px solid #94a3b8;flex-shrink:0;box-shadow:0 0 0 1px rgba(0,0,0,.08)}
+.tl-dot{width:22px;height:22px;border-radius:50%;background:#fff;border:5px solid #94a3b8;flex-shrink:0;box-shadow:0 0 0 1px rgba(0,0,0,.08)}
 .tl-dot.tl-approved{background:var(--teal);border-color:var(--teal)}
 .tl-dot.tl-pending{background:var(--orange);border-color:var(--orange);animation:tlDotPulse 1.3s ease-in-out infinite}
 .tl-dot.tl-rejected{background:var(--red);border-color:var(--red)}
-.tl-line{height:2.5px;width:14px;background:#94a3b8}
+.tl-line{height:5px;width:28px;background:#94a3b8}
 .tl-line.tl-on{background:var(--teal)}
 body.theme-glass .tl-dot,body.theme-light .tl-dot{background:#e2e8f0;border-color:#94a3b8}
 @keyframes tlDotPulse{0%,100%{box-shadow:0 0 0 0 rgba(249,115,22,.55)}50%{box-shadow:0 0 0 6px rgba(249,115,22,0)}}
@@ -9627,7 +9627,7 @@ function renderDafter(){
       // FIX #CASE-GROUP-BOX-HEADER: للحالات المرتبطة/المكررة بس (isGrp) — صندوق مضغوط
       // منفصل فوق + صف عادي الحجم مستقل لكل نوع (بدل الخلية الممتدة rowspan). الحالات
       // العادية (مش مقسّمة) تفضل بنفس الشكل القديم تمامًا من غير أي تغيير.
-      const sharedHead=(!isGrp&&idx===0)?`<td class="grp-shared-compact" rowspan="${rows.length}"><span style="font-size:12.5px;color:var(--text2);font-weight:700">#${esc(String(r.caseId))}</span><br><strong style="font-size:14px">${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:11.5px;color:var(--teal);font-weight:600">${esc(r.noteName)}</span>`:''}${techProgressBadge(r)}${techLogsRowBadge(r,'dafter')}</td><td rowspan="${rows.length}">${esc(r.phone||'-')}</td>`:'';
+      const sharedHead=(!isGrp&&idx===0)?`<td class="grp-shared-compact" rowspan="${rows.length}"><span style="font-size:12.5px;color:var(--text2);font-weight:700">#${esc(String(r.caseId))}</span><br><strong style="font-size:14px">${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:11.5px;color:var(--teal);font-weight:600">${esc(r.noteName)}</span>`:''}${techLogsRowBadge(r,'dafter')}</td><td rowspan="${rows.length}">${esc(r.phone||'-')}</td>`:'';
       const delegateCell=(!isGrp&&idx===0)?`<td rowspan="${rows.length}">${r.delegate?badge(esc(r.delegate),'bg-teal'):'—'}</td>`:'';
       const typeCells=isGrp?`<td class="type-pill-cell"><span class="type-pill">${idx+1}/${rows.length}</span> ${esc(r.product)}</td><td>${esc(r.color||'-')}</td><td>${esc(String(r.qty))}</td>
     <td><strong style="color:var(--gold2)">${fmt(r.grossTotal!=null?r.grossTotal:r.total)}</strong></td>
@@ -9824,7 +9824,7 @@ function renderProof(){
       const retBadge=(isRetFromArchive?`<span class="return-badge from-archive" title="أُرجع من الأرشيف بتاريخ ${esc(r.returnedAt||'')}">↩ أرشيف ${esc(r.returnedAt||'')}</span>${pfBadge}`:'')+dupBadge;
       const linkBadge=isGrp?`<span class="case-link-badge">🔗 ${idx+1}/${rows.length}</span>`:'';
       const ownChk=`<td class="chk-col"><input type="checkbox" onclick="event.stopPropagation();rowClick(this.closest('tr'))"></td>`;
-      const sharedHead=(!isGrp&&idx===0)?`<td class="grp-shared-compact" rowspan="${rows.length}"><span style="font-size:12.5px;color:var(--text2);font-weight:700">#${esc(String(r.caseId))}</span><br><strong style="font-size:14px">${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:11.5px;color:var(--teal);font-weight:600">${esc(r.noteName)}</span>`:''}${techProgressBadge(r)}${techLogsRowBadge(r,'proof')}</td>`:'';
+      const sharedHead=(!isGrp&&idx===0)?`<td class="grp-shared-compact" rowspan="${rows.length}"><span style="font-size:12.5px;color:var(--text2);font-weight:700">#${esc(String(r.caseId))}</span><br><strong style="font-size:14px">${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:11.5px;color:var(--teal);font-weight:600">${esc(r.noteName)}</span>`:''}${techLogsRowBadge(r,'proof')}</td>`:'';
       const delegateCell=(!isGrp&&idx===0)?`<td rowspan="${rows.length}">${r.delegate?badge(esc(r.delegate),'bg-teal'):'—'}</td>`:'';
       const typeCells=isGrp?`<td class="type-pill-cell"><span class="type-pill">${idx+1}/${rows.length}</span> ${esc(r.product)}</td><td>${esc(r.color||'-')}</td><td>${esc(String(r.qty))}</td>
     <td><strong style="color:var(--gold2)">${fmt(r.grossTotal!=null?r.grossTotal:r.total)}</strong></td>
