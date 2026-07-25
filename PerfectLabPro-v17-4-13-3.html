@@ -1794,7 +1794,8 @@ body.theme-glass .ph h2{color:var(--blue2)}
             <button class="btn btn-gold" onclick="renderClientCard()">📊 عرض الكارت</button>
             <button class="btn btn-blue btn-sm" onclick="printClientCardPaged()">🖨️ طباعة / PDF</button>
             <button class="btn btn-green btn-sm" onclick="sendClientCardWA()">💬 واتساب ملخص</button>
-            <button class="btn btn-orange btn-sm" onclick="sendClientCardImage()">🖼️ صورة للعميل</button>
+            <button class="btn btn-orange btn-sm" onclick="downloadClientCardImage()">⬇️ تحميل صورة</button>
+            <button class="btn btn-purple btn-sm" onclick="shareClientCardImage()">📤 مشاركة واتساب</button>
           </div>
         </div>
       </div>
@@ -21103,7 +21104,9 @@ function _clientCardImageHTML(clientName,cl,res,from,to,c,li){
     +'<span>'+(li.ph1?'📞 '+esc(li.ph1):'')+'</span><span>'+new Date().toLocaleDateString('ar-EG')+'</span>'
     +'</div></div>';
 }
-function sendClientCardImage(){
+function _buildClientCardImage(cb){
+  // cb(blob, fileName, clientName) — عملية مشتركة: تجهيز البيانات + التصيير +
+  // التحويل لصورة. مفصولة عن أي إجراء (تحميل/مشاركة) عشان الاتنين يستخدموها.
   const clientKey=document.getElementById('cc-client')?.value||'';
   if(!clientKey){toast('اختر عميلاً أولاً','err');return;}
   const {id:clientId,name:clientName}=_resolveClientKey(clientKey);
@@ -21126,29 +21129,66 @@ function sendClientCardImage(){
     setTimeout(function(){
       window.html2canvas(holder,{scale:2,useCORS:true,backgroundColor:'#ffffff'}).then(function(canvas){
         holder.remove();overlay.remove();
-        canvas.toBlob(function(blob){
-          if(!blob){toast('❌ تعذّر إنشاء الصورة','err');return;}
-          const fileName='كارت-'+clientName.replace(/[^ء-ي0-9a-zA-Z]/g,'_')+'-'+today()+'.png';
-          const file=new File([blob],fileName,{type:'image/png'});
-          if(navigator.canShare&&navigator.canShare({files:[file]})){
-            navigator.share({files:[file],title:'كارت حساب '+clientName,text:'📋 كارت حساب العميل: '+clientName}).catch(function(){});
-          } else {
-            const url=URL.createObjectURL(blob);
-            const a=document.createElement('a');a.href=url;a.download=fileName;document.body.appendChild(a);a.click();a.remove();
-            setTimeout(function(){URL.revokeObjectURL(url);},4000);
-            toast('✅ تم تحميل الصورة — أرفقها في واتساب اللي هيفتح دلوقتي','ok');
-            setTimeout(function(){
-              const msg=['🦷 '+_labLine(),_sep(),'📋 كارت حساب العميل: '+clientName,'🖼️ مرفق صورة بملخص الحساب.',_sep(),_labLine()].join('\n');
-              waOrCopy(msg,{type:'client',name:clientName});
-            },500);
-          }
-        },'image/png');
+        const fileName='كارت-'+clientName.replace(/[^ء-ي0-9a-zA-Z]/g,'_')+'-'+today()+'.png';
+        if(canvas.toBlob){
+          canvas.toBlob(function(blob){
+            if(!blob){toast('❌ تعذّر إنشاء الصورة','err');return;}
+            cb(blob,fileName,clientName);
+          },'image/png');
+        } else {
+          // فولباك لمتصفحات قديمة مالهاش toBlob
+          const dataUrl=canvas.toDataURL('image/png');
+          const bstr=atob(dataUrl.split(',')[1]);let n=bstr.length;const u8=new Uint8Array(n);
+          while(n--)u8[n]=bstr.charCodeAt(n);
+          cb(new Blob([u8],{type:'image/png'}),fileName,clientName);
+        }
       }).catch(function(e){
         if(holder.parentNode)holder.remove();
         if(overlay.parentNode)overlay.remove();
         toast('❌ حصل خطأ في إنشاء الصورة: '+(e&&e.message||'غير معروف'),'err');
       });
     },60);
+  });
+}
+// زر مضمون 100%: تحميل مباشر على الجهاز — لا يعتمد على user activation
+// (بعكس navigator.share اللي بتفشل بصمت لو استغرق التصيير وقت طويل)
+function downloadClientCardImage(){
+  _buildClientCardImage(function(blob,fileName){
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=fileName;a.rel='noopener';
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(function(){URL.revokeObjectURL(url);},5000);
+    toast('✅ اتحفظت الصورة في مجلد التنزيلات بجهازك','ok');
+  });
+}
+// زر المشاركة عبر واتساب — بيحاول Web Share API (لو الجلسة لسه فيها user
+// activation هيفتح شاشة المشاركة مباشرة بالملف)، ولو فشل لأي سبب (انتهت
+// الصلاحية، غير مدعومة، المستخدم لغاها) بيرجع تلقائيًا لنفس التحميل المضمون
+// + يفتح واتساب بنص جاهز عشان يرفق الملف يدويًا — يعني الصورة هتتحفظ على أي حال.
+function shareClientCardImage(){
+  _buildClientCardImage(function(blob,fileName,clientName){
+    const file=new File([blob],fileName,{type:'image/png'});
+    const fallback=function(){
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');a.href=url;a.download=fileName;a.rel='noopener';
+      document.body.appendChild(a);a.click();a.remove();
+      setTimeout(function(){URL.revokeObjectURL(url);},5000);
+      toast('✅ اتحفظت الصورة في التنزيلات — أرفقها في واتساب اللي هيفتح دلوقتي','ok');
+      setTimeout(function(){
+        const msg=['🦷 '+_labLine(),_sep(),'📋 كارت حساب العميل: '+clientName,'🖼️ مرفق صورة بملخص الحساب.',_sep(),_labLine()].join('\n');
+        waOrCopy(msg,{type:'client',name:clientName});
+      },500);
+    };
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      navigator.share({files:[file],title:'كارت حساب '+clientName,text:'📋 كارت حساب العميل: '+clientName})
+        .catch(function(e){
+          if(e&&e.name==='AbortError')return; // المستخدم لغى شاشة المشاركة بنفسه — مش خطأ
+          fallback();
+        });
+    } else {
+      fallback();
+    }
   });
 }
 
