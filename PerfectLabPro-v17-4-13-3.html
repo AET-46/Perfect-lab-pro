@@ -21239,7 +21239,7 @@ function _buildClientCardImage(cb){
     document.body.appendChild(holder);
     document.body.appendChild(overlay);
     setTimeout(function(){
-      window.html2canvas(holder,{scale:2,useCORS:true,backgroundColor:'#ffffff'}).then(function(canvas){
+      window.html2canvas(holder,{scale:2,useCORS:true,backgroundColor:'#ffffff',foreignObjectRendering:true}).then(function(canvas){
         holder.remove();overlay.remove();
         const fileName='كارت-'+clientName.replace(/[^ء-ي0-9a-zA-Z]/g,'_')+'-'+today()+'.png';
         if(canvas.toBlob){
@@ -21365,7 +21365,7 @@ function downloadClientCardDetailedPDF(){
             return;
           }
           overlay.textContent='⏳ جارِ إنشاء ملف PDF... (صفحة '+(idx+1)+' من '+pageEls.length+')';
-          window.html2canvas(pageEls[idx],{scale:2,useCORS:true,backgroundColor:'#ffffff'}).then(function(canvas){
+          window.html2canvas(pageEls[idx],{scale:2,useCORS:true,backgroundColor:'#ffffff',foreignObjectRendering:true}).then(function(canvas){
             const imgData=canvas.toDataURL('image/jpeg',0.92);
             let renderW=pageW,renderH=pageW*canvas.height/canvas.width;
             if(renderH>pageH){renderH=pageH;renderW=pageH*canvas.width/canvas.height;}
