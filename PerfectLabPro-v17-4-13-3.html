@@ -6311,28 +6311,20 @@ function cur(){return(DB.get('trSetup')||{}).cur||'ج.م'}
 // بدل رقم مالي نضيف. الحل: تثبيت أقصى خانتين عشريتين لكل عرض مبلغ.
 function fmt(n){const v=parseFloat(n);return (isNaN(v)?0:v).toLocaleString('en-US',{maximumFractionDigits:2})}
 // FIX #PHONE-BIDI-REVERSED: أرقام الهاتف اللي فيها "+" ومسافات (زي "+20 111 4465751")
-// بتتقلب بصريًا جوه سياق عربي RTL لأن كل جزء مفصول بمسافة بيتحسب "قطعة" مستقلة وبيتم
-// ترتيب القطع دي من اليمين لليسار زي أي كلمات عربية عادية. الحل: تضمين الرقم بالكامل
-// جوه <bdi dir="ltr"> عشان يتفرض عليه اتجاه واحد ثابت (LTR) بغض النظر عن السياق حواليه،
-// ونتأكد كمان إن مفتاح مصر (+20) متضاف لو مش موجود.
+// بتتقلب بصريًا وبتتقسم على سطرين جوه سياق عربي RTL لأن كل جزء مفصول بمسافة بيتحسب
+// "قطعة" مستقلة: بيترتب عكسي (bidi) وكمان بيبقى نقطة كسر سطر (word-wrap) لو المساحة
+// ضاقت. الحل: نشيل مفتاح الدولة ونطلع الرقم بصيغته المحلية (بصفر البداية) كسلسلة أرقام
+// واحدة متصلة من غير أي مسافات — فمفيش نقطة ينكسر عندها السطر ومفيش قطع منفصلة
+// يترتبوا عكسي، ولسه بنلفه بعنصر <bdi dir="ltr"> ونمنع الكسر صراحة كأمان إضافي.
 function _fmtPhoneDisplay(phone){
   const raw=String(phone||'').trim();
   if(!raw)return '';
-  const digits=raw.replace(/[^\d]/g,'');
+  let digits=raw.replace(/[^\d]/g,'');
   if(!digits)return '';
-  let out;
-  if(raw.startsWith('+')){
-    out=raw;
-  } else if(digits.startsWith('0020')){
-    out='+20 '+digits.slice(4);
-  } else if(digits.startsWith('20')&&digits.length>=11){
-    out='+'+digits;
-  } else if(digits.startsWith('0')){
-    out='+20 '+digits.slice(1);
-  } else {
-    out='+20 '+digits;
-  }
-  return '<bdi dir="ltr" style="unicode-bidi:isolate;direction:ltr;display:inline-block">'+esc(out)+'</bdi>';
+  if(digits.startsWith('0020'))digits=digits.slice(4);
+  else if(digits.startsWith('20')&&digits.length>=11)digits=digits.slice(2);
+  if(!digits.startsWith('0'))digits='0'+digits;
+  return '<bdi dir="ltr" style="unicode-bidi:isolate;direction:ltr;white-space:nowrap;display:inline-block">'+digits+'</bdi>';
 }
 function today(){return new Date().toISOString().split('T')[0]}
 function toast(msg,t='ok'){const el=document.getElementById('toast');el.textContent=msg;el.className='toast '+(t==='ok'?'ok':'err');el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2800)}
@@ -20682,26 +20674,29 @@ function printClientCardPaged(returnPagesOnly){
       +'</tr>';
     const pageBreak=isLast?'auto':'always';
     pages+='<div class="pp" style="page-break-after:'+(isLast?'auto':'always')+'">'
-      // Header: خلفية بيضاء بدل الكحلي الغامق
+      // Header بشكل خطاب رسمي (letterhead): شريط كحلي أعلى الصفحة + عنوان "كشف حساب" ثنائي اللغة
+      +'<div style="height:6px;background:linear-gradient(90deg,#0d1b3e,#1a3a6b 50%,#0d1b3e)"></div>'
       +'<div style="background:#fff;border-bottom:3px solid #c9a84c;padding:0">'
-      +'<div style="display:flex;justify-content:space-between;align-items:center;padding:16px 24px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;padding:18px 24px">'
       +'<div style="display:flex;align-items:center;gap:14px">'+logo+'<div>'
-      +'<div style="font-size:17px;font-weight:900;color:#0d1b3e">'+(li.name||'Perfect Lab Pro')+'</div>'
+      +'<div style="font-size:17px;font-weight:900;color:#0d1b3e;letter-spacing:.3px">'+(li.name||'Perfect Lab Pro')+'</div>'
       +'<div style="font-size:10px;color:#444;margin-top:2px">'+contact+'</div>'
       +'</div></div>'
-      +'<div style="text-align:left">'
-      +'<div style="font-size:13px;font-weight:800;color:#8a6520;background:#f5f2e8;border:1px solid #e0d8bc;border-radius:8px;padding:6px 14px">صفحة '+(pg+1)+' من '+totalPages+'</div>'
+      +'<div style="text-align:left;flex-shrink:0">'
+      +'<div style="font-size:9px;font-weight:800;color:#9a8a5a;letter-spacing:2px;text-transform:uppercase">Statement of Account</div>'
+      +'<div style="font-size:14px;font-weight:800;color:#8a6520;margin-top:3px">كشف حساب رسمي</div>'
+      +'<div style="font-size:10px;color:#9a8a5a;margin-top:3px">صفحة '+(pg+1)+' من '+totalPages+'</div>'
       +'</div></div>'
       // Client info bar
       +'<div style="background:#f5f2e8;border-top:1px solid #ece6d3;padding:12px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">'
       +'<div>'
       +'<div style="font-size:10px;color:#9a8a5a;letter-spacing:1px">العميل</div>'
       +'<div style="font-size:20px;font-weight:900;color:#0d1b3e">'+esc(clientName)+'</div>'
-      +(cl.phone?'<div style="font-size:11px;color:#444;margin-top:2px">📞 '+_fmtPhoneDisplay(cl.phone)+'</div>':'')
+      +(cl.phone?'<div style="font-size:11.5px;color:#444;margin-top:2px;white-space:nowrap">📞 '+_fmtPhoneDisplay(cl.phone)+'</div>':'')
       +'</div>'
-      +'<div style="background:#fff;border:1px solid #e0d8bc;border-radius:10px;padding:10px 18px;text-align:center">'
-      +'<div style="font-size:10px;color:#9a8a5a">الفترة</div>'
-      +'<div style="font-size:16px;font-weight:800;color:#0d1b3e;margin-top:2px">📅 '+(from||'البداية')+' ← '+to+'</div>'
+      +'<div style="background:#fff;border:1px solid #e0d8bc;border-radius:10px;padding:9px 16px;text-align:center;flex-shrink:0">'
+      +'<div style="font-size:9.5px;color:#9a8a5a">الفترة</div>'
+      +'<div style="font-size:13px;font-weight:800;color:#0d1b3e;margin-top:2px;white-space:nowrap">📅 '+(from||'البداية')+' ← '+to+'</div>'
       +'</div></div>'
       // Summary stats bar
       +'<div style="display:grid;grid-template-columns:repeat(4,1fr);background:#fff">'
@@ -20766,7 +20761,7 @@ function printClientCardPaged(returnPagesOnly){
       ):'')
       +(isLast?'<div style="margin-top:20px;padding-top:14px;border-top:2px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#555">'
         +'<span>🦷 '+(li.name||'Perfect Lab Pro')+(li.ph1?' | '+li.ph1:'')+'</span>'
-        +'<span>طُبع: '+new Date().toLocaleDateString('ar-EG')+'</span>'
+        +'<span style="color:#b8922a;font-weight:800;letter-spacing:.5px">مُصدَر إلكترونيًا — طُبع: '+new Date().toLocaleDateString('ar-EG')+'</span>'
         +'<div style="border:1px dashed #d1d5db;padding:6px 24px;border-radius:6px;text-align:center;min-width:120px">'
         +'<div style="height:28px"></div><div style="font-size:10px">توقيع المحاسب</div></div>'
         +'</div>':'')
@@ -21221,14 +21216,20 @@ function _clientCardImageHTML(clientName,cl,res,from,to,c,li){
   const row=function(label,val,color){return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #eee">'
     +'<span style="font-size:12.5px;color:#666">'+label+'</span>'
     +'<span style="font-size:14.5px;font-weight:900;color:'+(color||'#0d1b3e')+'">'+val+'</span></div>';};
-  return '<div style="width:420px;background:#fff;font-family:Cairo,sans-serif;border-radius:0;overflow:hidden">'
-    +'<div style="background:#fff;border-bottom:3px solid #c9a84c;padding:16px 18px;display:flex;align-items:center;gap:12px">'
-    +logo+'<div style="font-size:17px;font-weight:900;color:#0d1b3e">'+esc(li.name||'Perfect Lab Pro')+'</div></div>'
+  return '<div style="width:420px;background:#fff;font-family:Cairo,sans-serif;border-radius:0;overflow:hidden;box-shadow:0 2px 14px rgba(13,27,62,.10)">'
+    +'<div style="height:6px;background:linear-gradient(90deg,#0d1b3e,#1a3a6b 50%,#0d1b3e)"></div>'
+    +'<div style="background:#fff;border-bottom:3px solid #c9a84c;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px">'
+    +'<div style="display:flex;align-items:center;gap:12px">'+logo+'<div style="font-size:18px;font-weight:900;color:#0d1b3e;letter-spacing:.3px">'+esc(li.name||'Perfect Lab Pro')+'</div></div>'
+    +'<div style="text-align:left">'
+    +'<div style="font-size:9px;font-weight:800;color:#9a8a5a;letter-spacing:2px;text-transform:uppercase">Statement of Account</div>'
+    +'<div style="font-size:12.5px;font-weight:800;color:#8a6520;margin-top:2px">كشف حساب</div>'
+    +'</div>'
+    +'</div>'
     +'<div style="background:#f5f2e8;padding:14px 18px">'
     +'<div style="font-size:10px;color:#9a8a5a;letter-spacing:1px">العميل</div>'
     +'<div style="font-size:19px;font-weight:900;color:#0d1b3e;margin-top:2px">'+esc(clientName)+'</div>'
-    +(cl.phone?'<div style="font-size:11.5px;color:#555;margin-top:3px">📞 '+_fmtPhoneDisplay(cl.phone)+'</div>':'')
-    +'<div style="font-size:14px;font-weight:800;color:#8a6520;margin-top:6px">📅 الفترة: '+(from||'البداية')+' ← '+to+'</div>'
+    +(cl.phone?'<div style="font-size:11.5px;color:#555;margin-top:3px;white-space:nowrap">📞 '+_fmtPhoneDisplay(cl.phone)+'</div>':'')
+    +'<div style="font-size:14px;font-weight:800;color:#8a6520;margin-top:6px;white-space:nowrap">📅 الفترة: '+(from||'البداية')+' ← '+to+'</div>'
     +'</div>'
     +'<div style="padding:6px 0">'
     +(res.prevDebt?row('مديونية سابقة',fmt(res.prevDebt)+' '+c,'#b91c1c'):'')
@@ -21239,8 +21240,11 @@ function _clientCardImageHTML(clientName,cl,res,from,to,c,li){
     +'<div style="font-size:11px;color:#666">'+(debtPos?'الإجمالي المتبقي':'رصيد دائن للعميل')+'</div>'
     +'<div style="font-size:22px;font-weight:900;color:'+(debtPos?'#b91c1c':'#166534')+';margin-top:4px">'+fmt(Math.abs(res.totalDebt))+' '+c+'</div>'
     +'</div>'
-    +'<div style="padding:10px 18px 16px;border-top:1px solid #eee;display:flex;justify-content:space-between;font-size:9.5px;color:#999">'
-    +'<span>'+(li.ph1?'📞 '+esc(li.ph1):'')+'</span><span>'+new Date().toLocaleDateString('ar-EG')+'</span>'
+    +'<div style="height:3px;background:linear-gradient(90deg,#c9a84c,#e8c96a,#c9a84c)"></div>'
+    +'<div style="padding:10px 18px 14px;display:flex;justify-content:space-between;align-items:center;font-size:9px;color:#999">'
+    +'<span>'+(li.ph1?'📞 '+esc(li.ph1):'')+'</span>'
+    +'<span style="color:#b8922a;font-weight:800;letter-spacing:.5px">مُصدَر إلكترونيًا</span>'
+    +'<span>'+new Date().toLocaleDateString('ar-EG')+'</span>'
     +'</div></div>';
 }
 function _buildClientCardImage(cb){
