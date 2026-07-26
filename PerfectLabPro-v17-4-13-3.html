@@ -10443,6 +10443,7 @@ function renderTreasury(bypassLimit){
     <td style="display:flex;gap:4px;flex-wrap:nowrap">
       <button class="btn btn-green btn-sm" onclick="sendTrNotif('${esc(t.id)}')" title="إشعار واتساب">💬</button>
       <button class="btn btn-ghost btn-sm" onclick="printTrReceipt('${esc(t.id)}')" title="طباعة سند دفع">🖨️</button>
+      <button class="btn btn-ghost btn-sm" onclick="shareTrReceiptImage('${esc(t.id)}')" title="مشاركة كصورة">🖼️</button>
       ${t.isReversal?`<span style="font-size:10px;color:var(--text3);padding:2px 6px">↩️ تسوية</span>`:t.reversedBy?`<span style="font-size:10px;color:var(--orange);padding:2px 6px" title="تمت تسوية هذه الحركة">⚠️ مُسوَّى</span>`:`<button class="btn btn-orange btn-sm" onclick="openTrReverseModal('${esc(t.id)}')" title="تسوية عكسية (تصحيح الخطأ)">↩️</button>`}
     </td>
   </tr>`).join('');
@@ -10464,6 +10465,75 @@ function sendTrNotif(id){
   const phone=_firstValidPhone(matchedClient?.wa,matchedClient?.phone);
   if(!phone){toast('لا يوجد رقم واتساب صحيح لهذا العميل','err');return;}
   wa(phone,msg,{client:tr.accName,type:'wa-fin',page:'الخزنة'});
+}
+
+// ===== #FEAT-FIN-NOTICE-IMAGE: إشعار حركة مالية (تصميم بنفسجي/تركواز مطابق للصورة المرجعية) =====
+function _finInfoCell(icon,label,val,color){
+  return '<div style="flex:1;min-width:0;text-align:center;padding:14px 8px;border-left:1px solid #eee">'
+    +'<div style="width:34px;height:34px;border-radius:10px;background:'+color+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;margin:0 auto 6px">'+icon+'</div>'
+    +'<div style="font-size:10.5px;color:#888">'+label+'</div>'
+    +'<div style="font-size:12px;font-weight:800;color:#222;margin-top:2px;word-break:break-word">'+val+'</div>'
+    +'</div>';
+}
+function _finFooterItem(icon,val,label,color){
+  return '<div style="display:flex;align-items:center;gap:6px">'
+    +'<div style="width:26px;height:26px;border-radius:50%;background:'+color+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">'+icon+'</div>'
+    +'<div style="text-align:right"><div style="font-size:12px;font-weight:800;color:#222;white-space:nowrap">'+esc(val)+'</div>'+(label?'<div style="font-size:9px;color:#999">'+label+'</div>':'')+'</div>'
+    +'</div>';
+}
+function _finNoticeDocHTML(tr,cl,li,c){
+  const isIn=tr.type==='in';
+  const accent=isIn?'#16a34a':'#dc2626';
+  const purple='#6d28d9',purpleDark='#4c1d95',teal='#0d9488';
+  const totalDebt=Math.max(0,_clientAccountSummary(cl.id||tr.accName).totalDebt);
+  const remaining=Math.max(0,totalDebt-(isIn?+tr.amount:0));
+  const logo=li.logo?'<img src="'+li.logo+'" style="height:40px;object-fit:contain">':'<div style="font-size:28px">🦷</div>';
+  return '<div style="width:620px;background:#fff;font-family:Cairo,sans-serif;overflow:hidden;border-radius:16px;box-shadow:0 4px 20px rgba(76,29,149,.15)">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:22px 24px 6px;flex-wrap:wrap;gap:10px">'
+    +'<div style="display:flex;align-items:center;gap:10px">'+logo+'<div><div style="font-size:19px;font-weight:900;color:#1f1147">'+esc(li.name||'Perfect Lab')+'</div>'
+    +(li.addr?'<div style="font-size:10px;color:#777;margin-top:1px">'+esc(li.addr)+'</div>':'')+'</div></div>'
+    +'<div style="background:linear-gradient(135deg,'+purple+','+purpleDark+');border-radius:10px 26px 10px 26px;padding:11px 22px 11px 16px;display:flex;align-items:center;gap:10px">'
+    +'<div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0">🔔</div>'
+    +'<span style="color:#fff;font-weight:900;font-size:15px;white-space:nowrap">إشعار حركة مالية</span>'
+    +'</div></div>'
+    +'<div style="text-align:center;padding:24px 20px 8px">'
+    +'<div style="width:84px;height:84px;border-radius:50%;background:#fff;border:3px solid '+(isIn?'#bbf7d0':'#fecaca')+';display:inline-flex;align-items:center;justify-content:center">'
+    +'<span style="font-size:36px;color:'+accent+'">'+(isIn?'✔':'✕')+'</span></div></div>'
+    +'<div style="text-align:center;font-size:18px;font-weight:900;color:#1f1147;margin-bottom:18px">'+(isIn?'تم تسجيل دفعتكم بنجاح':'تم تسجيل الصرف بنجاح')+'</div>'
+    +'<div style="margin:0 24px 20px;background:linear-gradient(135deg,#f5f3ff,#ede9fe);border-radius:16px;overflow:hidden">'
+    +'<div style="text-align:center;padding:20px 20px 16px">'
+    +'<div style="font-size:13px;font-weight:800;color:#6d28d9">'+(isIn?'المبلغ المدفوع':'المبلغ المصروف')+'</div>'
+    +'<div style="font-size:36px;font-weight:900;color:#3b0764;margin-top:6px">'+fmt(tr.amount)+' <span style="font-size:20px">'+c+'</span></div>'
+    +'</div>'
+    +'<div style="border-top:1px dashed #c4b5fd;text-align:center;padding:14px 20px">'
+    +'<div style="font-size:12px;font-weight:800;color:#6d28d9">المتبقي</div>'
+    +'<div style="font-size:19px;font-weight:900;color:'+(remaining>0?'#b91c1c':'#166534')+';margin-top:4px">'+fmt(remaining)+' '+c+'</div>'
+    +'</div></div>'
+    +'<div style="display:flex;margin:0 24px 20px;border:1px solid #eee;border-radius:14px;overflow:hidden">'
+    +_finInfoCell('👤','العميل',esc(tr.accName||'—'),purple)
+    +_finInfoCell('🧑','المستلم',esc(tr.receiver||'—'),teal)
+    +_finInfoCell('📅','التاريخ',esc(tr.date||''),purple)
+    +_finInfoCell('👛','المتبقي',fmt(remaining)+' '+c,remaining>0?'#dc2626':'#16a34a')
+    +'</div>'
+    +'<div style="border-top:1px solid #eee;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;background:#fafafa">'
+    +'<div style="display:flex;align-items:center;gap:8px">'+logo+'<div style="font-size:13px;font-weight:900;color:#1f1147">'+esc(li.name||'Perfect Lab')+'</div></div>'
+    +(li.ph1?_finFooterItem('📞',li.ph1,'الحسابات',purple):'')
+    +(li.wa||li.ph2?_finFooterItem('💬',li.wa||li.ph2,'',teal):'')
+    +(li.addr?_finFooterItem('📍',li.addr,'',purple):'')
+    +'</div>'
+    +'</div>';
+}
+// زر "🖼️" في صف الخزنة — يحوّل الحركة المالية لصورة بنفس تصميم الإشعار الجديد وينزّلها/يشاركها
+function shareTrReceiptImage(id){
+  const tr=(DB.get('treasury')||[]).find(t=>t.id===id);
+  if(!tr){toast('حركة غير موجودة','err');return;}
+  const li=DB.get('labinfo')||{};
+  const ts=DB.get('trSetup')||{};
+  const c=ts.cur||'ج.م';
+  const clients=DB.get('clients')||[];
+  const cl=clients.find(x=>x.id===tr.clientId)||clients.find(x=>x.name===tr.accName)||{};
+  const html=_finNoticeDocHTML(tr,cl,li,c);
+  _buildDocImageBlob(html,blob=>_shareOrDownloadDocBlob(blob,'حركة-مالية-'+(tr.accName||'')));
 }
 
 function printTrReceipt(id){
@@ -13302,7 +13372,7 @@ function openProofNotifModal(clients){
     const imBtn=document.getElementById(`pfim-${i}`);
     if(waBtn)waBtn.onclick=()=>wa(m.client.phone,m.msg,{client:m.client.name,type:'wa-proof',page:'البروفه'});
     if(cpBtn)cpBtn.onclick=()=>copyTxt(m.msg);
-    if(imBtn)imBtn.onclick=()=>shareMsgAsImage(m.msg,'بروفة-'+m.client.name);
+    if(imBtn)imBtn.onclick=()=>shareProofNoticeImage(m.client.name,m.client.ids||null);
   });
   // Hide/show static footer based on single vs multi client
   const staticFoot=document.getElementById('proof-static-footer');
@@ -13315,7 +13385,7 @@ function openProofNotifModal(clients){
     // FIX #NOTIFLOG-META: كان يستدعي wa() بدون meta فيُسجَّل الإشعار بدون اسم عميل ونوع
     if(waBtn)waBtn.onclick=()=>wa(msgs[0].client.phone,msgs[0].msg,{client:msgs[0].client.name,type:'wa-proof',page:'البروفه'});
     if(cpBtn)cpBtn.onclick=()=>copyTxt(msgs[0].msg);
-    if(imBtn)imBtn.onclick=()=>shareMsgAsImage(msgs[0].msg,'بروفة-'+msgs[0].client.name);
+    if(imBtn)imBtn.onclick=()=>shareProofNoticeImage(msgs[0].client.name,msgs[0].client.ids||null);
   }
   openOv('ov-proof-notif');
 }
@@ -13384,7 +13454,7 @@ function openMultiInvNotifModal(clients){
     const imBtn=document.getElementById(`ivim-${i}`);
     if(waBtn)waBtn.onclick=()=>wa(cl.phone,msg,{client:cl.name,type:'wa-inv',page:'الأرشيف'});
     if(cpBtn)cpBtn.onclick=()=>copyTxt(msg);
-    if(imBtn)imBtn.onclick=()=>shareMsgAsImage(msg,'فاتورة-'+cl.name);
+    if(imBtn)imBtn.onclick=()=>shareInvoiceNoticeImage(cl.name,cl.ids||null);
   });
   document.getElementById('inv-wa-btn').style.display='none';
   document.getElementById('inv-copy-btn').style.display='none';
@@ -18018,7 +18088,7 @@ function renderClientCard(){
   const statusColor={'unpaid':'var(--red)','partial':'var(--orange)','settled':'var(--green)','done':'var(--text3)'};
   if(ccOut)ccOut.innerHTML=`
     <div class="card">
-      <div class="card-head"><h3>🃏 كارت حساب — ${clientName}</h3><span style="color:var(--text3);font-size:11px">${from||'البداية'} → ${to}</span></div>
+      <div class="card-head"><h3>🃏 كارت حساب — ${clientName}</h3><div style="display:flex;align-items:center;gap:10px"><span style="color:var(--text3);font-size:11px">${from||'البداية'} → ${to}</span><button class="btn btn-ghost btn-sm" onclick="shareStatementImage('${String(clientKey).replace(/'/g,"\\'")}','${from}','${to}')">🖼️ صورة كشف حساب</button></div></div>
       <div class="mb">
         <!-- ملخص حساب -->
         <div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:16px">
@@ -21417,6 +21487,297 @@ function shareMsgAsImage(msg,fileNameBase){
   });
 }
 
+// ===== #FEAT-BRANDED-DOC-IMAGES: قوالب صور رسمية (إشعار بروفة/فاتورة) بنفس تصميم كشف الحساب =====
+// نفس هوية الألوان المستخدمة بالفعل في _clientCardImageHTML (كحلي #0d1b3e + ذهبي
+// #c9a84c) — دي هوية العلامة الموحّدة في كل مستندات النظام (طباعة/PDF/كارت)،
+// فبنبني عليها بدل ما نخترع لوحة ألوان جديدة، مع إضافة عنصر "الشارة القطرية"
+// وشريط الفوتر الكحلي عشان يطابقوا التصميم المطلوب بالظبط.
+function _docDateBadgeHTML(){
+  const d=new Date();
+  const mon=d.toLocaleDateString('en-US',{month:'short'}).toUpperCase();
+  return '<div style="background:#fff;border:2px solid #c9a84c;border-radius:8px;text-align:center;overflow:hidden;min-width:44px;flex-shrink:0">'
+    +'<div style="background:#c9a84c;color:#fff;font-size:9px;font-weight:800;padding:1px 4px">'+mon+'</div>'
+    +'<div style="color:#0d1b3e;font-size:15px;font-weight:900;padding:2px 4px">'+d.getDate()+'</div></div>';
+}
+function _docRibbonHTML(icon){
+  return '<div style="position:absolute;top:0;left:0;width:86px;height:86px;background:linear-gradient(135deg,#0d1b3e,#1a3a6b);clip-path:polygon(0 0,100% 0,0 100%)"></div>'
+    +'<div style="position:absolute;top:12px;left:12px;font-size:22px;line-height:1">'+icon+'</div>';
+}
+function _docTitleBlockHTML(titleEn,titleAr){
+  return '<div style="text-align:right">'
+    +'<div style="font-size:9.5px;font-weight:800;color:#9a8a5a;letter-spacing:2px;text-transform:uppercase">'+titleEn+'</div>'
+    +'<div style="font-size:19px;font-weight:900;color:#0d1b3e;margin-top:2px">'+titleAr+'</div>'
+    +'<div style="height:3px;width:52px;background:linear-gradient(90deg,#c9a84c,#e8c96a);border-radius:2px;margin-top:6px"></div>'
+    +'</div>';
+}
+function _docLogoBlockHTML(li){
+  const logo=li.logo?'<img src="'+li.logo+'" style="height:44px;object-fit:contain;border-radius:6px">':'<div style="font-size:30px">🦷</div>';
+  return '<div style="display:flex;align-items:center;gap:10px;flex-shrink:0">'+logo+'<div style="font-size:19px;font-weight:900;color:#0d1b3e;white-space:nowrap">'+esc(li.name||'Perfect Lab')+'</div></div>';
+}
+function _docFooterBarHTML(li){
+  const dateStr=new Date().toLocaleDateString('en-GB').split('/').join('/');
+  return '<div style="height:3px;background:linear-gradient(90deg,#c9a84c,#e8c96a,#c9a84c)"></div>'
+    +'<div style="background:#0d1b3e;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">'
+    +'<div style="display:flex;align-items:center;gap:6px;color:#fff;font-size:10px"><span style="width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.12);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">🛡️</span>مصدر إلكترونيًا — لا يحتاج توقيع أو ختم</div>'
+    +'<div style="display:flex;align-items:center;gap:6px;color:#e8c96a;font-size:10px;font-weight:800"><span style="width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.12);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">📅</span>تاريخ الإصدار: '+dateStr+'</div>'
+    +'</div>';
+}
+// صف بيانات "العميل"/"التاريخ" — نفس صندوق كشف الحساب الكريمي
+function _docClientInfoBoxHTML(clientName,cl,dateBadge){
+  return '<div style="margin:16px 22px;border:1px solid #eee;border-radius:12px;overflow:hidden">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #eee">'
+    +'<span style="font-size:11.5px;color:#999">العميل</span>'
+    +'<div style="text-align:left"><div style="font-size:16px;font-weight:900;color:#0d1b3e">'+esc(clientName)+'</div>'
+    +(cl&&cl.phone?'<div style="font-size:11.5px;color:#666;margin-top:2px">📞 '+_fmtPhoneDisplay(cl.phone)+'</div>':'')+'</div></div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px">'
+    +'<span style="font-size:11.5px;color:#999">التاريخ</span>'
+    +'<div style="display:flex;align-items:center;gap:10px"><span style="font-size:14px;font-weight:800;color:#0d1b3e">'+dateAr()+'</span>'+(dateBadge?_docDateBadgeHTML():'')+'</div></div>'
+    +'</div>';
+}
+// تجميع صفوف حسب المنتج لعرض جدولي (صف واحد لكل منتج، بعكس _buildGroupedSection النصية)
+function _docGroupedTableRows(rows){
+  const order=[],groups={},names={};
+  rows.forEach(r=>{
+    const key=r.productId||r.product||'—';
+    if(!groups[key]){groups[key]=[];order.push(key);}
+    groups[key].push(r);
+    names[key]=r.product||names[key]||'—';
+  });
+  return order.map(key=>{
+    const list=groups[key];
+    const qty=list.reduce((s,r)=>s+(+r.qty||0),0);
+    const total=list.reduce((s,r)=>s+(+r.total||(+r.price||0)*(+r.qty||0)),0);
+    return {name:names[key],qty,price:qty?total/qty:0,total};
+  });
+}
+// قائمة مصغّرة مجمّعة (نقطة ملوّنة + عنوان المجموعة + أسطر الحالات) — تُستخدم في عمود
+// "البروفات" و"فاتورة مبيعات" بإشعار الفاتورة، بنفس منطق تلوين _GROUP_COLOR_CYCLE
+const _DOC_DOT_COLORS=['#2563eb','#16a34a','#f59e0b','#9333ea','#dc2626','#0891b2','#84cc16','#ec4899'];
+function _docGroupedListHTML(rows,withPrice,c){
+  if(!rows.length)return '<div style="padding:14px;text-align:center;color:#999;font-size:12px">لا توجد بيانات</div>';
+  const order=[],groups={},names={};
+  rows.forEach(r=>{
+    const key=r.productId||r.product||'—';
+    if(!groups[key]){groups[key]=[];order.push(key);}
+    groups[key].push(r);
+    names[key]=r.product||names[key]||'—';
+  });
+  order.forEach(key=>groups[key].sort((a,b)=>_caseNoSortVal(a.noteName)-_caseNoSortVal(b.noteName)));
+  return order.map((key,idx)=>{
+    const list=groups[key];
+    const color=_DOC_DOT_COLORS[idx%_DOC_DOT_COLORS.length];
+    const itemsHtml=list.map(r=>{
+      const cn=_extractCaseNo(r.noteName)||'';
+      const label=(r.noteName&&r.noteName.trim())?r.noteName:(r.product||'—');
+      const unitPrice=r.price!=null&&r.price!==''?+r.price:(r.qty?(+r.total/+r.qty):0);
+      return '<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:11.5px">'
+        +'<span style="color:#333">'+(cn?'<b style="color:#0d1b3e">'+esc(cn)+'</b> ':'')+esc(cn?label.replace(cn,'').replace(/^[\s/]+|[\s/]+$/g,'')||label:label)+'</span>'
+        +'<span style="color:#666;white-space:nowrap">'+(withPrice?('× '+(r.qty||0)+' = '+fmt(r.total||unitPrice*(r.qty||0))+' '+c):('× '+(r.qty||0)))+'</span>'
+        +'</div>';
+    }).join('');
+    return '<div style="margin-bottom:10px">'
+      +'<div style="display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;color:#0d1b3e;margin-bottom:3px">'
+      +'<span style="width:9px;height:9px;border-radius:50%;background:'+color+';display:inline-block;flex-shrink:0"></span>'
+      +esc(names[key])+' ('+list.length+')</div>'+itemsHtml+'</div>';
+  }).join('');
+}
+
+// ===== إشعار بروفة (الصورة تطابق تصميم "إشعار بروفة" المرجعي) =====
+function _proofNoticeDocHTML(clientName,cl,readyRows,li,c){
+  const itemRows=_docGroupedTableRows(readyRows);
+  const grandTotal=itemRows.reduce((s,r)=>s+r.total,0);
+  const dg=(cl&&cl.delegateId)?(DB.get('delegates')||[]).find(x=>x.id===cl.delegateId):null;
+  const accPhone=li.ph1||'';
+  const dgPhone=(dg&&dg.phone)||li.ph2||'';
+  const waPhone=li.wa||li.ph3||'';
+  const contactRow=(label,phone,icon)=>phone?('<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid #eee">'
+    +'<span style="font-size:12.5px;font-weight:700;color:#0d1b3e">'+label+'</span>'
+    +'<div style="display:flex;align-items:center;gap:8px"><span style="font-size:13.5px;font-weight:800;color:#0d1b3e">'+esc(phone)+'</span>'
+    +'<span style="width:24px;height:24px;border-radius:50%;background:#0d1b3e;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">'+icon+'</span></div></div>'):'';
+  return '<div style="width:620px;background:#fff;font-family:Cairo,sans-serif;overflow:hidden;border-radius:12px;box-shadow:0 2px 14px rgba(13,27,62,.10)">'
+    +'<div style="position:relative;padding:20px 22px 14px;border-bottom:1px solid #eee">'
+    +_docRibbonHTML('💰')
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;padding-right:70px">'
+    +_docTitleBlockHTML('STATEMENT / ESTIMATE','إشعار بروفة')
+    +_docLogoBlockHTML(li)
+    +'</div></div>'
+    +_docClientInfoBoxHTML(clientName,cl,true)
+    +'<div style="margin:0 22px 8px;font-size:13px;font-weight:800;color:#0d1b3e;display:flex;align-items:center;gap:6px">📋 بروفات جاهزة للتسليم</div>'
+    +'<div style="margin:0 22px 16px;border-radius:10px;overflow:hidden;border:1px solid #eee">'
+    +'<table style="width:100%;border-collapse:collapse;font-size:12.5px">'
+    +'<thead><tr style="background:#0d1b3e;color:#fff"><th style="padding:8px 10px;text-align:right">الصنف</th><th style="padding:8px 10px;text-align:center">العدد</th><th style="padding:8px 10px;text-align:center">السعر/الواحدة</th><th style="padding:8px 10px;text-align:left">الإجمالي</th></tr></thead>'
+    +'<tbody>'+(itemRows.length?itemRows.map((r,i)=>'<tr style="'+(i%2?'background:#f8f9fb':'')+'"><td style="padding:9px 10px;font-weight:700;color:#0d1b3e">'+esc(r.name)+'</td><td style="padding:9px 10px;text-align:center">'+r.qty+'</td><td style="padding:9px 10px;text-align:center">'+fmt(r.price)+'</td><td style="padding:9px 10px;text-align:left;font-weight:800;color:#0d1b3e">'+fmt(r.total)+'</td></tr>').join(''):'<tr><td colspan="4" style="padding:14px;text-align:center;color:#999">لا توجد بروفات جاهزة حاليًا</td></tr>')+'</tbody>'
+    +(itemRows.length?'<tfoot><tr style="background:#f5f2e8"><td colspan="3" style="padding:10px;font-weight:800;color:#0d1b3e">إجمالي بروفات جاهزة للتسليم</td><td style="padding:10px;text-align:left;font-weight:900;color:#8a6520;font-size:15px">'+fmt(grandTotal)+' '+c+'</td></tr></tfoot>':'')
+    +'</table></div>'
+    +'<div style="margin:0 22px 16px;text-align:center;font-size:12px;color:#666;display:flex;align-items:center;justify-content:center;gap:6px"><span style="width:18px;height:18px;border-radius:50%;background:#0d1b3e;display:inline-flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0">🕐</span>يرجى التنسيق لتحديد موعد البروفه</div>'
+    +'<div style="margin:0 22px 8px;font-size:12.5px;font-weight:800;color:#0d1b3e">للتنسيق والاستفسار</div>'
+    +'<div style="margin:0 22px 16px;border:1px solid #eee;border-radius:10px;overflow:hidden">'
+    +(contactRow('الحسابات',accPhone,'📞')||contactRow('المندوب',dgPhone,'📞')||contactRow('واتساب',waPhone,'💬')?
+      contactRow('الحسابات',accPhone,'📞')+contactRow('المندوب',dgPhone,'📞')+contactRow('واتساب',waPhone,'💬')
+      :'<div style="padding:12px;text-align:center;color:#999;font-size:12px">لا توجد بيانات تواصل مسجّلة</div>')
+    +'</div>'
+    +(li.addr?'<div style="margin:0 22px 16px;text-align:center;font-size:11.5px;color:#666">📍 '+esc(li.addr)+'</div>':'')
+    +_docFooterBarHTML(li)
+    +'</div>';
+}
+
+// ===== إشعار فاتورة (الصورة تطابق تصميم "إشعار فاتورة" المرجعي — عمودين) =====
+function _invoiceNoticeDocHTML(clientName,cl,unpaid,clientPf,invoiceTotal,grandDebt,li,c){
+  return '<div style="width:760px;background:#fff;font-family:Cairo,sans-serif;overflow:hidden;border-radius:12px;box-shadow:0 2px 14px rgba(13,27,62,.10)">'
+    +'<div style="position:relative;padding:20px 22px 14px;border-bottom:1px solid #eee">'
+    +_docRibbonHTML('🧾')
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;padding-right:70px">'
+    +_docTitleBlockHTML('SALES NOTICE','إشعار فاتورة')
+    +_docLogoBlockHTML(li)
+    +'</div></div>'
+    +_docClientInfoBoxHTML(clientName,cl,false)
+    +'<div style="display:flex;gap:16px;margin:0 22px 18px;align-items:flex-start">'
+      // العمود اليمين: البروفات
+      +'<div style="flex:1;min-width:0;border:1px solid #dcecdc;border-radius:12px;overflow:hidden">'
+      +'<div style="background:#eef8ee;padding:10px 14px;font-size:13px;font-weight:900;color:#166534;border-bottom:1px solid #dcecdc">🔬 البروفات ('+clientPf.length+')</div>'
+      +'<div style="padding:12px 14px;max-height:520px;overflow:hidden">'+_docGroupedListHTML(clientPf,false,c)+'</div>'
+      +'</div>'
+      // العمود الشمال: فاتورة مبيعات + الحسابات
+      +'<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px">'
+      +'<div style="border:1px solid #cfd8e6;border-radius:12px;overflow:hidden">'
+      +'<div style="background:#0d1b3e;color:#fff;padding:10px 14px;font-size:13px;font-weight:900">🧾 فاتورة مبيعات ('+unpaid.length+')</div>'
+      +'<div style="padding:12px 14px">'+_docGroupedListHTML(unpaid,true,c)+'</div>'
+      +'</div>'
+      +'<div style="background:#eef2ff;border:1px solid #dbe3fa;border-radius:10px;padding:12px 14px;text-align:center">'
+      +'<div style="font-size:11px;color:#555">قيمة الفاتورة الحالية</div>'
+      +'<div style="font-size:19px;font-weight:900;color:#0d1b3e;margin-top:4px">'+fmt(invoiceTotal)+' '+c+'</div></div>'
+      +'<div style="background:rgba(220,38,38,.06);border:1px solid rgba(220,38,38,.25);border-radius:10px;padding:12px 14px;text-align:center">'
+      +'<div style="font-size:11px;color:#555">إجمالي المديونية</div>'
+      +'<div style="font-size:19px;font-weight:900;color:#b91c1c;margin-top:4px">'+fmt(grandDebt)+' '+c+'</div></div>'
+      +'</div>'
+    +'</div>'
+    +'<div style="margin:0 22px 18px;text-align:center;padding:10px;background:#f5f2e8;border-radius:10px;font-size:13px;font-weight:800;color:#8a6520">✨ شكراً لثقتكم ✨</div>'
+    +_docFooterBarHTML(li)
+    +'</div>';
+}
+
+// ===== كشف حساب إجمالي (الصورة تطابق تصميم "STATEMENT OF ACCOUNT" المرجعي) =====
+function _docPeriodInfoBoxHTML(clientName,cl,fromStr,toStr){
+  return '<div style="margin:16px 22px;border:1px solid #eee;border-radius:12px;overflow:hidden">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #eee">'
+    +'<span style="font-size:11.5px;color:#999">العميل</span>'
+    +'<div style="text-align:left"><div style="font-size:16px;font-weight:900;color:#0d1b3e">'+esc(clientName)+'</div>'
+    +(cl&&cl.phone?'<div style="font-size:11.5px;color:#666;margin-top:2px">📞 '+_fmtPhoneDisplay(cl.phone)+'</div>':'')+'</div></div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px">'
+    +'<span style="font-size:11.5px;color:#999">الفترة</span>'
+    +'<div style="display:flex;align-items:center;gap:10px"><span style="font-size:13px;font-weight:800;color:#0d1b3e">'+(fromStr||'البداية')+'  —  '+toStr+'</span>'+_docDateBadgeHTML()+'</div></div>'
+    +'</div>';
+}
+function _statementRowHTML(label,amount,c,icon,color){
+  return '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #eee">'
+    +'<span style="font-size:12.5px;font-weight:700;color:#0d1b3e">'+label+'</span>'
+    +'<div style="display:flex;align-items:center;gap:10px">'
+    +'<span style="font-size:15px;font-weight:900;color:'+color+'">'+fmt(amount)+' '+c+'</span>'
+    +'<span style="width:26px;height:26px;border-radius:50%;background:'+color+';color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">'+icon+'</span>'
+    +'</div></div>';
+}
+function _statementDocHTML(clientName,cl,summary,li,c,fromStr,toStr){
+  const debt=summary.totalDebt;
+  const isDebt=debt>0;
+  return '<div style="width:620px;background:#fff;font-family:Cairo,sans-serif;overflow:hidden;border-radius:12px;box-shadow:0 2px 14px rgba(13,27,62,.10)">'
+    +'<div style="position:relative;padding:20px 22px 14px;border-bottom:1px solid #eee">'
+    +_docRibbonHTML('📄')
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;padding-right:70px">'
+    +_docTitleBlockHTML('STATEMENT OF ACCOUNT','كشف حساب')
+    +_docLogoBlockHTML(li)
+    +'</div></div>'
+    +_docPeriodInfoBoxHTML(clientName,cl,fromStr,toStr)
+    +'<div style="margin:0 22px 16px;border:1px solid #eee;border-radius:10px;overflow:hidden">'
+    +_statementRowHTML('مديونية سابقة',summary.prevDebt,c,'💳','#dc2626')
+    +_statementRowHTML('إجمالي فواتير الفترة',summary.withdrawn,c,'📄','#2563eb')
+    +_statementRowHTML('إجمالي المدفوع',summary.paid,c,'💵','#16a34a')
+    +'</div>'
+    +'<div style="margin:0 22px 18px;text-align:center;padding:16px;background:'+(isDebt?'rgba(220,38,38,.06)':'rgba(22,163,74,.06)')+';border:2px solid '+(isDebt?'#dc2626':'#16a34a')+';border-radius:12px">'
+    +'<div style="font-size:12px;color:#666">'+(isDebt?'المتبقي':'رصيد دائن للعميل')+'</div>'
+    +'<div style="font-size:24px;font-weight:900;color:'+(isDebt?'#b91c1c':'#166534')+';margin-top:4px">'+fmt(Math.abs(debt))+' '+c+'</div></div>'
+    +'<div style="margin:0 22px 18px;text-align:center;padding:10px;background:#f5f2e8;border-radius:10px;font-size:13px;font-weight:800;color:#8a6520">✨ شكراً لتعاملكم معنا ✨</div>'
+    +_docFooterBarHTML(li)
+    +'</div>';
+}
+// زر "🖼️ صورة" لكشف الحساب الإجمالي — بنفس تصميم إشعار البروفة/الفاتورة بالظبط
+function shareStatementImage(clientKey,from,to){
+  const {id:_cid,name:clientName}=_resolveClientKey(clientKey);
+  const li=DB.get('labinfo')||{};
+  const c=cur();
+  const cl=(DB.get('clients')||[]).find(x=>x.id===_cid||x.name===clientName)||{};
+  const summary=_clientAccountSummary(clientKey,from,to);
+  const html=_statementDocHTML(clientName,cl,summary,li,c,from||'',to||today());
+  _buildDocImageBlob(html,blob=>_shareOrDownloadDocBlob(blob,'كشف-حساب-'+clientName));
+}
+
+// عملية مشتركة: تصيير أي HTML مستند (بعرض ثابت) لصورة PNG — نفس أسلوب _buildMsgImageBlob
+// لكن بدون خلفية بابل واتساب (خلفية بيضاء عادية، مناسبة للمستندات الرسمية)
+function _buildDocImageBlob(html,cb){
+  toast('⏳ جارِ إنشاء الصورة...','ok');
+  _loadHtml2Canvas(function(){
+    const overlay=document.createElement('div');
+    overlay.style.cssText='position:fixed;inset:0;background:rgba(10,12,16,.88);z-index:99998;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700';
+    overlay.textContent='⏳ جارِ إنشاء الصورة...';
+    const holder=document.createElement('div');
+    holder.style.cssText='position:fixed;top:0;left:0;z-index:99997;background:#f0f2f7;padding:14px';
+    holder.innerHTML=html;
+    document.body.appendChild(holder);
+    document.body.appendChild(overlay);
+    setTimeout(function(){
+      window.htmlToImage.toBlob(holder,{pixelRatio:2,backgroundColor:'#f0f2f7'}).then(function(blob){
+        holder.remove();overlay.remove();
+        if(!blob){toast('❌ تعذّر إنشاء الصورة','err');return;}
+        cb(blob);
+      }).catch(function(e){
+        if(holder.parentNode)holder.remove();
+        if(overlay.parentNode)overlay.remove();
+        toast('❌ حصل خطأ في إنشاء الصورة: '+(e&&e.message||'غير معروف'),'err');
+      });
+    },60);
+  });
+}
+function _shareOrDownloadDocBlob(blob,fileNameBase){
+  const fileName=(fileNameBase||'مستند').replace(/[^ء-ي0-9a-zA-Z_-]/g,'_')+'-'+today()+'.png';
+  const file=new File([blob],fileName,{type:'image/png'});
+  const fallback=function(){
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=fileName;a.rel='noopener';
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(function(){URL.revokeObjectURL(url);},5000);
+    toast('✅ اتحفظت الصورة في التنزيلات — ارفقها يدويًا في أي تطبيق','ok');
+  };
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    navigator.share({files:[file],title:fileNameBase||'مستند'}).catch(function(e){if(e&&e.name==='AbortError')return;fallback();});
+  } else fallback();
+}
+// زر "🖼️ صورة" لإشعار البروفة — بنفس تصميم كشف الحساب الرسمي بالظبط
+function shareProofNoticeImage(clientName,selectedIds){
+  const {id:_cid}=_resolveClientKey(clientName);
+  const li=DB.get('labinfo')||{};
+  const c=cur();
+  const cl=(DB.get('clients')||[]).find(x=>x.id===_cid||x.name===clientName)||{};
+  const pf=(DB.get('proof')||[]).filter(r=>_matchClientRecord(r,_cid,clientName));
+  const hasSel=Array.isArray(selectedIds)&&selectedIds.length>0;
+  const readyRows=hasSel?pf.filter(r=>selectedIds.includes(r.id)):pf;
+  const html=_proofNoticeDocHTML(clientName,cl,readyRows,li,c);
+  _buildDocImageBlob(html,blob=>_shareOrDownloadDocBlob(blob,'بروفة-'+clientName));
+}
+// زر "🖼️ صورة" لإشعار الفاتورة — عمودين (البروفات + فاتورة مبيعات) بنفس تصميم كشف الحساب
+function shareInvoiceNoticeImage(clientName,selectedIds){
+  const {id:_cid}=_resolveClientKey(clientName);
+  const li=DB.get('labinfo')||{};
+  const c=cur();
+  const cl=(DB.get('clients')||[]).find(x=>x.id===_cid||x.name===clientName)||{};
+  const arc=(DB.get('archive')||[]).filter(r=>_matchClientRecord(r,_cid,clientName));
+  const hasSel=Array.isArray(selectedIds)&&selectedIds.length>0;
+  const unpaid=hasSel?arc.filter(r=>selectedIds.includes(r.id)):arc;
+  const invoiceTotal=unpaid.reduce((s,r)=>s+(+r.total||0),0);
+  const grandDebt=Math.max(0,_clientAccountSummary(clientName).totalDebt);
+  const clientPf=(DB.get('proof')||[]).filter(r=>_matchClientRecord(r,_cid,clientName));
+  const html=_invoiceNoticeDocHTML(clientName,cl,unpaid,clientPf,invoiceTotal,grandDebt,li,c);
+  _buildDocImageBlob(html,blob=>_shareOrDownloadDocBlob(blob,'فاتورة-'+clientName));
+}
+
 // ===== #FEAT-CLIENTCARD-REAL-PDF: تحميل PDF فعلي لكارت العميل التفصيلي =====
 // بدل الاعتماد على شاشة طباعة المتصفح (اللي بتختلف واجهتها بين الكمبيوتر
 // والموبايل، وزرار "حفظ كـ PDF" فيها جزء من واجهة المتصفح نفسها مش من الموقع)
@@ -21426,6 +21787,148 @@ function shareMsgAsImage(msg,fileNameBase){
 // كده مع html2pdf.js: كل صفحة من صفحات الكارت التفصيلي (نفس صفحات
 // printClientCardPaged بالظبط) بتتصوّر لوحدها وهي ظاهرة فعليًا على الشاشة، وبعدين
 // تتلزّق في PDF واحد متعدد الصفحات عن طريق jsPDF.
+// ===== #FEAT-CLIENT-STATEMENT-PDF: كشف حساب عميل تفصيلي (تصميم مطابق للصورة المرجعية) =====
+// نفس الهوية البصرية (كحلي #0d1b3e + ذهبي #c9a84c) لكن بترويسة موسّعة (شعار + بيانات تواصل +
+// أيقونة/عنوان) وكروت إحصائية دائرية — مُخصّصة لملف الـPDF التفصيلي فقط (وليس شاشة الطباعة العادية
+// اللي بتفتح نافذة طباعة المتصفح، دي فضلت زي ما هي بدون أي تغيير).
+function _pdfIconTitleHTML(icon,titleAr,titleEn){
+  return '<div style="display:flex;align-items:center;gap:12px;flex-shrink:0">'
+    +'<div style="width:56px;height:56px;border-radius:14px;background:#0d1b3e;color:#e8c96a;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;border:2px solid #c9a84c">'+icon+'</div>'
+    +'<div style="text-align:right;white-space:nowrap">'
+    +'<div style="font-size:19px;font-weight:900;color:#0d1b3e">'+titleAr+'</div>'
+    +'<div style="font-size:9.5px;font-weight:800;color:#9a8a5a;letter-spacing:2px;text-transform:uppercase;margin-top:2px">'+titleEn+'</div>'
+    +'</div></div>';
+}
+function _pdfContactBlockHTML(li){
+  const rows=[li.ph1?{v:li.ph1,icon:'📞'}:null,li.ph2?{v:li.ph2,icon:'💬'}:null].filter(Boolean);
+  return '<div style="text-align:center;flex:1;min-width:160px">'
+    +(rows.length?rows.map(function(r){return '<div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:800;color:#0d1b3e;margin-bottom:3px">'
+      +'<span>'+r.icon+'</span><span>'+esc(r.v)+'</span></div>';}).join(''):'')
+    +'<div style="display:inline-block;margin-top:2px">'
+    +'<div style="font-size:11px;font-weight:800;color:#8a6520">التنسيق والاستفسار</div>'
+    +'<div style="height:2px;width:100%;background:linear-gradient(90deg,#c9a84c,#e8c96a);border-radius:2px;margin-top:3px"></div>'
+    +'</div></div>';
+}
+function _pdfCardHeaderHTML(li,titleAr,titleEn,icon){
+  return '<div style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;padding:20px 24px">'
+    +_docLogoBlockHTML(li)
+    +_pdfContactBlockHTML(li)
+    +_pdfIconTitleHTML(icon,titleAr,titleEn)
+    +'</div>';
+}
+function _pdfClientPeriodBoxHTML(clientName,cl,fromStr,toStr){
+  return '<div style="margin:0 24px 16px;border:1px solid #eee;border-radius:14px;overflow:hidden">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid #eee">'
+    +'<div style="width:36px;height:36px;border-radius:50%;background:#0d1b3e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">👤</div>'
+    +'<div style="text-align:left;flex:1;padding:0 14px"><div style="font-size:17px;font-weight:900;color:#0d1b3e">'+esc(clientName)+'</div>'
+    +(cl&&cl.phone?'<div style="font-size:12px;color:#666;margin-top:2px">📞 '+_fmtPhoneDisplay(cl.phone)+'</div>':'')+'</div>'
+    +'<span style="font-size:11.5px;color:#999">العميل</span>'
+    +'</div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px">'
+    +'<div style="width:36px;height:36px;border-radius:50%;background:#f5f2e8;color:#8a6520;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">📅</div>'
+    +'<div style="flex:1;text-align:center;font-size:13.5px;font-weight:800;color:#0d1b3e">'+(toStr||today())+'&nbsp; ← &nbsp;'+(fromStr||'البداية')+'</div>'
+    +'<span style="font-size:11.5px;color:#999">الفترة</span>'
+    +'</div></div>';
+}
+function _pdfStatCardHTML(label,value,c,icon,color){
+  return '<div style="flex:1;min-width:110px;background:#fff;border:1px solid #eee;border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:8px;box-shadow:0 1px 4px rgba(13,27,62,.06)">'
+    +'<div style="width:34px;height:34px;border-radius:50%;background:'+color+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">'+icon+'</div>'
+    +'<div style="min-width:0"><div style="font-size:10px;color:#888;white-space:nowrap">'+label+'</div>'
+    +'<div style="font-size:14px;font-weight:900;color:'+color+';white-space:nowrap">'+fmt(value)+' '+c+'</div></div>'
+    +'</div>';
+}
+function _pdfStatRowHTML(res,c){
+  return '<div style="display:flex;gap:10px;margin:0 24px 18px;flex-wrap:wrap">'
+    +_pdfStatCardHTML('مديونية سابقة',Math.max(0,res.prevDebt),c,'👛','#dc2626')
+    +_pdfStatCardHTML('إجمالي المصروف',res.withdrawn,c,'📈','#0d1b3e')
+    +_pdfStatCardHTML('إجمالي المدفوع',res.paid,c,'👛','#16a34a')
+    +_pdfStatCardHTML(res.totalDebt>0?'الرصيد الحالي':'رصيد دائن',Math.abs(res.totalDebt),c,'📅',res.totalDebt>0?'#dc2626':'#16a34a')
+    +'</div>';
+}
+function _pdfFooterBarHTML(li){
+  const dateStr=new Date().toLocaleDateString('en-GB').split('/').join('/');
+  const phones=[li.ph1,li.ph2].filter(Boolean).join('  |  ');
+  return '<div style="height:3px;background:linear-gradient(90deg,#c9a84c,#e8c96a,#c9a84c)"></div>'
+    +'<div style="background:#0d1b3e;padding:12px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">'
+    +'<div style="display:flex;align-items:center;gap:6px;color:#fff;font-size:10px"><span style="width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.12);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">🛡️</span>مصدر إلكترونيًا — لا يحتاج توقيع أو ختم</div>'
+    +(phones?'<div style="display:flex;align-items:center;gap:6px;color:#fff;font-size:10px"><span style="width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.12);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">📞</span>'+esc(phones)+'</div>':'')
+    +'<div style="display:flex;align-items:center;gap:6px;color:#e8c96a;font-size:10px;font-weight:800"><span style="width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.12);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">📅</span>تاريخ الإصدار: '+dateStr+'</div>'
+    +'</div>';
+}
+// المُجمِّع الرئيسي — يبني كل صفحات الـPDF التفصيلي، بنفس تقسيم الصفحات المستخدم أصلاً
+// في printClientCardPaged (periodArc/periodTrs) لكن بقالب بصري مختلف تمامًا.
+function _clientStatementPdfPagesHTML(clientKey,from,to){
+  const {id:clientId,name:clientName}=_resolveClientKey(clientKey);
+  const c=cur();
+  const li=DB.get('labinfo')||{};
+  const cl=(DB.get('clients')||[]).find(function(x){return x.id===clientId;})||{};
+  const res=_clientAccountSummary(clientKey,from,to);
+  const pageSize=10;
+  const rows=res.periodArc;
+  const totalPages=Math.max(1,Math.ceil(rows.length/pageSize));
+  let pages='';
+  for(let pg=0;pg<totalPages;pg++){
+    const pageRows=rows.slice(pg*pageSize,(pg+1)*pageSize);
+    const isLast=pg===totalPages-1;
+    const rowsHTML=pageRows.map(function(r,i){return '<tr style="'+(i%2?'background:#f8f9fb':'')+'">'
+      +'<td style="padding:8px 10px;font-size:11px;font-weight:800;color:#0d1b3e;border-bottom:1px solid #eee">'+esc(r.invId||('#'+r.caseId)||'—')+'</td>'
+      +'<td style="padding:8px 10px;font-size:11px;color:#333;border-bottom:1px solid #eee">'+esc(r.noteName||r.caseId||'—')+'</td>'
+      +'<td style="padding:8px 10px;font-size:11px;color:#333;border-bottom:1px solid #eee">'+esc(r.product||'—')+'</td>'
+      +'<td style="padding:8px 10px;font-size:11px;text-align:center;color:#333;border-bottom:1px solid #eee">'+(r.qty||0)+'</td>'
+      +'<td style="padding:8px 10px;font-size:11px;text-align:center;color:#999;border-bottom:1px solid #eee">—</td>'
+      +'<td style="padding:8px 10px;font-size:11.5px;font-weight:800;color:#0d1b3e;border-bottom:1px solid #eee">'+fmt(r.total)+' '+c+'</td>'
+      +'<td style="padding:8px 10px;font-size:10.5px;color:#666;border-bottom:1px solid #eee">'+(r.archivedAt?new Date(r.archivedAt).toISOString().split('T')[0]:(r.date||'—'))+'</td>'
+      +'</tr>';}).join('');
+    const cumTotal=rows.slice(0,(pg+1)*pageSize).reduce(function(s,r){return s+ +r.total;},0);
+    const trs=isLast?res.periodTrs.slice().sort(function(a,b){return (a.date||'').localeCompare(b.date||'');}):[];
+    pages+='<div class="pp" style="page-break-after:'+(isLast?'auto':'always')+'">'
+      +'<div style="height:6px;background:linear-gradient(90deg,#0d1b3e,#1a3a6b 50%,#0d1b3e)"></div>'
+      +_pdfCardHeaderHTML(li,'كشف حساب عميل','STATEMENT OF ACCOUNT','📄')
+      +_pdfClientPeriodBoxHTML(clientName,cl,from,to)
+      +_pdfStatRowHTML(res,c)
+      +'<div style="margin:0 24px 8px;font-size:13px;font-weight:800;color:#0d1b3e;display:flex;align-items:center;gap:6px">📋 تفاصيل المصروفات ('+rows.length+' فاتورة) — الصفحة '+(pg+1)+' من '+totalPages+'</div>'
+      +'<div style="margin:0 24px 14px;border-radius:12px;overflow:hidden;border:1px solid #eee">'
+      +'<table style="width:100%;border-collapse:collapse">'
+      +'<thead><tr style="background:#0d1b3e;color:#fff">'
+      +'<th style="padding:8px 10px;text-align:right;font-size:10.5px">الكود</th>'
+      +'<th style="padding:8px 10px;text-align:right;font-size:10.5px">البيان</th>'
+      +'<th style="padding:8px 10px;text-align:right;font-size:10.5px">المنتج</th>'
+      +'<th style="padding:8px 10px;text-align:center;font-size:10.5px">العدد</th>'
+      +'<th style="padding:8px 10px;text-align:center;font-size:10.5px">الخصم</th>'
+      +'<th style="padding:8px 10px;text-align:right;font-size:10.5px">الإجمالي</th>'
+      +'<th style="padding:8px 10px;text-align:right;font-size:10.5px">التاريخ</th>'
+      +'</tr></thead>'
+      +'<tbody>'+(rowsHTML||'<tr><td colspan="7" style="padding:14px;text-align:center;color:#999">لا توجد مصروفات في هذه الفترة</td></tr>')+'</tbody>'
+      +'</table></div>'
+      +'<div style="margin:0 24px 20px;background:#0d1b3e;border-radius:10px;padding:10px 16px;display:flex;justify-content:space-between;align-items:center">'
+      +'<span style="color:#e8c96a;font-size:12px;font-weight:800">'+(isLast?'الإجمالي العام للمصروفات:':'إجمالي تراكمي حتى الصفحة '+(pg+1)+':')+'</span>'
+      +'<span style="color:#fff;font-size:15px;font-weight:900">'+fmt(isLast?res.withdrawn:cumTotal)+' '+c+'</span>'
+      +'</div>'
+      +(isLast&&trs.length?(
+        '<div style="margin:0 24px 8px;font-size:13px;font-weight:800;color:#0d1b3e;display:flex;align-items:center;gap:6px">💰 الدفعات السابقة ('+trs.length+')</div>'
+        +'<div style="margin:0 24px 20px;border-radius:12px;overflow:hidden;border:1px solid #eee">'
+        +'<table style="width:100%;border-collapse:collapse">'
+        +'<thead><tr style="background:#f5f2e8;color:#8a6520">'
+        +'<th style="padding:8px 10px;text-align:right;font-size:10.5px">رقم العملية</th>'
+        +'<th style="padding:8px 10px;text-align:right;font-size:10.5px">طريقة الدفع</th>'
+        +'<th style="padding:8px 10px;text-align:right;font-size:10.5px">المبلغ</th>'
+        +'<th style="padding:8px 10px;text-align:right;font-size:10.5px">التاريخ</th>'
+        +'<th style="padding:8px 10px;text-align:right;font-size:10.5px">ملاحظات</th>'
+        +'</tr></thead>'
+        +'<tbody>'+trs.map(function(t,i){return '<tr style="'+(i%2?'background:#f8f9fb':'')+'">'
+          +'<td style="padding:8px 10px;font-size:11px;font-weight:800;color:#0d1b3e;border-bottom:1px solid #eee">T-'+t.num+'</td>'
+          +'<td style="padding:8px 10px;font-size:11px;color:#333;border-bottom:1px solid #eee">'+esc(t.box||'cash')+'</td>'
+          +'<td style="padding:8px 10px;font-size:11.5px;font-weight:800;color:#16a34a;border-bottom:1px solid #eee">'+fmt(t.amount)+' '+c+'</td>'
+          +'<td style="padding:8px 10px;font-size:10.5px;color:#666;border-bottom:1px solid #eee">'+(t.date||'—')+'</td>'
+          +'<td style="padding:8px 10px;font-size:10.5px;color:#999;border-bottom:1px solid #eee">'+esc(t.notes||'—')+'</td>'
+          +'</tr>';}).join('')
+        +'</tbody></table></div>'
+      ):'')
+      +_pdfFooterBarHTML(li)
+      +'</div>';
+  }
+  return {pages:pages,clientName:clientName};
+}
 function _loadJsPDF(cb){
   if(window.jspdf&&window.jspdf.jsPDF){cb();return;}
   if(window._jspdfCbs){window._jspdfCbs.push(cb);return;}
@@ -21439,7 +21942,9 @@ function _loadJsPDF(cb){
 function downloadClientCardDetailedPDF(){
   const clientKey=document.getElementById('cc-client')?.value||'';
   if(!clientKey){toast('اختر عميلاً أولاً','err');return;}
-  const data=printClientCardPaged(true); // {pages,clientName} — نفس محتوى شاشة الطباعة بالظبط
+  const from=document.getElementById('cc-from')?.value||'';
+  const to=document.getElementById('cc-to')?.value||today();
+  const data=_clientStatementPdfPagesHTML(clientKey,from,to); // {pages,clientName} — تصميم كشف الحساب التفصيلي (مختلف عن شاشة الطباعة)
   if(!data||!data.pages){toast('❌ تعذّر تجهيز بيانات الكارت','err');return;}
   const btn=document.getElementById('cc-pdf-btn');
   const btnOldTxt=btn?btn.textContent:'';
