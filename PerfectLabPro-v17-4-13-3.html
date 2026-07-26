@@ -1139,6 +1139,7 @@ body.theme-glass .ph h2{color:var(--blue2)}
       <div class="nav-group-body open">
         <div class="nav-item active" data-page="dafter"><span class="ni">📒</span>الدفتر<span class="nav-badge" id="nb-dafter">0</span></div>
         <div class="nav-item" data-page="proof"><span class="ni">🔬</span>البروفه<span class="nav-badge gold" id="nb-proof">0</span></div>
+        <div class="nav-item" data-page="delegate-deliveries"><span class="ni">🚚</span>تسليمات المناديب</div>
         <div class="nav-item" data-page="archive"><span class="ni">📁</span>الأرشيف</div>
         <div class="nav-item" data-page="treasury"><span class="ni">💰</span>الخزنة</div>
       </div>
@@ -1438,6 +1439,33 @@ body.theme-glass .ph h2{color:var(--blue2)}
       <div class="selbar"><input type="checkbox" onchange="toggleAll('proof-tb',this.checked)"><a onclick="toggleAll('proof-tb',true)">تحديد الكل</a> | <a onclick="toggleAll('proof-tb',false)">إلغاء</a><span style="margin-right:auto">المحدد: <strong id="proof-tb-sel">0</strong></span></div>
       <div class="tbl-wrap"><table><thead><tr><th class="chk-col"></th><th>رقم الحالة / المريض</th><th>المنتج</th><th>اللون</th><th>العدد</th><th>الإجمالي</th><th>المندوب</th><th>تاريخ الاستلام</th><th style="width:36px"></th></tr></thead><tbody id="proof-tb"></tbody></table></div>
       <div id="proof-empty" class="empty" style="display:none"><div class="ei">📋</div><p>لا توجد حالات في البروفه</p></div>
+    </div>
+  </div>
+
+  <!-- DELEGATE DELIVERIES (تسليمات المناديب) -->
+  <!-- نفس منطق تاب "تسليماتي" في بورتال المناديب بالظبط (proof/archive غير مؤكَّدة +
+       delegateHandoverLog) لكن هنا Read-only للإدارة على مستوى كل المناديب مع بعض،
+       عشان المتابعة: مين لسه ما استلمش/سلّمش، ومين خلّص. الصفحة دي مش بتلمس ولا
+       بتعدّل أي بيانات — قراءة بس من نفس الجداول المشتركة. -->
+  <div class="page" id="pg-delegate-deliveries">
+    <div class="ph"><h2>🚚 تسليمات المناديب</h2></div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="mb">
+        <div class="three-col">
+          <div class="fg"><label>👤 المندوب</label><select id="dd-delegate" onchange="renderDelegateDeliveries()"><option value="">-- كل المناديب --</option></select></div>
+          <div class="fg"><label>📅 المسلَّم من تاريخ</label><input id="dd-from" type="date" onchange="renderDelegateDeliveries()"></div>
+          <div class="fg"><label>📅 المسلَّم إلى تاريخ</label><input id="dd-to" type="date" onchange="renderDelegateDeliveries()"></div>
+        </div>
+      </div>
+    </div>
+    <div class="stats" id="dd-stats"></div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-head"><h3>⏳ لسه ما نزلتش/ما سلّمهاش المندوب (معلّقة)</h3></div>
+      <div class="mb"><div id="dd-pending"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>✅ سلّمها المندوب بالفعل</h3></div>
+      <div class="mb"><div id="dd-delivered"></div></div>
     </div>
   </div>
 
@@ -1793,6 +1821,7 @@ body.theme-glass .ph h2{color:var(--blue2)}
           <div class="mf" style="padding:10px 0 0;border:none;flex-wrap:wrap;gap:8px">
             <button class="btn btn-gold" onclick="renderClientCard()">📊 عرض الكارت</button>
             <button class="btn btn-blue btn-sm" onclick="printClientCardPaged()">🖨️ طباعة / PDF</button>
+            <button class="btn btn-red btn-sm" id="cc-pdf-btn" onclick="downloadClientCardDetailedPDF()">📄 تحميل PDF تفصيلي</button>
             <button class="btn btn-green btn-sm" onclick="sendClientCardWA()">💬 واتساب ملخص</button>
             <button class="btn btn-orange btn-sm" onclick="downloadClientCardImage()">⬇️ تحميل صورة</button>
             <button class="btn btn-purple btn-sm" onclick="shareClientCardImage()">📤 مشاركة واتساب</button>
@@ -5568,7 +5597,7 @@ function _onTechLogsUpdated(){
 function updateTechLogsBadges(){
   const pending = getPendingTechLogs();
   const bySrc = {dafter:0, proof:0, archive:0};
-  pending.forEach(l => { if (bySrc[l.source]!==undefined) bySrc[l.source]++; });
+  pending.forEach(l => { const loc=_caseLookup(l.caseId); if (loc && bySrc[loc.src]!==undefined) bySrc[loc.src]++; });
   const setBadge = (id, n) => {
     const el = document.getElementById(id);
     if (!el) return;
@@ -5793,7 +5822,7 @@ function _renderTechReviewBody(source, caseId){
     logs = getTechLogsForCase(caseId);
   } else if (source) {
     const ids = new Set((DB.get(source)||[]).map(r=>r.id));
-    logs = getTechLogsArray().filter(l=>l.source===source && ids.has(l.caseId) && l.status==='pending');
+    logs = getTechLogsArray().filter(l=>ids.has(l.caseId) && l.status==='pending');
   } else {
     logs = getPendingTechLogs();
   }
@@ -6725,7 +6754,7 @@ function popGov(selId,sel=''){const el=document.getElementById(selId);if(!el)ret
 function fillCities(gSel='cl-gov',cSel='cl-city',selCity=''){const gov=document.getElementById(gSel)?.value;const el=document.getElementById(cSel);if(!el)return;const c=EGY[gov]||[];el.innerHTML='<option value="">-- اختر المدينة --</option>'+c.map(x=>`<option${x===selCity?' selected':''}>${x}</option>`).join('')}
 
 // NAVIGATION
-const pgNames={dashboard:'لوحة التحكم',notifications:'الإشعارات',notes:'الملاحظات',dafter:'الدفتر',proof:'البروفه',archive:'الأرشيف',treasury:'الخزنة',reports:'التقارير',balance:'الميزان المحاسبي',debts:'المديونيات',inventory:'المخزون',masterdata:'البيانات الأساسية',activitylog:'سجل النشاط',suppliers:'الموردون',purchases:'فواتير الشراء',supdebts:'مديونيات الموردين',batches:'دفعات المخزن — FIFO','inventory-report':'جرد المخزن','dept-withdrawal':'صرف الخامات للأقسام','dept-inventory':'جرد الأقسام الدوري','fixed-assets':'الأصول الثابتة','spare-parts':'قطع الغيار','production-report':'تقرير تكلفة الإنتاج',profitability:'تحليل الربحية',prospects:'العملاء المحتملون 🗺️'};
+const pgNames={dashboard:'لوحة التحكم',notifications:'الإشعارات',notes:'الملاحظات',dafter:'الدفتر',proof:'البروفه','delegate-deliveries':'تسليمات المناديب',archive:'الأرشيف',treasury:'الخزنة',reports:'التقارير',balance:'الميزان المحاسبي',debts:'المديونيات',inventory:'المخزون',masterdata:'البيانات الأساسية',activitylog:'سجل النشاط',suppliers:'الموردون',purchases:'فواتير الشراء',supdebts:'مديونيات الموردين',batches:'دفعات المخزن — FIFO','inventory-report':'جرد المخزن','dept-withdrawal':'صرف الخامات للأقسام','dept-inventory':'جرد الأقسام الدوري','fixed-assets':'الأصول الثابتة','spare-parts':'قطع الغيار','production-report':'تقرير تكلفة الإنتاج',profitability:'تحليل الربحية',prospects:'العملاء المحتملون 🗺️'};
 
 // Collapsible sidebar groups
 function toggleNavGroup(groupId){
@@ -6740,7 +6769,7 @@ function toggleNavGroup(groupId){
 
 // Map page -> which group it belongs to
 const pgGroup={
-  dafter:'grp-daily',proof:'grp-daily',archive:'grp-daily',treasury:'grp-daily',
+  dafter:'grp-daily',proof:'grp-daily','delegate-deliveries':'grp-daily',archive:'grp-daily',treasury:'grp-daily',
   reports:'grp-reports',balance:'grp-reports',debts:'grp-reports',
   suppliers:'grp-purchases',purchases:'grp-purchases',supdebts:'grp-purchases',
   inventory:'grp-inventory',batches:'grp-inventory','inventory-report':'grp-inventory',
@@ -6788,6 +6817,7 @@ const PAGE_PERM_MAP = {
   dashboard:           'dashboard.view',
   dafter:              'dafter.view',
   proof:               'proof.view',
+  'delegate-deliveries':'dafter.view',
   archive:             'archive.view',
   treasury:            'treasury.view',
   reports:             'reports.view',
@@ -6848,7 +6878,7 @@ function goPage(pg, fromHistory){
   }
   document.getElementById('ptitle').textContent=pgNames[pg]||pg;
   // FIX: run render first, then scroll to top after render completes
-  const renders={dashboard:renderDash,dafter:renderDafter,proof:renderProof,archive:renderArchive,treasury:renderTreasury,reports:renderReports,debts:renderDebts,inventory:renderInventory,masterdata:renderMasterData,activitylog:renderActivityLog,
+  const renders={dashboard:renderDash,dafter:renderDafter,proof:renderProof,'delegate-deliveries':renderDelegateDeliveries,archive:renderArchive,treasury:renderTreasury,reports:renderReports,debts:renderDebts,inventory:renderInventory,masterdata:renderMasterData,activitylog:renderActivityLog,
     notifications:()=>{renderNotificationsPage();loadNsSettings();},notes:renderNotes,
     suppliers:renderSuppliers,purchases:()=>{renderPurchases();renderPurStats()},supdebts:renderSupDebts,
     batches:renderBatches,
@@ -9853,6 +9883,89 @@ function renderProof(){
   refreshCatTabs('proof',list);
   if(_catFilter.proof&&_catFilter.proof!=='all')filterProofCombined(); // إعادة تطبيق فلتر الفئة النشط بعد الرسم
 }
+
+// ===== #FEAT-DELEGATE-DELIVERIES: مرآة إدارية لتاب "تسليماتي" في بورتال المناديب =====
+// نفس المنطق بالظبط المستخدم هناك (proof/archive غير مؤكَّدة + سجل
+// data/shared/delegateHandoverLog المشترك) — الفرق إن الصفحة هنا Read-only وبتجمع
+// كل المناديب مع بعض (أو مندوب واحد بالفلتر) عشان الإدارة تتابع مين لسه واخد حالات
+// ومسلّمهاش، ومين خلّص فعلاً. الصفحة دي مش بتضيف/تعدّل أي بيانات في dafter/proof/
+// archive ولا في اللوج نفسه — قراءة بس.
+const DD_RESET_CUTOFF=new Date('2026-07-22T00:00:00').getTime(); // نفس تاريخ تصفير بورتال المناديب بالظبط
+function _ddConfirmedIds(log){return new Set(log.filter(function(h){return h.handoverStatus==='delivered';}).map(function(h){return h.sourceId;}).filter(Boolean));}
+function renderDelegateDeliveries(){
+  const dgSel=document.getElementById('dd-delegate');
+  if(dgSel){
+    const cur=dgSel.value;
+    const dgs=(DB.get('delegates')||[]).slice().sort(function(a,b){return (a.name||'').localeCompare(b.name||'','ar');});
+    dgSel.innerHTML='<option value="">-- كل المناديب --</option>'+dgs.map(function(d){return '<option value="'+esc(d.name)+'">'+esc(d.name)+'</option>';}).join('');
+    dgSel.value=cur;
+  }
+  const filterDg=dgSel?dgSel.value:'';
+  const from=document.getElementById('dd-from')?.value||'';
+  const to=document.getElementById('dd-to')?.value||'';
+  const log=DB.get('delegateHandoverLog')||[];
+  const confirmedIds=_ddConfirmedIds(log);
+  const proof=(DB.get('proof')||[]).filter(function(r){return r.delegate;});
+  const archive=(DB.get('archive')||[]).filter(function(r){return r.delegate;});
+
+  const proofItems=proof.filter(function(r){return !confirmedIds.has(r.id)&&(+r.createdAt||0)>=DD_RESET_CUTOFF;}).map(function(r){return Object.assign({},r,{delivType:'بروفة'});});
+  const archCutoff=Math.max(Date.now()-30*24*60*60*1000,DD_RESET_CUTOFF);
+  const finalItems=archive.filter(function(r){return !confirmedIds.has(r.id)&&(+r.archivedAt||0)>=archCutoff;}).map(function(r){return Object.assign({},r,{delivType:'نهائي'});});
+  let pending=proofItems.concat(finalItems);
+  if(filterDg)pending=pending.filter(function(r){return r.delegate===filterDg;});
+  pending.sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);});
+
+  let delivered=log.filter(function(h){return h.handoverStatus==='delivered';});
+  if(filterDg)delivered=delivered.filter(function(h){return h.delegate===filterDg;});
+  if(from)delivered=delivered.filter(function(h){return (h.date||'')>=from;});
+  if(to)delivered=delivered.filter(function(h){return (h.date||'')<=to;});
+  delivered.sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);});
+
+  // إحصائية سريعة لكل مندوب: كام حالة معلّقة عنده دلوقتي وكام حالة سلّمها (حسب فلتر التاريخ لو موجود)
+  const dgStats={};
+  pending.forEach(function(r){const k=r.delegate||'بدون مندوب';dgStats[k]=dgStats[k]||{pending:0,delivered:0};dgStats[k].pending++;});
+  delivered.forEach(function(r){const k=r.delegate||'بدون مندوب';dgStats[k]=dgStats[k]||{pending:0,delivered:0};dgStats[k].delivered++;});
+  const statsEl=document.getElementById('dd-stats');
+  if(statsEl){
+    const keys=Object.keys(dgStats).sort(function(a,b){return a.localeCompare(b,'ar');});
+    statsEl.innerHTML=keys.length?keys.map(function(k){
+      return '<div class="stat-card"><div class="sc-label">🚗 '+esc(k)+'</div>'
+        +'<div class="sc-val" style="color:var(--orange);font-size:18px">⏳ '+dgStats[k].pending+' معلّقة</div>'
+        +'<div class="sc-sub" style="color:var(--green)">✅ '+dgStats[k].delivered+' مسلَّمة</div></div>';
+    }).join(''):'<div class="empty"><p>لا يوجد نشاط مطابق للفلتر الحالي</p></div>';
+  }
+
+  const pendEl=document.getElementById('dd-pending');
+  if(pendEl){
+    pendEl.innerHTML=pending.length?pending.map(function(r){
+      return '<div style="background:var(--bg2);border:1px solid var(--border);border-right:3px solid var(--orange);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
+        +'<div>'
+        +'<div style="font-weight:800;font-size:13.5px">'+esc(r.client||'—')+'</div>'
+        +(r.noteName?'<div style="font-size:12px;color:var(--teal)">👤 '+esc(r.noteName)+'</div>':'')
+        +'<div style="font-size:11px;color:var(--text3)">#'+esc(String(r.caseId||'—'))+' · '+esc(r.product||'—')+(r.qty>1?' × '+r.qty:'')+'</div>'
+        +'<div style="font-size:11px;color:var(--text3)">📅 '+esc(r.date||'—')+'</div>'
+        +'</div>'
+        +'<div style="text-align:left;white-space:nowrap">'+badge(esc(r.delivType),'bg-orange')+'<br>'+badge('🚗 '+esc(r.delegate||'—'),'bg-teal')+'</div>'
+        +'</div>';
+    }).join(''):'<div class="empty"><div class="ei">🚚</div><p>مفيش حالات معلّقة — كل الحالات نازلة و/أو مسلَّمة</p></div>';
+  }
+
+  const delEl=document.getElementById('dd-delivered');
+  if(delEl){
+    delEl.innerHTML=delivered.length?delivered.map(function(h){
+      return '<div style="background:var(--bg2);border:1px solid var(--border);border-right:3px solid var(--green);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
+        +'<div>'
+        +'<div style="font-weight:800;font-size:13.5px">'+esc(h.client||'—')+'</div>'
+        +(h.noteName?'<div style="font-size:12px;color:var(--teal)">👤 '+esc(h.noteName)+'</div>':'')
+        +'<div style="font-size:11px;color:var(--text3)">#'+esc(String(h.caseId||'—'))+' · '+esc(h.product||'—')+'</div>'
+        +'<div style="font-size:11px;color:var(--text3)">📅 '+esc(h.date||'—')+'</div>'
+        +'</div>'
+        +'<div style="text-align:left;white-space:nowrap">'+badge('✅ '+esc(h.deliveryType||'—'),'bg-green')+'<br>'+badge('🚗 '+esc(h.delegate||'—'),'bg-teal')+'</div>'
+        +'</div>';
+    }).join(''):'<div class="empty"><div class="ei">✅</div><p>لا يوجد تسليمات مؤكَّدة مطابقة للفلتر</p></div>';
+  }
+}
+
 function returnToDafter(){
   if(!can('proof.back')){toast('ليس لديك صلاحية الإرجاع للدفتر','err');return;}
   const ids=getSel('proof-tb');if(!ids.length){toast('اختر حالة أولاً','err');return}
@@ -12095,7 +12208,6 @@ function renderReports(){
     else return false;
     return(!ovFrom||dt>=ovFrom)&&(!ovTo||dt<=ovTo);
   });
-  const all=[...d,...pf,...arcF];
   const tRev=arcF.reduce((s,r)=>s+ +r.total,0);
   // المحصّل/المتبقي خلال الفترة = من حركات الخزنة الفعلية للعملاء، بلا ربط بفاتورة بعينها
   const tCol=(DB.get('treasury')||[]).filter(t=>t.type==='in'&&!t.isTransfer&&(t.accType==='client'||t.accType==='archive')&&(!ovFrom||(t.date||'')>=ovFrom)&&(!ovTo||(t.date||'')<=ovTo)).reduce((s,t)=>s+ +t.amount,0);
@@ -20824,7 +20936,7 @@ function _printPersonSlip(opts){
   const calcHTML=calcLines.map(l=>'<div style="font-size:10.5px;color:#555;padding:2px 0">• '+l+'</div>').join('');
   const html='<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">'
     +'<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">'
-    +'<style>*{margin:0;padding:0;box-sizing:border-box;font-family:"Cairo",sans-serif}body{background:#f5f5f5;padding:16px}.pp{background:#fff;max-width:210mm;margin:0 auto;border-radius:10px;overflow:hidden;padding:0 0 16px;box-shadow:0 2px 12px rgba(0,0,0,.1)}'
+    +'<style>*{margin:0;padding:0;box-sizing:border-box;font-family:"Cairo",sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}body{background:#f5f5f5;padding:16px}.pp{background:#fff;max-width:210mm;margin:0 auto;border-radius:10px;overflow:hidden;padding:0 0 16px;box-shadow:0 2px 12px rgba(0,0,0,.1)}'
     +'@media print{body{background:#fff;padding:0}.pp{box-shadow:none;border-radius:0}@page{size:A4;margin:10mm}}</style></head><body>'
     +'<div class="pp">'
     +'<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:'+color+';color:#fff">'
@@ -21189,6 +21301,87 @@ function shareClientCardImage(){
     } else {
       fallback();
     }
+  });
+}
+
+// ===== #FEAT-CLIENTCARD-REAL-PDF: تحميل PDF فعلي لكارت العميل التفصيلي =====
+// بدل الاعتماد على شاشة طباعة المتصفح (اللي بتختلف واجهتها بين الكمبيوتر
+// والموبايل، وزرار "حفظ كـ PDF" فيها جزء من واجهة المتصفح نفسها مش من الموقع)
+// بنولّد ملف PDF حقيقي وننزّله بزرار واحد يشتغل بنفس الطريقة على الاثنين.
+// نفس أسلوب html2canvas المضمون المستخدم فعلاً في تحميل صورة الكارت المختصر،
+// وده بيحل مشكلة "PDF فاضي" اللي واجهناها قبل كده مع html2pdf.js: كل صفحة من
+// صفحات الكارت التفصيلي (نفس صفحات printClientCardPaged بالظبط) بتتصوّر
+// لوحدها بـ html2canvas وهي ظاهرة فعليًا على الشاشة، وبعدين تتلزّق في PDF
+// واحد متعدد الصفحات عن طريق jsPDF.
+function _loadJsPDF(cb){
+  if(window.jspdf&&window.jspdf.jsPDF){cb();return;}
+  if(window._jspdfCbs){window._jspdfCbs.push(cb);return;}
+  window._jspdfCbs=[cb];
+  const s=document.createElement('script');
+  s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+  s.onload=function(){const cbs=window._jspdfCbs||[];window._jspdfCbs=null;cbs.forEach(function(f){f();});};
+  s.onerror=function(){window._jspdfCbs=null;toast('❌ تعذّر تحميل مكتبة PDF — تأكد من الاتصال بالإنترنت','err');};
+  document.head.appendChild(s);
+}
+function downloadClientCardDetailedPDF(){
+  const clientKey=document.getElementById('cc-client')?.value||'';
+  if(!clientKey){toast('اختر عميلاً أولاً','err');return;}
+  const data=printClientCardPaged(true); // {pages,clientName} — نفس محتوى شاشة الطباعة بالظبط
+  if(!data||!data.pages){toast('❌ تعذّر تجهيز بيانات الكارت','err');return;}
+  const btn=document.getElementById('cc-pdf-btn');
+  const btnOldTxt=btn?btn.textContent:'';
+  if(btn){btn.disabled=true;btn.textContent='⏳ جاري التجهيز...';}
+  toast('⏳ جارِ إنشاء ملف PDF... (حسب عدد الصفحات)','ok');
+  _loadHtml2Canvas(function(){
+    _loadJsPDF(function(){
+      const overlay=document.createElement('div');
+      overlay.style.cssText='position:fixed;inset:0;background:rgba(10,12,16,.88);z-index:99998;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;text-align:center;padding:20px';
+      overlay.textContent='⏳ جارِ إنشاء ملف PDF...';
+      const holder=document.createElement('div');
+      holder.style.cssText='position:fixed;top:0;left:0;z-index:99997;width:100%';
+      holder.innerHTML='<style>.cc-pdf-wrap *{margin:0;padding:0;box-sizing:border-box;font-family:"Cairo",sans-serif}.cc-pdf-wrap .pp{background:#fff;max-width:210mm;margin:0 auto 24px;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.15)}</style>'
+        +'<div class="cc-pdf-wrap" style="background:#e8edf5;padding:20px">'+data.pages+'</div>';
+      document.body.appendChild(holder);
+      document.body.appendChild(overlay);
+      const finish=function(){
+        if(holder.parentNode)holder.remove();
+        if(overlay.parentNode)overlay.remove();
+        if(btn){btn.disabled=false;btn.textContent=btnOldTxt||'📄 تحميل PDF تفصيلي';}
+      };
+      setTimeout(function(){
+        const pageEls=holder.querySelectorAll('.pp');
+        if(!pageEls.length){finish();toast('❌ لا توجد بيانات لعرضها في PDF','err');return;}
+        const {jsPDF}=window.jspdf;
+        const pdf=new jsPDF('p','mm','a4');
+        const pageW=pdf.internal.pageSize.getWidth();
+        const pageH=pdf.internal.pageSize.getHeight();
+        let idx=0;
+        function renderNext(){
+          if(idx>=pageEls.length){
+            const fileName='كارت-تفصيلي-'+data.clientName.replace(/[^ء-ي0-9a-zA-Z]/g,'_')+'-'+today()+'.pdf';
+            pdf.save(fileName);
+            finish();
+            toast('✅ اتحفظ ملف PDF التفصيلي في مجلد التنزيلات بجهازك','ok');
+            return;
+          }
+          overlay.textContent='⏳ جارِ إنشاء ملف PDF... (صفحة '+(idx+1)+' من '+pageEls.length+')';
+          window.html2canvas(pageEls[idx],{scale:2,useCORS:true,backgroundColor:'#ffffff'}).then(function(canvas){
+            const imgData=canvas.toDataURL('image/jpeg',0.92);
+            let renderW=pageW,renderH=pageW*canvas.height/canvas.width;
+            if(renderH>pageH){renderH=pageH;renderW=pageH*canvas.width/canvas.height;}
+            const offsetX=(pageW-renderW)/2;
+            if(idx>0)pdf.addPage();
+            pdf.addImage(imgData,'JPEG',offsetX,0,renderW,renderH);
+            idx++;
+            renderNext();
+          }).catch(function(e){
+            finish();
+            toast('❌ حصل خطأ أثناء إنشاء PDF: '+(e&&e.message||'غير معروف'),'err');
+          });
+        }
+        renderNext();
+      },80);
+    });
   });
 }
 
