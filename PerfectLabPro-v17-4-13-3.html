@@ -6310,6 +6310,30 @@ function cur(){return(DB.get('trSetup')||{}).cur||'ج.م'}
 // float كلاسيكية في JS، مثلاً 31068.346000000004) كانت بتظهر للمستخدم كـ"346"
 // بدل رقم مالي نضيف. الحل: تثبيت أقصى خانتين عشريتين لكل عرض مبلغ.
 function fmt(n){const v=parseFloat(n);return (isNaN(v)?0:v).toLocaleString('en-US',{maximumFractionDigits:2})}
+// FIX #PHONE-BIDI-REVERSED: أرقام الهاتف اللي فيها "+" ومسافات (زي "+20 111 4465751")
+// بتتقلب بصريًا جوه سياق عربي RTL لأن كل جزء مفصول بمسافة بيتحسب "قطعة" مستقلة وبيتم
+// ترتيب القطع دي من اليمين لليسار زي أي كلمات عربية عادية. الحل: تضمين الرقم بالكامل
+// جوه <bdi dir="ltr"> عشان يتفرض عليه اتجاه واحد ثابت (LTR) بغض النظر عن السياق حواليه،
+// ونتأكد كمان إن مفتاح مصر (+20) متضاف لو مش موجود.
+function _fmtPhoneDisplay(phone){
+  const raw=String(phone||'').trim();
+  if(!raw)return '';
+  const digits=raw.replace(/[^\d]/g,'');
+  if(!digits)return '';
+  let out;
+  if(raw.startsWith('+')){
+    out=raw;
+  } else if(digits.startsWith('0020')){
+    out='+20 '+digits.slice(4);
+  } else if(digits.startsWith('20')&&digits.length>=11){
+    out='+'+digits;
+  } else if(digits.startsWith('0')){
+    out='+20 '+digits.slice(1);
+  } else {
+    out='+20 '+digits;
+  }
+  return '<bdi dir="ltr" style="unicode-bidi:isolate;direction:ltr;display:inline-block">'+esc(out)+'</bdi>';
+}
 function today(){return new Date().toISOString().split('T')[0]}
 function toast(msg,t='ok'){const el=document.getElementById('toast');el.textContent=msg;el.className='toast '+(t==='ok'?'ok':'err');el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2800)}
 // ── تنبيه بصري موحّد لإدخال غير صحيح: اهتزاز + تحمير الحقل + اهتزاز الجهاز (موبايل) ──
@@ -20666,20 +20690,18 @@ function printClientCardPaged(returnPagesOnly){
       +'<div style="font-size:10px;color:#444;margin-top:2px">'+contact+'</div>'
       +'</div></div>'
       +'<div style="text-align:left">'
-      +'<div style="font-size:11px;color:#555555;letter-spacing:2px;text-transform:uppercase">ACCOUNT CARD</div>'
-      +'<div style="font-size:13px;font-weight:700;color:#8a6520;margin-top:2px">كارت حساب عميل</div>'
-      +'<div style="font-size:10px;color:#666;margin-top:3px">صفحة '+(pg+1)+' من '+totalPages+'</div>'
+      +'<div style="font-size:13px;font-weight:800;color:#8a6520;background:#f5f2e8;border:1px solid #e0d8bc;border-radius:8px;padding:6px 14px">صفحة '+(pg+1)+' من '+totalPages+'</div>'
       +'</div></div>'
       // Client info bar
       +'<div style="background:#f5f2e8;border-top:1px solid #ece6d3;padding:12px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">'
       +'<div>'
       +'<div style="font-size:10px;color:#9a8a5a;letter-spacing:1px">العميل</div>'
       +'<div style="font-size:20px;font-weight:900;color:#0d1b3e">'+esc(clientName)+'</div>'
-      +(cl.phone?'<div style="font-size:11px;color:#444;margin-top:2px">📞 '+esc(cl.phone)+'</div>':'')
+      +(cl.phone?'<div style="font-size:11px;color:#444;margin-top:2px">📞 '+_fmtPhoneDisplay(cl.phone)+'</div>':'')
       +'</div>'
       +'<div style="background:#fff;border:1px solid #e0d8bc;border-radius:10px;padding:10px 18px;text-align:center">'
       +'<div style="font-size:10px;color:#9a8a5a">الفترة</div>'
-      +'<div style="font-size:12px;font-weight:700;color:#0d1b3e;margin-top:2px">📅 '+(from||'البداية')+' ← '+to+'</div>'
+      +'<div style="font-size:16px;font-weight:800;color:#0d1b3e;margin-top:2px">📅 '+(from||'البداية')+' ← '+to+'</div>'
       +'</div></div>'
       // Summary stats bar
       +'<div style="display:grid;grid-template-columns:repeat(4,1fr);background:#fff">'
@@ -21201,13 +21223,12 @@ function _clientCardImageHTML(clientName,cl,res,from,to,c,li){
     +'<span style="font-size:14.5px;font-weight:900;color:'+(color||'#0d1b3e')+'">'+val+'</span></div>';};
   return '<div style="width:420px;background:#fff;font-family:Cairo,sans-serif;border-radius:0;overflow:hidden">'
     +'<div style="background:#fff;border-bottom:3px solid #c9a84c;padding:16px 18px;display:flex;align-items:center;gap:12px">'
-    +logo+'<div><div style="font-size:15px;font-weight:900;color:#0d1b3e">'+esc(li.name||'Perfect Lab Pro')+'</div>'
-    +'<div style="font-size:10px;color:#888;margin-top:2px">كارت حساب عميل</div></div></div>'
+    +logo+'<div style="font-size:17px;font-weight:900;color:#0d1b3e">'+esc(li.name||'Perfect Lab Pro')+'</div></div>'
     +'<div style="background:#f5f2e8;padding:14px 18px">'
     +'<div style="font-size:10px;color:#9a8a5a;letter-spacing:1px">العميل</div>'
     +'<div style="font-size:19px;font-weight:900;color:#0d1b3e;margin-top:2px">'+esc(clientName)+'</div>'
-    +(cl.phone?'<div style="font-size:11.5px;color:#555;margin-top:3px">📞 '+esc(cl.phone)+'</div>':'')
-    +'<div style="font-size:11px;color:#8a6520;margin-top:6px">📅 الفترة: '+(from||'البداية')+' ← '+to+'</div>'
+    +(cl.phone?'<div style="font-size:11.5px;color:#555;margin-top:3px">📞 '+_fmtPhoneDisplay(cl.phone)+'</div>':'')
+    +'<div style="font-size:14px;font-weight:800;color:#8a6520;margin-top:6px">📅 الفترة: '+(from||'البداية')+' ← '+to+'</div>'
     +'</div>'
     +'<div style="padding:6px 0">'
     +(res.prevDebt?row('مديونية سابقة',fmt(res.prevDebt)+' '+c,'#b91c1c'):'')
