@@ -4243,7 +4243,7 @@ body.theme-glass .ph h2{color:var(--blue2)}
   <div class="modal modal-md">
     <div class="mh" style="background:linear-gradient(135deg,#2d1a0a,#1a0f05)"><h3 style="color:#ffb74d">إشعار بروفه</h3><div class="mc-btn" onclick="closeOv('ov-proof-notif')">✕</div></div>
     <div class="mb" id="proof-notif-body"></div>
-    <div class="mf" id="proof-static-footer"><button class="btn btn-green" id="proof-wa-btn">💬 واتساب</button><button class="btn btn-ghost" id="proof-copy-btn">📋 نسخ</button><button class="btn btn-ghost" onclick="closeOv('ov-proof-notif')">إغلاق</button></div>
+    <div class="mf" id="proof-static-footer"><button class="btn btn-green" id="proof-wa-btn">💬 واتساب</button><button class="btn btn-ghost" id="proof-copy-btn">📋 نسخ</button><button class="btn btn-ghost" id="proof-image-btn">🖼️ صورة</button><button class="btn btn-ghost" onclick="closeOv('ov-proof-notif')">إغلاق</button></div>
   </div>
 </div>
 
@@ -4305,6 +4305,7 @@ body.theme-glass .ph h2{color:var(--blue2)}
     <div class="mf" style="gap:8px">
       <button class="btn btn-green" onclick="sendTrWA()">💬 إرسال واتساب</button>
       <button class="btn btn-ghost btn-sm" onclick="copyTrWAMsg()">📋 نسخ</button>
+      <button class="btn btn-ghost btn-sm" onclick="shareTrWAImage()">🖼️ صورة</button>
       <button class="btn btn-ghost btn-sm" onclick="closeOv('ov-tr-wa')">تخطي</button>
     </div>
   </div>
@@ -13289,6 +13290,7 @@ function openProofNotifModal(clients){
         <div class="ncc-actions">
           <button class="btn btn-green btn-sm" id="pfwa-${i}">💬 واتساب</button>
           <button class="btn btn-ghost btn-sm" id="pfcp-${i}">📋 نسخ</button>
+          <button class="btn btn-ghost btn-sm" id="pfim-${i}">🖼️ صورة</button>
         </div>
       </div>
     </div>`;
@@ -13297,8 +13299,10 @@ function openProofNotifModal(clients){
   msgs.forEach((m,i)=>{
     const waBtn=document.getElementById(`pfwa-${i}`);
     const cpBtn=document.getElementById(`pfcp-${i}`);
+    const imBtn=document.getElementById(`pfim-${i}`);
     if(waBtn)waBtn.onclick=()=>wa(m.client.phone,m.msg,{client:m.client.name,type:'wa-proof',page:'البروفه'});
     if(cpBtn)cpBtn.onclick=()=>copyTxt(m.msg);
+    if(imBtn)imBtn.onclick=()=>shareMsgAsImage(m.msg,'بروفة-'+m.client.name);
   });
   // Hide/show static footer based on single vs multi client
   const staticFoot=document.getElementById('proof-static-footer');
@@ -13307,9 +13311,11 @@ function openProofNotifModal(clients){
   if(msgs.length===1){
     const waBtn=document.getElementById('proof-wa-btn');
     const cpBtn=document.getElementById('proof-copy-btn');
+    const imBtn=document.getElementById('proof-image-btn');
     // FIX #NOTIFLOG-META: كان يستدعي wa() بدون meta فيُسجَّل الإشعار بدون اسم عميل ونوع
     if(waBtn)waBtn.onclick=()=>wa(msgs[0].client.phone,msgs[0].msg,{client:msgs[0].client.name,type:'wa-proof',page:'البروفه'});
     if(cpBtn)cpBtn.onclick=()=>copyTxt(msgs[0].msg);
+    if(imBtn)imBtn.onclick=()=>shareMsgAsImage(msgs[0].msg,'بروفة-'+msgs[0].client.name);
   }
   openOv('ov-proof-notif');
 }
@@ -13365,6 +13371,7 @@ function openMultiInvNotifModal(clients){
         <div class="ncc-actions">
           <button class="btn btn-green btn-sm" id="ivwa-${i}">💬 واتساب</button>
           <button class="btn btn-ghost btn-sm" id="ivcp-${i}">📋 نسخ</button>
+          <button class="btn btn-ghost btn-sm" id="ivim-${i}">🖼️ صورة</button>
         </div>
       </div>
     </div>`;
@@ -13374,8 +13381,10 @@ function openMultiInvNotifModal(clients){
     const msg=buildInvoiceMsg(cl.name,0,{},cl.ids||null);
     const waBtn=document.getElementById(`ivwa-${i}`);
     const cpBtn=document.getElementById(`ivcp-${i}`);
+    const imBtn=document.getElementById(`ivim-${i}`);
     if(waBtn)waBtn.onclick=()=>wa(cl.phone,msg,{client:cl.name,type:'wa-inv',page:'الأرشيف'});
     if(cpBtn)cpBtn.onclick=()=>copyTxt(msg);
+    if(imBtn)imBtn.onclick=()=>shareMsgAsImage(msg,'فاتورة-'+cl.name);
   });
   document.getElementById('inv-wa-btn').style.display='none';
   document.getElementById('inv-copy-btn').style.display='none';
@@ -13545,6 +13554,12 @@ function copyInvMsg(){
   if(nm&&nm!=='—')copyTxt(buildInvoiceMsg(nm,0,{},_invDocCtx&&_invDocCtx.clientName===nm?_invDocCtx.selectedIds:null));
   else toast('افتح فاتورة أولاً','err');
 }
+function shareInvDocImage(){
+  const nm=document.getElementById('inv-client-name')?.textContent;
+  if(!nm||nm==='—'){toast('افتح فاتورة أولاً','err');return;}
+  const msg=buildInvoiceMsg(nm,0,{},_invDocCtx&&_invDocCtx.clientName===nm?_invDocCtx.selectedIds:null);
+  shareMsgAsImage(msg,'فاتورة-'+nm);
+}
 
 // ---- FINANCIAL NOTIF FROM TREASURY ----
 // Fixed saveTr - enhanced with archive/purchase/supplier/other linking
@@ -13707,6 +13722,10 @@ function copyTrWAMsg(){
   if(!_trWAData)return;
   copyTxt(buildTrWAMsg(_trWAData.tr,_trWAData.accName));
   closeOv('ov-tr-wa');
+}
+function shareTrWAImage(){
+  if(!_trWAData)return;
+  shareMsgAsImage(buildTrWAMsg(_trWAData.tr,_trWAData.accName),'اشعار-خزنة-'+(_trWAData.accName||''));
 }
 
 function openFinQuickNotif(clientName,amount){
@@ -18197,6 +18216,7 @@ setTimeout(()=>{renderEmployees();},1000);
     <div class="inv-toolbar" id="inv-toolbar">
       <button class="ibtn ibtn-ghost" onclick="closeInvDoc()">✕ إغلاق</button>
       <button class="ibtn ibtn-ghost" onclick="copyInvMsg()">📋 نسخ الرسالة</button>
+      <button class="ibtn ibtn-ghost" onclick="shareInvDocImage()">🖼️ صورة الرسالة</button>
       <button class="ibtn ibtn-blue" onclick="doPrintInv()">🖨️ طباعة</button>
       <button class="ibtn ibtn-green" id="inv-wa-btn">💬 إرسال واتساب</button>
     </div>
@@ -21315,6 +21335,78 @@ function shareClientCardImage(){
     };
     if(navigator.canShare&&navigator.canShare({files:[file]})){
       navigator.share({files:[file],title:'كارت حساب '+clientName,text:'📋 كارت حساب العميل: '+clientName})
+        .catch(function(e){
+          if(e&&e.name==='AbortError')return; // المستخدم لغى شاشة المشاركة بنفسه — مش خطأ
+          fallback();
+        });
+    } else {
+      fallback();
+    }
+  });
+}
+
+// ===== #FEAT-MSG-AS-IMAGE: تحويل أي رسالة نصية (خزنة/فاتورة/بروفة) لصورة PNG =====
+// نفس فكرة FIX #CLIENTCARD-IMAGE-TO-WA بالظبط: بنستخدم نفس _loadHtml2Canvas
+// (html-to-image) المُحمّلة مرة واحدة ومُشتركة مع كل ميزات الصور التانية في
+// النظام، عشان نضمن رسم عربي سليم 100% (نفس سبب FIX #ARABIC-TEXT-OVERLAP فوق).
+// الصورة الناتجة بابل شكله زي شاشة واتساب فعليًا، بنفس نص الرسالة اللي هيتبعت
+// حرفيًا (من غير أي تلخيص أو تغيير)، عشان تصلح كبديل فعلي لو العميل مالوش رقم
+// واتساب مسجّل أو المستخدم عايز يرفقها يدويًا في تطبيق تاني.
+function _msgImageHTML(msg){
+  const li=DB.get('labinfo')||{};
+  const safe=esc(msg).replace(/\n/g,'<br>');
+  return '<div style="width:420px;background:#e5ddd5;padding:18px;font-family:Cairo,sans-serif">'
+    +'<div style="background:#fff;border-radius:10px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.15);'
+    +'font-size:13.5px;line-height:2;color:#111;white-space:pre-wrap;direction:rtl;text-align:right">'+safe+'</div>'
+    +'<div style="text-align:center;margin-top:10px;font-size:9px;color:#8a8a8a">'
+    +esc(li.name||'Perfect Lab Pro')+' • '+new Date().toLocaleDateString('ar-EG')+'</div>'
+    +'</div>';
+}
+// عملية مشتركة: تجهيز الصورة (نفس نمط _buildClientCardImage) — بترجع blob فاضي
+// مباشرة لأي زر (تحميل/مشاركة) يستخدمها.
+function _buildMsgImageBlob(msg,cb){
+  toast('⏳ جارِ إنشاء الصورة...','ok');
+  _loadHtml2Canvas(function(){
+    const overlay=document.createElement('div');
+    overlay.style.cssText='position:fixed;inset:0;background:rgba(10,12,16,.88);z-index:99998;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700';
+    overlay.textContent='⏳ جارِ إنشاء الصورة...';
+    const holder=document.createElement('div');
+    holder.style.cssText='position:fixed;top:0;left:0;z-index:99997';
+    holder.innerHTML=_msgImageHTML(msg);
+    document.body.appendChild(holder);
+    document.body.appendChild(overlay);
+    setTimeout(function(){
+      window.htmlToImage.toBlob(holder.firstElementChild,{pixelRatio:2,backgroundColor:'#e5ddd5'}).then(function(blob){
+        holder.remove();overlay.remove();
+        if(!blob){toast('❌ تعذّر إنشاء الصورة','err');return;}
+        cb(blob);
+      }).catch(function(e){
+        if(holder.parentNode)holder.remove();
+        if(overlay.parentNode)overlay.remove();
+        toast('❌ حصل خطأ في إنشاء الصورة: '+(e&&e.message||'غير معروف'),'err');
+      });
+    },60);
+  });
+}
+// زر عام "🖼️ صورة": يحوّل نص أي رسالة (خزنة/فاتورة/بروفة) لصورة PNG.
+// بيحاول Web Share API أولاً (يفتح شاشة المشاركة مباشرة باختيار أي تطبيق —
+// واتساب/فيسبوك/تليجرام/إيميل)، ولو مش مدعومة أو فشلت لأي سبب غير إلغاء
+// المستخدم نفسه، بيرجع تلقائيًا لتحميل مضمون 100% على جهاز المستخدم
+// (نفس فكرة fallback في shareClientCardImage بالظبط).
+function shareMsgAsImage(msg,fileNameBase){
+  if(!msg){toast('لا توجد رسالة لتحويلها لصورة','err');return;}
+  _buildMsgImageBlob(msg,function(blob){
+    const fileName=(fileNameBase||'رسالة').replace(/[^ء-ي0-9a-zA-Z_-]/g,'_')+'-'+today()+'.png';
+    const file=new File([blob],fileName,{type:'image/png'});
+    const fallback=function(){
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');a.href=url;a.download=fileName;a.rel='noopener';
+      document.body.appendChild(a);a.click();a.remove();
+      setTimeout(function(){URL.revokeObjectURL(url);},5000);
+      toast('✅ اتحفظت الصورة في التنزيلات — ارفقها يدويًا في أي تطبيق (واتساب/فيسبوك/تليجرام)','ok');
+    };
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      navigator.share({files:[file],title:fileNameBase||'رسالة'})
         .catch(function(e){
           if(e&&e.name==='AbortError')return; // المستخدم لغى شاشة المشاركة بنفسه — مش خطأ
           fallback();

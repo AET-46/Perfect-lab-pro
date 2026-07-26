@@ -193,10 +193,24 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
 /* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:flex-end;justify-content:center;z-index:999;padding:16px}
 .modal-overlay.hidden{display:none}
-.modal-box{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:20px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto}
+.modal-box{background:var(--bg2);border:1px solid var(--border);border-top:5px solid transparent;border-radius:16px;padding:20px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;transition:border-top-color .15s}
 .modal-box h3{font-size:17px;font-weight:900;margin-bottom:16px;color:var(--gold2)}
 .modal-btns{display:flex;gap:8px;margin-top:16px}
 .modal-btns .btn{flex:1}
+/* ألوان مميزة لكل نوع نافذة تأكيد — عشان "تحصيل" متتلغبطش مع "تسليم/استلام" أبدًا */
+.modal-box[data-kind="delivery"]{border-top-color:var(--green)}
+.modal-box[data-kind="delivery"] h3{color:var(--green)}
+.modal-box[data-kind="return"]{border-top-color:var(--red)}
+.modal-box[data-kind="return"] h3{color:var(--red)}
+.modal-box[data-kind="collect"]{border-top-color:var(--purple)}
+.modal-box[data-kind="collect"] h3{color:var(--purple)}
+.modal-box[data-kind="collect"] #cm-ok{background:var(--purple);color:#fff}
+.modal-box[data-kind="newcases"]{border-top-color:var(--blue)}
+.modal-box[data-kind="newcases"] h3{color:var(--blue)}
+.modal-box[data-kind="newcases"] #cm-ok{background:var(--blue);color:#fff}
+.modal-box[data-kind="manual"]{border-top-color:var(--teal)}
+.modal-box[data-kind="manual"] h3{color:var(--teal)}
+.modal-box[data-kind="manual"] #cm-ok{background:var(--teal);color:#fff}
 
 /* DEBT BADGE */
 .debt-badge{font-size:13px;padding:3px 8px;border-radius:20px;font-weight:700}
@@ -1229,9 +1243,15 @@ function renderDeliveries(){
     </div>`).join('');
 }
 
-function showModal(title,msg,onOk,extraHtml,onCancel){
+// kind (اختياري): 'delivery'|'return'|'collect'|'newcases'|'manual' — بيلوّن حدّ النافذة
+// من فوق وعنوانها (وزرار التأكيد لو مختلف) عشان نافذة "تحصيل" متتلغبطش بصريًا مع
+// نافذة "تسليم/استلام" حتى لو اتفتحوا ورا بعض في نفس السلسلة. من غير kind بترجع
+// للون الذهبي الافتراضي.
+function showModal(title,msg,onOk,extraHtml,onCancel,kind){
   document.getElementById('cm-title').textContent=title;
   document.getElementById('cm-msg').textContent=msg;
+  const modalBox=document.querySelector('#confirm-modal .modal-box');
+  if(modalBox){if(kind)modalBox.setAttribute('data-kind',kind);else modalBox.removeAttribute('data-kind');}
   const extraBox=document.getElementById('cm-extra');
   if(extraHtml){extraBox.innerHTML=extraHtml;extraBox.classList.remove('hidden');}
   else{extraBox.innerHTML='';extraBox.classList.add('hidden');}
@@ -1296,7 +1316,7 @@ function openManualClientAction(clientId){
       <label>📥 عدد المقاسات/الحالات الجديدة المستلمة (سيبها فاضية لو مفيش)</label>
       <input type="number" id="manual-newcases-input" inputmode="numeric" min="0" placeholder="0" style="width:100%;font-size:16px">
     </div>`;
-  showModal('تسجيل من عميل بدون تسليم',`عميل "${cl.name}" — التسجيل ده توثيقي بس ومحتاج اعتماد الإدارة، ومش هيأثر على حساب العميل مباشرة`,async()=>{
+  showModal('💼 تسجيل من عميل بدون تسليم',`عميل "${cl.name}" — التسجيل ده توثيقي بس ومحتاج اعتماد الإدارة، ومش هيأثر على حساب العميل مباشرة`,async()=>{
     const amtInput=document.getElementById('manual-amount-input');
     const countInput=document.getElementById('manual-newcases-input');
     const amount=Math.max(0,+((amtInput&&amtInput.value)||0));
@@ -1308,7 +1328,7 @@ function openManualClientAction(clientId){
       closeModal();
       loadTab('deliveries');
     }catch(e){toast('خطأ أثناء التسجيل','err');}
-  },extraHtml);
+  },extraHtml,undefined,'manual');
 }
 
 function findDelivItem(id,delivType){
@@ -1319,13 +1339,13 @@ function findDelivItem(id,delivType){
 async function confirmDelivery(id,delivType){
   const r=findDelivItem(id,delivType);
   if(!r)return;
-  showModal('تأكيد التسليم',`هل تم تسليم حالة "${r.client}" · #${r.caseId||'-'} (${delivType}) فعلاً للعميل؟\n(التأكيد ده تسجيل توثيقي بس — مش هيلمس ولا سجل في دفتر/بروفة/أرشيف السيستم الكبير)`,async()=>{
+  showModal('✅ تأكيد التسليم',`هل تم تسليم حالة "${r.client}" · #${r.caseId||'-'} (${delivType}) فعلاً للعميل؟\n(التأكيد ده تسجيل توثيقي بس — مش هيلمس ولا سجل في دفتر/بروفة/أرشيف السيستم الكبير)`,async()=>{
     try{
       const logEntry=await logHandover(r,'delivered',delivType);
       loadTab('deliveries'); // الصفحة تفضل فاضية من الحالة دي بعد التأكيد
       askCollection(logEntry); // بعد التسليم مباشرة: نافذة تلقائية — هل فيه تحصيل؟
     }catch(e){toast('خطأ أثناء التأكيد','err');closeModal();}
-  });
+  },undefined,undefined,'delivery');
 }
 
 // خطوة ٢ (اتوماتيك بعد التسليم): هل حصّل المندوب مبلغ من العميل؟
@@ -1336,7 +1356,7 @@ function askCollection(logEntry){
     <label>💰 اكتب المبلغ اللي حصّلته من العميل الآن (سيبها فاضية أو دوس إلغاء لو مفيش تحصيل)</label>
     <input type="number" id="collect-amount-input" inputmode="decimal" placeholder="0" style="width:100%;font-size:16px">
   </div>`;
-  showModal('فيه تحصيل؟',`حالة "${logEntry.client}" — تم التسليم ✅`,async()=>{
+  showModal('💰 فيه تحصيل؟',`حالة "${logEntry.client}" — تم التسليم ✅`,async()=>{
     const input=document.getElementById('collect-amount-input');
     const amount=Math.max(0,+((input&&input.value)||0));
     if(amount>0){
@@ -1344,7 +1364,7 @@ function askCollection(logEntry){
       try{await logDelegateReportedCollection(logEntry,amount);await updateHandoverLogEntry(logEntry);}catch(e){}
     }
     askNewCases(logEntry);
-  },extraHtml,()=>askNewCases(logEntry)); // إلغاء = مفيش تحصيل، وكمِّل للخطوة الجاية
+  },extraHtml,()=>askNewCases(logEntry),'collect'); // إلغاء = مفيش تحصيل، وكمِّل للخطوة الجاية
 }
 
 // خطوة ٣ (اتوماتيك بعد التحصيل): هل استلم مقاسات/حالات جديدة (مش بروفة) من نفس العميل؟
@@ -1364,7 +1384,7 @@ function askNewCases(logEntry){
     }
     closeModal();
   };
-  showModal('استلمت مقاسات جديدة؟',`عميل "${logEntry.client}"`,finish,extraHtml,finish);
+  showModal('📥 استلمت مقاسات جديدة؟',`عميل "${logEntry.client}"`,finish,extraHtml,finish,'newcases');
 }
 
 // تسجيل مبلغ بلَّغ عنه المندوب وقت تسليم حالة معيّنة — قائمة منفصلة تمامًا عن data/shared/treasury
@@ -1418,14 +1438,14 @@ async function logDelegateNewCases(r,count){
 async function confirmReturn(id,delivType){
   const r=findDelivItem(id,delivType);
   if(!r)return;
-  showModal('تأكيد الارتجاع',`هل تم ارتجاع حالة "${r.client}" · #${r.caseId||'-'} (${delivType}) من العميل؟\n(التأكيد ده تسجيل توثيقي بس — مش هيلمس ولا سجل في دفتر/بروفة/أرشيف السيستم الكبير)`,async()=>{
+  showModal('↩️ تأكيد الارتجاع',`هل تم ارتجاع حالة "${r.client}" · #${r.caseId||'-'} (${delivType}) من العميل؟\n(التأكيد ده تسجيل توثيقي بس — مش هيلمس ولا سجل في دفتر/بروفة/أرشيف السيستم الكبير)`,async()=>{
     try{
       await logHandover(r,'returned',delivType);
       toast('↩️ تم تسجيل الارتجاع (توثيقي)');
       loadTab('deliveries');
     }catch(e){toast('خطأ أثناء التأكيد','err');}
     closeModal();
-  });
+  },undefined,undefined,'return');
 }
 
 // ═══════════════════════════════════════
