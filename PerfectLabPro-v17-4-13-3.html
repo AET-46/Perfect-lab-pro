@@ -21172,37 +21172,23 @@ function sendClientCardWA(){
 
 // FIX #CLIENTCARD-IMAGE-TO-WA: بعد ما جرّبنا PDF عن طريق html2pdf.js طلعت فاضية
 // ومعاها علامة "Free license" جايه من نسخة html2canvas المجمّعة جواه — استبدلنا
-// الحل بالكامل بصورة PNG عن طريق html2canvas العادي (المجاني بدون أي علامة)،
+// الحل بالكامل بصورة PNG (المجاني بدون أي علامة)،
 // وده أبسط وأضمن وأسهل في العرض على واتساب من ملف PDF أصلاً.
-// ملحوظة: العنصر بيتصيّر جوه الشاشة الفعلية (مش بره الشاشة بـ left:-99999px) لأن
-// html2canvas مبيصورش صح عناصر متحطة برة نطاق الشاشة على موبايلات كتير — فبنغطيه
-// بأوفرلاي تحميل لحد ما نخلص، وبعدين نشيل الاتنين.
-// FIX #H2C-HANG-FALLBACK: foreignObjectRendering:true بيحل مشكلة تلخبط الحروف
-// العربية، لكن على بعض المتصفحات (خصوصًا Chrome Android) ممكن يفضل معلّق من
-// غير ما يرمي خطأ لو في تأخير بسيط في تحميل الخط أو صورة اللوجو. عشان التحميل
-// يضمن يخلص دايمًا، بنجرّب الطريقة الصح الأول، ولو استغرقت أكتر من 10 ثواني أو
-// فشلت، بنرجع تلقائيًا للطريقة العادية (المضمونة 100% لكن من غير تشكيل حروف).
-function _html2canvasSafe(el,baseOpts){
-  return new Promise(function(resolve,reject){
-    let done=false;
-    const fallback=function(){
-      if(done)return;done=true;
-      window.html2canvas(el,Object.assign({},baseOpts,{foreignObjectRendering:false})).then(resolve).catch(reject);
-    };
-    const timer=setTimeout(fallback,10000);
-    window.html2canvas(el,Object.assign({},baseOpts,{foreignObjectRendering:true})).then(function(canvas){
-      if(done)return;done=true;clearTimeout(timer);resolve(canvas);
-    }).catch(function(){
-      clearTimeout(timer);fallback();
-    });
-  });
-}
+// ملحوظة: العنصر بيتصيّر جوه الشاشة الفعلية (مش بره الشاشة بـ left:-99999px) عشان
+// نضمن التصيير صح على موبايلات كتير — فبنغطيه بأوفرلاي تحميل لحد ما نخلص، وبعدين
+// نشيل الاتنين.
+// FIX #ARABIC-TEXT-OVERLAP: استبدلنا html2canvas بمكتبة html-to-image لأن html2canvas
+// بيرسم كل حرف عربي لوحده بحساباته الخاصة للعرض (مش بيستخدم محرك تشكيل نصوص حقيقي)،
+// وده بيبوّظ الحروف المتصلة في العربي فتظهر متراكبة/ملخبطة فوق بعض (بالذات مع خط Cairo
+// بوزن Bold/Black). html-to-image بترسم عن طريق تحويل العنصر لـ SVG (foreignObject)
+// وتسيب المتصفح نفسه يرسم النص زي ما بيظهر فعليًا على الشاشة، فالتشكيل والاتصال بين
+// الحروف العربية بيطلع سليم 100%.
 function _loadHtml2Canvas(cb){
-  if(window.html2canvas){cb();return;}
+  if(window.htmlToImage){cb();return;}
   if(window._h2cCbs){window._h2cCbs.push(cb);return;}
   window._h2cCbs=[cb];
   const s=document.createElement('script');
-  s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+  s.src='https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js';
   s.onload=function(){const cbs=window._h2cCbs||[];window._h2cCbs=null;cbs.forEach(function(f){f();});};
   s.onerror=function(){window._h2cCbs=null;toast('❌ تعذّر تحميل مكتبة الصور — تأكد من الاتصال بالإنترنت','err');};
   document.head.appendChild(s);
@@ -21259,21 +21245,11 @@ function _buildClientCardImage(cb){
     document.body.appendChild(holder);
     document.body.appendChild(overlay);
     setTimeout(function(){
-      _html2canvasSafe(holder,{scale:2,useCORS:true,backgroundColor:'#ffffff'}).then(function(canvas){
+      window.htmlToImage.toBlob(holder,{pixelRatio:2,backgroundColor:'#ffffff'}).then(function(blob){
         holder.remove();overlay.remove();
         const fileName='كارت-'+clientName.replace(/[^ء-ي0-9a-zA-Z]/g,'_')+'-'+today()+'.png';
-        if(canvas.toBlob){
-          canvas.toBlob(function(blob){
-            if(!blob){toast('❌ تعذّر إنشاء الصورة','err');return;}
-            cb(blob,fileName,clientName);
-          },'image/png');
-        } else {
-          // فولباك لمتصفحات قديمة مالهاش toBlob
-          const dataUrl=canvas.toDataURL('image/png');
-          const bstr=atob(dataUrl.split(',')[1]);let n=bstr.length;const u8=new Uint8Array(n);
-          while(n--)u8[n]=bstr.charCodeAt(n);
-          cb(new Blob([u8],{type:'image/png'}),fileName,clientName);
-        }
+        if(!blob){toast('❌ تعذّر إنشاء الصورة','err');return;}
+        cb(blob,fileName,clientName);
       }).catch(function(e){
         if(holder.parentNode)holder.remove();
         if(overlay.parentNode)overlay.remove();
@@ -21328,11 +21304,11 @@ function shareClientCardImage(){
 // بدل الاعتماد على شاشة طباعة المتصفح (اللي بتختلف واجهتها بين الكمبيوتر
 // والموبايل، وزرار "حفظ كـ PDF" فيها جزء من واجهة المتصفح نفسها مش من الموقع)
 // بنولّد ملف PDF حقيقي وننزّله بزرار واحد يشتغل بنفس الطريقة على الاثنين.
-// نفس أسلوب html2canvas المضمون المستخدم فعلاً في تحميل صورة الكارت المختصر،
-// وده بيحل مشكلة "PDF فاضي" اللي واجهناها قبل كده مع html2pdf.js: كل صفحة من
-// صفحات الكارت التفصيلي (نفس صفحات printClientCardPaged بالظبط) بتتصوّر
-// لوحدها بـ html2canvas وهي ظاهرة فعليًا على الشاشة، وبعدين تتلزّق في PDF
-// واحد متعدد الصفحات عن طريق jsPDF.
+// نفس أسلوب html-to-image المضمون المستخدم فعلاً في تحميل صورة الكارت المختصر
+// (شايف FIX #ARABIC-TEXT-OVERLAP فوق)، وده بيحل مشكلة "PDF فاضي" اللي واجهناها قبل
+// كده مع html2pdf.js: كل صفحة من صفحات الكارت التفصيلي (نفس صفحات
+// printClientCardPaged بالظبط) بتتصوّر لوحدها وهي ظاهرة فعليًا على الشاشة، وبعدين
+// تتلزّق في PDF واحد متعدد الصفحات عن طريق jsPDF.
 function _loadJsPDF(cb){
   if(window.jspdf&&window.jspdf.jsPDF){cb();return;}
   if(window._jspdfCbs){window._jspdfCbs.push(cb);return;}
@@ -21385,7 +21361,7 @@ function downloadClientCardDetailedPDF(){
             return;
           }
           overlay.textContent='⏳ جارِ إنشاء ملف PDF... (صفحة '+(idx+1)+' من '+pageEls.length+')';
-          _html2canvasSafe(pageEls[idx],{scale:2,useCORS:true,backgroundColor:'#ffffff'}).then(function(canvas){
+          window.htmlToImage.toCanvas(pageEls[idx],{pixelRatio:2,backgroundColor:'#ffffff'}).then(function(canvas){
             const imgData=canvas.toDataURL('image/jpeg',0.92);
             let renderW=pageW,renderH=pageW*canvas.height/canvas.width;
             if(renderH>pageH){renderH=pageH;renderW=pageH*canvas.width/canvas.height;}
