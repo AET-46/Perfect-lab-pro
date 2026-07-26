@@ -21177,6 +21177,26 @@ function sendClientCardWA(){
 // ملحوظة: العنصر بيتصيّر جوه الشاشة الفعلية (مش بره الشاشة بـ left:-99999px) لأن
 // html2canvas مبيصورش صح عناصر متحطة برة نطاق الشاشة على موبايلات كتير — فبنغطيه
 // بأوفرلاي تحميل لحد ما نخلص، وبعدين نشيل الاتنين.
+// FIX #H2C-HANG-FALLBACK: foreignObjectRendering:true بيحل مشكلة تلخبط الحروف
+// العربية، لكن على بعض المتصفحات (خصوصًا Chrome Android) ممكن يفضل معلّق من
+// غير ما يرمي خطأ لو في تأخير بسيط في تحميل الخط أو صورة اللوجو. عشان التحميل
+// يضمن يخلص دايمًا، بنجرّب الطريقة الصح الأول، ولو استغرقت أكتر من 10 ثواني أو
+// فشلت، بنرجع تلقائيًا للطريقة العادية (المضمونة 100% لكن من غير تشكيل حروف).
+function _html2canvasSafe(el,baseOpts){
+  return new Promise(function(resolve,reject){
+    let done=false;
+    const fallback=function(){
+      if(done)return;done=true;
+      window.html2canvas(el,Object.assign({},baseOpts,{foreignObjectRendering:false})).then(resolve).catch(reject);
+    };
+    const timer=setTimeout(fallback,10000);
+    window.html2canvas(el,Object.assign({},baseOpts,{foreignObjectRendering:true})).then(function(canvas){
+      if(done)return;done=true;clearTimeout(timer);resolve(canvas);
+    }).catch(function(){
+      clearTimeout(timer);fallback();
+    });
+  });
+}
 function _loadHtml2Canvas(cb){
   if(window.html2canvas){cb();return;}
   if(window._h2cCbs){window._h2cCbs.push(cb);return;}
@@ -21239,7 +21259,7 @@ function _buildClientCardImage(cb){
     document.body.appendChild(holder);
     document.body.appendChild(overlay);
     setTimeout(function(){
-      window.html2canvas(holder,{scale:2,useCORS:true,backgroundColor:'#ffffff',foreignObjectRendering:true}).then(function(canvas){
+      _html2canvasSafe(holder,{scale:2,useCORS:true,backgroundColor:'#ffffff'}).then(function(canvas){
         holder.remove();overlay.remove();
         const fileName='كارت-'+clientName.replace(/[^ء-ي0-9a-zA-Z]/g,'_')+'-'+today()+'.png';
         if(canvas.toBlob){
@@ -21365,7 +21385,7 @@ function downloadClientCardDetailedPDF(){
             return;
           }
           overlay.textContent='⏳ جارِ إنشاء ملف PDF... (صفحة '+(idx+1)+' من '+pageEls.length+')';
-          window.html2canvas(pageEls[idx],{scale:2,useCORS:true,backgroundColor:'#ffffff',foreignObjectRendering:true}).then(function(canvas){
+          _html2canvasSafe(pageEls[idx],{scale:2,useCORS:true,backgroundColor:'#ffffff'}).then(function(canvas){
             const imgData=canvas.toDataURL('image/jpeg',0.92);
             let renderW=pageW,renderH=pageW*canvas.height/canvas.width;
             if(renderH>pageH){renderH=pageH;renderW=pageH*canvas.width/canvas.height;}
