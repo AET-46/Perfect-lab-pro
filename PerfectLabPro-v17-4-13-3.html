@@ -21686,48 +21686,90 @@ function _proofNoticeDocHTML(clientName,cl,readyRows,li,c){
     +'</div>';
 }
 
-// ===== إشعار فاتورة (الصورة تطابق تصميم "إشعار فاتورة" المرجعي — عمودين) =====
+// ===== إشعار فاتورة (تصميم رأسي مطابق للصورة المرجعية بالكامل — بكسل بكسل) =====
+// رأس بشريط مثلث كحلي/ذهبي + شعار المعمل، شريط عميل/تاريخ، عمودين (فاتورة
+// مبيعات نافي + بروفات أخضر)، صناديق ملخص بأيقونات (قيمة الفاتورة/المديونية/
+// قيد التنفيذ)، شريط شكر ذهبي، وفوتر كحلي بحدود ذهبية للأيقونات — دوال مخصّصة
+// جديدة (بادئة _invNotif_) عشان منلمسش تصميم إشعار البروفة/كشف الحساب.
+function _invNotif_headerHTML(li){
+  const logo=li.logo?'<img src="'+li.logo+'" style="height:26px;object-fit:contain">':'<div style="font-size:20px;line-height:1">🦷</div>';
+  return '<div style="position:relative;background:#fefefc;padding:18px 16px 14px;display:flex;direction:ltr;align-items:flex-start;justify-content:space-between;overflow:hidden;border-bottom:1px solid #D9DEE7">'
+    +'<div style="position:absolute;top:0;left:0;width:0;height:0;border-top:76px solid #E1B85A;border-right:76px solid transparent"></div>'
+    +'<div style="position:absolute;top:0;left:0;width:0;height:0;border-top:70px solid #0B2A55;border-right:70px solid transparent"></div>'
+    +'<div style="position:relative;z-index:2;width:36px;height:36px;background:#fff;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 6px rgba(0,0,0,.18);flex-shrink:0">📄</div>'
+    +'<div style="flex:1;margin:0 12px;text-align:right;direction:rtl;padding-top:1px">'
+    +'<div style="font-size:17px;font-weight:900;color:#0B2A55;white-space:nowrap">إشعار فاتورة</div>'
+    +'<div style="width:52px;height:3px;background:linear-gradient(90deg,#C69A3A,#E1B85A);border-radius:2px;margin:5px 0 6px auto"></div>'
+    +'<div style="font-size:10.5px;font-weight:700;color:#6b7280">فاتورة تفصيلية</div>'
+    +'</div>'
+    +'<div style="text-align:right;direction:rtl;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:3px">'
+    +'<div style="font-size:18px;font-weight:900;color:#0B2A55;font-family:Georgia,\'Times New Roman\',serif;white-space:nowrap">'+esc(li.name||'Perfect Lab')+'</div>'
+    +logo
+    +'</div>'
+    +'</div>';
+}
+function _invNotif_infoBarHTML(clientName){
+  return '<div style="margin:12px 14px 0;border:1px solid #D9DEE7;border-radius:12px;padding:9px 14px;display:flex;align-items:center;justify-content:space-between">'
+    +'<div style="display:flex;align-items:center;gap:8px;font-weight:900;color:#0B2A55;font-size:12px;white-space:nowrap">'
+    +'<div style="width:24px;height:24px;border-radius:50%;background:#F8FAFC;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">👤</div>'
+    +esc(clientName)+'</div>'
+    +'<div style="width:1px;height:20px;background:#D9DEE7;flex-shrink:0"></div>'
+    +'<div style="display:flex;align-items:center;gap:8px;font-weight:900;color:#0B2A55;font-size:12px;white-space:nowrap">'
+    +'<div style="width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,#C69A3A,#E1B85A);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">📅</div>'
+    +dateAr()+'</div>'
+    +'</div>';
+}
+function _invNotif_colHeadHTML(bg,icon,label,count){
+  return '<div style="background:'+bg+';color:#fff;padding:8px 11px;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:space-between">'
+    +'<span>'+label+' ('+count+')</span><span style="font-size:12px;flex-shrink:0">'+icon+'</span></div>';
+}
+function _invNotif_boxHTML(label,value,icon,bg,border,color){
+  return '<div style="margin:10px 14px 0;border-radius:12px;border:1px solid '+border+';background:'+bg+';padding:10px 15px;display:flex;align-items:center;justify-content:space-between">'
+    +'<div><div style="font-size:10.5px;font-weight:700;color:#6b7280">'+label+'</div>'
+    +'<div style="font-size:17px;font-weight:900;color:'+color+';margin-top:3px">'+value+'</div></div>'
+    +'<div style="font-size:20px;flex-shrink:0">'+icon+'</div>'
+    +'</div>';
+}
+function _invNotif_footerHTML(li){
+  const item=(icon,label,sub)=>label?('<div style="display:flex;align-items:center;gap:7px;color:#fff;font-size:10.5px;font-weight:700">'
+    +'<div style="width:22px;height:22px;border-radius:50%;border:1.5px solid #E1B85A;display:flex;align-items:center;justify-content:center;font-size:10px;color:#E1B85A;flex-shrink:0">'+icon+'</div>'
+    +'<span>'+esc(label)+(sub?' <span style="opacity:.7;font-weight:600">'+esc(sub)+'</span>':'')+'</span></div>'):'';
+  return '<div style="height:3px;background:linear-gradient(90deg,#C69A3A,#E1B85A,#C69A3A)"></div>'
+    +'<div style="background:#0B2A55;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">'
+    +item('📞',li.ph1,'الحسابات')
+    +((li.wa||li.ph2)?item('💬',li.wa||li.ph2,''):'')
+    +(li.addr?item('📍',li.addr,''):'')
+    +'</div>';
+}
 function _invoiceNoticeDocHTML(clientName,cl,unpaid,clientPf,invoiceTotal,grandDebt,li,c){
   const clientDf=(DB.get('dafter')||[]).filter(r=>_matchClientRecord(r,cl&&cl.id,clientName));
-  return '<div style="width:760px;background:#fff;font-family:Cairo,sans-serif;overflow:hidden;border-radius:12px;box-shadow:0 2px 14px rgba(13,27,62,.10)">'
-    +'<div style="position:relative;padding:20px 22px 14px;border-bottom:1px solid #D9DEE7">'
-    +_docRibbonHTML('🧾')
-    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;padding-left:78px">'
-    +_docLogoBlockHTML(li)
-    +_docTitleSubtitleHTML('إشعار فاتورة','فاتورة تفصيلية')
-    +'</div></div>'
-    +_docClientDateRowHTML(clientName)
-    +'<div style="display:flex;gap:16px;margin:0 22px 18px;align-items:flex-start">'
+  return '<div style="width:480px;background:#fefefc;font-family:Cairo,sans-serif;overflow:hidden;border-radius:14px;box-shadow:0 2px 14px rgba(13,27,62,.10)">'
+    +_invNotif_headerHTML(li)
+    +_invNotif_infoBarHTML(clientName)
+    +'<div style="display:flex;gap:10px;margin:12px 14px 0;align-items:flex-start">'
       // العمود الشمال (يسار الشاشة): البروفات — أخضر
       +'<div style="flex:1;min-width:0;border:1px solid #cfe8da;border-radius:12px;overflow:hidden">'
-      +'<div style="background:#168A58;color:#fff;padding:10px 14px;font-size:13px;font-weight:900;display:flex;align-items:center;gap:6px">🔬 البروفات ('+clientPf.length+')</div>'
-      +'<div style="padding:12px 14px;max-height:520px;overflow:hidden">'+_docGroupedListHTML(clientPf,false,c)+'</div>'
+      +_invNotif_colHeadHTML('#168A58','🔬','البروفات',clientPf.length)
+      +'<div style="padding:9px 11px;font-size:10.5px;max-height:520px;overflow:hidden">'+_docGroupedListHTML(clientPf,false,c)+'</div>'
       +'</div>'
-      // العمود اليمين: فاتورة مبيعات + الكروت — نافي
-      +'<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px">'
-      +'<div style="border:1px solid #cfd8e6;border-radius:12px;overflow:hidden">'
-      +'<div style="background:#0B2A55;color:#fff;padding:10px 14px;font-size:13px;font-weight:900">🧾 فاتورة مبيعات ('+unpaid.length+')</div>'
-      +'<div style="padding:12px 14px">'+_docGroupedListHTML(unpaid,true,c)+'</div>'
-      +'</div>'
-      +'<div style="background:#F8FAFC;border:1px solid #D9DEE7;border-radius:10px;padding:12px 14px;text-align:center">'
-      +'<div style="font-size:11px;color:#555">إجمالي فاتورة المبيعات</div>'
-      +'<div style="font-size:19px;font-weight:900;color:#0B2A55;margin-top:4px">'+fmt(invoiceTotal)+' '+c+'</div></div>'
-      +'<div style="background:#F8FAFC;border:1px solid #D9DEE7;border-radius:10px;padding:12px 14px;text-align:center">'
-      +'<div style="font-size:11px;color:#555">قيمة الفاتورة الحالية</div>'
-      +'<div style="font-size:19px;font-weight:900;color:#0B2A55;margin-top:4px">'+fmt(invoiceTotal)+' '+c+'</div></div>'
-      +'<div style="background:rgba(179,38,38,.06);border:1px solid rgba(179,38,38,.25);border-radius:10px;padding:12px 14px;text-align:center">'
-      +'<div style="font-size:11px;color:#555">إجمالي المديونية</div>'
-      +'<div style="font-size:19px;font-weight:900;color:#8C1D1D;margin-top:4px">'+fmt(grandDebt)+' '+c+'</div></div>'
-      +(clientDf.length?(
-      '<div style="background:#FBF3E1;border:1px solid #E1B85A;border-radius:10px;padding:12px 14px">'
-      +'<div style="font-size:11px;color:#9C7A2E;font-weight:800;margin-bottom:6px">📂 قيد التنفيذ</div>'
-      +clientDf.map(r=>'<div style="font-size:12px;color:#0B2A55;padding:2px 0">'+esc(r.product||'—')+' × '+(r.qty||0)+'  —  '+esc(r.noteName||r.caseId||'—')+'</div>').join('')
-      +'</div>'
-      ):'')
+      // العمود اليمين: فاتورة مبيعات — نافي
+      +'<div style="flex:1;min-width:0;border:1px solid #cfd8e6;border-radius:12px;overflow:hidden">'
+      +_invNotif_colHeadHTML('#0B2A55','🧾','فاتورة مبيعات',unpaid.length)
+      +'<div style="padding:9px 11px;font-size:10.5px">'+_docGroupedListHTML(unpaid,true,c)+'</div>'
       +'</div>'
     +'</div>'
-    +'<div style="margin:0 22px 18px;text-align:center;padding:10px;background:#FBF3E1;border-radius:10px;font-size:13px;font-weight:800;color:#9C7A2E">✨ شكراً لثقتكم ✨</div>'
-    +_invoiceFooterHTML(li)
+    +_invNotif_boxHTML('قيمة الفاتورة الحالية',fmt(invoiceTotal)+' '+c,'📄','#F8FAFC','#D9DEE7','#0B2A55')
+    +_invNotif_boxHTML('إجمالي المديونية',fmt(grandDebt)+' '+c,'📈','rgba(179,38,38,.06)','rgba(179,38,38,.25)','#8C1D1D')
+    +(clientDf.length?(
+      '<div style="margin:10px 14px 0;border-radius:12px;border:1px solid #E1B85A;background:#FBF3E1;padding:10px 15px">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">'
+      +'<span style="font-size:11px;font-weight:900;color:#9C7A2E">قيد التنفيذ</span><span style="font-size:17px">📂</span></div>'
+      +clientDf.map(r=>'<div style="font-size:10.5px;color:#0B2A55;font-weight:700;padding:2px 0;text-align:center">'+esc(r.product||'—')+' × '+(r.qty||0)+'  —  '+esc(r.noteName||r.caseId||'—')+'</div>').join('')
+      +'</div>'
+      ):'')
+    +'<div style="margin:14px 14px 0;text-align:center;padding:10px;background:#FBF3E1;border-top:1px solid #E1B85A;border-bottom:1px solid #E1B85A;font-size:12px;font-weight:900;color:#9C7A2E">✨ شكراً لثقتكم ✨</div>'
+    +'<div style="height:14px"></div>'
+    +_invNotif_footerHTML(li)
     +'</div>';
 }
 
