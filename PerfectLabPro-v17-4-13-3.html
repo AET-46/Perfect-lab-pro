@@ -4243,7 +4243,7 @@ body.theme-glass .ph h2{color:var(--blue2)}
   <div class="modal modal-md">
     <div class="mh" style="background:linear-gradient(135deg,#2d1a0a,#1a0f05)"><h3 style="color:#ffb74d">إشعار بروفه</h3><div class="mc-btn" onclick="closeOv('ov-proof-notif')">✕</div></div>
     <div class="mb" id="proof-notif-body"></div>
-    <div class="mf" id="proof-static-footer"><button class="btn btn-green" id="proof-wa-btn">💬 واتساب</button><button class="btn btn-ghost" id="proof-copy-btn">📋 نسخ</button><button class="btn btn-ghost" onclick="closeOv('ov-proof-notif')">إغلاق</button></div>
+    <div class="mf" id="proof-static-footer"><button class="btn btn-green" id="proof-wa-btn">💬 واتساب</button><button class="btn btn-ghost" id="proof-copy-btn">📋 نسخ</button><button class="btn btn-ghost" id="proof-image-btn">🖼️ صورة</button><button class="btn btn-ghost" onclick="closeOv('ov-proof-notif')">إغلاق</button></div>
   </div>
 </div>
 
@@ -13386,6 +13386,7 @@ function openProofNotifModal(clients){
         <div class="ncc-actions">
           <button class="btn btn-green btn-sm" id="pfwa-${i}">💬 واتساب</button>
           <button class="btn btn-ghost btn-sm" id="pfcp-${i}">📋 نسخ</button>
+          <button class="btn btn-ghost btn-sm" id="pfim-${i}">🖼️ صورة</button>
         </div>
       </div>
     </div>`;
@@ -13394,8 +13395,10 @@ function openProofNotifModal(clients){
   msgs.forEach((m,i)=>{
     const waBtn=document.getElementById(`pfwa-${i}`);
     const cpBtn=document.getElementById(`pfcp-${i}`);
+    const imBtn=document.getElementById(`pfim-${i}`);
     if(waBtn)waBtn.onclick=()=>wa(m.client.phone,m.msg,{client:m.client.name,type:'wa-proof',page:'البروفه'});
     if(cpBtn)cpBtn.onclick=()=>copyTxt(m.msg);
+    if(imBtn)imBtn.onclick=()=>shareProofNoticeImage(m.client.name,m.client.ids||null);
   });
   // Hide/show static footer based on single vs multi client
   const staticFoot=document.getElementById('proof-static-footer');
@@ -13404,9 +13407,11 @@ function openProofNotifModal(clients){
   if(msgs.length===1){
     const waBtn=document.getElementById('proof-wa-btn');
     const cpBtn=document.getElementById('proof-copy-btn');
+    const imBtn=document.getElementById('proof-image-btn');
     // FIX #NOTIFLOG-META: كان يستدعي wa() بدون meta فيُسجَّل الإشعار بدون اسم عميل ونوع
     if(waBtn)waBtn.onclick=()=>wa(msgs[0].client.phone,msgs[0].msg,{client:msgs[0].client.name,type:'wa-proof',page:'البروفه'});
     if(cpBtn)cpBtn.onclick=()=>copyTxt(msgs[0].msg);
+    if(imBtn)imBtn.onclick=()=>shareProofNoticeImage(msgs[0].client.name,msgs[0].client.ids||null);
   }
   openOv('ov-proof-notif');
 }
@@ -13462,6 +13467,7 @@ function openMultiInvNotifModal(clients){
         <div class="ncc-actions">
           <button class="btn btn-green btn-sm" id="ivwa-${i}">💬 واتساب</button>
           <button class="btn btn-ghost btn-sm" id="ivcp-${i}">📋 نسخ</button>
+          <button class="btn btn-ghost btn-sm" id="ivim-${i}">🖼️ صورة</button>
         </div>
       </div>
     </div>`;
@@ -13471,8 +13477,10 @@ function openMultiInvNotifModal(clients){
     const msg=buildInvoiceMsg(cl.name,0,{},cl.ids||null);
     const waBtn=document.getElementById(`ivwa-${i}`);
     const cpBtn=document.getElementById(`ivcp-${i}`);
+    const imBtn=document.getElementById(`ivim-${i}`);
     if(waBtn)waBtn.onclick=()=>wa(cl.phone,msg,{client:cl.name,type:'wa-inv',page:'الأرشيف'});
     if(cpBtn)cpBtn.onclick=()=>copyTxt(msg);
+    if(imBtn)imBtn.onclick=()=>shareInvoiceNoticeImage(cl.name,cl.ids||null);
   });
   document.getElementById('inv-wa-btn').style.display='none';
   document.getElementById('inv-copy-btn').style.display='none';
