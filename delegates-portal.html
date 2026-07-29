@@ -256,6 +256,41 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
 /* GEO BUTTON */
 .geo-btn{width:100%;background:var(--bg3);border:1px dashed var(--border);border-radius:8px;padding:10px;color:var(--teal);font-size:14px;font-family:inherit;cursor:pointer;text-align:center;margin-bottom:12px}
 .geo-ok{border-color:var(--green)!important;color:var(--green)!important}
+
+/* ═══ ANALYTICS SIDE PANEL — لوحة تحليل جانبية (منفصلة عن قائمة التسليمات) ═══ */
+.analytics-fab{position:fixed;top:132px;left:12px;z-index:150;width:46px;height:46px;border-radius:50%;background:var(--grad);color:var(--ontext);border:none;box-shadow:0 6px 18px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;font-size:19px;cursor:pointer;transition:transform .15s}
+.analytics-fab:active{transform:scale(.92)}
+.analytics-fab.hidden{display:none}
+.analytics-fab-badge{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:10px;font-weight:900;min-width:16px;height:16px;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:0 3px}
+.analytics-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:199;opacity:0;pointer-events:none;transition:opacity .25s}
+.analytics-overlay.show{opacity:1;pointer-events:auto}
+.analytics-drawer{position:fixed;top:0;bottom:0;left:0;width:min(320px,86vw);background:var(--bg2);z-index:200;border-right:1px solid var(--border);box-shadow:8px 0 30px rgba(0,0,0,.4);transform:translateX(-100%);transition:transform .28s cubic-bezier(.22,1,.36,1);display:flex;flex-direction:column}
+.analytics-drawer.show{transform:translateX(0)}
+.analytics-drawer-head{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 12px;border-bottom:1px solid var(--border)}
+.analytics-drawer-head h3{font-size:16px;font-weight:900;color:var(--gold2)}
+.analytics-drawer-close{background:var(--bg3);border:1px solid var(--border);color:var(--text3);width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.analytics-drawer-body{overflow-y:auto;padding:12px 14px 24px;flex:1}
+.an-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:11px 12px;margin-bottom:10px}
+.an-card-name{font-size:14px;font-weight:900;margin-bottom:8px}
+.an-row{margin-bottom:8px}
+.an-row:last-child{margin-bottom:0}
+.an-row-lbl{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--text3);margin-bottom:4px;font-weight:700}
+.an-trend{font-size:11px;font-weight:900;padding:1px 7px;border-radius:20px}
+.an-trend.up{background:rgba(46,204,113,.15);color:var(--green)}
+.an-trend.down{background:rgba(255,68,89,.15);color:var(--red)}
+.an-trend.flat{background:rgba(154,154,154,.15);color:var(--text3)}
+.an-bars{display:flex;flex-direction:column;gap:3px}
+.an-bar-track{position:relative;height:14px;background:var(--bg4);border-radius:7px;overflow:hidden;display:flex;align-items:center}
+.an-bar-fill{height:100%;border-radius:7px;transition:width .4s}
+.an-bar-fill.cur{background:var(--grad)}
+.an-bar-fill.prev{background:var(--text3);opacity:.55}
+.an-bar-val{position:absolute;left:8px;font-size:10.5px;font-weight:800;color:var(--text)}
+.an-tip{font-size:12px;color:var(--text2);margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);line-height:1.5}
+.an-empty{text-align:center;color:var(--text3);font-size:13px;padding:30px 10px}
+.an-summary{display:flex;gap:8px;padding:12px 14px 4px}
+.an-sum-box{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:9px 8px;text-align:center}
+.an-sum-box .n{font-size:18px;font-weight:900;color:var(--gold2)}
+.an-sum-box .l{font-size:10.5px;color:var(--text3);margin-top:2px;font-weight:700}
 </style>
 </head>
 <body>
@@ -316,6 +351,20 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
 <div class="content" id="main-content" style="display:none">
   <div class="spinner" id="loading-spinner"></div>
   <div id="tab-content"></div>
+</div>
+
+<!-- 📊 ANALYTICS SIDE PANEL — زرار عائم + درج جانبي، منفصل تمامًا عن قائمة التسليمات -->
+<button class="analytics-fab hidden" id="analytics-fab" onclick="openAnalyticsDrawer()" title="تحليل الأداء">
+  📊<span class="analytics-fab-badge hidden" id="analytics-fab-badge"></span>
+</button>
+<div class="analytics-overlay" id="analytics-overlay" onclick="closeAnalyticsDrawer()"></div>
+<div class="analytics-drawer" id="analytics-drawer">
+  <div class="analytics-drawer-head">
+    <h3>📊 تحليل الأداء</h3>
+    <button class="analytics-drawer-close" onclick="closeAnalyticsDrawer()">✕</button>
+  </div>
+  <div class="an-summary" id="analytics-summary"></div>
+  <div class="analytics-drawer-body" id="analytics-drawer-body"></div>
 </div>
 
 <!-- TOAST -->
@@ -671,6 +720,10 @@ function switchTab(tab,el){
   document.getElementById('search-clear-btn')?.classList.remove('show');
   const searchable=(tab==='clients'||tab==='cases'||tab==='deliveries'||tab==='visits');
   document.getElementById('search-wrap').style.display=searchable?'block':'none';
+  if(tab!=='deliveries'){
+    document.getElementById('analytics-fab')?.classList.add('hidden');
+    closeAnalyticsDrawer();
+  }
   loadTab(tab);
 }
 
@@ -1396,39 +1449,99 @@ async function decideNeglectAlert(clientId,decision){
 }
 
 // ═══════════════════════════════════════
-// 📊 لوحة تحليلات سريعة — سحب/تسليم كل عميل أسبوعيًا + نصايح بسيطة للمندوب.
+// 📊 لوحة تحليل الأداء — تسليم كل عميل أسبوعيًا وشهريًا جنب بعض للمقارنة.
 // المصدر هنا delegateHandoverLog بس (توثيقي)، من غير أي حساب رسمي أو لمس لأي بيانات
-// حقيقية — مجرد ملخص بصري يساعد المندوب يحدد مين يزوره الأسبوع ده.
+// حقيقية — دلوقتي جوه درج جانبي منفصل تمامًا عن قائمة التسليمات (مش فوقها).
 // ═══════════════════════════════════════
-function renderWeeklyAnalyticsHtml(){
-  const now=Date.now(),oneWeek=7*86400000;
+function computeClientAnalytics(){
+  const now=Date.now(),oneDay=86400000,oneWeek=7*oneDay,oneMonth=30*oneDay;
   const thisWeekStart=now-oneWeek,lastWeekStart=now-2*oneWeek;
+  const thisMonthStart=now-oneMonth,lastMonthStart=now-2*oneMonth;
   const delivered=_deliveryLog.filter(h=>h.handoverStatus==='delivered');
   const byClient={};
   delivered.forEach(h=>{
     const key=h.clientId||h.client||'—';
-    if(!byClient[key])byClient[key]={name:h.client||'-',thisWeek:0,lastWeek:0};
-    if(h.createdAt>=thisWeekStart)byClient[key].thisWeek++;
-    else if(h.createdAt>=lastWeekStart&&h.createdAt<thisWeekStart)byClient[key].lastWeek++;
+    if(!byClient[key])byClient[key]={name:h.client||'-',thisWeek:0,lastWeek:0,thisMonth:0,lastMonth:0};
+    const t=h.createdAt||0;
+    if(t>=thisWeekStart)byClient[key].thisWeek++;
+    else if(t>=lastWeekStart&&t<thisWeekStart)byClient[key].lastWeek++;
+    if(t>=thisMonthStart)byClient[key].thisMonth++;
+    else if(t>=lastMonthStart&&t<thisMonthStart)byClient[key].lastMonth++;
   });
-  const rows=Object.values(byClient).filter(x=>x.thisWeek||x.lastWeek).sort((a,b)=>b.thisWeek-a.thisWeek);
-  if(!rows.length)return '';
-  const tips=rows.map(r=>{
+  return Object.values(byClient)
+    .filter(x=>x.thisWeek||x.lastWeek||x.thisMonth||x.lastMonth)
+    .sort((a,b)=>(b.thisMonth-a.thisMonth)||(b.thisWeek-a.thisWeek));
+}
+function _anTrendBadge(cur,prev){
+  if(cur===0&&prev>0)return `<span class="an-trend down">▼ متوقف</span>`;
+  if(cur>prev)return `<span class="an-trend up">▲ ${prev?Math.round(((cur-prev)/prev)*100):100}%</span>`;
+  if(cur<prev)return `<span class="an-trend down">▼ ${Math.round(((prev-cur)/prev)*100)}%</span>`;
+  return `<span class="an-trend flat">➖ ثابت</span>`;
+}
+function _anBarRow(lbl,cur,prev){
+  const max=Math.max(cur,prev,1);
+  return `<div class="an-row">
+    <div class="an-row-lbl"><span>${lbl}</span>${_anTrendBadge(cur,prev)}</div>
+    <div class="an-bars">
+      <div class="an-bar-track"><div class="an-bar-fill cur" style="width:${Math.max((cur/max)*100,cur?6:0)}%"></div><span class="an-bar-val">${cur}</span></div>
+      <div class="an-bar-track"><div class="an-bar-fill prev" style="width:${Math.max((prev/max)*100,prev?6:0)}%"></div><span class="an-bar-val">${prev}</span></div>
+    </div>
+  </div>`;
+}
+function renderAnalyticsDrawer(){
+  const rows=computeClientAnalytics();
+  const summaryEl=document.getElementById('analytics-summary');
+  const bodyEl=document.getElementById('analytics-drawer-body');
+  const fab=document.getElementById('analytics-fab');
+  const badge=document.getElementById('analytics-fab-badge');
+  if(!summaryEl||!bodyEl)return;
+  if(!rows.length){
+    summaryEl.innerHTML='';
+    bodyEl.innerHTML=`<div class="an-empty">📊 لسه مفيش بيانات تسليم كفاية لعرض تحليل</div>`;
+    if(badge)badge.classList.add('hidden');
+    return;
+  }
+  const weekTotal=rows.reduce((s,r)=>s+r.thisWeek,0);
+  const monthTotal=rows.reduce((s,r)=>s+r.thisMonth,0);
+  const dropping=rows.filter(r=>r.thisWeek<r.lastWeek).length;
+  summaryEl.innerHTML=`
+    <div class="an-sum-box"><div class="n">${weekTotal}</div><div class="l">تسليم / أسبوع</div></div>
+    <div class="an-sum-box"><div class="n">${monthTotal}</div><div class="l">تسليم / شهر</div></div>
+    <div class="an-sum-box"><div class="n">${dropping}</div><div class="l">في نقصان</div></div>`;
+  bodyEl.innerHTML=rows.map(r=>{
     let tip;
     if(r.thisWeek===0&&r.lastWeek>0)tip=`📉 مفيش تسليم لـ<strong>${esc(r.name)}</strong> الأسبوع ده بعد ${r.lastWeek} الأسبوع اللي فات — يستاهل تواصل`;
-    else if(r.thisWeek>r.lastWeek)tip=`📈 نشاط <strong>${esc(r.name)}</strong> في زيادة (${r.thisWeek} مقابل ${r.lastWeek} الأسبوع اللي فات)`;
-    else if(r.thisWeek<r.lastWeek)tip=`📉 نشاط <strong>${esc(r.name)}</strong> في نقصان (${r.thisWeek} مقابل ${r.lastWeek} الأسبوع اللي فات) — تابع السبب`;
-    else tip=`➖ <strong>${esc(r.name)}</strong> مستقر (${r.thisWeek} الأسبوع ده)`;
-    return `<div style="font-size:12.5px;padding:6px 2px;border-bottom:1px solid var(--border)">${tip}</div>`;
+    else if(r.thisWeek>r.lastWeek)tip=`📈 نشاط <strong>${esc(r.name)}</strong> في زيادة أسبوعيًا`;
+    else if(r.thisWeek<r.lastWeek)tip=`📉 نشاط <strong>${esc(r.name)}</strong> في نقصان أسبوعيًا — تابع السبب`;
+    else tip=`➖ <strong>${esc(r.name)}</strong> مستقر أسبوعيًا`;
+    return `<div class="an-card">
+      <div class="an-card-name">${esc(r.name)}</div>
+      ${_anBarRow('📅 أسبوع (الحالي / السابق)',r.thisWeek,r.lastWeek)}
+      ${_anBarRow('🗓️ شهر (الحالي / السابق)',r.thisMonth,r.lastMonth)}
+      <div class="an-tip">${tip}</div>
+    </div>`;
   }).join('');
-  return `<div class="client-group" style="margin-bottom:12px">
-    <div class="client-group-head"><div class="client-group-name">📊 تحليلات الأسبوع</div></div>
-    <div style="padding:4px 2px">${tips}</div>
-  </div>`;
+  if(badge){
+    if(dropping>0){badge.textContent=dropping;badge.classList.remove('hidden');}
+    else badge.classList.add('hidden');
+  }
+}
+function openAnalyticsDrawer(){
+  renderAnalyticsDrawer();
+  document.getElementById('analytics-drawer')?.classList.add('show');
+  document.getElementById('analytics-overlay')?.classList.add('show');
+}
+function closeAnalyticsDrawer(){
+  document.getElementById('analytics-drawer')?.classList.remove('show');
+  document.getElementById('analytics-overlay')?.classList.remove('show');
 }
 
 function renderDeliveries(){
   const c=document.getElementById('tab-content');
+  // 📊 التحليل بقى في درج جانبي منفصل (زرار عائم) بدل ما يكون فوق قائمة التسليمات —
+  // هنا بس بنظهر الزرار ونحدّث بياناته في الخلفية.
+  document.getElementById('analytics-fab')?.classList.remove('hidden');
+  renderAnalyticsDrawer();
   // بروفه: حالات موجودة فعلاً في بروفة السيستم الكبير دلوقتي ولسه المندوب ما أكّدش تسليمها.
   // بنستبعد بس الأرصدة القديمة الساكنة من قبل تحديث ٢٩ يوليو (PROOF_BACKLOG_CUTOFF) —
   // أي نقل جديد دفتر→بروفة بعد كده بيظهر فورًا مهما كان تاريخه.
@@ -1455,16 +1568,15 @@ function renderDeliveries(){
     `</div>`:'';
 
   const neglectAlertsHtml=renderNeglectAlertsHtml();
-  const weeklyAnalyticsHtml=renderWeeklyAnalyticsHtml();
 
   if(!source.length){
     c.innerHTML=`<button class="btn btn-teal btn-sm btn-block" style="margin-bottom:12px" onclick="sendDailyReportToAdmin()">${_reportBtnLabel()}</button>`+
-      neglectAlertsHtml+weeklyAnalyticsHtml+
+      neglectAlertsHtml+
       quickClientsHtml+
       `<div class="empty"><div class="empty-icon">🚚</div><p>مفيش حالات جاهزة للتسليم دلوقتي</p></div>`;return;
   }
   if(!pending.length){
-    c.innerHTML=neglectAlertsHtml+weeklyAnalyticsHtml+quickClientsHtml+`<div class="empty"><div class="empty-icon">🔍</div><p>لا توجد نتائج مطابقة للبحث</p></div>`;return;
+    c.innerHTML=neglectAlertsHtml+quickClientsHtml+`<div class="empty"><div class="empty-icon">🔍</div><p>لا توجد نتائج مطابقة للبحث</p></div>`;return;
   }
 
   // تجميع الحالات المعلّقة تحت اسم العميل (أو clientId لو متوفر) — عشان عميل عنده أكتر من
@@ -1523,7 +1635,7 @@ function renderDeliveries(){
   }).join('');
 
   c.innerHTML=`<button class="btn btn-teal btn-sm btn-block" style="margin-bottom:12px" onclick="sendDailyReportToAdmin()">${_reportBtnLabel()}</button>`+
-    neglectAlertsHtml+weeklyAnalyticsHtml+
+    neglectAlertsHtml+
     quickClientsHtml+
     `<div style="font-size:14px;color:var(--text3);margin-bottom:10px">${pending.length} حالة جاهزة للتسليم لـ${groupKeys.length} عميل (بروفه: ${proofItems.length} · نهائي: ${finalItems.length})</div>`+
     groupsHtml;
@@ -1957,7 +2069,10 @@ function renderVisits(){
   if(pFiltered.length){
     c.innerHTML+=`<div style="font-size:13px;font-weight:700;color:var(--gold2);margin-bottom:8px">👨‍⚕️ سجّل متابعة سريعة</div>`;
     c.innerHTML+=`<div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:6px;scrollbar-width:none">`+
-      pFiltered.map(p=>`<button class="btn btn-ghost btn-sm" style="flex:none" onclick="openVisitModal(${esc(p.id)})">${esc(p.doctor)}</button>`).join('')+
+      pFiltered.map(p=>`<div style="flex:none;display:flex;gap:4px">
+        <button class="btn btn-ghost btn-sm" style="flex:none" onclick="openVisitModal(${esc(p.id)})">${esc(p.doctor)}</button>
+        <button class="btn btn-sm" style="flex:none;background:var(--green);color:#fff;border:none" title="تسجيل تعاقد سريع لـ ${esc(p.doctor)}" onclick="openVisitModal(${esc(p.id)},'contracted')">🤝</button>
+      </div>`).join('')+
     `</div>`;
   }
 
@@ -2270,13 +2385,13 @@ async function submitNewProspect(){
 // ═══════════════════════════════════════
 // VISIT MODAL — تسجيل زيارة لعميل محتمل
 // ═══════════════════════════════════════
-function openVisitModal(prospectId){
+function openVisitModal(prospectId,presetResult){
   const sel=document.getElementById('vm-prospect');
   sel.innerHTML='<option value="">-- اختر --</option>'+
     _myProspects.map(p=>`<option value="${esc(p.id)}">${esc(p.center)} — ${esc(p.doctor)}</option>`).join('');
   sel.value=prospectId||'';
   document.getElementById('vm-notes').value='';
-  document.getElementById('vm-result').value='';
+  document.getElementById('vm-result').value=presetResult||'';
   document.getElementById('vm-date').value=shiftToday();
   onVisitProspectChange();
   onVisitResultChange();
