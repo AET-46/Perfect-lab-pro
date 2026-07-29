@@ -178,6 +178,25 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
 .deliv-badge.delivered{background:rgba(34,197,94,.15);color:var(--green)}
 .deliv-badge.returned{background:rgba(239,68,68,.15);color:var(--red)}
 
+/* FEAT #GROUP-DELIVERIES: تجميع تسليمات نفس العميل تحت كارت واحد بدل كارت لكل فاتورة */
+.client-group{background:color-mix(in srgb, var(--bg2) 90%, transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;overflow:hidden;box-shadow:var(--gloss, 0 4px 18px rgba(0,0,0,.18))}
+.client-group-head{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;background:rgba(255,255,255,.03);border-bottom:1px solid var(--border)}
+.client-group-name{font-size:16px;font-weight:900;color:var(--text)}
+.client-group-count{font-size:12px;color:var(--text3)}
+.dg-row{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border)}
+.dg-row:last-child{border-bottom:none}
+.dg-row input[type="checkbox"]{width:20px;height:20px;flex:none;margin-top:2px;accent-color:var(--gold)}
+.client-group-actions{display:flex;gap:8px;padding:10px 14px}
+.client-group-actions .btn{flex:1}
+/* أقسام النافذة الموحّدة (تسليم + تحصيل + حالات جديدة) — فصل بصري واضح بين كل قسم عشان بياناتهم متتلغبطش */
+.batch-section{border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:12px}
+.batch-section-title{font-weight:800;font-size:13.5px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.batch-section-list{max-height:160px;overflow-y:auto}
+.batch-section-item{font-size:12.5px;color:var(--text2);padding:4px 0;border-bottom:1px dashed var(--border)}
+.batch-section-item:last-child{border-bottom:none}
+
+.hidden{display:none !important}
+
 /* EMPTY */
 .empty{text-align:center;padding:40px 20px;color:var(--text3)}
 .empty-icon{font-size:38px;margin-bottom:10px}
@@ -185,6 +204,7 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
 /* SPINNER */
 .spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;margin:30px auto}
 @keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
 /* TOAST */
 #toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--bg3);color:var(--text);padding:10px 20px;border-radius:20px;font-size:15px;z-index:9999;opacity:0;transition:.3s;pointer-events:none;border:1px solid var(--border)}
@@ -211,6 +231,12 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
 .modal-box[data-kind="manual"]{border-top-color:var(--teal)}
 .modal-box[data-kind="manual"] h3{color:var(--teal)}
 .modal-box[data-kind="manual"] #cm-ok{background:var(--teal);color:#fff}
+.modal-box[data-kind="proofreturn"]{border-top-color:var(--orange)}
+.modal-box[data-kind="proofreturn"] h3{color:var(--orange)}
+.modal-box[data-kind="proofreturn"] #cm-ok{background:var(--orange);color:#fff}
+.pr-result-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;cursor:pointer;background:var(--bg3)}
+.pr-result-row:active{background:var(--bg4)}
+.pr-result-row.selected{border-color:var(--orange);background:rgba(249,115,22,.1)}
 
 /* DEBT BADGE */
 .debt-badge{font-size:13px;padding:3px 8px;border-radius:20px;font-weight:700}
@@ -336,13 +362,31 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
     </div>
     <div class="form-group">
       <label>نتيجة الزيارة *</label>
-      <select id="vm-result">
+      <select id="vm-result" onchange="onVisitResultChange()">
         <option value="">-- اختر --</option>
         <option value="interested">✅ مهتم</option>
         <option value="not_interested">❌ غير مهتم</option>
         <option value="follow">🔄 متابعة</option>
         <option value="contracted">🤝 تم التعاقد</option>
       </select>
+    </div>
+    <!-- FEAT #ACTIVATE-ON-CONTRACT: تظهر بس لما النتيجة "تم التعاقد" ولسه فيه بيانات أساسية
+         ناقصة — لازم تتملى كلها هنا قبل الحفظ، عشان بلاغ التفعيل اللي هيوصل للسيستم
+         الكبير يبقى جاهز بكل بياناته من غير ما موظف المراجعة يستنى المندوب. -->
+    <div id="vm-activate-box" class="hidden" style="border:1.5px solid var(--gold);border-radius:10px;padding:10px 12px;margin-bottom:12px;background:rgba(255,255,255,.03)">
+      <div style="font-weight:900;color:var(--gold2);margin-bottom:8px">🆕 استكمال بيانات العميل الأساسية (مطلوبة قبل طلب التفعيل)</div>
+      <div class="form-group" style="margin-bottom:8px"><label>رقم الهاتف *</label><input type="tel" id="vm-act-phone" placeholder="01xxxxxxxxx"></div>
+      <div class="form-group" style="margin-bottom:8px"><label>واتساب *</label><input type="tel" id="vm-act-whatsapp" placeholder="01xxxxxxxxx"></div>
+      <div class="form-group" style="margin-bottom:8px"><label>المحافظة *</label>
+        <select id="vm-act-gov" onchange="onVmActGovChange()">
+          <option value="">-- اختر المحافظة --</option>
+          ${EGY_GOVS.map(g=>`<option value="${esc(g)}">${esc(g)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:8px"><label>المدينة / المنطقة *</label>
+        <select id="vm-act-city"><option value="">-- اختر المحافظة أولاً --</option></select>
+      </div>
+      <div class="form-group" style="margin-bottom:0"><label>العنوان بالتفصيل *</label><input type="text" id="vm-act-address" placeholder="اسم الشارع / علامة مميزة"></div>
     </div>
     <div class="form-group">
       <label>ملاحظات</label>
@@ -378,7 +422,7 @@ const FB_CONFIG={
 // ═══════════════════════════════════════
 let _db=null,_user=null,_curTab='clients';
 let _searchQuery='';
-let _myClients=[],_dafter=[],_proof=[],_archive=[],_myVisits=[],_myProspects=[],_treasury=[],_mySettlements=[],_myDelegateClientMap={},_deliveryLog=[];
+let _myClients=[],_dafter=[],_proof=[],_archive=[],_myVisits=[],_myProspects=[],_treasury=[],_mySettlements=[],_myDelegateClientMap={},_deliveryLog=[],_lateReasons=[],_neglectAlerts=[];
 
 // ═══════════════════════════════════════
 // 🔌 FIREBASE — اتصال حقيقي بنفس قاعدة بيانات السيستم الكبير
@@ -593,6 +637,28 @@ function showApp(){
   document.getElementById('hd-avatar').textContent=(_user.name||'م')[0];
   document.getElementById('search-wrap').style.display='block';
   loadTab('clients');
+  _startAutoRefresh();
+}
+
+// ═══════════════════════════════════════
+// تحديث تلقائي دوري (كل 45 ثانية): بيعيد تحميل بيانات التاب الحالي من
+// Firebase من غير ما يوقف المستخدم أو يفضح Spinner — عشان أي حالة اتنقلت
+// للبروفه/الأرشيف من السيستم الكبير تظهر هنا من غير ما المندوب يحتاج يقفل
+// التاب ويفتحه تاني أو يعمل Reload كامل للصفحة.
+let _autoRefreshTimer=null;
+function _startAutoRefresh(){
+  if(_autoRefreshTimer)return;
+  _autoRefreshTimer=setInterval(()=>{
+    if(document.hidden)return; // متبقاش تسحب بيانات وهي مقفولة في تاب تاني
+    if(!_user)return;
+    _silentReloadTab(_curTab);
+  },45000);
+}
+async function _silentReloadTab(tab){
+  try{
+    await _loadSharedData();
+    rerenderCurrentTab();
+  }catch(e){console.warn('Auto-refresh error:',e);}
 }
 
 function switchTab(tab,el){
@@ -659,44 +725,54 @@ function matchesDateRange(dateStr){
   return true;
 }
 
+// تحميل البيانات المشتركة من data/shared الحقيقي — مستخدمة في التحميل العادي
+// للتاب (loadTab) وكمان في التحديث التلقائي الصامت (_silentReloadTab) عشان
+// المنطق يفضل مكان واحد بس ومايحصلش تعارض بين النسختين.
+async function _loadSharedData(){
+  const [clients,dafter,proof,archive,prospects,prospectVisits,delegates,treasury,settlements,handoverLog,lateReasons,neglectAlerts]=await Promise.all([
+    fbGet('data/shared/clients'),
+    fbGet('data/shared/dafter'),
+    fbGet('data/shared/proof'),
+    fbGet('data/shared/archive'),
+    fbGet('data/shared/prospects'),
+    fbGet('data/shared/prospect_visits'),
+    fbGet('data/shared/delegates'),
+    fbGet('data/shared/treasury'),
+    fbGet('data/shared/settlements'),
+    fbGet('data/shared/delegateHandoverLog'), // ⚠️ مسار منفصل تمامًا ومعزول عن دفتر/بروفة/أرشيف السيستم الكبير — قراءة فقط، لسجل تأكيدات المندوب
+    fbGet('data/shared/delegateLateReasons'), // ⚠️ معزول برضه — أسباب تأخير التسليم بعد مهلة الـ 10 ساعات، توثيقي بس
+    fbGet('data/shared/delegateClientNeglectAlerts') // ⚠️ معزول برضه — قرارات المندوب على تنبيهات العملاء المهملين، بلاغ توثيقي يشوفه المدير بس
+  ]);
+  _myClients=toArr(clients).filter(c=>_belongsToDelegate(c));
+  _dafter=toArr(dafter).filter(r=>_belongsToDelegate(r));
+  _proof=toArr(proof).filter(r=>_belongsToDelegate(r));
+  _archive=toArr(archive).filter(r=>_belongsToDelegate(r));
+  _deliveryLog=toArr(handoverLog).filter(r=>_belongsToDelegate(r));
+  _lateReasons=toArr(lateReasons).filter(r=>_belongsToDelegate(r));
+  _neglectAlerts=toArr(neglectAlerts).filter(r=>_belongsToDelegate(r));
+  _myProspects=toArr(prospects).filter(p=>_belongsToDelegate(p)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  _myVisits=toArr(prospectVisits).filter(v=>_belongsToDelegate(v)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  // كارت حساب العميل: نحمّل فقط حركات الخزنة والتسويات الخاصة بعملاء هذا المندوب (خصوصية)
+  {
+    const myClientIds=new Set(_myClients.map(cl=>cl.id));
+    const myClientNames=new Set(_myClients.map(cl=>cl.name));
+    const belongsToMe=x=>(x.clientId&&myClientIds.has(x.clientId))||(!x.clientId&&myClientNames.has(x.accName));
+    _treasury=toArr(treasury).filter(belongsToMe);
+    _mySettlements=toArr(settlements).filter(belongsToMe);
+  }
+  // نسب العمولة المخصصة لكل عميل — متسجّلة جوه سجل المندوب نفسه (data/shared/delegates → clients[])
+  // زي صفحة "ربط العملاء بالمناديب" بالسيستم الكبير بالظبط
+  const myDel=toArr(delegates).find(d=>d.name===_user.name||d.id===_user.id);
+  _myDelegateClientMap={};
+  (myDel&&myDel.clients||[]).forEach(cc=>{if(cc&&cc.clientId)_myDelegateClientMap[cc.clientId]=cc;});
+}
+
 async function loadTab(tab){
   const content=document.getElementById('tab-content');
   const spinner=document.getElementById('loading-spinner');
   content.innerHTML='';spinner.style.display='block';
   try{
-    // تحميل البيانات المشتركة من data/shared الحقيقي
-    const [clients,dafter,proof,archive,prospects,prospectVisits,delegates,treasury,settlements,handoverLog]=await Promise.all([
-      fbGet('data/shared/clients'),
-      fbGet('data/shared/dafter'),
-      fbGet('data/shared/proof'),
-      fbGet('data/shared/archive'),
-      fbGet('data/shared/prospects'),
-      fbGet('data/shared/prospect_visits'),
-      fbGet('data/shared/delegates'),
-      fbGet('data/shared/treasury'),
-      fbGet('data/shared/settlements'),
-      fbGet('data/shared/delegateHandoverLog') // ⚠️ مسار منفصل تمامًا ومعزول عن دفتر/بروفة/أرشيف السيستم الكبير — قراءة فقط، لسجل تأكيدات المندوب
-    ]);
-    _myClients=toArr(clients).filter(c=>_belongsToDelegate(c));
-    _dafter=toArr(dafter).filter(r=>_belongsToDelegate(r));
-    _proof=toArr(proof).filter(r=>_belongsToDelegate(r));
-    _archive=toArr(archive).filter(r=>_belongsToDelegate(r));
-    _deliveryLog=toArr(handoverLog).filter(r=>_belongsToDelegate(r));
-    _myProspects=toArr(prospects).filter(p=>_belongsToDelegate(p)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-    _myVisits=toArr(prospectVisits).filter(v=>_belongsToDelegate(v)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-    // كارت حساب العميل: نحمّل فقط حركات الخزنة والتسويات الخاصة بعملاء هذا المندوب (خصوصية)
-    {
-      const myClientIds=new Set(_myClients.map(cl=>cl.id));
-      const myClientNames=new Set(_myClients.map(cl=>cl.name));
-      const belongsToMe=x=>(x.clientId&&myClientIds.has(x.clientId))||(!x.clientId&&myClientNames.has(x.accName));
-      _treasury=toArr(treasury).filter(belongsToMe);
-      _mySettlements=toArr(settlements).filter(belongsToMe);
-    }
-    // نسب العمولة المخصصة لكل عميل — متسجّلة جوه سجل المندوب نفسه (data/shared/delegates → clients[])
-    // زي صفحة "ربط العملاء بالمناديب" بالسيستم الكبير بالظبط
-    const myDel=toArr(delegates).find(d=>d.name===_user.name||d.id===_user.id);
-    _myDelegateClientMap={};
-    (myDel&&myDel.clients||[]).forEach(cc=>{if(cc&&cc.clientId)_myDelegateClientMap[cc.clientId]=cc;});
+    await _loadSharedData();
     spinner.style.display='none';
     if(tab==='clients')renderClients();
     else if(tab==='cases')renderCases();
@@ -1183,24 +1259,189 @@ function isHandoverConfirmed(sourceId){
   return _deliveryLog.some(h=>h.sourceId===sourceId);
 }
 
-// ⚠️ تصفير صفحة التسليمات (٢٠٢٦-٠٧-٢٢): أي حالة بروفة أو أرشيف اتسجّلت قبل التاريخ ده
-// معتبرة "قديمة من قبل الميزة" ومش هتظهر في التسليمات المعلّقة تاني، حتى لو محدّش أكّد
-// تسليمها فعليًا. الحالات الجديدة اللي بتتسجّل من بعد التاريخ ده هتفضل تشتغل عادي وتظهر
-// لحد ما المندوب يأكّد تسليمها. ده تصفير لمرة واحدة بس — مش محتاج نلمسه تاني.
-const DELIVERY_RESET_CUTOFF=new Date('2026-07-22T00:00:00').getTime();
+// ⚠️ تحديث منطق التسليمات (٢٠٢٦-٠٧-٢٩): من دلوقتي، أي نقل جديد (دفتر→بروفة أو
+// بروفة→أرشيف) بيولّد بند تسليم جديد في القائمة دي، من غير أي شرط تاريخ على
+// الإطلاق — المعيار الوحيد هو عدم وجود تأكيد تسليم (isHandoverConfirmed). الاستثناء
+// الوحيد: حالات البروفة أو الأرشيف اللي كانت موجودة وساكنة في السيستم الكبير *قبل*
+// التحديث ده (يعني قبل الـ Cutoff بتاعها) بيتم تجاهلها، لأنها أصلًا اتسلّمت بالفعل
+// للعميل من زمان (خصوصًا الأرشيف) ومفيش داعي المندوب يأكّدها تاني — لكن أي نقل جديد
+// (دفتر→بروفة أو بروفة→أرشيف) بعد الـ Cutoff بيظهر فورًا زي أي بند جديد، مفيش استثناء
+// على أي نقل مستقبلي خالص، سواء للبروفة أو للأرشيف.
+const PROOF_BACKLOG_CUTOFF=new Date('2026-07-29T00:00:00').getTime();
+// تعديل ٢٠٢٦-٠٧-٢٩ (مرحلة ٢): نفس فكرة PROOF_BACKLOG_CUTOFF بالظبط، لكن للأرشيف —
+// أي حالة أرشيف موجودة فعلاً *قبل* اللحظة دي متتحطش في تسليماتي (لأنها بالفعل بقت
+// مسلَّمة للعميل من قبل التعديل)، وأي حالة تتنقل للأرشيف *بعد* اللحظة دي (سواء جاية
+// من بروفة أو من دفتر مباشر) تظهر فورًا زي أي بند جديد.
+const ARCHIVE_BACKLOG_CUTOFF=new Date('2026-07-29T09:30:00').getTime();
+// مهلة التسليم: 10 ساعات من لحظة دخول البند للقائمة (movedAt للبروفة، archivedAt
+// للنهائي). بعد ما تعدّي المهلة من غير تأكيد ولا سبب مسجّل، بيظهر تنبيه + اهتزاز
+// لحد ما المندوب يكتب سبب التأخير (تسجيل توثيقي بس، مش بيوقف التسليم الفعلي).
+const LATE_SLA_HOURS=10;
+
+// سجل أسباب التأخير — معزول تمامًا زي delegateHandoverLog، مفتاحه المركّب
+// sourceId+delivType عشان لو نفس الحالة اتأخرت في مرحلة البروفة وبعدين في مرحلة
+// النهائي كمان، كل مرحلة تتسجّل لوحدها.
+function lateReasonKey(sourceId,delivType){return sourceId+'::'+delivType;}
+function findLateReason(sourceId,delivType){
+  const k=lateReasonKey(sourceId,delivType);
+  return _lateReasons.find(x=>lateReasonKey(x.sourceId,x.deliveryType)===k)||null;
+}
+function submitLateReasonFor(groupKey,sourceId){
+  const grp=_pendingGroups[groupKey];
+  const r=grp&&grp.items.find(x=>String(x.id)===String(sourceId));
+  if(!r)return;
+  submitLateReason(r.id,r.delivType,r);
+}
+async function submitLateReason(sourceId,delivType,r){
+  const extraHtml=`<textarea id="late-reason-txt" rows="3" style="width:100%;margin-top:8px;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-family:inherit;font-size:14px" placeholder="اكتب سبب تأخير التسليم..."></textarea>`;
+  showModal('⏰ سبب تأخير التسليم',`الحالة #${r.caseId||'-'} (${r.noteName||r.client||'-'}) اتأخرت أكتر من ${LATE_SLA_HOURS} ساعات من غير تسليم. اكتب السبب:`,async()=>{
+    const txt=document.getElementById('late-reason-txt')?.value.trim();
+    if(!txt){toast('لازم تكتب سبب التأخير','err');throw new Error('empty reason');}
+    const entry={
+      sourceId,deliveryType:delivType,caseId:r.caseId||'-',client:r.client||'-',noteName:r.noteName||'',
+      delegateId:_user.id||_user.delegateId||null,delegate:_user.name||'-',
+      reason:txt,reportedAt:Date.now()
+    };
+    entry.id=await fbPush('data/shared/delegateLateReasons',entry);
+    _lateReasons=[..._lateReasons,entry];
+    closeModal();
+    toast('✅ اتسجّل السبب');
+    renderDeliveries();
+  },extraHtml);
+}
+function _checkLateVibration(items){
+  const hasUnexplainedLate=items.some(r=>{
+    const enteredAt=r.delivType==='بروفة'?(+r.movedAt||+r.createdAt||0):(+r.archivedAt||0);
+    const hoursLate=(Date.now()-enteredAt)/3600000;
+    return hoursLate>=LATE_SLA_HOURS&&!findLateReason(r.id,r.delivType);
+  });
+  if(hasUnexplainedLate&&navigator.vibrate)navigator.vibrate([200,100,200,100,200]);
+}
+
+// FEAT #GROUP-DELIVERIES: كاش لآخر تجميع بالعميل — بيتقرا وقت التأكيد الدفعي
+// (checkbox بيخزّن id الحالة بس، فمحتاجين نرجع نلاقي الأوبچكت الكامل بتاعها)
+let _pendingGroups={};
+
+// ═══════════════════════════════════════
+// ⚠️ تنبيه العميل المهمَل (٧ أيام) — عميل من غير أي استلام أو تسليم منه/له لأكتر من
+// أسبوع. المندوب يقدر يقيّم المتابعة أو يرفضها؛ القرار ده بلاغ توثيقي بس يتسجل في
+// data/shared/delegateClientNeglectAlerts (معزول تمامًا زي أي بلاغ تاني) ويشوفه
+// المدير بس في السيستم الكبير — مفيش أي لمس لحساب العميل أو بياناته الحقيقية.
+// ═══════════════════════════════════════
+const NEGLECT_DAYS=7;
+function _clientLastActivityAt(cl){
+  const logs=_deliveryLog.filter(h=>(cl.id&&h.clientId===cl.id)||h.client===cl.name);
+  if(!logs.length)return 0;
+  return Math.max(...logs.map(h=>+h.createdAt||0));
+}
+function _clientLastNeglectDecisionAt(cl){
+  const decs=_neglectAlerts.filter(a=>(cl.id&&a.clientId===cl.id)||a.client===cl.name);
+  if(!decs.length)return 0;
+  return Math.max(...decs.map(a=>+a.createdAt||0));
+}
+// بيرجّع العملاء اللي مالهومش نشاط (أو قرار متابعة) من ٧ أيام أو أكتر. المرجع بيتحدّث
+// تلقائيًا بأحدث حاجة (نشاط فعلي أو قرار سابق) عشان مش هيفضل نفس التنبيه ظاهر يوميًا
+// لو المندوب سبق وقيّم المتابعة ولسه مفيش نشاط جديد.
+function _neglectedClientsList(){
+  const now=Date.now();
+  const ms=NEGLECT_DAYS*86400000;
+  const out=[];
+  _myClients.forEach(cl=>{
+    const lastActivity=_clientLastActivityAt(cl);
+    const lastDecision=_clientLastNeglectDecisionAt(cl);
+    const baseline=lastActivity||+cl.createdAt||0;
+    const refAt=Math.max(baseline,lastDecision);
+    if(!refAt)return; // مفيش مرجع تاريخ موثوق (نادر) — نتجاهل بدل تنبيه غير دقيق
+    if((now-refAt)>=ms)out.push({cl,daysSince:Math.floor((now-refAt)/86400000)});
+  });
+  return out.sort((a,b)=>b.daysSince-a.daysSince);
+}
+function renderNeglectAlertsHtml(){
+  const list=_neglectedClientsList();
+  if(!list.length)return '';
+  const rows=list.map(({cl,daysSince})=>`
+    <div class="pr-result-row" style="cursor:default">
+      <div>
+        <div style="font-size:13px;font-weight:700">${esc(cl.name)}</div>
+        <div style="font-size:11px;color:var(--red)">⏰ من غير تواصل من ${daysSince} يوم</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm btn-gold" onclick="decideNeglectAlert('${esc(cl.id)}','follow')">📅 هتابع</button>
+        <button class="btn btn-sm btn-ghost" onclick="decideNeglectAlert('${esc(cl.id)}','dismissed')">🚫 مش دلوقتي</button>
+      </div>
+    </div>`).join('');
+  return `<div style="border:1.5px solid var(--red);border-radius:12px;padding:10px 12px;margin-bottom:12px">
+    <div style="font-weight:900;color:var(--red);margin-bottom:8px">⚠️ عملاء محتاجين متابعة (${list.length})</div>
+    ${rows}
+  </div>`;
+}
+async function decideNeglectAlert(clientId,decision){
+  const cl=_myClients.find(c=>String(c.id)===String(clientId));
+  if(!cl)return;
+  const entry={
+    clientId:cl.id||null,
+    client:cl.name||'-',
+    delegateId:_user.id||_user.delegateId||null,
+    delegateName:_user.name||'-',
+    decision, // 'follow' (المندوب هيتابع) | 'dismissed' (رفض المتابعة دلوقتي)
+    date:shiftToday(),
+    createdAt:Date.now()
+  };
+  try{
+    entry.id=await fbPush('data/shared/delegateClientNeglectAlerts',entry);
+    _neglectAlerts=[..._neglectAlerts,entry];
+    toast(decision==='follow'?'✅ اتسجل إنك هتتابع العميل ده':'تم — مش هيظهر تاني دلوقتي');
+    renderDeliveries();
+  }catch(e){toast('خطأ أثناء التسجيل','err');}
+}
+
+// ═══════════════════════════════════════
+// 📊 لوحة تحليلات سريعة — سحب/تسليم كل عميل أسبوعيًا + نصايح بسيطة للمندوب.
+// المصدر هنا delegateHandoverLog بس (توثيقي)، من غير أي حساب رسمي أو لمس لأي بيانات
+// حقيقية — مجرد ملخص بصري يساعد المندوب يحدد مين يزوره الأسبوع ده.
+// ═══════════════════════════════════════
+function renderWeeklyAnalyticsHtml(){
+  const now=Date.now(),oneWeek=7*86400000;
+  const thisWeekStart=now-oneWeek,lastWeekStart=now-2*oneWeek;
+  const delivered=_deliveryLog.filter(h=>h.handoverStatus==='delivered');
+  const byClient={};
+  delivered.forEach(h=>{
+    const key=h.clientId||h.client||'—';
+    if(!byClient[key])byClient[key]={name:h.client||'-',thisWeek:0,lastWeek:0};
+    if(h.createdAt>=thisWeekStart)byClient[key].thisWeek++;
+    else if(h.createdAt>=lastWeekStart&&h.createdAt<thisWeekStart)byClient[key].lastWeek++;
+  });
+  const rows=Object.values(byClient).filter(x=>x.thisWeek||x.lastWeek).sort((a,b)=>b.thisWeek-a.thisWeek);
+  if(!rows.length)return '';
+  const tips=rows.map(r=>{
+    let tip;
+    if(r.thisWeek===0&&r.lastWeek>0)tip=`📉 مفيش تسليم لـ<strong>${esc(r.name)}</strong> الأسبوع ده بعد ${r.lastWeek} الأسبوع اللي فات — يستاهل تواصل`;
+    else if(r.thisWeek>r.lastWeek)tip=`📈 نشاط <strong>${esc(r.name)}</strong> في زيادة (${r.thisWeek} مقابل ${r.lastWeek} الأسبوع اللي فات)`;
+    else if(r.thisWeek<r.lastWeek)tip=`📉 نشاط <strong>${esc(r.name)}</strong> في نقصان (${r.thisWeek} مقابل ${r.lastWeek} الأسبوع اللي فات) — تابع السبب`;
+    else tip=`➖ <strong>${esc(r.name)}</strong> مستقر (${r.thisWeek} الأسبوع ده)`;
+    return `<div style="font-size:12.5px;padding:6px 2px;border-bottom:1px solid var(--border)">${tip}</div>`;
+  }).join('');
+  return `<div class="client-group" style="margin-bottom:12px">
+    <div class="client-group-head"><div class="client-group-name">📊 تحليلات الأسبوع</div></div>
+    <div style="padding:4px 2px">${tips}</div>
+  </div>`;
+}
 
 function renderDeliveries(){
   const c=document.getElementById('tab-content');
-  // بروفه: حالات موجودة فعلاً في بروفة السيستم الكبير دلوقتي ولسه المندوب ما أكّدش تسليمها
-  // (بنستبعد أي حالة قديمة من قبل تاريخ التصفير، حتى لو معندهاش تأكيد تسليم)
-  const proofItems=_proof.filter(r=>!isHandoverConfirmed(r.id)&&(+r.createdAt||0)>=DELIVERY_RESET_CUTOFF).map(r=>({...r,delivType:'بروفة'}));
-  // نهائي: حالات اتأرشفت فعلاً في السيستم الكبير (سواء جاية من بروفه أو من دفتر مباشر)
-  // ولسه المندوب ما أكّدش التسليم النهائي بتاعها. بنحصر آخر 30 يوم، وبرضه مبنتخطاش تحت
-  // تاريخ التصفير — عشان الصفحة تفضل قائمة "مهام معلّقة" ولا تتكدّس بتاريخ أرشيف قديم.
-  const cutoff=Math.max(Date.now()-30*24*60*60*1000,DELIVERY_RESET_CUTOFF);
-  const finalItems=_archive.filter(r=>!isHandoverConfirmed(r.id)&&(+r.archivedAt||0)>=cutoff).map(r=>({...r,delivType:'نهائي'}));
+  // بروفه: حالات موجودة فعلاً في بروفة السيستم الكبير دلوقتي ولسه المندوب ما أكّدش تسليمها.
+  // بنستبعد بس الأرصدة القديمة الساكنة من قبل تحديث ٢٩ يوليو (PROOF_BACKLOG_CUTOFF) —
+  // أي نقل جديد دفتر→بروفة بعد كده بيظهر فورًا مهما كان تاريخه.
+  const proofItems=_proof.filter(r=>!isHandoverConfirmed(r.id)&&(+r.movedAt||+r.createdAt||0)>=PROOF_BACKLOG_CUTOFF).map(r=>({...r,delivType:'بروفة'}));
+  // نهائي: أي حالة اتأرشفت فعلاً في السيستم الكبير (من بروفه أو من دفتر مباشر) ولسه
+  // المندوب ما أكّدش التسليم النهائي بتاعها. زي البروفة بالظبط، بنستبعد الأرصدة
+  // القديمة الساكنة من قبل ARCHIVE_BACKLOG_CUTOFF — دي أصلًا حالات اتسلّمت فعلاً
+  // للعميل قبل ما الفيتشر ده يتفعّل، فمفيش داعي المندوب يأكّدها. أي حالة تتأرشف بعد
+  // الـ Cutoff ده تظهر فورًا مهما كان تاريخها الأصلي.
+  const finalItems=_archive.filter(r=>!isHandoverConfirmed(r.id)&&(+r.archivedAt||0)>=ARCHIVE_BACKLOG_CUTOFF).map(r=>({...r,delivType:'نهائي'}));
   const source=[...proofItems,...finalItems].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
   const pending=source.filter(r=>matchesSearch([r.client,r.noteName,r.caseId,r.product])&&matchesDateRange(r.date));
+  _checkLateVibration(pending);
 
   // أزرار جانبية بأسماء عملاء المندوب — لتسجيل تحصيل/استلام حالة من عميل مالوش
   // أي تسليم ظاهر اليوم في القائمة فوق. توثيقي بس (زي أي بلاغ تاني)، مش هيأثر
@@ -1213,34 +1454,153 @@ function renderDeliveries(){
       quickClients.map(cl=>`<button class="btn btn-ghost btn-sm" style="flex:none" onclick="openManualClientAction('${esc(cl.id)}')">${esc(cl.name)}</button>`).join('')+
     `</div>`:'';
 
+  const neglectAlertsHtml=renderNeglectAlertsHtml();
+  const weeklyAnalyticsHtml=renderWeeklyAnalyticsHtml();
+
   if(!source.length){
     c.innerHTML=`<button class="btn btn-teal btn-sm btn-block" style="margin-bottom:12px" onclick="sendDailyReportToAdmin()">${_reportBtnLabel()}</button>`+
+      neglectAlertsHtml+weeklyAnalyticsHtml+
       quickClientsHtml+
       `<div class="empty"><div class="empty-icon">🚚</div><p>مفيش حالات جاهزة للتسليم دلوقتي</p></div>`;return;
   }
   if(!pending.length){
-    c.innerHTML=quickClientsHtml+`<div class="empty"><div class="empty-icon">🔍</div><p>لا توجد نتائج مطابقة للبحث</p></div>`;return;
+    c.innerHTML=neglectAlertsHtml+weeklyAnalyticsHtml+quickClientsHtml+`<div class="empty"><div class="empty-icon">🔍</div><p>لا توجد نتائج مطابقة للبحث</p></div>`;return;
   }
 
-  c.innerHTML=`<button class="btn btn-teal btn-sm btn-block" style="margin-bottom:12px" onclick="sendDailyReportToAdmin()">${_reportBtnLabel()}</button>`+
-    quickClientsHtml+
-    `<div style="font-size:14px;color:var(--text3);margin-bottom:10px">${pending.length} حالة جاهزة للتسليم (بروفه: ${proofItems.length} · نهائي: ${finalItems.length})</div>`+
-  pending.map(r=>`
-    <div class="deliv-card" id="deliv-${esc(r.id)}">
-      <div class="deliv-head">
-        <div>
-          <div class="deliv-client">${esc(r.client)}</div>
-          ${r.noteName?`<div style="font-size:13px;color:var(--teal)">👤 ${esc(r.noteName)}</div>`:''}
-          <div class="deliv-meta">#${esc(String(r.caseId||'-'))} · ${esc(r.date||'-')}</div>
-          <div class="deliv-product">🦷 ${esc(r.product||'-')} ${r.qty>1?`× ${r.qty}`:''}</div>
+  // تجميع الحالات المعلّقة تحت اسم العميل (أو clientId لو متوفر) — عشان عميل عنده أكتر من
+  // فاتورة يتسلّم دفعة واحدة بدل ما كل فاتورة تظهر كارت مستقل
+  _pendingGroups={};
+  pending.forEach(r=>{
+    const key=String(r.clientId||r.client||'—');
+    if(!_pendingGroups[key])_pendingGroups[key]={client:r.client,items:[]};
+    _pendingGroups[key].items.push(r);
+  });
+  const groupKeys=Object.keys(_pendingGroups).sort((a,b)=>{
+    const la=_pendingGroups[a].items[0],lb=_pendingGroups[b].items[0];
+    return (lb.createdAt||0)-(la.createdAt||0);
+  });
+
+  const groupsHtml=groupKeys.map(key=>{
+    const grp=_pendingGroups[key];
+    const rowsHtml=grp.items.map(r=>{
+      const enteredAt=r.delivType==='بروفة'?(+r.movedAt||+r.createdAt||0):(+r.archivedAt||0);
+      const hoursLate=(Date.now()-enteredAt)/3600000;
+      const isOverdue=hoursLate>=LATE_SLA_HOURS;
+      const lateReason=isOverdue?findLateReason(r.id,r.delivType):null;
+      const lateHtml=!isOverdue?'':lateReason
+        ?`<div style="margin-top:6px;font-size:11px;color:var(--text3);background:rgba(239,68,68,.08);border-radius:8px;padding:6px 8px">⏰ متأخر · السبب: ${esc(lateReason.reason)}</div>`
+        :`<div style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:11px;font-weight:700;color:var(--red);animation:pulse 1.4s infinite">⏰ متأخر ${Math.floor(hoursLate)} ساعة</span>
+            <button type="button" class="btn btn-ghost btn-sm" style="padding:4px 10px;font-size:11px" onclick="event.preventDefault();event.stopPropagation();submitLateReasonFor('${esc(key)}','${esc(r.id)}')">📝 سجّل السبب</button>
+          </div>`;
+      return `
+      <label class="dg-row">
+        <input type="checkbox" class="dg-chk" data-group="${esc(key)}" data-id="${esc(r.id)}" checked>
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
+            <div>
+              ${r.noteName?`<div style="font-size:13px;color:var(--teal)">👤 ${esc(r.noteName)}</div>`:''}
+              <div class="deliv-meta">#${esc(String(r.caseId||'-'))} · ${esc(r.date||'-')}</div>
+              <div class="deliv-product">🦷 ${esc(r.product||'-')} ${r.qty>1?`× ${r.qty}`:''}</div>
+            </div>
+            <span class="case-src ${r.delivType==='بروفة'?'src-proof':'src-dafter'}">${esc(r.delivType)}</span>
+          </div>
+          ${lateHtml}
         </div>
-        <span class="case-src ${r.delivType==='بروفة'?'src-proof':'src-dafter'}">${esc(r.delivType)}</span>
+      </label>`;}).join('');
+    return `
+    <div class="client-group" id="grp-${esc(key)}">
+      <div class="client-group-head">
+        <div class="client-group-name">👤 ${esc(grp.client)}</div>
+        <div class="client-group-count">${grp.items.length} فاتورة جاهزة</div>
       </div>
-      <div class="deliv-btns">
-        <button class="btn btn-green" onclick="confirmDelivery('${esc(r.id)}','${esc(r.delivType)}')">✅ تأكيد التسليم</button>
-        <button class="btn btn-red" onclick="confirmReturn('${esc(r.id)}','${esc(r.delivType)}')">↩️ تأكيد الارتجاع</button>
+      ${rowsHtml}
+      <div class="client-group-actions">
+        <button class="btn btn-green" onclick="confirmDeliveryBatch('${esc(key)}')">✅ تأكيد تسليم المحدد</button>
+        <button class="btn btn-red" onclick="confirmReturnBatch('${esc(key)}')">↩️ تأكيد ارتجاع المحدد</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
+
+  c.innerHTML=`<button class="btn btn-teal btn-sm btn-block" style="margin-bottom:12px" onclick="sendDailyReportToAdmin()">${_reportBtnLabel()}</button>`+
+    neglectAlertsHtml+weeklyAnalyticsHtml+
+    quickClientsHtml+
+    `<div style="font-size:14px;color:var(--text3);margin-bottom:10px">${pending.length} حالة جاهزة للتسليم لـ${groupKeys.length} عميل (بروفه: ${proofItems.length} · نهائي: ${finalItems.length})</div>`+
+    groupsHtml;
+}
+
+// تحديد/إلغاء تحديد كل صفوف عميل معيّن دفعة واحدة (زرار اختياري لو حبيت تضيفه بصريًا لاحقًا)
+function toggleGroupChecks(key,val){
+  document.querySelectorAll(`.dg-chk[data-group="${key}"]`).forEach(chk=>{chk.checked=val;});
+}
+
+// ✅ تأكيد تسليم دفعة من الحالات المحدَّدة (بعلامة صح) لنفس العميل — نافذة واحدة موحّدة
+// (تسليم + تحصيل + حالات جديدة) بدل ٣ نوافذ متتالية، مع فصل بصري واضح بين كل قسم.
+function confirmDeliveryBatch(key){
+  const grp=_pendingGroups[key];if(!grp)return;
+  const checked=[...document.querySelectorAll(`.dg-chk[data-group="${CSS.escape(key)}"]:checked`)];
+  if(!checked.length){toast('اختر حالة واحدة على الأقل بعلامة صح','err');return;}
+  const ids=new Set(checked.map(chk=>chk.dataset.id));
+  const items=grp.items.filter(r=>ids.has(String(r.id)));
+  if(!items.length){toast('اختر حالة واحدة على الأقل بعلامة صح','err');return;}
+  const listHtml=items.map(r=>`<div class="batch-section-item">#${esc(String(r.caseId||'-'))} · ${esc(r.product||'-')} <span style="color:var(--text3)">(${esc(r.delivType)})</span></div>`).join('');
+  const extraHtml=`
+    <div class="batch-section">
+      <div class="batch-section-title" style="color:var(--green)">✅ الحالات اللي هيتأكد تسليمها (${items.length})</div>
+      <div class="batch-section-list">${listHtml}</div>
+    </div>
+    <div class="batch-section">
+      <div class="batch-section-title" style="color:var(--purple)">💰 فيه تحصيل من العميل؟ (اختياري)</div>
+      <input type="number" id="batch-collect-amount" inputmode="decimal" placeholder="0" style="width:100%;font-size:16px">
+    </div>
+    <div class="batch-section" style="margin-bottom:0">
+      <div class="batch-section-title" style="color:var(--blue)">📥 استلمت مقاسات/حالات جديدة من نفس العميل؟ (اختياري)</div>
+      <input type="number" id="batch-newcases-count" inputmode="numeric" min="0" placeholder="0" style="width:100%;font-size:16px">
+    </div>`;
+  showModal(`✅ تأكيد تسليم — ${grp.client}`,`هيتأكد تسليم ${items.length} فاتورة لعميل "${grp.client}" دفعة واحدة`,async()=>{
+    try{
+      let lastEntry=null;
+      for(const r of items){lastEntry=await logHandover(r,'delivered',r.delivType);}
+      const amtInput=document.getElementById('batch-collect-amount');
+      const cntInput=document.getElementById('batch-newcases-count');
+      const amount=Math.max(0,+((amtInput&&amtInput.value)||0));
+      const count=Math.max(0,Math.round(+((cntInput&&cntInput.value)||0)));
+      if(amount>0&&lastEntry){
+        lastEntry.delegateReportedAmount=amount;
+        try{await logDelegateReportedCollection(lastEntry,amount);await updateHandoverLogEntry(lastEntry);}catch(e){}
+      }
+      if(count>0&&lastEntry){
+        lastEntry.reportedNewCasesCount=count;
+        try{await logDelegateNewCases(lastEntry,count);await updateHandoverLogEntry(lastEntry);}catch(e){}
+      }
+      closeModal();
+      toast(`✅ تم تأكيد تسليم ${items.length} فاتورة لعميل ${grp.client}`);
+      loadTab('deliveries');
+    }catch(e){toast('خطأ أثناء التأكيد','err');}
+  },extraHtml,undefined,'delivery');
+}
+
+// ↩️ تأكيد ارتجاع دفعة من الحالات المحدَّدة لنفس العميل — نافذة واحدة، بدون تحصيل/حالات جديدة
+function confirmReturnBatch(key){
+  const grp=_pendingGroups[key];if(!grp)return;
+  const checked=[...document.querySelectorAll(`.dg-chk[data-group="${CSS.escape(key)}"]:checked`)];
+  if(!checked.length){toast('اختر حالة واحدة على الأقل بعلامة صح','err');return;}
+  const ids=new Set(checked.map(chk=>chk.dataset.id));
+  const items=grp.items.filter(r=>ids.has(String(r.id)));
+  if(!items.length){toast('اختر حالة واحدة على الأقل بعلامة صح','err');return;}
+  const listHtml=items.map(r=>`<div class="batch-section-item">#${esc(String(r.caseId||'-'))} · ${esc(r.product||'-')} <span style="color:var(--text3)">(${esc(r.delivType)})</span></div>`).join('');
+  const extraHtml=`<div class="batch-section" style="margin-bottom:0">
+    <div class="batch-section-title" style="color:var(--red)">↩️ الحالات اللي هيتأكد ارتجاعها (${items.length})</div>
+    <div class="batch-section-list">${listHtml}</div>
+  </div>`;
+  showModal(`↩️ تأكيد ارتجاع — ${grp.client}`,`هيتأكد ارتجاع ${items.length} فاتورة من عميل "${grp.client}"`,async()=>{
+    try{
+      for(const r of items){await logHandover(r,'returned',r.delivType);}
+      closeModal();
+      toast(`↩️ تم تسجيل ارتجاع ${items.length} فاتورة`);
+      loadTab('deliveries');
+    }catch(e){toast('خطأ أثناء التأكيد','err');}
+  },extraHtml,undefined,'return');
 }
 
 // kind (اختياري): 'delivery'|'return'|'collect'|'newcases'|'manual' — بيلوّن حدّ النافذة
@@ -1279,7 +1639,7 @@ function closeModal(){document.getElementById('confirm-modal').classList.add('hi
 // handoverStatus:'manual' (مش تسليم ولا ارتجاع)، وبيغذّي قوائم المراجعة المعزولة
 // (delegatePendingCollections/delegatePendingNewCases) بالظبط زي أي بلاغ عادي —
 // من غير أي لمس لحساب العميل أو الخزنة الحقيقية.
-async function logManualClientAction(cl,amount,count){
+async function logManualClientAction(cl,amount,count,proofReturnCount){
   const entry={
     sourceId:null,
     sourceType:'manual',
@@ -1302,6 +1662,7 @@ async function logManualClientAction(cl,amount,count){
   _deliveryLog=[..._deliveryLog,entry];
   if(amount>0){try{await logDelegateReportedCollection(entry,amount);}catch(e){}}
   if(count>0){try{await logDelegateNewCases(entry,count);}catch(e){}}
+  if(proofReturnCount>0){try{await logDelegateProofReturn(entry,proofReturnCount);}catch(e){}}
   return entry;
 }
 
@@ -1312,18 +1673,24 @@ function openManualClientAction(clientId){
       <label>💰 المبلغ المحصّل الآن (سيبها فاضية لو مفيش)</label>
       <input type="number" id="manual-amount-input" inputmode="decimal" placeholder="0" style="width:100%;font-size:16px">
     </div>
-    <div class="form-group" style="margin:0">
+    <div class="form-group" style="margin:0 0 10px">
       <label>📥 عدد المقاسات/الحالات الجديدة المستلمة (سيبها فاضية لو مفيش)</label>
       <input type="number" id="manual-newcases-input" inputmode="numeric" min="0" placeholder="0" style="width:100%;font-size:16px">
+    </div>
+    <div class="form-group" style="margin:0">
+      <label>↩️ عدد البروفات الراجعة من نفس العميل (سيبها فاضية لو مفيش)</label>
+      <input type="number" id="manual-proofreturn-input" inputmode="numeric" min="0" placeholder="0" style="width:100%;font-size:16px">
     </div>`;
   showModal('💼 تسجيل من عميل بدون تسليم',`عميل "${cl.name}" — التسجيل ده توثيقي بس ومحتاج اعتماد الإدارة، ومش هيأثر على حساب العميل مباشرة`,async()=>{
     const amtInput=document.getElementById('manual-amount-input');
     const countInput=document.getElementById('manual-newcases-input');
+    const proofInput=document.getElementById('manual-proofreturn-input');
     const amount=Math.max(0,+((amtInput&&amtInput.value)||0));
     const count=Math.max(0,Math.round(+((countInput&&countInput.value)||0)));
-    if(amount<=0&&count<=0){toast('اكتب مبلغ أو عدد الأول','err');return;}
+    const proofReturnCount=Math.max(0,Math.round(+((proofInput&&proofInput.value)||0)));
+    if(amount<=0&&count<=0&&proofReturnCount<=0){toast('اكتب مبلغ أو عدد الأول','err');return;}
     try{
-      await logManualClientAction(cl,amount,count);
+      await logManualClientAction(cl,amount,count,proofReturnCount);
       toast('✅ تم التسجيل (توثيقي — محتاج اعتماد الإدارة)');
       closeModal();
       loadTab('deliveries');
@@ -1382,7 +1749,7 @@ function askNewCases(logEntry){
       logEntry.reportedNewCasesCount=count; // بيتحدّث محليًا عشان يظهر في تقرير اليوم
       try{await logDelegateNewCases(logEntry,count);await updateHandoverLogEntry(logEntry);}catch(e){}
     }
-    closeModal();
+    askProofReturn(logEntry);
   };
   showModal('📥 استلمت مقاسات جديدة؟',`عميل "${logEntry.client}"`,finish,extraHtml,finish,'newcases');
 }
@@ -1433,6 +1800,85 @@ async function logDelegateNewCases(r,count){
     };
     await fbPush(path,entry); // فريد من Firebase — من غير قراءة/إعادة كتابة كل القائمة
   }catch(e){/* فشل التسجيل ما يمنعش إتمام التسليم نفسه */}
+}
+
+// تفعيل عميل جديد فورًا بعد أول تعاقد من صفحة الزيارات — كتابة مباشرة على
+// data/shared/clients (نفس شكل العميل اللي بينشئه السيستم الكبير في confirmActivateProspect
+// بالظبط: id, name, center, phone, wa, gov, city, addr, map, delegate, discount:0, balance:0).
+// مفيش أي بلاغ pending محتاج مراجعة موظف هنا — العميل بيبقى فعلي على طول وبيظهر في
+// _myClients فورًا (وبالتبعية كزرار سريع "تسجيل من عميل بدون تسليم" في تبويب التسليمات)
+// عشان المندوب يقدر يسجل استلام أول حالة منه على طول من غير أي انتظار.
+async function activateClientFromContract(p){
+  const newClient={
+    id:'c_'+Date.now(),
+    name:p.doctor||p.center||'-',
+    center:p.center||'',
+    phone:p.phone||'',
+    wa:p.whatsapp||'',
+    gov:p.gov||'',
+    city:p.city||'',
+    addr:p.address||'',
+    map:p.mapsLink||(p.lat&&p.lng?`https://www.google.com/maps?q=${p.lat},${p.lng}`:''),
+    delegate:_user.name||'-',
+    discount:0,
+    balance:0,notes:'',img:'',phonesExtra:'',
+    createdAt:Date.now(),fromProspect:p.id
+  };
+  const current=toArr(await fbGet('data/shared/clients'));
+  current.push(newClient);
+  await fbSet('data/shared/clients',current);
+  _myClients=[..._myClients,newClient];
+  return newClient;
+}
+
+// ═══════════════════════════════════════
+// ↩️ استلام بروفة من العميل (رجوع البروفة من عند العميل للمعمل) — عكس اتجاه التسليم
+// ═══════════════════════════════════════
+// ⚠️ فيتشر منفصل تمامًا عن تأكيد التسليم فوق: هنا المندوب بيبلّغ بعدد بس (مش
+// باختيار حالة بعينها) إن كذا بروفة رجعت من عند العميل. البلاغ ده بيتسجل pending في
+// data/shared/delegatePendingProofReturns بس — من غير أي لمس مباشر لسجل البروفة
+// نفسه في data/shared/proof. موظف في السيستم الكبير هو اللي بيطابق الأسماء الفعلية
+// (لأنه شايف الحالات الراجعة قدامه) ويأكّد البلاغ؛ وقتها بس الصفوف اللي يختارها
+// تتلوّن ويتسجل فيها تاريخ الرجوع — نفس فلسفة delegatePendingNewCases/Collections/
+// Activations بالظبط، لكن المطابقة هنا بالاسم مش بالمعرّف.
+// بيتسجل كخطوة اختيارية جوه سلسلة نوافذ التسليم (بعد "استلمت مقاسات جديدة؟")،
+// أو كحقل تالت جوه نافذة "تسجيل من عميل بدون تسليم" — مفيش نافذة مخصصة منفصلة.
+function askProofReturn(logEntry){
+  const extraHtml=`<div class="form-group" style="margin:0">
+    <label>↩️ عدد البروفات الراجعة من نفس العميل (سيبها فاضية أو دوس إلغاء لو مفيش)</label>
+    <input type="number" id="proofreturn-count-input" inputmode="numeric" min="0" placeholder="0" style="width:100%;font-size:16px">
+  </div>`;
+  const finish=async()=>{
+    const input=document.getElementById('proofreturn-count-input');
+    const count=Math.max(0,Math.round(+((input&&input.value)||0)));
+    if(count>0){
+      try{await logDelegateProofReturn(logEntry,count);}catch(e){}
+    }
+    closeModal();
+  };
+  showModal('↩️ فيه بروفة راجعة؟',`عميل "${logEntry.client}" — الموظف في السيستم الكبير هيطابق الأسماء بنفسه وقت المراجعة`,finish,extraHtml,finish,'proofreturn');
+}
+
+// تسجيل بلاغ "استلام بروفة من العميل" — قائمة منفصلة تمامًا عن data/shared/proof،
+// بتظهر كبلاغ في صفحة البروفة بالسيستم الكبير (نفس فكرة بلاغات الحالات الجديدة/
+// التحصيل/التفعيل بالظبط). البلاغ بيحمل اسم العميل والعدد بس — مفيش أي ربط بحالة
+// بعينها من هنا، لأن الموظف هناك هو اللي بيطابق الأسماء من الحالات الفعلية الراجعة
+// قدامه، مش المندوب. موظف المراجعة هو اللي بيلوّن صفوف البروفة الحقيقية بعد المراجعة
+// — مفيش أي كتابة مباشرة على data/shared/proof من هنا.
+async function logDelegateProofReturn(r,count){
+  const path='data/shared/delegatePendingProofReturns';
+  const entry={
+    client:r.client||'-',
+    clientId:r.clientId||r.delegateClientId||null,
+    count:count||0,
+    matchedCount:0, // هيتزود من السيستم الكبير كل ما موظف يطابق دفعة من الأسماء
+    delegateId:_user.id||_user.delegateId||null,
+    delegateName:_user.name||'-',
+    date:shiftToday(),
+    status:'pending', // pending → لسه محتاج مطابقة ومراجعة من السيستم الكبير
+    createdAt:Date.now()
+  };
+  await fbPush(path,entry);
 }
 
 async function confirmReturn(id,delivType){
@@ -1833,6 +2279,7 @@ function openVisitModal(prospectId){
   document.getElementById('vm-result').value='';
   document.getElementById('vm-date').value=shiftToday();
   onVisitProspectChange();
+  onVisitResultChange();
   document.getElementById('visit-modal').classList.remove('hidden');
 }
 function onVisitProspectChange(){
@@ -1842,6 +2289,38 @@ function onVisitProspectChange(){
   if(!p){drSel.innerHTML='<option value="">-- اختر الدكتور --</option>';return;}
   const options=[{name:p.doctor},...(p.doctors||[])].filter(d=>d.name);
   drSel.innerHTML='<option value="">-- اختر الدكتور --</option>'+options.map(d=>`<option value="${esc(d.name)}">${esc(d.name)}</option>`).join('');
+  onVisitResultChange(); // العميل ممكن يتغيّر، فلازم نعيد حساب البيانات الناقصة
+}
+// الحقول الأساسية المطلوبة قبل ما "تم التعاقد" يبقى قابل للحفظ (شرط تفعيل كل البيانات الأساسية)
+const PROSPECT_REQUIRED_FIELDS=[['phone','رقم الهاتف'],['whatsapp','واتساب'],['gov','المحافظة'],['city','المدينة'],['address','العنوان']];
+function _prospectMissingFields(p){
+  if(!p)return PROSPECT_REQUIRED_FIELDS.map(f=>f[1]);
+  return PROSPECT_REQUIRED_FIELDS.filter(([key])=>!String(p[key]||'').trim()).map(f=>f[1]);
+}
+// تظهر صندوق استكمال البيانات بس لما النتيجة "تم التعاقد" وفيه حقول أساسية ناقصة فعلاً
+function onVisitResultChange(){
+  const result=document.getElementById('vm-result').value;
+  const box=document.getElementById('vm-activate-box');
+  const pid=document.getElementById('vm-prospect').value;
+  const p=_myProspects.find(x=>String(x.id)===String(pid));
+  const missing=_prospectMissingFields(p);
+  if(result==='contracted'&&missing.length){
+    box.classList.remove('hidden');
+    document.getElementById('vm-act-phone').value=p?.phone||'';
+    document.getElementById('vm-act-whatsapp').value=p?.whatsapp||'';
+    document.getElementById('vm-act-gov').value=p?.gov||'';
+    onVmActGovChange();
+    document.getElementById('vm-act-city').value=p?.city||'';
+    document.getElementById('vm-act-address').value=p?.address||'';
+  }else{
+    box.classList.add('hidden');
+  }
+}
+function onVmActGovChange(){
+  const gov=document.getElementById('vm-act-gov').value;
+  const citySel=document.getElementById('vm-act-city');
+  const cities=EGY_CITIES[gov]||[];
+  citySel.innerHTML='<option value="">-- اختر المدينة --</option>'+cities.map(ct=>`<option value="${esc(ct)}">${esc(ct)}</option>`).join('');
 }
 function closeVisitModal(){document.getElementById('visit-modal').classList.add('hidden');}
 
@@ -1852,19 +2331,48 @@ async function saveVisit(){
   const notes=document.getElementById('vm-notes').value.trim();
   const date=document.getElementById('vm-date').value||shiftToday();
   if(!prospectId||!doctor||!result){toast('العميل والدكتور والنتيجة مطلوبين','err');return;}
+  const idx=_myProspects.findIndex(p=>p.id===prospectId);
+  let prospectDraft=idx>=0?{..._myProspects[idx]}:null;
+
+  // FEAT #ACTIVATE-ON-CONTRACT: "تم التعاقد" لازم كل البيانات الأساسية تكون متملية —
+  // منع الحفظ لحد ما المندوب يراجع/يستكمل كل الحقول المطلوبة هنا في نفس النافذة
+  if(result==='contracted'&&prospectDraft){
+    prospectDraft.phone=document.getElementById('vm-act-phone').value.trim()||prospectDraft.phone||'';
+    prospectDraft.whatsapp=document.getElementById('vm-act-whatsapp').value.trim()||prospectDraft.whatsapp||'';
+    prospectDraft.gov=document.getElementById('vm-act-gov').value||prospectDraft.gov||'';
+    prospectDraft.city=document.getElementById('vm-act-city').value||prospectDraft.city||'';
+    prospectDraft.address=document.getElementById('vm-act-address').value.trim()||prospectDraft.address||'';
+    const missing=_prospectMissingFields(prospectDraft);
+    if(missing.length){
+      toast('استكمل البيانات الأساسية الأول: '+missing.join('، '),'err');
+      document.getElementById('vm-activate-box').classList.remove('hidden');
+      return;
+    }
+  }
   try{
     const id=Date.now();
     const rec={id,delegate:_user.name,prospectId,doctor,date,result,notes,createdAt:Date.now()};
     await fbUpdate('data/shared/prospect_visits',{[id]:rec});
-    // تحديث حالة العميل المحتمل بنتيجة الزيارة — زي saveProspectVisit() الأصلية بالظبط
-    const idx=_myProspects.findIndex(p=>p.id===prospectId);
+    // تحديث حالة العميل المحتمل بنتيجة الزيارة (+ البيانات المستكملة لو "تم التعاقد")
     if(idx>=0){
-      _myProspects[idx]={..._myProspects[idx],status:result};
+      _myProspects[idx]={...prospectDraft,status:result};
       await fbUpdate('data/shared/prospects',{[prospectId]:_myProspects[idx]});
     }
     _myVisits=[rec,..._myVisits];
+
+    // تفعيل العميل فورًا للسيستم الكبير — مرة واحدة بس لكل عميل محتمل (أول تعاقد)،
+    // وبعد التأكد إن كل البيانات الأساسية مكتملة فعلاً (الشرط اتفحص فوق). كتابة مباشرة
+    // على data/shared/clients من غير أي بلاغ محتاج مراجعة موظف.
+    if(result==='contracted'&&idx>=0&&!_myProspects[idx].activatedClientId){
+      try{
+        const newClient=await activateClientFromContract(_myProspects[idx]);
+        _myProspects[idx].activatedClientId=newClient.id;
+        await fbUpdate('data/shared/prospects',{[prospectId]:_myProspects[idx]});
+      }catch(e){/* فشل إنشاء العميل ما يمنعش حفظ الزيارة نفسها */}
+    }
+
     closeVisitModal();
-    toast('✅ تم حفظ الزيارة');
+    toast(result==='contracted'?'✅ تم حفظ الزيارة وتفعيل العميل تلقائيًا':'✅ تم حفظ الزيارة');
     loadTab(_curTab);
   }catch(e){console.error(e);toast('خطأ في الحفظ','err');}
 }

@@ -157,12 +157,15 @@ tr.case-grp-type-row td{border-bottom:1px dashed var(--border)}
 tr.row-returned-from-proof:hover{background:rgba(249,115,22,.14)!important}
 tr.row-returned-from-archive{background:rgba(168,85,247,.08)!important;border-right:3px solid var(--purple)}
 tr.row-returned-from-archive:hover{background:rgba(168,85,247,.14)!important}
+tr.row-returned-from-client{background:rgba(34,197,94,.08)!important;border-right:3px solid var(--green)}
+tr.row-returned-from-client:hover{background:rgba(34,197,94,.14)!important}
 /* FIX #DUPLICATE-CASE-ALERT: تمييز الصفوف المكررة (نفس العميل + نفس المريض) بلون أصفر مميز */
 tr.row-duplicate{background:rgba(234,179,8,.10)!important;border-right:3px solid #eab308}
 tr.row-duplicate:hover{background:rgba(234,179,8,.16)!important}
 .return-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;margin-right:4px}
 .return-badge.from-proof{background:rgba(249,115,22,.18);color:var(--orange)}
 .return-badge.from-archive{background:rgba(168,85,247,.18);color:var(--purple)}
+.return-badge.from-client{background:rgba(34,197,94,.18);color:var(--green)}
 /* FIX #TECH-PROGRESS-CHIP: شكل شارة تقدم خطوات الفنيين — بستايل الـ chips
    (نقطة ملوّنة + نص + شريط تقدم مقسّم صغير) بنفس هوية أداة "خطوات الفنيين". */
 /* FIX #TECH-PROGRESS-CHIP: مسار نقاط متصلة بخط لخطوات الفنيين — كل نقطة تمثل
@@ -1405,7 +1408,7 @@ body.theme-glass .ph h2{color:var(--blue2)}
   <!-- PROOF -->
   <div class="page" id="pg-proof">
     <div class="ph">
-      <h2>البروفه <small id="proof-cnt"></small> <span class="tl-review-badge" id="proof-techlogs-badge" style="display:none" onclick="openTechLogsReviewModal('proof')"></span></h2>
+      <h2>البروفه <small id="proof-cnt"></small> <span class="tl-review-badge" id="proof-techlogs-badge" style="display:none" onclick="openTechLogsReviewModal('proof')"></span> <span class="tl-review-badge dg-review-badge" id="proof-dgreview-badge" style="display:none" onclick="openDgReviewModal('proofReturns')"></span></h2>
       <div class="btn-row">
         <button class="btn btn-orange" onclick="sendProofNotif()" data-perm-hide="proof.send_notif">🔬 إشعار بروفه</button>
         <button class="btn btn-ghost" onclick="editSelProof()" data-perm-hide="proof.edit">تعديل</button>
@@ -1466,6 +1469,13 @@ body.theme-glass .ph h2{color:var(--blue2)}
     <div class="card">
       <div class="card-head"><h3>✅ سلّمها المندوب بالفعل</h3></div>
       <div class="mb"><div id="dd-delivered"></div></div>
+    </div>
+    <!-- ⚠️ FEAT #NEGLECT-ALERTS: بلاغات "عميل مهمَل" (٧ أيام من غير استلام/تسليم) —
+         المدير بس اللي يشوفها، مش أي موظف عنده صلاحية تسليمات المناديب. الإظهار
+         بيتحكم فيه JS في renderDelegateDeliveries حسب role==='admin' بالظبط. -->
+    <div class="card" id="dd-neglect-card" style="display:none;margin-top:14px">
+      <div class="card-head"><h3>⚠️ تنبيهات عملاء مهملين (٧ أيام)</h3></div>
+      <div class="mb"><div id="dd-neglect-list"></div></div>
     </div>
   </div>
 
@@ -4229,6 +4239,22 @@ body.theme-glass .ph h2{color:var(--blue2)}
   </div>
 </div>
 
+<!-- PROOF RETURN MATCHING (مطابقة بروفات راجعة) — بيفتح لما الموظف يدوس على بلاغ استلام بروفة -->
+<div class="overlay" id="ov-proofmatch">
+  <div class="modal modal-md" style="border-top:3px solid var(--orange)">
+    <div class="mh"><h3 id="pfm-ttl" style="color:var(--orange)">↩️ مطابقة بروفات راجعة</h3><div class="mc-btn" onclick="closeOv('ov-proofmatch')">✕</div></div>
+    <div class="mb">
+      <div id="pfm-msg" style="font-size:13px;color:var(--text3);margin-bottom:10px"></div>
+      <div id="pfm-summary" style="background:var(--bg3,#1c1c1c);border:1px solid var(--border,#2a2a2a);border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center"></div>
+      <div id="pfm-list" style="max-height:45vh;overflow-y:auto;display:flex;flex-direction:column;gap:6px"></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-ghost" onclick="closeOv('ov-proofmatch')">حفظ وتأجيل الباقي (pending)</button>
+      <button class="btn btn-gold" id="pfm-confirm-btn" onclick="_dgConfirmProofMatch()">✅ تأكيد المحدد</button>
+    </div>
+  </div>
+</div>
+
 <!-- INVOICE NOTIF -->
 <div class="overlay" id="ov-inv-notif">
   <div class="modal modal-md">
@@ -5105,7 +5131,7 @@ function _treasuryValToArray(v){
 // إعادة المزامنة اليدوية بيرمي "map is not a function"). الحل: نفس دالة التطبيع
 // المستخدمة للخزنة (_treasuryValToArray منطقها عام أصلاً رغم اسمها)، مطبَّقة الآن
 // على أي مفتاح مخزَّن بنفس الأسلوب الجراحي.
-const KEYED_LIST_KEYS = ['sup_payments','purchases','prospects','prospect_visits','delegatePendingNewCases','delegatePendingCollections','delegateHandoverLog'];
+const KEYED_LIST_KEYS = ['sup_payments','purchases','prospects','prospect_visits','delegatePendingNewCases','delegatePendingCollections','delegatePendingProofReturns','delegateHandoverLog','delegateLateReasons'];
 // ===== DB — Firebase Realtime Database + localStorage cache =====
 const DB = {
   _c: {},
@@ -5624,6 +5650,11 @@ function updateTechLogsBadges(){
 // هي المصدر الحقيقي الوحيد لهذه البلاغات، فلازم نقرا نفس المسارين بالظبط.
 function getDgPendingNewCases(){return DB.get('delegatePendingNewCases')||[];}
 function getDgPendingCollections(){return DB.get('delegatePendingCollections')||[];}
+// FEAT #PROOF-RETURN-REPORT: بلاغات "استلام بروفة من العميل" — بتتكتب من
+// delegates-portal.html لما المندوب يأكّد إن بروفة معينة رجعت من عند العميل للمعمل.
+// نفس فكرة أي بلاغ تاني بالظبط: pending لحد ما موظف هنا يراجع ويأكّد، وقتها بس
+// صف البروفة الحقيقي (data/shared/proof) بيتلوّن ويتسجل فيه تاريخ الرجوع.
+function getDgPendingProofReturns(){return DB.get('delegatePendingProofReturns')||[];}
 
 let _dgLinkedNewCaseReportId=null;
 let _dgLinkedCollectionReportId=null;
@@ -5631,6 +5662,7 @@ let _dgLinkedCollectionReportId=null;
 function updateDgReviewBadges(){
   const newCases=getDgPendingNewCases().filter(r=>r.status==='pending');
   const collections=getDgPendingCollections().filter(r=>r.status==='pending');
+  const proofReturns=getDgPendingProofReturns().filter(r=>r.status==='pending');
   const setBadge=(id,n,label)=>{
     const el=document.getElementById(id);
     if(!el)return;
@@ -5641,6 +5673,7 @@ function updateDgReviewBadges(){
   };
   setBadge('dafter-dgreview-badge',newCases.length,'بلاغ حالة من المناديب');
   setBadge('treasury-dgreview-badge',collections.length,'بلاغ تحصيل من المناديب');
+  setBadge('proof-dgreview-badge',proofReturns.length,'بلاغ استلام بروفة من عميل');
 }
 
 // يحاول يلاقي عميل مطابق للاسم اللي كتبه المندوب في البلاغ (مطابقة تامة، وإلا جزئية)
@@ -5668,24 +5701,43 @@ function _dgMarkReportStatus(key,id,status,extra){
 }
 
 function openDgReviewModal(kind){
-  // kind: 'cases' (دفتر) أو 'collections' (خزنة)
+  // kind: 'cases' (دفتر) أو 'collections' (خزنة) أو 'activations' (تفعيل عميل جديد) أو 'proofReturns' (استلام بروفة)
   if(!can('dgreview.review')){toast('ليس لديك صلاحية مراجعة بلاغات المناديب','err');return;}
-  document.getElementById('dgr-ttl').textContent = kind==='cases' ? '🔔 بلاغات المناديب — حالات جديدة' : '🔔 بلاغات المناديب — تحصيل';
+  document.getElementById('dgr-ttl').textContent = kind==='cases' ? '🔔 بلاغات المناديب — حالات جديدة' : kind==='proofReturns' ? '🔔 بلاغات المناديب — استلام بروفة من عميل' : '🔔 بلاغات المناديب — تحصيل';
   document.getElementById('ov-dgreview').dataset.kind=kind;
   _renderDgReviewList(kind);
   openOv('ov-dgreview');
+}
+function _dgReviewKey(kind){
+  return kind==='cases'?'delegatePendingNewCases':kind==='proofReturns'?'delegatePendingProofReturns':'delegatePendingCollections';
 }
 
 function _renderDgReviewList(kind){
   const wrap=document.getElementById('dgr-list');
   if(!wrap)return;
-  const key = kind==='cases' ? 'delegatePendingNewCases' : 'delegatePendingCollections';
+  const key = _dgReviewKey(kind);
   const items=(DB.get(key)||[]).filter(r=>r.status==='pending').sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
   if(!items.length){
     wrap.innerHTML='<div style="text-align:center;color:var(--green);padding:20px;font-weight:700">✅ مفيش بلاغات معلّقة دلوقتي</div>';
     return;
   }
   wrap.innerHTML=items.map(r=>{
+    if(kind==='proofReturns'){
+      const matched=r.matchedCount||0;
+      return `<div style="margin-bottom:10px;border:1.5px solid var(--orange);border-radius:10px;overflow:hidden">
+        <div style="background:rgba(249,115,22,.12);color:var(--orange);font-weight:800;padding:6px 10px">↩️ ${esc(r.delegateName||'مندوب')} — ${esc(r.client||'—')}</div>
+        <div style="padding:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <div style="font-size:12.5px">
+            بلّغ المندوب بـ <strong>${esc(String(r.count||0))}</strong> بروفة راجعة${matched?` · اتطابق منها <strong style="color:var(--green)">${esc(String(matched))}</strong> لحد دلوقتي`:''}<br>
+            <span style="color:var(--text3)">${esc(r.date||'-')}</span>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-sm btn-gold" onclick="_dgOpenProofMatch('${r.id}')">🔍 مطابقة الأسماء</button>
+            <button class="btn btn-sm btn-ghost" style="color:var(--red)" onclick="_dgRejectReport('${kind}','${r.id}')">🚫 تجاهل</button>
+          </div>
+        </div>
+      </div>`;
+    }
     const amountOrCount = kind==='cases'
       ? `العدد المُبلَّغ: <strong>${esc(String(r.reportedCount??'—'))}</strong>`
       : `المبلغ: <strong style="color:var(--gold2)">${fmt(+r.amount||0)} ${cur()}</strong>`;
@@ -5712,12 +5764,101 @@ function _renderDgReviewList(kind){
 }
 
 function _dgRejectReport(kind,id){
-  const key = kind==='cases' ? 'delegatePendingNewCases' : 'delegatePendingCollections';
+  const key = _dgReviewKey(kind);
   confirm2('تجاهل البلاغ','هل أنت متأكد من تجاهل هذا البلاغ (مكرر أو غلط من المندوب)؟',()=>{
     _dgMarkReportStatus(key,id,'rejected');
     _renderDgReviewList(kind);
     toast('تم تجاهل البلاغ');
   });
+}
+
+// ═══════════════════════════════════════
+// مطابقة بلاغ "استلام بروفة من العميل" (بالعدد بس) مع الحالات الفعلية
+// ═══════════════════════════════════════
+// المندوب بلّغ بعدد بس (من غير تحديد حالة بعينها) — الموظف هنا هو اللي بيطابق
+// الأسماء الحقيقية لأنه ماسك الحالات الراجعة فعليًا قدامه. البلاغ بيفضل pending
+// لحد ما عدد الصفوف المتطابقة (matchedCount) يوصل للعدد المُبلَّغ (count)؛ ممكن
+// يحصل على أكتر من دفعة/مراجعة لو مش كل الأسماء واضحة أو موجودة قدامه أول مرة.
+let _dgProofMatchReportId=null;
+
+function _dgOpenProofMatch(id){
+  const r=getDgPendingProofReturns().find(x=>x.id===id);
+  if(!r)return;
+  _dgProofMatchReportId=id;
+  document.getElementById('pfm-msg').textContent=
+    `عميل "${r.client||'-'}" — بلّغ المندوب ${r.delegateName||''} بـ ${r.count||0} بروفة راجعة. اختر الحالات اللي فعلًا شفتها راجعة قدامك من الليستة:`;
+  _renderProofMatchList();
+  openOv('ov-proofmatch');
+}
+
+function _dgProofMatchCandidates(r){
+  const proofList=DB.get('proof')||[];
+  const pending=proofList.filter(p=>!p.returnedFromClient);
+  if(r.clientId)return pending.filter(p=>p.clientId===r.clientId);
+  return pending.filter(p=>_dgMatchClientByName(r.client)?p.clientId===_dgMatchClientByName(r.client).id:String(p.client||'').trim()===String(r.client||'').trim());
+}
+
+function _renderProofMatchList(){
+  const r=getDgPendingProofReturns().find(x=>x.id===_dgProofMatchReportId);
+  const wrap=document.getElementById('pfm-list');
+  const summary=document.getElementById('pfm-summary');
+  if(!r||!wrap||!summary)return;
+  const candidates=_dgProofMatchCandidates(r);
+  const matched=r.matchedCount||0;
+  const target=r.count||0;
+  summary.innerHTML=`<span>متبقي في البروفة لنفس العميل: <b>${candidates.length}</b></span><span id="pfm-counter" style="font-weight:900;color:var(--gold)">0 / ${Math.max(0,target-matched)}</span>`;
+  document.getElementById('pfm-confirm-btn').textContent='✅ تأكيد المحدد (0)';
+  if(!candidates.length){
+    wrap.innerHTML='<div style="text-align:center;color:var(--text3);font-size:13px;padding:16px 0">مفيش حالات بروفة معلّقة لنفس العميل دلوقتي</div>';
+    return;
+  }
+  wrap.innerHTML=candidates.map(p=>`
+    <label class="pfm-row" style="display:flex;align-items:center;gap:10px;background:var(--bg3,#1c1c1c);border:1px solid var(--border,#2a2a2a);border-radius:10px;padding:9px 10px;cursor:pointer">
+      <input type="checkbox" class="pfm-chk" data-id="${esc(p.id)}" style="width:18px;height:18px;accent-color:var(--orange);flex:none" onchange="_updateProofMatchCounter()">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13.5px;color:var(--orange);font-weight:700">👤 ${esc(p.noteName||'-')}</div>
+        <div style="font-size:11.5px;color:var(--text3);margin-top:2px">#${esc(String(p.caseId||'-'))} · ${esc(p.product||'-')}</div>
+      </div>
+    </label>`).join('');
+}
+
+function _updateProofMatchCounter(){
+  const r=getDgPendingProofReturns().find(x=>x.id===_dgProofMatchReportId);
+  if(!r)return;
+  const checked=document.querySelectorAll('#pfm-list .pfm-chk:checked').length;
+  const matched=r.matchedCount||0;
+  const target=r.count||0;
+  const counterEl=document.getElementById('pfm-counter');
+  if(counterEl){
+    counterEl.textContent=`${checked} / ${Math.max(0,target-matched)}`;
+    counterEl.style.color=checked>=Math.max(0,target-matched)&&checked>0?'var(--green)':'var(--gold)';
+  }
+  const btn=document.getElementById('pfm-confirm-btn');
+  if(btn)btn.textContent=`✅ تأكيد المحدد (${checked})`;
+}
+
+// بيلوّن كل صف اتـ"تيك" في data/shared/proof (returnedFromClient + returnedFromClientAt)،
+// وبيزوّد matchedCount في البلاغ. لو matchedCount وصل لعدد المندوب المُبلَّغ، البلاغ
+// يتقفل approved؛ لو لسه ناقص، يفضل pending عشان يقدر يرجع يطابق باقي الأسماء بعدين.
+function _dgConfirmProofMatch(){
+  const id=_dgProofMatchReportId;
+  const r=getDgPendingProofReturns().find(x=>x.id===id);
+  if(!r)return;
+  const checkedIds=Array.from(document.querySelectorAll('#pfm-list .pfm-chk:checked')).map(el=>el.dataset.id);
+  if(!checkedIds.length){toast('اختر حالة واحدة على الأقل الأول','err');return;}
+  const proofList=DB.get('proof')||[];
+  const idSet=new Set(checkedIds);
+  const updated=proofList.map(p=>idSet.has(String(p.id))?{...p,returnedFromClient:true,returnedFromClientAt:today()}:p);
+  DB.set('proof',updated);
+  if(document.getElementById('pg-proof')?.classList.contains('active'))renderProof();
+  const newMatched=(r.matchedCount||0)+checkedIds.length;
+  const isDone=newMatched>=(r.count||0);
+  const list=(DB.get('delegatePendingProofReturns')||[]).map(x=>x.id===id?{...x,matchedCount:newMatched,...(isDone?{status:'approved',approvedBy:window._currentUser?.name||'مجهول',approvedAt:Date.now()}:{})}:x);
+  DB.set('delegatePendingProofReturns',list);
+  updateDgReviewBadges();
+  closeOv('ov-proofmatch');
+  _renderDgReviewList('proofReturns');
+  toast(isDone?'✅ اتطابقت كل البروفات وانقفل البلاغ':`✅ اتطابق ${checkedIds.length} — لسه فاضل ${Math.max(0,(r.count||0)-newMatched)} يتطابقوا لاحقًا`);
 }
 
 // يفتح فورم "إضافة حالة دفتر" مع تعبئة العميل تلقائيًا من بيانات البلاغ
@@ -9866,11 +10007,13 @@ function renderProof(){
     const rowsHtml=rows.map((r,idx)=>{
       const rowNoteCount=allNotes.filter(n=>_noteMatchesRow(n,r)).length;
       const isRetFromArchive=r.returnedFrom==='archive';
+      const isRetFromClient=!!r.returnedFromClient;
       const isDup=r.client&&r.noteName&&_dupCount[_dupKey(r)]>1;
-      const rowCls=(isRetFromArchive?'row-returned-from-archive':'')+(isDup?' row-duplicate':'')+(isGrp?` case-grp-row${idx===0?' case-grp-first':''}`:'');
+      const rowCls=(isRetFromArchive?'row-returned-from-archive':isRetFromClient?'row-returned-from-client':'')+(isDup?' row-duplicate':'')+(isGrp?` case-grp-row${idx===0?' case-grp-first':''}`:'');
       const dupBadge=isDup?`<span class="return-badge" style="background:rgba(234,179,8,.18);color:#eab308" title="نفس اسم العميل واسم المريض مكرر في ${_dupCount[_dupKey(r)]} حالات">⚠️ مكرر</span>`:'';
       const pfBadge=(r.payFactor===0.5)?` <span class="return-badge" style="background:rgba(239,68,68,.15);color:var(--red)" title="أجر الفنيين على هذه الحالة نص الثمن">½ نص الثمن</span>`:'';
-      const retBadge=(isRetFromArchive?`<span class="return-badge from-archive" title="أُرجع من الأرشيف بتاريخ ${esc(r.returnedAt||'')}">↩ أرشيف ${esc(r.returnedAt||'')}</span>${pfBadge}`:'')+dupBadge;
+      const clientRetBadge=isRetFromClient?`<span class="return-badge from-client" title="رجعت من العميل للمعمل بتاريخ ${esc(r.returnedFromClientAt||'')}">↩ استلمت من العميل ${esc(r.returnedFromClientAt||'')}</span>`:'';
+      const retBadge=(isRetFromArchive?`<span class="return-badge from-archive" title="أُرجع من الأرشيف بتاريخ ${esc(r.returnedAt||'')}">↩ أرشيف ${esc(r.returnedAt||'')}</span>${pfBadge}`:'')+clientRetBadge+dupBadge;
       const linkBadge=isGrp?`<span class="case-link-badge">🔗 ${idx+1}/${rows.length}</span>`:'';
       const ownChk=`<td class="chk-col"><input type="checkbox" onclick="event.stopPropagation();rowClick(this.closest('tr'))"></td>`;
       const sharedHead=(!isGrp&&idx===0)?`<td class="grp-shared-compact" rowspan="${rows.length}"><span style="font-size:12.5px;color:var(--text2);font-weight:700">#${esc(String(r.caseId))}</span><br><strong style="font-size:14px">${esc(r.client)}</strong>${r.noteName?`<br><span style="font-size:11.5px;color:var(--teal);font-weight:600">${esc(r.noteName)}</span>`:''}${techLogsRowBadge(r,'proof')}</td>`:'';
@@ -9907,8 +10050,19 @@ function renderProof(){
 // كل المناديب مع بعض (أو مندوب واحد بالفلتر) عشان الإدارة تتابع مين لسه واخد حالات
 // ومسلّمهاش، ومين خلّص فعلاً. الصفحة دي مش بتضيف/تعدّل أي بيانات في dafter/proof/
 // archive ولا في اللوج نفسه — قراءة بس.
-const DD_RESET_CUTOFF=new Date('2026-07-22T00:00:00').getTime(); // نفس تاريخ تصفير بورتال المناديب بالظبط
+// ⚠️ تحديث منطق التسليمات (٢٠٢٦-٠٧-٢٩): نفس منطق بورتال المناديب بالظبط — أي نقل
+// جديد (دفتر→بروفة أو بروفة→أرشيف) يظهر هنا فورًا من غير أي شرط تاريخ، المعيار الوحيد
+// عدم وجود تأكيد تسليم. الاستثناء الوحيد: أرصدة البروفة والأرشيف الساكنة من قبل
+// الـ Cutoff بتاعها (تتجاهل عشان دي أصلًا حالات اتسلّمت فعلاً من قبل الفيتشر ده)،
+// لكن أي واحدة فيهم تظهر عادي لما تتنقل بعد الـ Cutoff.
+const PROOF_BACKLOG_CUTOFF=new Date('2026-07-29T00:00:00').getTime();
+// مرآة بالظبط لـ ARCHIVE_BACKLOG_CUTOFF في delegates-portal.html — لازم القيمتين
+// يفضلوا متطابقين تمامًا عشان الصفحة الإدارية هنا متعرضش حالات مختلفة عن اللي
+// المندوب شايفها في بورتاله.
+const ARCHIVE_BACKLOG_CUTOFF=new Date('2026-07-29T09:30:00').getTime();
+const LATE_SLA_HOURS=10;
 function _ddConfirmedIds(log){return new Set(log.filter(function(h){return h.handoverStatus==='delivered';}).map(function(h){return h.sourceId;}).filter(Boolean));}
+function _ddLateReasonFor(lateReasons,sourceId,delivType){return lateReasons.find(function(x){return x.sourceId===sourceId&&x.deliveryType===delivType;})||null;}
 function renderDelegateDeliveries(){
   const dgSel=document.getElementById('dd-delegate');
   if(dgSel){
@@ -9921,13 +10075,13 @@ function renderDelegateDeliveries(){
   const from=document.getElementById('dd-from')?.value||'';
   const to=document.getElementById('dd-to')?.value||'';
   const log=DB.get('delegateHandoverLog')||[];
+  const lateReasons=DB.get('delegateLateReasons')||[];
   const confirmedIds=_ddConfirmedIds(log);
   const proof=(DB.get('proof')||[]).filter(function(r){return r.delegate;});
   const archive=(DB.get('archive')||[]).filter(function(r){return r.delegate;});
 
-  const proofItems=proof.filter(function(r){return !confirmedIds.has(r.id)&&(+r.createdAt||0)>=DD_RESET_CUTOFF;}).map(function(r){return Object.assign({},r,{delivType:'بروفة'});});
-  const archCutoff=Math.max(Date.now()-30*24*60*60*1000,DD_RESET_CUTOFF);
-  const finalItems=archive.filter(function(r){return !confirmedIds.has(r.id)&&(+r.archivedAt||0)>=archCutoff;}).map(function(r){return Object.assign({},r,{delivType:'نهائي'});});
+  const proofItems=proof.filter(function(r){return !confirmedIds.has(r.id)&&(+r.movedAt||+r.createdAt||0)>=PROOF_BACKLOG_CUTOFF;}).map(function(r){return Object.assign({},r,{delivType:'بروفة'});});
+  const finalItems=archive.filter(function(r){return !confirmedIds.has(r.id)&&(+r.archivedAt||0)>=ARCHIVE_BACKLOG_CUTOFF;}).map(function(r){return Object.assign({},r,{delivType:'نهائي'});});
   let pending=proofItems.concat(finalItems);
   if(filterDg)pending=pending.filter(function(r){return r.delegate===filterDg;});
   pending.sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);});
@@ -9955,12 +10109,20 @@ function renderDelegateDeliveries(){
   const pendEl=document.getElementById('dd-pending');
   if(pendEl){
     pendEl.innerHTML=pending.length?pending.map(function(r){
+      const enteredAt=r.delivType==='بروفة'?(+r.movedAt||+r.createdAt||0):(+r.archivedAt||0);
+      const hoursLate=(Date.now()-enteredAt)/3600000;
+      const isOverdue=hoursLate>=LATE_SLA_HOURS;
+      const lateReason=isOverdue?_ddLateReasonFor(lateReasons,r.id,r.delivType):null;
+      const lateHtml=!isOverdue?'':lateReason
+        ?'<div style="margin-top:6px;font-size:11px;color:var(--text3);background:rgba(239,68,68,.08);border-radius:8px;padding:5px 8px">⏰ متأخر · السبب: '+esc(lateReason.reason)+'</div>'
+        :'<div style="margin-top:6px;font-size:11px;font-weight:700;color:var(--red)">⏰ متأخر '+Math.floor(hoursLate)+' ساعة — لسه من غير سبب</div>';
       return '<div style="background:var(--bg2);border:1px solid var(--border);border-right:3px solid var(--orange);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
         +'<div>'
         +'<div style="font-weight:800;font-size:13.5px">'+esc(r.client||'—')+'</div>'
         +(r.noteName?'<div style="font-size:12px;color:var(--teal)">👤 '+esc(r.noteName)+'</div>':'')
         +'<div style="font-size:11px;color:var(--text3)">#'+esc(String(r.caseId||'—'))+' · '+esc(r.product||'—')+(r.qty>1?' × '+r.qty:'')+'</div>'
         +'<div style="font-size:11px;color:var(--text3)">📅 '+esc(r.date||'—')+'</div>'
+        +lateHtml
         +'</div>'
         +'<div style="text-align:left;white-space:nowrap">'+badge(esc(r.delivType),'bg-orange')+'<br>'+badge('🚗 '+esc(r.delegate||'—'),'bg-teal')+'</div>'
         +'</div>';
@@ -9981,6 +10143,29 @@ function renderDelegateDeliveries(){
         +'</div>';
     }).join(''):'<div class="empty"><div class="ei">✅</div><p>لا يوجد تسليمات مؤكَّدة مطابقة للفلتر</p></div>';
   }
+  _renderNeglectAlertsAdmin();
+}
+
+// ⚠️ FEAT #NEGLECT-ALERTS: قرارات المندوب على تنبيهات "عميل مهمَل" (٧ أيام من غير
+// استلام/تسليم) — بلاغ توثيقي بس من data/shared/delegateClientNeglectAlerts، مقروء
+// هنا فقط، ومقصور على المدير (role==='admin') بالظبط — مش أي موظف عنده صلاحية صفحة
+// "تسليمات المناديب"، حتى لو كانت ممنوحة له.
+function _renderNeglectAlertsAdmin(){
+  const card=document.getElementById('dd-neglect-card');
+  if(!card)return;
+  if(window._currentUser?.role!=='admin'){card.style.display='none';return;}
+  card.style.display='';
+  const wrap=document.getElementById('dd-neglect-list');
+  if(!wrap)return;
+  const list=(DB.get('delegateClientNeglectAlerts')||[]).slice().sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);}).slice(0,50);
+  if(!list.length){wrap.innerHTML='<div class="empty"><p>مفيش تنبيهات عملاء مهملين مسجّلة</p></div>';return;}
+  wrap.innerHTML=list.map(function(r){
+    const decLabel=r.decision==='follow'?'<span style="color:var(--green);font-weight:700">📅 هيتابع</span>':'<span style="color:var(--red);font-weight:700">🚫 رفض المتابعة دلوقتي</span>';
+    return '<div style="padding:9px 0;border-bottom:1px solid var(--border);font-size:12.5px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">'
+      +'<div><strong>'+esc(r.client||'-')+'</strong> <span style="color:var(--text3)">— 🚗 '+esc(r.delegateName||'-')+'</span></div>'
+      +'<div>'+decLabel+' <span style="color:var(--text3)">· '+esc(r.date||'-')+'</span></div>'
+      +'</div>';
+  }).join('');
 }
 
 function returnToDafter(){
