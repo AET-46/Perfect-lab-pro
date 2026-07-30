@@ -1850,7 +1850,7 @@ body.theme-glass .ph h2{color:var(--blue2)}
             <button class="btn btn-blue btn-sm" onclick="printClientCardPaged()">🖨️ طباعة / PDF</button>
             <button class="btn btn-red btn-sm" id="cc-pdf-btn" onclick="downloadClientCardDetailedPDF()">📄 تحميل PDF تفصيلي</button>
             <button class="btn btn-green btn-sm" onclick="sendClientCardWA()">💬 واتساب ملخص</button>
-            <button class="btn btn-orange btn-sm" onclick="downloadClientCardImage()">⬇️ تحميل صورة</button>
+            <button class="btn btn-orange btn-sm" onclick="downloadClientCardImage()">⬇️ تحميل صورة HD</button>
             <button class="btn btn-purple btn-sm" onclick="shareClientCardImage()">📤 مشاركة واتساب</button>
           </div>
         </div>
@@ -4286,7 +4286,7 @@ body.theme-glass .ph h2{color:var(--blue2)}
   <div class="modal modal-md">
     <div class="mh" style="background:linear-gradient(135deg,#2d1a0a,#1a0f05)"><h3 style="color:#ffb74d">إشعار بروفه</h3><div class="mc-btn" onclick="closeOv('ov-proof-notif')">✕</div></div>
     <div class="mb" id="proof-notif-body"></div>
-    <div class="mf" id="proof-static-footer"><button class="btn btn-green" id="proof-wa-btn">💬 واتساب</button><button class="btn btn-ghost" id="proof-copy-btn">📋 نسخ</button><button class="btn btn-ghost" id="proof-image-btn">🖼️ صورة</button><button class="btn btn-ghost" onclick="closeOv('ov-proof-notif')">إغلاق</button></div>
+    <div class="mf" id="proof-static-footer"><button class="btn btn-green" id="proof-wa-btn">💬 واتساب</button><button class="btn btn-ghost" id="proof-copy-btn">📋 نسخ</button><button class="btn btn-ghost" id="proof-image-btn">🖼️ صورة</button><button class="btn btn-ghost" id="proof-hd-btn">📥 HD</button><button class="btn btn-ghost" onclick="closeOv('ov-proof-notif')">إغلاق</button></div>
   </div>
 </div>
 
@@ -10784,14 +10784,14 @@ function sendTrNotif(id){
 function _finInfoTile(icon,label,val,bg,iconBg,iconShadow){
   return '<div style="flex:1 1 45%;background:'+bg+';border-radius:16px;padding:14px 8px;text-align:center">'
     +'<div style="width:40px;height:40px;border-radius:12px;background:'+iconBg+';color:#fff;font-size:18px;line-height:40px;margin:0 auto 8px;box-shadow:0 4px 10px '+iconShadow+'">'+icon+'</div>'
-    +'<div style="font-size:11.5px;color:#8A8FA3;font-weight:700">'+label+'</div>'
+    +'<div style="font-size:12px;color:#5B6472;font-weight:700">'+label+'</div>'
     +'<div style="font-size:15px;font-weight:900;color:#211C36;margin-top:2px;word-break:break-word"><bdi style="direction:ltr;unicode-bidi:isolate">'+val+'</bdi></div>'
     +'</div>';
 }
 function _finFooterRow(icon,val,label,bg){
   return '<div style="display:flex;align-items:center;gap:9px">'
     +'<div style="width:30px;height:30px;border-radius:50%;background:'+bg+';display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">'+icon+'</div>'
-    +'<span style="color:#EDE9F7;font-size:13px;font-weight:700"><bdi style="direction:ltr;unicode-bidi:isolate">'+esc(val)+'</bdi>'+(label?' <span style="color:#a99fc7;font-size:10.5px">'+label+'</span>':'')+'</span>'
+    +'<span style="color:#EDE9F7;font-size:13px;font-weight:700"><bdi style="direction:ltr;unicode-bidi:isolate">'+esc(val)+'</bdi>'+(label?' <span style="color:#D8CBF0;font-size:11px;font-weight:700">'+label+'</span>':'')+'</span>'
     +'</div>';
 }
 function _finLastPaymentRow(t,isLast){
@@ -10799,7 +10799,7 @@ function _finLastPaymentRow(t,isLast){
   return '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;'+(isLast?'':'border-bottom:1px solid #f3f0fb')+';background:'+(isLast?'#fff':'#FCFAFF')+'">'
     +'<div style="display:flex;align-items:center;gap:8px"><span style="width:24px;height:24px;border-radius:50%;background:#F0E9FA;color:'+purple+';display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">👤</span>'
     +'<span style="font-size:14px;color:#555;font-weight:700">('+esc(t.receiver||'—')+')</span></div>'
-    +'<span style="font-size:12.5px;color:#9aa"><bdi style="direction:ltr;unicode-bidi:isolate">'+esc(t.date||'—')+'</bdi></span>'
+    +'<span style="font-size:12.5px;color:#6B7280;font-weight:700"><bdi style="direction:ltr;unicode-bidi:isolate">'+esc(t.date||'—')+'</bdi></span>'
     +'<div style="display:flex;align-items:center;gap:6px"><span style="width:22px;height:22px;border-radius:50%;background:#168A58;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">✓</span>'
     +'<span style="font-size:16px;font-weight:900;color:#0F6B44"><bdi style="direction:ltr;unicode-bidi:isolate">'+fmt(t.amount)+'</bdi></span></div>'
     +'</div>';
@@ -10839,7 +10839,7 @@ function _finNoticeDocHTML(tr,cl,li,c){
     +'<span style="font-size:42px;color:'+accent+'">'+(isIn?'✔':'✕')+'</span>'
     +'</div></div></div>'
     +'<div style="font-size:21px;font-weight:900;color:#1E1B33;margin-top:14px">'+(isIn?'تم تسجيل دفعتكم بنجاح':'تم تسجيل الصرف بنجاح')+'</div>'
-    +'<div style="display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap;font-size:12px;color:#8A8FA3;margin-top:4px">'
+    +'<div style="display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap;font-size:12.5px;font-weight:700;color:#6B7280;margin-top:4px">'
     +'<span>رقم الحركة</span><bdi style="direction:ltr;unicode-bidi:isolate">T-'+esc(String(tr.num||''))+'</bdi>'
     +'<span style="color:#c7cbd8">•</span>'
     +'<span>التاريخ</span><bdi style="direction:ltr;unicode-bidi:isolate">'+esc(tr.date||'')+'</bdi>'
@@ -10863,7 +10863,7 @@ function _finNoticeDocHTML(tr,cl,li,c){
     +_finInfoTile('🧑','المستلم',esc(tr.receiver||'—'),'#EAFBF6','linear-gradient(135deg,#2DD4BF,#0F9C8E)','rgba(15,156,142,.35)')
     +'<div style="flex:1 1 100%;background:#FBF8FF;border:1px solid #EFE7FF;border-radius:16px;padding:12px 14px;display:flex;align-items:center;gap:10px">'
     +'<div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#8B5CF6,'+purpleDark+');color:#fff;font-size:17px;display:flex;align-items:center;justify-content:center;flex-shrink:0">👤</div>'
-    +'<div><div style="font-size:11px;color:#8A8FA3;font-weight:700">العميل</div>'
+    +'<div><div style="font-size:11.5px;color:#5B6472;font-weight:700">العميل</div>'
     +'<div style="font-size:15px;font-weight:900;color:#211C36">'+esc(tr.accName||'—')+'</div></div>'
     +'</div>'
     +'</div>'
@@ -11170,41 +11170,41 @@ const PR_TEMPLATES = {
     id: 'navyGold',
     name: 'الكحلي والذهبي',
     render(ctx){
-      const {li,c,dateStr,clientName,addrParts,phone,pageBadge,itemsRows,rowTotal,discountTotal,grossBeforeDiscount,grandDebt,showTotalsCol,showDebt}=ctx;
+      const {li,c,dateStr,clientName,addrParts,phone,pageBadge,itemsRows,rowTotal,discountTotal,grossBeforeDiscount,grandDebt,showTotalsCol,showDebt,cashier}=ctx;
       return `<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <style>
     *{font-family:'Cairo',sans-serif;box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
-    body{background:#f0f2f7;color:#1a1d2e;padding:18px}
-    .pr-doc{max-width:780px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,.08)}
-    .pr-head{background:linear-gradient(135deg,#0d1b2a,#1a2e4a);color:#fff;padding:24px 28px;display:flex;justify-content:space-between;align-items:flex-start}
-    .pr-head h2{font-size:21px;font-weight:900;color:#e8c96a}
-    .pr-head .sub{font-size:11px;opacity:.7;margin-top:4px}
-    .pr-head .meta{text-align:left;font-size:11px;opacity:.85;line-height:1.9}
+    body{background:#f0f2f7;color:#1a1d2e;padding:${cashier?'8px':'18px'}}
+    .pr-doc{max-width:${cashier?'300px':'780px'};margin:0 auto;background:#fff;border-radius:${cashier?'0':'14px'};overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,.08)}
+    .pr-head{background:linear-gradient(135deg,#0d1b2a,#1a2e4a);color:#fff;padding:${cashier?'16px 16px':'24px 28px'};display:flex;${cashier?'flex-direction:column;gap:6px':'justify-content:space-between;align-items:flex-start'}}
+    .pr-head h2{font-size:${cashier?'18px':'22px'};font-weight:900;color:#e8c96a}
+    .pr-head .sub{font-size:${cashier?'11.5px':'12px'};opacity:.85;margin-top:4px;font-weight:700}
+    .pr-head .meta{text-align:${cashier?'right':'left'};font-size:${cashier?'11.5px':'12px'};opacity:.9;line-height:1.9;font-weight:700}
     .pr-badge-wrap{text-align:center;margin:18px 0 10px}
-    .pr-badge{background:linear-gradient(135deg,#0d1b2a,#1a2e4a);color:#e8c96a;padding:7px 26px;border-radius:20px;font-size:13px;font-weight:900;letter-spacing:.5px;display:inline-block}
-    .pr-meta-name{margin:0 28px 10px;background:#f8f9fc;border:1px solid #e8eaf2;border-radius:9px;padding:9px 14px}
-    .pr-meta-name label{display:block;font-size:9.5px;color:#555555;font-weight:700;margin-bottom:3px}
-    .pr-meta-name span{font-size:15px;font-weight:900;color:#0d1b2a}
-    .pr-meta-box{margin:0 28px 14px;background:#f8f9fc;border:1px solid #e8eaf2;border-radius:9px;padding:2px 14px}
-    .pr-meta-row{display:flex;justify-content:space-between;gap:14px;padding:5px 0;font-size:11.5px;line-height:1.3}
+    .pr-badge{background:linear-gradient(135deg,#0d1b2a,#1a2e4a);color:#e8c96a;padding:7px 26px;border-radius:20px;font-size:${cashier?'13px':'14px'};font-weight:900;letter-spacing:.5px;display:inline-block}
+    .pr-meta-name{margin:0 ${cashier?'14px':'28px'} 10px;background:#f8f9fc;border:1px solid #e8eaf2;border-radius:9px;padding:9px 14px}
+    .pr-meta-name label{display:block;font-size:10px;color:#555555;font-weight:700;margin-bottom:3px}
+    .pr-meta-name span{font-size:${cashier?'15px':'17px'};font-weight:900;color:#0d1b2a}
+    .pr-meta-box{margin:0 ${cashier?'14px':'28px'} 14px;background:#f8f9fc;border:1px solid #e8eaf2;border-radius:9px;padding:2px 14px}
+    .pr-meta-row{display:flex;justify-content:space-between;gap:14px;padding:5px 0;font-size:${cashier?'12.5px':'13px'};line-height:1.3;font-weight:600}
     .pr-meta-row+.pr-meta-row{border-top:1px solid #eceff7}
-    .pr-meta-row .k{color:#555555;font-size:10px;font-weight:700;white-space:nowrap;padding-top:1px}
+    .pr-meta-row .k{color:#555555;font-size:${cashier?'10.5px':'11px'};font-weight:700;white-space:nowrap;padding-top:1px}
     .pr-meta-row .v{color:#0d1b2a;font-weight:700;text-align:left}
-    .pr-table-wrap{margin:0 28px 16px;overflow-x:auto}
-    .pr-table{width:100%;min-width:480px;border-collapse:collapse;font-size:12px}
-    .pr-table thead th{background:#0d1b2a;color:#e8c96a;padding:9px 11px;text-align:right;font-size:12.5px;font-weight:900;white-space:nowrap}
+    .pr-table-wrap{margin:0 ${cashier?'14px':'28px'} 16px;overflow-x:auto}
+    .pr-table{width:100%;min-width:${cashier?'0':'480px'};border-collapse:collapse;font-size:${cashier?'12.5px':'13.5px'}}
+    .pr-table thead th{background:#0d1b2a;color:#e8c96a;padding:${cashier?'7px 6px':'9px 11px'};text-align:right;font-size:${cashier?'12px':'13.5px'};font-weight:900;white-space:nowrap}
     .pr-table thead th:first-child{border-radius:0 7px 7px 0}
     .pr-table thead th:last-child{border-radius:7px 0 0 7px}
-    .pr-table tbody td{padding:9px 11px;border-bottom:1px solid #eceff7}
+    .pr-table tbody td{padding:${cashier?'7px 6px':'9px 11px'};border-bottom:1px solid #eceff7;font-weight:600}
     .pr-table tbody tr:nth-child(even) td{background:#f6f7fc}
-    .pr-totals{margin:0 28px 18px;background:#f8f9fc;border:1px solid #e8eaf2;border-radius:10px;padding:14px 18px}
-    .pr-tot-row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0}
-    .pr-tot-row.grand{font-size:15px;font-weight:900;color:#0d1b2a;border-top:1px dashed #ccc;margin-top:6px;padding-top:10px}
-    .pr-foot{background:#f8f9fc;border-top:1px solid #e8eaf2;padding:16px 28px;text-align:center}
-    .pr-foot .msg{font-size:12px;font-weight:700;color:#0d1b2a;margin-bottom:6px}
-    .pr-foot .contacts{font-size:10.5px;color:#666}
-    @media print{body{background:#fff;padding:0}.pr-doc{box-shadow:none;border-radius:0;max-width:100%}.pr-table-wrap{overflow:visible!important}.pr-table{min-width:0!important}@page{size:A4;margin:10mm}}
+    .pr-totals{margin:0 ${cashier?'14px':'28px'} 18px;background:#f8f9fc;border:1px solid #e8eaf2;border-radius:10px;padding:14px 18px}
+    .pr-tot-row{display:flex;justify-content:space-between;font-size:${cashier?'13px':'14.5px'};padding:5px 0;font-weight:700}
+    .pr-tot-row.grand{font-size:${cashier?'16px':'17.5px'};font-weight:900;color:#0d1b2a;border-top:1px dashed #ccc;margin-top:6px;padding-top:10px}
+    .pr-foot{background:#f8f9fc;border-top:1px solid #e8eaf2;padding:${cashier?'12px 16px':'16px 28px'};text-align:center}
+    .pr-foot .msg{font-size:${cashier?'12.5px':'13.5px'};font-weight:700;color:#0d1b2a;margin-bottom:6px}
+    .pr-foot .contacts{font-size:${cashier?'11px':'11.5px'};color:#555;font-weight:600}
+    @media print{body{background:#fff;padding:0}.pr-doc{box-shadow:none;border-radius:0;max-width:100%}.pr-table-wrap{overflow:visible!important}.pr-table{min-width:0!important}}
   </style></head><body>
   <div class="pr-doc">
     <div class="pr-head">
@@ -11243,6 +11243,20 @@ const PR_TEMPLATES = {
       <div class="contacts">${[li.ph1?'📞 '+li.ph1:'',li.ph2?'📞 '+li.ph2:'',li.wa?'💬 '+li.wa:'',li.addr?'📍 '+li.addr:''].filter(Boolean).join('  •  ')}</div>
     </div>
   </div>
+  <script>
+    window.addEventListener('load',function(){
+      try{
+        var doc=document.querySelector('.pr-doc');
+        if(!doc)return;
+        var h=doc.getBoundingClientRect().height;
+        var mm=Math.ceil(h/3.7795275591)+${cashier?'8':'20'};
+        var pageWidth=${cashier?"'80mm'":"'210mm'"};
+        var st=document.createElement('style');
+        st.textContent='@page{size:'+pageWidth+' '+mm+'mm;margin:${cashier?'4mm':'10mm'}}';
+        document.head.appendChild(st);
+      }catch(e){}
+    });
+  <\/script>
   </body></html>`;
     }
   },
@@ -11250,31 +11264,34 @@ const PR_TEMPLATES = {
     id: 'classicWhite',
     name: 'عالمي كلاسيك (أبيض/رمادي)',
     render(ctx){
-      const {li,c,dateStr,clientName,addrParts,phone,pageBadge,itemsRows,rowTotal,discountTotal,grossBeforeDiscount,grandDebt,showTotalsCol,showDebt}=ctx;
+      const {li,c,dateStr,clientName,addrParts,phone,pageBadge,itemsRows,rowTotal,discountTotal,grossBeforeDiscount,grandDebt,showTotalsCol,showDebt,cashier}=ctx;
       // نفس صفوف itemsRows لكن بدون التلوين الغامق الخاص بقالب navyGold — نعيد بناءها بشكل محايد
+      // FIX #PR-CASHIER-SIZE: وضع الكاشير بياخد عرض ورق حراري ضيق (80مم) مع رأس مرصوص فوق بعضه
+      // بدل صفين متجاورين (مش هيسعوا في 80مم) — ونحسب طول الصفحة تلقائيًا بعد الرسم بدل ما تتقص
+      // على A4 كامل ويطلع باقي الورقة فاضي.
       return `<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <style>
     *{font-family:'Cairo',sans-serif;box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
     body{background:#fff;color:#222;padding:0}
-    .in-doc{max-width:780px;margin:0 auto;padding:34px 36px;border:1px solid #ddd}
-    .in-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #33475c;padding-bottom:16px;margin-bottom:20px}
-    .in-head h1{font-size:22px;font-weight:900;color:#33475c}
-    .in-head .sub{font-size:10.5px;color:#888;margin-top:4px}
-    .in-head .title{text-align:left}
-    .in-head .title .badge-txt{font-size:20px;font-weight:900;letter-spacing:2px;color:#33475c;text-transform:uppercase}
-    .in-head .title .date{font-size:11.5px;color:#666;margin-top:6px}
+    .in-doc{max-width:${cashier?'300px':'780px'};margin:0 auto;padding:${cashier?'16px 14px':'34px 36px'};border:1px solid #ddd}
+    .in-head{display:flex;${cashier?'flex-direction:column;gap:6px;border-bottom:2px dashed #33475c':'justify-content:space-between;align-items:flex-start;border-bottom:3px solid #33475c'};padding-bottom:16px;margin-bottom:20px}
+    .in-head h1{font-size:${cashier?'20px':'24px'};font-weight:900;color:#33475c}
+    .in-head .sub{font-size:${cashier?'12px':'12.5px'};color:#555;margin-top:4px;font-weight:700}
+    .in-head .title{text-align:${cashier?'right':'left'}}
+    .in-head .title .badge-txt{font-size:${cashier?'16px':'22px'};font-weight:900;letter-spacing:1px;color:#33475c;text-transform:uppercase}
+    .in-head .title .date{font-size:${cashier?'12px':'13px'};color:#444;margin-top:6px;font-weight:700}
     .in-billto{margin-bottom:20px}
-    .in-billto .nm{font-size:17px;font-weight:900;color:#222}
-    .in-billto .info{font-size:11.5px;color:#555;margin-top:3px;line-height:1.6}
-    .in-table{width:100%;border-collapse:collapse;margin-bottom:18px;font-size:12px}
-    .in-table thead th{border-bottom:2px solid #33475c;padding:10px 8px;text-align:right;font-size:12.5px;font-weight:900;color:#33475c;letter-spacing:.2px}
-    .in-table tbody td{padding:10px 8px;border-bottom:1px solid #e5e5e5}
-    .in-totals{margin-right:auto;max-width:280px;margin-left:0}
-    .in-tot-row{display:flex;justify-content:space-between;font-size:12.5px;padding:6px 0;color:#555}
-    .in-tot-row.grand{font-size:16px;font-weight:900;color:#33475c;border-top:2px solid #33475c;margin-top:6px;padding-top:10px}
-    .in-foot{margin-top:28px;padding-top:14px;border-top:1px solid #e5e5e5;text-align:center;font-size:10.5px;color:#888}
-    @media print{body{padding:0}.in-doc{border:none;max-width:100%}@page{margin:10mm}}
+    .in-billto .nm{font-size:${cashier?'17px':'19px'};font-weight:900;color:#222}
+    .in-billto .info{font-size:${cashier?'12.5px':'13px'};color:#444;margin-top:3px;line-height:1.7;font-weight:600}
+    .in-table{width:100%;border-collapse:collapse;margin-bottom:18px;font-size:${cashier?'12.5px':'13.5px'}}
+    .in-table thead th{border-bottom:2px solid #33475c;padding:${cashier?'7px 5px':'10px 8px'};text-align:right;font-size:${cashier?'12px':'13.5px'};font-weight:900;color:#33475c;letter-spacing:.2px}
+    .in-table tbody td{padding:${cashier?'7px 5px':'10px 8px'};border-bottom:1px solid #e5e5e5;font-weight:600}
+    .in-totals{margin-right:auto;max-width:${cashier?'100%':'280px'};margin-left:0}
+    .in-tot-row{display:flex;justify-content:space-between;font-size:${cashier?'13px':'14px'};padding:6px 0;color:#444;font-weight:700}
+    .in-tot-row.grand{font-size:${cashier?'16px':'18px'};font-weight:900;color:#33475c;border-top:2px solid #33475c;margin-top:6px;padding-top:10px}
+    .in-foot{margin-top:28px;padding-top:14px;border-top:1px solid #e5e5e5;text-align:center;font-size:${cashier?'11.5px':'12px'};color:#666;font-weight:700}
+    @media print{body{padding:0}.in-doc{border:none;max-width:100%}@page{margin:${cashier?'4mm':'10mm'}}}
   </style></head><body>
   <div class="in-doc">
     <div class="in-head">
@@ -11304,9 +11321,10 @@ const PR_TEMPLATES = {
         var doc=document.querySelector('.in-doc');
         if(!doc)return;
         var h=doc.getBoundingClientRect().height;
-        var mm=Math.ceil(h/3.7795275591)+20;
+        var mm=Math.ceil(h/3.7795275591)+${cashier?'8':'20'};
+        var pageWidth=${cashier?"'80mm'":"'210mm'"};
         var st=document.createElement('style');
-        st.textContent='@page{size:210mm '+mm+'mm;margin:10mm}';
+        st.textContent='@page{size:'+pageWidth+' '+mm+'mm;margin:${cashier?'4mm':'10mm'}}';
         document.head.appendChild(st);
       }catch(e){}
     });
@@ -11318,7 +11336,7 @@ const PR_TEMPLATES = {
     id: 'foodTicket',
     name: 'تيكيت دافي (الافتراضي)',
     render(ctx){
-      const {li,c,dateStr,clientName,addrParts,phone,pageBadge,rows,rowTotal,discountTotal,grossBeforeDiscount,grandDebt,showTotalsCol,showDebt}=ctx;
+      const {li,c,dateStr,clientName,addrParts,phone,pageBadge,rows,rowTotal,discountTotal,grossBeforeDiscount,grandDebt,showTotalsCol,showDebt,cashier}=ctx;
       const itemsHtml=rows.map(r=>`
         <div class="fd-item">
           <span class="nm2">${esc(r.noteName||'—')} — ${esc(r.product||'—')}</span>
@@ -11331,32 +11349,32 @@ const PR_TEMPLATES = {
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <style>
     *{font-family:'Cairo',sans-serif;box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
-    body{background:#e9ddc9;padding:24px}
-    .fd-doc{max-width:760px;margin:0 auto;background:#fffaf0;border:3px solid #c0552d;border-radius:18px;padding:0;overflow:hidden;position:relative}
-    .fd-head{background:#fffaf0;border-bottom:4px solid #c0552d;color:#000;padding:20px 30px;text-align:center;position:relative}
-    .fd-head .nm{font-size:23px;font-weight:900;letter-spacing:.5px;color:#000}
-    .fd-head .sub{font-size:11px;color:#3a2e1e;margin-top:4px;letter-spacing:1px;font-weight:600}
+    body{background:#e9ddc9;padding:${cashier?'10px':'24px'}}
+    .fd-doc{max-width:${cashier?'300px':'760px'};margin:0 auto;background:#fffaf0;border:3px solid #c0552d;border-radius:${cashier?'8px':'18px'};padding:0;overflow:hidden;position:relative}
+    .fd-head{background:#fffaf0;border-bottom:4px solid #c0552d;color:#000;padding:${cashier?'14px 16px':'20px 30px'};text-align:center;position:relative}
+    .fd-head .nm{font-size:${cashier?'19px':'25px'};font-weight:900;letter-spacing:.5px;color:#000}
+    .fd-head .sub{font-size:${cashier?'11.5px':'12.5px'};color:#3a2e1e;margin-top:4px;letter-spacing:.5px;font-weight:700}
     .fd-ticket{text-align:center;margin:-16px 0 0}
-    .fd-ticket span{display:inline-block;background:#fffaf0;color:#000;font-weight:900;font-size:15px;padding:8px 30px;border-radius:22px;border:3px solid #c0552d;letter-spacing:.5px}
-    .fd-body{padding:26px 32px}
+    .fd-ticket span{display:inline-block;background:#fffaf0;color:#000;font-weight:900;font-size:${cashier?'13px':'16px'};padding:${cashier?'7px 20px':'8px 30px'};border-radius:22px;border:3px solid #c0552d;letter-spacing:.5px}
+    .fd-body{padding:${cashier?'18px 16px':'26px 32px'}}
     .fd-row-2{display:flex;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
-    .fd-cell .lbl{font-size:10px;color:#5a4a35;font-weight:700;letter-spacing:1px;text-transform:uppercase}
-    .fd-cell .val{font-size:15px;font-weight:900;color:#000;margin-top:3px}
-    .fd-cell .sub2{font-size:11.5px;color:#000;font-weight:600;margin-top:2px}
+    .fd-cell .lbl{font-size:${cashier?'10.5px':'11px'};color:#5a4a35;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+    .fd-cell .val{font-size:${cashier?'15px':'16.5px'};font-weight:900;color:#000;margin-top:3px}
+    .fd-cell .sub2{font-size:${cashier?'12px':'12.5px'};color:#000;font-weight:700;margin-top:2px}
     .fd-divider{border:none;border-top:2px dashed #c0552d;margin:16px 0}
     .fd-item{display:flex;align-items:baseline;gap:8px;padding:10px 0}
-    .fd-item .nm2{font-size:14px;font-weight:700;color:#000;white-space:nowrap}
+    .fd-item .nm2{font-size:${cashier?'13.5px':'15px'};font-weight:700;color:#000;white-space:nowrap}
     .fd-item .dots{flex:1;border-bottom:2px dotted #c0552d;transform:translateY(-4px)}
-    .fd-item .qty2{font-size:11.5px;color:#000;font-weight:600;white-space:nowrap}
-    .fd-item .price{font-size:15px;font-weight:900;color:#000;white-space:nowrap}
+    .fd-item .qty2{font-size:${cashier?'12px':'12.5px'};color:#000;font-weight:700;white-space:nowrap}
+    .fd-item .price{font-size:${cashier?'15px':'16.5px'};font-weight:900;color:#000;white-space:nowrap}
     .fd-totals{background:#fffaf0;border:2px solid #c0552d;border-radius:12px;padding:14px 18px;margin-top:16px}
-    .fd-tot-row{display:flex;justify-content:space-between;font-size:13px;color:#000;font-weight:600;padding:3px 0}
-    .fd-tot-row.grand{font-size:19px;font-weight:900;color:#000;border-top:2px dashed #c0552d;margin-top:6px;padding-top:10px}
-    .fd-foot{text-align:center;padding:18px 30px 24px;font-size:11.5px;color:#000}
-    .fd-foot .msg{font-size:14px;font-weight:900;color:#000;margin-bottom:8px}
-    .fd-foot .stamp{font-size:10.5px;color:#3a2e1e;font-weight:600;border-top:1px dashed #c0552d;padding-top:10px;margin-top:4px}
+    .fd-tot-row{display:flex;justify-content:space-between;font-size:${cashier?'13.5px':'14.5px'};color:#000;font-weight:700;padding:3px 0}
+    .fd-tot-row.grand{font-size:${cashier?'19px':'21px'};font-weight:900;color:#000;border-top:2px dashed #c0552d;margin-top:6px;padding-top:10px}
+    .fd-foot{text-align:center;padding:${cashier?'14px 16px 18px':'18px 30px 24px'};font-size:${cashier?'11.5px':'12.5px'};color:#000}
+    .fd-foot .msg{font-size:${cashier?'14px':'15.5px'};font-weight:900;color:#000;margin-bottom:8px}
+    .fd-foot .stamp{font-size:${cashier?'10.5px':'11px'};color:#3a2e1e;font-weight:700;border-top:1px dashed #c0552d;padding-top:10px;margin-top:4px}
     .fd-scallop{height:14px;background:radial-gradient(circle,#e9ddc9 8px,transparent 9px) 0 -7px/20px 20px repeat-x}
-    @media print{body{background:#fff;padding:0}.fd-doc{border-color:#000;max-width:100%}.fd-head{border-bottom-color:#000}.fd-ticket span{border-color:#000}.fd-divider{border-top-color:#000}.fd-item .dots{border-bottom-color:#000}.fd-totals{border-color:#000}.fd-tot-row.grand{border-top-color:#000}.fd-foot .stamp{border-top-color:#000}@page{size:A4;margin:10mm}}
+    @media print{body{background:#fff;padding:0}.fd-doc{border-color:#000;max-width:100%}.fd-head{border-bottom-color:#000}.fd-ticket span{border-color:#000}.fd-divider{border-top-color:#000}.fd-item .dots{border-bottom-color:#000}.fd-totals{border-color:#000}.fd-tot-row.grand{border-top-color:#000}.fd-foot .stamp{border-top-color:#000}}
   </style></head><body>
   <div class="fd-doc">
     <div class="fd-head">
@@ -11391,6 +11409,20 @@ const PR_TEMPLATES = {
     </div>
     <div class="fd-scallop"></div>
   </div>
+  <script>
+    window.addEventListener('load',function(){
+      try{
+        var doc=document.querySelector('.fd-doc');
+        if(!doc)return;
+        var h=doc.getBoundingClientRect().height;
+        var mm=Math.ceil(h/3.7795275591)+${cashier?'8':'20'};
+        var pageWidth=${cashier?"'80mm'":"'210mm'"};
+        var st=document.createElement('style');
+        st.textContent='@page{size:'+pageWidth+' '+mm+'mm;margin:${cashier?'4mm':'10mm'}}';
+        document.head.appendChild(st);
+      }catch(e){}
+    });
+  <\/script>
   </body></html>`;
     }
   }
@@ -11431,9 +11463,17 @@ function printRowsAsPRInvoice(tbId,page,forceTplId){
   // إن فيه خصم اتطرح — بند الخصم لازم يبان صراحةً على الفاتورة اللي بتوصل للعميل.
   const discountTotal=rows.reduce((s,r)=>s+(+r.discount||0),0);
   const grossBeforeDiscount=rows.reduce((s,r)=>s+(+(r.grossTotal!=null?r.grossTotal:r.total)||0),0);
-  const phone=rows[0]?.phone||'';
   const clInfo=(DB.get('clients')||[]).find(x=>x.name===clientName)||{};
+  // FIX #PR-INVOICE-PHONE: رقم الهاتف كان بيتاخد من الصف (rows[0].phone) وهو نسخة قديمة
+  // اتسجلت وقت إضافة الحالة وممكن تتكتب غلط أو تفضل قديمة لو العميل غيّر رقمه لاحقًا.
+  // بيانات العميل نفسه (clInfo) هي المصدر الصحيح والمحدَّث دايمًا — نفس منطق باقي الإشعارات.
+  const phone=_firstValidPhone(clInfo.wa,clInfo.phone)||rows[0]?.phone||'';
   const addrParts=[clInfo.addr,clInfo.city,clInfo.gov].filter(Boolean);
+  // FIX #PR-INVOICE-CASHIER-PAPER: اختيار "كاشير" في قائمة الطباعة كان بيتقرا بس لطباعة الصفحة
+  // كاملة (printPageRows) وبيتجاهله زر "فاتورة احترافية (PR)"، فكانت دايمًا بتطبع A4 كامل
+  // حتى لو المستخدم مختار كاشير — يطلع ورق فاضي كتير على طابعة الكاشير الحرارية.
+  const paperSel=document.querySelector(`input[name="${page}-paper"]:checked`);
+  const cashier=!!(paperSel&&paperSel.value==='cashier');
 
   // حجم الورق المختار من رزارير الطباعة — تم إلغاء تصميم الكاشير المنفصل بناءً على طلب المستخدم، فنفس القالب يُستخدم دائمًا
   const pageBadge={dafter:'📂 حالة قيد التنفيذ',proof:'🔬 بروفه',archive:'🧾 فاتورة مبيعات'}[page]||'فاتورة';
@@ -11456,7 +11496,7 @@ function printRowsAsPRInvoice(tbId,page,forceTplId){
   const tplId = forceTplId || getPRTemplateId();
   if(forceTplId) setPRTemplateId(forceTplId);
   const tpl = PR_TEMPLATES[tplId] || PR_TEMPLATES.foodTicket;
-  const html = tpl.render({li,c,dateStr,clientName,addrParts,phone,pageBadge,itemsRows,rows,rowTotal,discountTotal,grossBeforeDiscount,grandDebt,showTotalsCol,showDebt});
+  const html = tpl.render({li,c,dateStr,clientName,addrParts,phone,pageBadge,itemsRows,rows,rowTotal,discountTotal,grossBeforeDiscount,grandDebt,showTotalsCol,showDebt,cashier});
   _doPrint(html);
 }
 
@@ -13736,6 +13776,7 @@ function openProofNotifModal(clients){
           <button class="btn btn-green btn-sm" id="pfwa-${i}">💬 واتساب</button>
           <button class="btn btn-ghost btn-sm" id="pfcp-${i}">📋 نسخ</button>
           <button class="btn btn-ghost btn-sm" id="pfim-${i}">🖼️ صورة</button>
+          <button class="btn btn-ghost btn-sm" id="pfhd-${i}">📥 HD</button>
         </div>
       </div>
     </div>`;
@@ -13745,9 +13786,11 @@ function openProofNotifModal(clients){
     const waBtn=document.getElementById(`pfwa-${i}`);
     const cpBtn=document.getElementById(`pfcp-${i}`);
     const imBtn=document.getElementById(`pfim-${i}`);
+    const hdBtn=document.getElementById(`pfhd-${i}`);
     if(waBtn)waBtn.onclick=()=>wa(m.client.phone,m.msg,{client:m.client.name,type:'wa-proof',page:'البروفه'});
     if(cpBtn)cpBtn.onclick=()=>copyTxt(m.msg);
     if(imBtn)imBtn.onclick=()=>shareProofNoticeImage(m.client.name,m.client.ids||null);
+    if(hdBtn)hdBtn.onclick=()=>downloadProofNoticeImageHD(m.client.name,m.client.ids||null);
   });
   // Hide/show static footer based on single vs multi client
   const staticFoot=document.getElementById('proof-static-footer');
@@ -13757,10 +13800,12 @@ function openProofNotifModal(clients){
     const waBtn=document.getElementById('proof-wa-btn');
     const cpBtn=document.getElementById('proof-copy-btn');
     const imBtn=document.getElementById('proof-image-btn');
+    const hdBtn=document.getElementById('proof-hd-btn');
     // FIX #NOTIFLOG-META: كان يستدعي wa() بدون meta فيُسجَّل الإشعار بدون اسم عميل ونوع
     if(waBtn)waBtn.onclick=()=>wa(msgs[0].client.phone,msgs[0].msg,{client:msgs[0].client.name,type:'wa-proof',page:'البروفه'});
     if(cpBtn)cpBtn.onclick=()=>copyTxt(msgs[0].msg);
     if(imBtn)imBtn.onclick=()=>shareProofNoticeImage(msgs[0].client.name,msgs[0].client.ids||null);
+    if(hdBtn)hdBtn.onclick=()=>downloadProofNoticeImageHD(msgs[0].client.name,msgs[0].client.ids||null);
   }
   openOv('ov-proof-notif');
 }
@@ -13817,6 +13862,7 @@ function openMultiInvNotifModal(clients){
           <button class="btn btn-green btn-sm" id="ivwa-${i}">💬 واتساب</button>
           <button class="btn btn-ghost btn-sm" id="ivcp-${i}">📋 نسخ</button>
           <button class="btn btn-ghost btn-sm" id="ivim-${i}">🖼️ صورة</button>
+          <button class="btn btn-ghost btn-sm" id="ivhd-${i}">📥 HD</button>
         </div>
       </div>
     </div>`;
@@ -13827,9 +13873,11 @@ function openMultiInvNotifModal(clients){
     const waBtn=document.getElementById(`ivwa-${i}`);
     const cpBtn=document.getElementById(`ivcp-${i}`);
     const imBtn=document.getElementById(`ivim-${i}`);
+    const hdBtn=document.getElementById(`ivhd-${i}`);
     if(waBtn)waBtn.onclick=()=>wa(cl.phone,msg,{client:cl.name,type:'wa-inv',page:'الأرشيف'});
     if(cpBtn)cpBtn.onclick=()=>copyTxt(msg);
     if(imBtn)imBtn.onclick=()=>shareInvoiceNoticeImage(cl.name,cl.ids||null);
+    if(hdBtn)hdBtn.onclick=()=>downloadInvoiceNoticeImageHD(cl.name,cl.ids||null);
   });
   document.getElementById('inv-wa-btn').style.display='none';
   document.getElementById('inv-copy-btn').style.display='none';
@@ -14004,6 +14052,12 @@ function shareInvDocImage(){
   if(!nm||nm==='—'){toast('افتح فاتورة أولاً','err');return;}
   const msg=buildInvoiceMsg(nm,0,{},_invDocCtx&&_invDocCtx.clientName===nm?_invDocCtx.selectedIds:null);
   shareMsgAsImage(msg,'فاتورة-'+nm);
+}
+function shareInvDocImageHD(){
+  const nm=document.getElementById('inv-client-name')?.textContent;
+  if(!nm||nm==='—'){toast('افتح فاتورة أولاً','err');return;}
+  const msg=buildInvoiceMsg(nm,0,{},_invDocCtx&&_invDocCtx.clientName===nm?_invDocCtx.selectedIds:null);
+  downloadMsgAsImageHD(msg,'فاتورة-'+nm);
 }
 
 // ---- FINANCIAL NOTIF FROM TREASURY ----
@@ -18470,7 +18524,7 @@ function renderClientCard(){
   const statusColor={'unpaid':'var(--red)','partial':'var(--orange)','settled':'var(--green)','done':'var(--text3)'};
   if(ccOut)ccOut.innerHTML=`
     <div class="card">
-      <div class="card-head"><h3>🃏 كارت حساب — ${clientName}</h3><div style="display:flex;align-items:center;gap:10px"><span style="color:var(--text3);font-size:11px">${from||'البداية'} → ${to}</span><button class="btn btn-ghost btn-sm" onclick="shareStatementImage('${String(clientKey).replace(/'/g,"\\'")}','${from}','${to}')">🖼️ صورة كشف حساب</button></div></div>
+      <div class="card-head"><h3>🃏 كارت حساب — ${clientName}</h3><div style="display:flex;align-items:center;gap:10px"><span style="color:var(--text3);font-size:11px">${from||'البداية'} → ${to}</span><button class="btn btn-ghost btn-sm" onclick="shareStatementImage('${String(clientKey).replace(/'/g,"\\'")}','${from}','${to}')">🖼️ صورة كشف حساب</button><button class="btn btn-ghost btn-sm" onclick="downloadStatementImageHD('${String(clientKey).replace(/'/g,"\\'")}','${from}','${to}')">📥 HD</button></div></div>
       <div class="mb">
         <!-- ملخص حساب -->
         <div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:16px">
@@ -18669,6 +18723,7 @@ setTimeout(()=>{renderEmployees();},1000);
       <button class="ibtn ibtn-ghost" onclick="closeInvDoc()">✕ إغلاق</button>
       <button class="ibtn ibtn-ghost" onclick="copyInvMsg()">📋 نسخ الرسالة</button>
       <button class="ibtn ibtn-ghost" onclick="shareInvDocImage()">🖼️ صورة الرسالة</button>
+      <button class="ibtn ibtn-ghost" onclick="shareInvDocImageHD()">📥 HD</button>
       <button class="ibtn ibtn-blue" onclick="doPrintInv()">🖨️ طباعة</button>
       <button class="ibtn ibtn-green" id="inv-wa-btn">💬 إرسال واتساب</button>
     </div>
@@ -21719,9 +21774,10 @@ function _clientCardImageHTML(clientName,cl,res,from,to,c,li){
     +'<span>'+new Date().toLocaleDateString('ar-EG')+'</span>'
     +'</div></div>';
 }
-function _buildClientCardImage(cb){
+function _buildClientCardImage(cb,pixelRatio){
   // cb(blob, fileName, clientName) — عملية مشتركة: تجهيز البيانات + التصيير +
   // التحويل لصورة. مفصولة عن أي إجراء (تحميل/مشاركة) عشان الاتنين يستخدموها.
+  const pr=pixelRatio||2;
   const clientKey=document.getElementById('cc-client')?.value||'';
   if(!clientKey){toast('اختر عميلاً أولاً','err');return;}
   const {id:clientId,name:clientName}=_resolveClientKey(clientKey);
@@ -21742,7 +21798,7 @@ function _buildClientCardImage(cb){
     document.body.appendChild(holder);
     document.body.appendChild(overlay);
     setTimeout(function(){
-      window.htmlToImage.toBlob(holder,{pixelRatio:2,backgroundColor:'#ffffff'}).then(function(blob){
+      window.htmlToImage.toBlob(holder,{pixelRatio:pr,backgroundColor:'#ffffff'}).then(function(blob){
         holder.remove();overlay.remove();
         const fileName='كارت-'+clientName.replace(/[^ء-ي0-9a-zA-Z]/g,'_')+'-'+today()+'.png';
         if(!blob){toast('❌ تعذّر إنشاء الصورة','err');return;}
@@ -21765,7 +21821,7 @@ function downloadClientCardImage(){
     document.body.appendChild(a);a.click();a.remove();
     setTimeout(function(){URL.revokeObjectURL(url);},5000);
     toast('✅ اتحفظت الصورة في مجلد التنزيلات بجهازك','ok');
-  });
+  },5);
 }
 // زر المشاركة عبر واتساب — بيحاول Web Share API (لو الجلسة لسه فيها user
 // activation هيفتح شاشة المشاركة مباشرة بالملف)، ولو فشل لأي سبب (انتهت
@@ -21816,7 +21872,8 @@ function _msgImageHTML(msg){
 }
 // عملية مشتركة: تجهيز الصورة (نفس نمط _buildClientCardImage) — بترجع blob فاضي
 // مباشرة لأي زر (تحميل/مشاركة) يستخدمها.
-function _buildMsgImageBlob(msg,cb){
+function _buildMsgImageBlob(msg,cb,pixelRatio){
+  const pr=pixelRatio||2;
   toast('⏳ جارِ إنشاء الصورة...','ok');
   _loadHtml2Canvas(function(){
     const overlay=document.createElement('div');
@@ -21828,7 +21885,7 @@ function _buildMsgImageBlob(msg,cb){
     document.body.appendChild(holder);
     document.body.appendChild(overlay);
     setTimeout(function(){
-      window.htmlToImage.toBlob(holder.firstElementChild,{pixelRatio:2,backgroundColor:'#e5ddd5'}).then(function(blob){
+      window.htmlToImage.toBlob(holder.firstElementChild,{pixelRatio:pr,backgroundColor:'#e5ddd5'}).then(function(blob){
         holder.remove();overlay.remove();
         if(!blob){toast('❌ تعذّر إنشاء الصورة','err');return;}
         cb(blob);
@@ -21867,6 +21924,14 @@ function shareMsgAsImage(msg,fileNameBase){
       fallback();
     }
   });
+}
+// نسخة "📥 HD" من نفس الميزة — تصيير بدقة أعلى (pixelRatio:5) وتحميل مباشر مضمون
+// (بدون شاشة مشاركة)، لنفس سبب FIX #DOC-IMAGE-HD-DOWNLOAD المطبّق على باقي الصور.
+function downloadMsgAsImageHD(msg,fileNameBase){
+  if(!msg){toast('لا توجد رسالة لتحويلها لصورة','err');return;}
+  _buildMsgImageBlob(msg,function(blob){
+    _forceDownloadDocBlob(blob,fileNameBase||'رسالة');
+  },5);
 }
 
 // ===== #FEAT-BRANDED-DOC-IMAGES: قوالب صور رسمية (إشعار بروفة/فاتورة) بنفس تصميم كشف الحساب =====
@@ -22185,10 +22250,21 @@ function shareStatementImage(clientKey,from,to){
   const html=_statementDocHTML(clientName,cl,summary,li,c,from||'',to||today());
   _buildDocImageBlob(html,blob=>_shareOrDownloadDocBlob(blob,'كشف-حساب-'+clientName));
 }
+// زر "📥 HD" لكشف الحساب — نفس المنطق المطبّق على إشعار الفاتورة (راجع FIX #DOC-IMAGE-HD-DOWNLOAD)
+function downloadStatementImageHD(clientKey,from,to){
+  const {id:_cid,name:clientName}=_resolveClientKey(clientKey);
+  const li=DB.get('labinfo')||{};
+  const c=cur();
+  const cl=(DB.get('clients')||[]).find(x=>x.id===_cid||x.name===clientName)||{};
+  const summary=_clientAccountSummary(clientKey,from,to);
+  const html=_statementDocHTML(clientName,cl,summary,li,c,from||'',to||today());
+  _buildDocImageBlob(html,blob=>_forceDownloadDocBlob(blob,'كشف-حساب-'+clientName),5);
+}
 
 // عملية مشتركة: تصيير أي HTML مستند (بعرض ثابت) لصورة PNG — نفس أسلوب _buildMsgImageBlob
 // لكن بدون خلفية بابل واتساب (خلفية بيضاء عادية، مناسبة للمستندات الرسمية)
-function _buildDocImageBlob(html,cb){
+function _buildDocImageBlob(html,cb,pixelRatio){
+  const pr=pixelRatio||3;
   toast('⏳ جارِ إنشاء الصورة...','ok');
   _loadHtml2Canvas(function(){
     const overlay=document.createElement('div');
@@ -22199,18 +22275,40 @@ function _buildDocImageBlob(html,cb){
     holder.innerHTML=html;
     document.body.appendChild(holder);
     document.body.appendChild(overlay);
-    setTimeout(function(){
-      window.htmlToImage.toBlob(holder,{pixelRatio:2,backgroundColor:'#f0f2f7'}).then(function(blob){
-        holder.remove();overlay.remove();
-        if(!blob){toast('❌ تعذّر إنشاء الصورة','err');return;}
-        cb(blob);
-      }).catch(function(e){
-        if(holder.parentNode)holder.remove();
-        if(overlay.parentNode)overlay.remove();
-        toast('❌ حصل خطأ في إنشاء الصورة: '+(e&&e.message||'غير معروف'),'err');
-      });
-    },60);
+    // FIX #DOC-IMAGE-BLUR: 60ms مش كفاية دايمًا لخط Cairo يخلص تحميل، فكانت الصورة أحيانًا
+    // بترسم بخط بديل (fallback) رفيع فيبان الخط باهت/مش واضح — ننتظر fonts.ready الحقيقي
+    // مع سقف زمني بسيط لو الخط اتأخر لأي سبب. وبنرفع الدقة (pixelRatio) عشان الصورة متطلعش مشوشة.
+    // FIX #DOC-IMAGE-HD-DOWNLOAD: pixelRatio بقى قابل للتخصيص — زرار "تحميل HD" بيبعت رقم
+    // أعلى (5) عشان يعوّض ضغط واتساب للصور المرسلة كـ"صورة" (مش مستند)، من غير ما يأثر على
+    // زرار المشاركة العادي اللي فاضل زي ما هو (pixelRatio:3).
+    Promise.race([
+      (document.fonts&&document.fonts.ready)?document.fonts.ready:Promise.resolve(),
+      new Promise(function(res){setTimeout(res,400);})
+    ]).then(function(){
+      setTimeout(function(){
+        window.htmlToImage.toBlob(holder,{pixelRatio:pr,backgroundColor:'#f0f2f7'}).then(function(blob){
+          holder.remove();overlay.remove();
+          if(!blob){toast('❌ تعذّر إنشاء الصورة','err');return;}
+          cb(blob);
+        }).catch(function(e){
+          if(holder.parentNode)holder.remove();
+          if(overlay.parentNode)overlay.remove();
+          toast('❌ حصل خطأ في إنشاء الصورة: '+(e&&e.message||'غير معروف'),'err');
+        });
+      },60);
+    });
   });
+}
+// تحميل مباشر مضمون على الجهاز — بلا محاولة navigator.share. مستخدم لزرار "HD"
+// عشان الملف يتحفظ بجودته الكاملة، والمستخدم يقدر يرفقه في واتساب كـ"مستند" يدويًا
+// (المستندات مالهاش ضغط في واتساب، عكس الصور اللي بتتضغط تلقائيًا).
+function _forceDownloadDocBlob(blob,fileNameBase){
+  const fileName=(fileNameBase||'مستند')+'-HD-'+today()+'.png';
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=fileName;a.rel='noopener';
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(function(){URL.revokeObjectURL(url);},5000);
+  toast('✅ اتحفظت نسخة HD في التنزيلات — لأفضل جودة أرفقها في واتساب كـ"مستند" مش "صورة"','ok');
 }
 function _shareOrDownloadDocBlob(blob,fileNameBase){
   const fileName=(fileNameBase||'مستند').replace(/[^ء-ي0-9a-zA-Z_-]/g,'_')+'-'+today()+'.png';
@@ -22238,6 +22336,18 @@ function shareProofNoticeImage(clientName,selectedIds){
   const html=_proofNoticeDocHTML(clientName,cl,readyRows,li,c);
   _buildDocImageBlob(html,blob=>_shareOrDownloadDocBlob(blob,'بروفة-'+clientName));
 }
+// زر "📥 HD" لإشعار البروفة — نفس المنطق المطبّق على إشعار الفاتورة وكشف الحساب
+function downloadProofNoticeImageHD(clientName,selectedIds){
+  const {id:_cid}=_resolveClientKey(clientName);
+  const li=DB.get('labinfo')||{};
+  const c=cur();
+  const cl=(DB.get('clients')||[]).find(x=>x.id===_cid||x.name===clientName)||{};
+  const pf=(DB.get('proof')||[]).filter(r=>_matchClientRecord(r,_cid,clientName));
+  const hasSel=Array.isArray(selectedIds)&&selectedIds.length>0;
+  const readyRows=hasSel?pf.filter(r=>selectedIds.includes(r.id)):pf;
+  const html=_proofNoticeDocHTML(clientName,cl,readyRows,li,c);
+  _buildDocImageBlob(html,blob=>_forceDownloadDocBlob(blob,'بروفة-'+clientName),5);
+}
 // زر "🖼️ صورة" لإشعار الفاتورة — عمودين (البروفات + فاتورة مبيعات) بنفس تصميم كشف الحساب
 function shareInvoiceNoticeImage(clientName,selectedIds){
   const {id:_cid}=_resolveClientKey(clientName);
@@ -22252,6 +22362,23 @@ function shareInvoiceNoticeImage(clientName,selectedIds){
   const clientPf=(DB.get('proof')||[]).filter(r=>_matchClientRecord(r,_cid,clientName));
   const html=_invoiceNoticeDocHTML(clientName,cl,unpaid,clientPf,invoiceTotal,grandDebt,li,c);
   _buildDocImageBlob(html,blob=>_shareOrDownloadDocBlob(blob,'فاتورة-'+clientName));
+}
+// زر "📥 HD" لإشعار الفاتورة — نفس التصميم بالظبط لكن بدقة أعلى (pixelRatio:5) وتحميل
+// مباشر مضمون (بدون شاشة مشاركة)، عشان لما واتساب يضغط الصورة وقت الإرسال يفضل
+// الوضوح أعلى من النسخة العادية. راجع FIX #DOC-IMAGE-HD-DOWNLOAD فوق في _buildDocImageBlob.
+function downloadInvoiceNoticeImageHD(clientName,selectedIds){
+  const {id:_cid}=_resolveClientKey(clientName);
+  const li=DB.get('labinfo')||{};
+  const c=cur();
+  const cl=(DB.get('clients')||[]).find(x=>x.id===_cid||x.name===clientName)||{};
+  const arc=(DB.get('archive')||[]).filter(r=>_matchClientRecord(r,_cid,clientName));
+  const hasSel=Array.isArray(selectedIds)&&selectedIds.length>0;
+  const unpaid=hasSel?arc.filter(r=>selectedIds.includes(r.id)):arc;
+  const invoiceTotal=unpaid.reduce((s,r)=>s+(+r.total||0),0);
+  const grandDebt=Math.max(0,_clientAccountSummary(clientName).totalDebt);
+  const clientPf=(DB.get('proof')||[]).filter(r=>_matchClientRecord(r,_cid,clientName));
+  const html=_invoiceNoticeDocHTML(clientName,cl,unpaid,clientPf,invoiceTotal,grandDebt,li,c);
+  _buildDocImageBlob(html,blob=>_forceDownloadDocBlob(blob,'فاتورة-'+clientName),5);
 }
 
 // ===== #FEAT-CLIENTCARD-REAL-PDF: تحميل PDF فعلي لكارت العميل التفصيلي =====
@@ -22579,6 +22706,19 @@ function downloadClientCardDetailedPDF(){
       const _ovBody=document.body.style.overflowX;
       document.documentElement.style.overflowX='visible';
       document.body.style.overflowX='visible';
+      // FIX #STATEMENT-PDF-MOBILE-OFFSCREEN: مش كفاية إننا نشيل الـ overflow-x:hidden —
+      // عرض الصفحة الحقيقي (210mm ≈ 794px) أوسع بكتير من عرض شاشة الموبايل (اللي بيتحدد
+      // من meta name="viewport"، عادة ~360-430px). لما .pp بعرض 794px بيتوسّط (margin:0
+      // auto) جوه حاوية عرضها = عرض الشاشة بس، بيطلع نص الصفحة تقريبًا برّه حدود الشاشة
+      // يمين وشمال — ومكتبة html-to-image بترسم بالاعتماد على الـ layout viewport الفعلي،
+      // فأي جزء برّه حدوده بيطلع مقصوص/فاضي في الصورة الناتجة حتى لو مفيش overflow:hidden
+      // بيقصه بصريًا. الحل: نوسّع الـ layout viewport مؤقتًا عن طريق meta[name=viewport]
+      // لعرض يغطي الصفحة بالكامل، فتبقى الصفحة كلها "جوه الشاشة" فعليًا وقت الالتقاط،
+      // ونرجّع الـ meta تاني زي ما كانت فور الانتهاء.
+      const _metaVp=document.querySelector('meta[name="viewport"]');
+      const _vpOld=_metaVp?_metaVp.getAttribute('content'):null;
+      const _STMT_A4_CAPTURE_W=900; // 794px (210mm) + هامش أمان
+      if(_metaVp)_metaVp.setAttribute('content','width='+_STMT_A4_CAPTURE_W+',initial-scale=1');
       document.body.appendChild(holder);
       document.body.appendChild(overlay);
       const finish=function(){
@@ -22586,6 +22726,7 @@ function downloadClientCardDetailedPDF(){
         if(overlay.parentNode)overlay.remove();
         document.documentElement.style.overflowX=_ovHtml;
         document.body.style.overflowX=_ovBody;
+        if(_metaVp&&_vpOld!==null)_metaVp.setAttribute('content',_vpOld);
         if(btn){btn.disabled=false;btn.textContent=btnOldTxt||'📄 تحميل PDF تفصيلي';}
       };
       setTimeout(function(){
@@ -22621,7 +22762,7 @@ function downloadClientCardDetailedPDF(){
           });
         }
         renderNext();
-      },80);
+      },160); // FIX #STATEMENT-PDF-MOBILE-OFFSCREEN: وقت إضافي بسيط عشان الـ reflow بعد توسيع الـ viewport يخلص قبل ما نبدأ الالتقاط
     });
   });
 }
