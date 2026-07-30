@@ -1451,7 +1451,9 @@ body.theme-glass .ph h2{color:var(--blue2)}
        عشان المتابعة: مين لسه ما استلمش/سلّمش، ومين خلّص. الصفحة دي مش بتلمس ولا
        بتعدّل أي بيانات — قراءة بس من نفس الجداول المشتركة. -->
   <div class="page" id="pg-delegate-deliveries">
-    <div class="ph"><h2>🚚 تسليمات المناديب</h2></div>
+    <div class="ph"><h2>🚚 تسليمات المناديب</h2>
+      <div class="btn-row"><button class="btn btn-gold" onclick="openDgAnalytics()">📊 تحليل</button></div>
+    </div>
     <div class="card" style="margin-bottom:14px">
       <div class="mb">
         <div class="three-col">
@@ -1476,6 +1478,21 @@ body.theme-glass .ph h2{color:var(--blue2)}
     <div class="card" id="dd-neglect-card" style="display:none;margin-top:14px">
       <div class="card-head"><h3>⚠️ تنبيهات عملاء مهملين (٧ أيام)</h3></div>
       <div class="mb"><div id="dd-neglect-list"></div></div>
+    </div>
+  </div>
+
+  <!-- FEAT #DG-ANALYTICS: زرار "تحليل" في صفحة تسليمات المناديب — نفس فكرة لوحة
+       التحليل في بورتال المناديب (weekly/monthly/rolling-4-week) لكن بمنظور الإدارة:
+       لو فيه مندوب محدد في فلتر الصفحة (dd-delegate) بيوري تفصيل عملاء المندوب ده،
+       ولو "كل المناديب" بيوري مقارنة بين المناديب نفسهم. المصدر دايمًا الأرشيف
+       (data/shared/archive) — قراءة بس، مفيش أي لمس لبيانات حقيقية. -->
+  <div class="overlay" id="ov-dg-analytics">
+    <div class="modal modal-lg">
+      <div class="mh"><h3>📊 تحليل أداء المناديب</h3><div class="mc-btn" onclick="closeOv('ov-dg-analytics')">✕</div></div>
+      <div class="mb">
+        <div class="stats" id="dga-summary" style="margin-bottom:14px"></div>
+        <div id="dga-body"></div>
+      </div>
     </div>
   </div>
 
@@ -10144,7 +10161,118 @@ function renderDelegateDeliveries(){
     }).join(''):'<div class="empty"><div class="ei">✅</div><p>لا يوجد تسليمات مؤكَّدة مطابقة للفلتر</p></div>';
   }
   _renderNeglectAlertsAdmin();
+  renderDgAnalytics(); // خفيف وآمن حتى لو الأوفرلاي مقفول — يفضل محدّث لو المستخدم فتحه بعدين
 }
+
+// ═══════════════════════════════════════
+// 📊 FEAT #DG-ANALYTICS: تحليل أداء المناديب — نفس منطق computeClientAnalytics في
+// بورتال المناديب (أسبوع حالي/سابق، شهر حالي/سابق، متوسط 4 أسابيع) لكن بمنظور
+// الإدارة: تفصيل عملاء مندوب معيّن، أو مقارنة بين كل المناديب لو مفيش فلتر مندوب.
+// المصدر ثابت = الأرشيف (data/shared/archive)، نفس مصدر كل التقارير المالية في
+// النظام — قراءة بس، بدون أي حساب رسمي أو لمس لبيانات حقيقية.
+// ═══════════════════════════════════════
+function _dgaWindow(){
+  const now=Date.now(),oneDay=86400000,oneWeek=7*oneDay,oneMonth=30*oneDay;
+  return {now:now,thisWeekStart:now-oneWeek,lastWeekStart:now-2*oneWeek,
+    thisMonthStart:now-oneMonth,lastMonthStart:now-2*oneMonth,avg4wStart:now-5*oneWeek};
+}
+function _dgaBucket(rows,w){
+  const x={thisWeek:0,lastWeek:0,thisMonth:0,lastMonth:0,avg4wSum:0};
+  rows.forEach(function(r){
+    const t=+(r.archivedAt||0)||(r.date?new Date(r.date).getTime():0);
+    if(!t)return;
+    if(t>=w.thisWeekStart)x.thisWeek++;
+    else if(t>=w.lastWeekStart&&t<w.thisWeekStart)x.lastWeek++;
+    if(t>=w.thisMonthStart)x.thisMonth++;
+    else if(t>=w.lastMonthStart&&t<w.thisMonthStart)x.lastMonth++;
+    if(t>=w.avg4wStart&&t<w.thisWeekStart)x.avg4wSum++;
+  });
+  x.avg4w=Math.round((x.avg4wSum/4)*10)/10;
+  return x;
+}
+function _dgaTrendBadge(cur,prev){
+  if(cur===0&&prev>0)return '<span style="color:var(--red);font-weight:800;font-size:11px">▼ متوقف</span>';
+  const small=cur<5&&prev<5;
+  if(small){
+    const d=cur-prev;
+    if(d>0)return '<span style="color:var(--green);font-weight:800;font-size:11px">▲ +'+d+'</span>';
+    if(d<0)return '<span style="color:var(--red);font-weight:800;font-size:11px">▼ '+d+'</span>';
+    return '<span style="color:var(--text3);font-weight:800;font-size:11px">➖ ثابت</span>';
+  }
+  if(cur>prev)return '<span style="color:var(--green);font-weight:800;font-size:11px">▲ '+(prev?Math.round(((cur-prev)/prev)*100):100)+'%</span>';
+  if(cur<prev)return '<span style="color:var(--red);font-weight:800;font-size:11px">▼ '+Math.round(((prev-cur)/prev)*100)+'%</span>';
+  return '<span style="color:var(--text3);font-weight:800;font-size:11px">➖ ثابت</span>';
+}
+function _dgaRowHTML(lbl,cur,prev){
+  const max=Math.max(cur,prev,1);
+  return '<div style="margin-bottom:8px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:3px"><span>'+lbl+'</span>'+_dgaTrendBadge(cur,prev)+'</div>'
+    +'<div style="display:flex;gap:6px">'
+    +'<div style="flex:1;height:16px;background:var(--bg3);border-radius:6px;position:relative;overflow:hidden"><div style="height:100%;width:'+Math.max((cur/max)*100,cur?6:0)+'%;background:var(--gold);border-radius:6px"></div><span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800">'+cur+'</span></div>'
+    +'<div style="flex:1;height:16px;background:var(--bg3);border-radius:6px;position:relative;overflow:hidden"><div style="height:100%;width:'+Math.max((prev/max)*100,prev?6:0)+'%;background:var(--text3);border-radius:6px;opacity:.5"></div><span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800">'+prev+'</span></div>'
+    +'</div></div>';
+}
+function renderDgAnalytics(){
+  const bodyEl=document.getElementById('dga-body');
+  const sumEl=document.getElementById('dga-summary');
+  if(!bodyEl||!sumEl)return;
+  const filterDg=document.getElementById('dd-delegate')?document.getElementById('dd-delegate').value:'';
+  const archive=(DB.get('archive')||[]).filter(function(r){return r.delegate;});
+  const w=_dgaWindow();
+  let rows;
+  if(filterDg){
+    // مندوب معيّن مختار — تفصيل على مستوى عملاء المندوب ده (مطابقة بنفس منطق _matchClientRecord)
+    const dgArchive=archive.filter(function(r){return r.delegate===filterDg;});
+    const byClientKey={};
+    dgArchive.forEach(function(r){
+      const key=r.clientId||r.client||'—';
+      (byClientKey[key]=byClientKey[key]||[]).push(r);
+    });
+    rows=Object.keys(byClientKey).map(function(key){
+      const list=byClientKey[key];
+      return Object.assign({name:list[0].client||'-'},_dgaBucket(list,w));
+    });
+  }else{
+    // كل المناديب — تفصيل على مستوى كل مندوب
+    const byDg={};
+    archive.forEach(function(r){
+      const key=r.delegate||'بدون مندوب';
+      (byDg[key]=byDg[key]||[]).push(r);
+    });
+    rows=Object.keys(byDg).map(function(key){
+      return Object.assign({name:key},_dgaBucket(byDg[key],w));
+    });
+  }
+  rows=rows.filter(function(x){return x.thisWeek||x.lastWeek||x.thisMonth||x.lastMonth;})
+    .sort(function(a,b){return (b.thisMonth-a.thisMonth)||(b.thisWeek-a.thisWeek);});
+  if(!rows.length){
+    sumEl.innerHTML='';
+    bodyEl.innerHTML='<div class="empty"><p>📊 لسه مفيش بيانات كفاية لعرض تحليل'+(filterDg?(' لعملاء '+esc(filterDg)):'')+'</p></div>';
+    return;
+  }
+  const weekTotal=rows.reduce(function(s,r){return s+r.thisWeek;},0);
+  const monthTotal=rows.reduce(function(s,r){return s+r.thisMonth;},0);
+  const dropping=rows.filter(function(r){return r.thisWeek<r.lastWeek;}).length;
+  sumEl.innerHTML='<div class="stat-card"><div class="sc-label">حالة مؤرشفة / أسبوع</div><div class="sc-val">'+weekTotal+'</div></div>'
+    +'<div class="stat-card"><div class="sc-label">حالة مؤرشفة / شهر</div><div class="sc-val">'+monthTotal+'</div></div>'
+    +'<div class="stat-card"><div class="sc-label">في نقصان</div><div class="sc-val" style="color:var(--red)">'+dropping+'</div></div>';
+  bodyEl.innerHTML='<div style="font-size:12px;color:var(--text3);margin-bottom:10px">'+(filterDg?('تفصيل عملاء المندوب 🚗 '+esc(filterDg)):'مقارنة بين كل المناديب')+' — المصدر: الأرشيف</div>'
+    +rows.map(function(r){
+      let tip;
+      if(r.thisWeek===0&&r.lastWeek>0)tip='📉 مفيش شغل مؤرشف لـ<strong>'+esc(r.name)+'</strong> الأسبوع ده بعد '+r.lastWeek+' الأسبوع اللي فات';
+      else if(r.thisWeek>r.lastWeek)tip='📈 نشاط <strong>'+esc(r.name)+'</strong> في زيادة أسبوعيًا';
+      else if(r.thisWeek<r.lastWeek)tip='📉 نشاط <strong>'+esc(r.name)+'</strong> في نقصان أسبوعيًا';
+      else tip='➖ <strong>'+esc(r.name)+'</strong> مستقر أسبوعيًا';
+      return '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px">'
+        +'<div style="font-weight:800;font-size:13.5px;margin-bottom:8px">'+esc(r.name)+'</div>'
+        +_dgaRowHTML('📅 أسبوع (الحالي / السابق)',r.thisWeek,r.lastWeek)
+        +_dgaRowHTML('📊 أسبوع (الحالي / متوسط 4 أسابيع)',r.thisWeek,r.avg4w)
+        +_dgaRowHTML('🗓️ شهر (الحالي / السابق)',r.thisMonth,r.lastMonth)
+        +'<div style="font-size:11.5px;color:var(--text3);margin-top:4px">'+tip+'</div>'
+        +'</div>';
+    }).join('');
+}
+function openDgAnalytics(){renderDgAnalytics();openOv('ov-dg-analytics');}
 
 // ⚠️ FEAT #NEGLECT-ALERTS: قرارات المندوب على تنبيهات "عميل مهمَل" (٧ أيام من غير
 // استلام/تسليم) — بلاغ توثيقي بس من data/shared/delegateClientNeglectAlerts، مقروء
@@ -10652,85 +10780,106 @@ function sendTrNotif(id){
   wa(phone,msg,{client:tr.accName,type:'wa-fin',page:'الخزنة'});
 }
 
-// ===== #FEAT-FIN-NOTICE-IMAGE: إشعار حركة مالية (تصميم بنفسجي/تركواز مطابق للصورة المرجعية) =====
-function _finInfoCell(icon,label,val,color){
-  return '<div style="flex:1 1 50%;min-width:0;text-align:center;padding:16px 6px;box-shadow:inset -1px 0 0 #D9DEE7,inset 0 -1px 0 #D9DEE7">'
-    +'<div style="width:46px;height:46px;border-radius:13px;background:'+color+';box-shadow:0 3px 10px '+color+'55;color:#fff;font-size:21px;line-height:46px;text-align:center;margin:0 auto 8px">'+icon+'</div>'
-    +'<div style="font-size:14px;color:#7A7F8A;font-weight:700">'+label+'</div>'
-    +'<div style="font-size:19px;font-weight:900;color:#161B22;margin-top:3px;word-break:break-word">'+val+'</div>'
+// ===== #FEAT-FIN-NOTICE-IMAGE: إشعار حركة مالية (تصميم بنفسجي/تركواز حيوي — نسخة v2) =====
+function _finInfoTile(icon,label,val,bg,iconBg,iconShadow){
+  return '<div style="flex:1 1 45%;background:'+bg+';border-radius:16px;padding:14px 8px;text-align:center">'
+    +'<div style="width:40px;height:40px;border-radius:12px;background:'+iconBg+';color:#fff;font-size:18px;line-height:40px;margin:0 auto 8px;box-shadow:0 4px 10px '+iconShadow+'">'+icon+'</div>'
+    +'<div style="font-size:11.5px;color:#8A8FA3;font-weight:700">'+label+'</div>'
+    +'<div style="font-size:15px;font-weight:900;color:#211C36;margin-top:2px;word-break:break-word"><bdi style="direction:ltr;unicode-bidi:isolate">'+val+'</bdi></div>'
     +'</div>';
 }
-function _finFooterItem(icon,val,label,color){
-  return '<div style="display:flex;align-items:center;gap:8px">'
-    +'<div style="width:34px;height:34px;border-radius:50%;background:'+color+';box-shadow:0 3px 8px '+color+'50;color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">'+icon+'</div>'
-    +'<div style="text-align:right"><div style="font-size:16px;font-weight:800;color:#222;white-space:nowrap">'+esc(val)+'</div>'+(label?'<div style="font-size:12px;color:#999">'+label+'</div>':'')+'</div>'
+function _finFooterRow(icon,val,label,bg){
+  return '<div style="display:flex;align-items:center;gap:9px">'
+    +'<div style="width:30px;height:30px;border-radius:50%;background:'+bg+';display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">'+icon+'</div>'
+    +'<span style="color:#EDE9F7;font-size:13px;font-weight:700"><bdi style="direction:ltr;unicode-bidi:isolate">'+esc(val)+'</bdi>'+(label?' <span style="color:#a99fc7;font-size:10.5px">'+label+'</span>':'')+'</span>'
     +'</div>';
 }
 function _finLastPaymentRow(t,isLast){
-  const purple='#5A2CA0';
-  return '<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;flex-wrap:wrap;gap:6px;'+(isLast?'':'border-bottom:1px solid #f3f0fb')+'">'
-    +'<div style="display:flex;align-items:center;gap:8px"><span style="width:26px;height:26px;border-radius:50%;background:#F0E9FA;color:'+purple+';display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0">👤</span>'
-    +'<span style="font-size:15px;color:#555;font-weight:600">('+esc(t.receiver||'—')+')</span></div>'
-    +'<span style="font-size:14px;color:#999">'+(t.date||'—')+'</span>'
-    +'<div style="display:flex;align-items:center;gap:8px"><span style="width:26px;height:26px;border-radius:50%;background:#168A58;box-shadow:0 2px 6px #168A5855;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0">✓</span>'
-    +'<span style="font-size:17px;font-weight:900;color:#0F6B44">'+fmt(t.amount)+'</span></div>'
+  const purple='#6D28D9';
+  return '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;'+(isLast?'':'border-bottom:1px solid #f3f0fb')+';background:'+(isLast?'#fff':'#FCFAFF')+'">'
+    +'<div style="display:flex;align-items:center;gap:8px"><span style="width:24px;height:24px;border-radius:50%;background:#F0E9FA;color:'+purple+';display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">👤</span>'
+    +'<span style="font-size:14px;color:#555;font-weight:700">('+esc(t.receiver||'—')+')</span></div>'
+    +'<span style="font-size:12.5px;color:#9aa"><bdi style="direction:ltr;unicode-bidi:isolate">'+esc(t.date||'—')+'</bdi></span>'
+    +'<div style="display:flex;align-items:center;gap:6px"><span style="width:22px;height:22px;border-radius:50%;background:#168A58;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">✓</span>'
+    +'<span style="font-size:16px;font-weight:900;color:#0F6B44"><bdi style="direction:ltr;unicode-bidi:isolate">'+fmt(t.amount)+'</bdi></span></div>'
     +'</div>';
 }
 function _finNoticeDocHTML(tr,cl,li,c){
   const isIn=tr.type==='in';
   const accent=isIn?'#0E9F5C':'#D62A2A';
-  const purple='#6B21D8',purpleDark='#33116B',teal='#00A99A';
+  const accentBg=isIn?'#EAFBF2':'#FDECEC';
+  const accentRing=isIn?'#3FCC8D':'#EF8A8A';
+  const purple='#7C3AED',purpleDeep='#5B21B6',purpleDark='#6D28D9',teal='#10B981';
   const totalDebt=Math.max(0,_clientAccountSummary(cl.id||tr.accName).totalDebt);
   const remaining=Math.max(0,totalDebt-(isIn?+tr.amount:0));
-  const logo=li.logo?'<img src="'+li.logo+'" style="height:34px;object-fit:contain">':'<div style="font-size:24px">🦷</div>';
+  const logo=li.logo?'<img src="'+li.logo+'" style="height:24px;object-fit:contain">':'<div style="font-size:17px;line-height:1">🦷</div>';
   // آخر المدفوعات: آخر حركتين مقبوضتين فعليتين لنفس العميل (شاملة الحركة الحالية)، الأحدث أولاً
   const recentTrs=(DB.get('treasury')||[]).filter(t=>t.type==='in'&&!t.isTransfer&&_matchClientTreasury(t,cl.id||tr.accName,tr.accName))
     .sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(+b.num||0)-(+a.num||0)).slice(0,2);
-  return '<div style="width:380px;background:#fff;font-family:Cairo,sans-serif;overflow:hidden;border-radius:20px;box-shadow:0 8px 32px rgba(76,29,149,.28)">'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:18px 16px 8px;flex-wrap:wrap;gap:10px">'
-    +'<div style="background:linear-gradient(135deg,'+purple+','+purpleDark+');box-shadow:0 4px 14px '+purple+'66;border-radius:10px 22px 10px 22px;padding:10px 18px 10px 14px;display:flex;align-items:center;gap:8px">'
-    +'<div style="width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff;flex-shrink:0">🔔</div>'
+  return '<div style="width:380px;background:#fff;font-family:Cairo,sans-serif;overflow:hidden;border-radius:24px;box-shadow:0 14px 44px rgba(76,29,149,.22),0 2px 10px rgba(0,0,0,.06)">'
+    // ===== Header: gradient full-width bar =====
+    +'<div style="background:linear-gradient(120deg,'+purple+' 0%,'+purpleDeep+' 55%,'+teal+' 130%);padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">'
+    +'<div style="display:flex;align-items:center;gap:9px">'
+    +'<div style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:17px;color:#fff;flex-shrink:0">🔔</div>'
     +'<span style="color:#fff;font-weight:900;font-size:16px;white-space:nowrap">إشعار حركة مالية</span>'
     +'</div>'
-    +'<div style="display:flex;align-items:center;gap:8px">'+logo+'<div><div style="font-size:15px;font-weight:900;color:#0B2A55">'+esc(li.name||'Perfect Lab')+'</div>'
-    +(li.addr?'<div style="font-size:9px;color:#777;margin-top:1px">'+esc(li.addr)+'</div>':'')+'</div></div>'
+    +'<div style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.16);border-radius:12px;padding:6px 14px">'
+    +logo+'<span style="color:#fff;font-weight:900;font-size:15px;white-space:nowrap">'+esc(li.name||'Perfect Lab')+'</span>'
     +'</div>'
-    +'<div style="text-align:center;padding:18px 20px 6px">'
-    +'<div style="position:relative;width:88px;display:inline-block">'
-    +'<span style="position:absolute;left:-26px;top:8px;width:7px;height:7px;border-radius:50%;background:'+purple+'"></span>'
-    +'<span style="position:absolute;left:-18px;top:32px;width:11px;height:4px;border-radius:2px;background:'+teal+';transform:rotate(-25deg)"></span>'
-    +'<span style="position:absolute;right:-26px;top:8px;width:7px;height:7px;border-radius:50%;background:'+teal+'"></span>'
-    +'<span style="position:absolute;right:-18px;top:32px;width:11px;height:4px;border-radius:2px;background:'+purple+';transform:rotate(25deg)"></span>'
-    +'<div style="width:88px;height:88px;border-radius:50%;background:radial-gradient(circle at 40% 32%,#fff,'+(isIn?'#EAFBF2':'#FDECEC')+' 78%);box-shadow:0 0 0 3px '+(isIn?'#3FCC8D':'#EF8A8A')+',0 6px 22px '+(isIn?'#0E9F5C55':'#D62A2A55')+';display:inline-flex;align-items:center;justify-content:center">'
-    +'<span style="font-size:40px;color:'+accent+'">'+(isIn?'✔':'✕')+'</span></div></div></div>'
-    +'<div style="text-align:center;font-size:20px;font-weight:900;color:#0B2A55;margin-bottom:16px">'+(isIn?'تم تسجيل دفعتكم بنجاح':'تم تسجيل الصرف بنجاح')+'</div>'
-    +'<div style="margin:0 16px 18px;background:linear-gradient(180deg,#FBF8FF,#fff);background-image:radial-gradient(circle at 10% 10%,'+purple+'22,transparent 45%),radial-gradient(circle at 90% 90%,'+teal+'22,transparent 45%);border:1px solid '+purple+'33;border-radius:18px;overflow:hidden">'
-    +'<div style="text-align:center;padding:18px 16px 14px">'
-    +'<div style="font-size:14px;font-weight:800;color:'+purple+'">'+(isIn?'المبلغ المدفوع':'المبلغ المصروف')+'</div>'
-    +'<div style="font-size:40px;font-weight:900;color:'+purpleDark+';margin-top:6px;text-shadow:0 2px 10px '+purple+'33">'+fmt(tr.amount)+' <span style="font-size:22px">'+c+'</span></div>'
     +'</div>'
-    +'<div style="border-top:1px solid '+purple+'22;text-align:center;padding:12px 16px">'
-    +'<div style="font-size:13px;font-weight:800;color:'+purple+'">المتبقي</div>'
-    +'<div style="font-size:22px;font-weight:900;color:'+(remaining>0?'#B31B1B':'#0E9F5C')+';margin-top:3px">'+fmt(remaining)+' '+c+'</div>'
+    // ===== Success badge =====
+    +'<div style="text-align:center;padding:22px 20px 4px">'
+    +'<div style="position:relative;width:92px;display:inline-block">'
+    +'<span style="position:absolute;left:-28px;top:6px;width:8px;height:8px;border-radius:50%;background:'+purple+'"></span>'
+    +'<span style="position:absolute;left:-19px;top:34px;width:12px;height:4px;border-radius:2px;background:'+teal+';transform:rotate(-25deg)"></span>'
+    +'<span style="position:absolute;right:-28px;top:6px;width:8px;height:8px;border-radius:50%;background:'+teal+'"></span>'
+    +'<span style="position:absolute;right:-19px;top:34px;width:12px;height:4px;border-radius:2px;background:'+purple+';transform:rotate(25deg)"></span>'
+    +'<div style="width:92px;height:92px;border-radius:50%;background:'+(isIn?'conic-gradient(from 200deg,'+purple+','+teal+','+purple+')':accentRing)+';padding:4px;box-shadow:0 6px 22px '+accent+'40">'
+    +'<div style="width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 40% 32%,#fff,'+accentBg+' 78%);display:flex;align-items:center;justify-content:center">'
+    +'<span style="font-size:42px;color:'+accent+'">'+(isIn?'✔':'✕')+'</span>'
+    +'</div></div></div>'
+    +'<div style="font-size:21px;font-weight:900;color:#1E1B33;margin-top:14px">'+(isIn?'تم تسجيل دفعتكم بنجاح':'تم تسجيل الصرف بنجاح')+'</div>'
+    +'<div style="display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap;font-size:12px;color:#8A8FA3;margin-top:4px">'
+    +'<span>رقم الحركة</span><bdi style="direction:ltr;unicode-bidi:isolate">T-'+esc(String(tr.num||''))+'</bdi>'
+    +'<span style="color:#c7cbd8">•</span>'
+    +'<span>التاريخ</span><bdi style="direction:ltr;unicode-bidi:isolate">'+esc(tr.date||'')+'</bdi>'
+    +'</div>'
+    +'</div>'
+    // ===== Amount + remaining: two-tone card =====
+    +'<div style="margin:14px 16px 16px;border-radius:20px;overflow:hidden;box-shadow:0 6px 20px rgba(76,29,149,.14)">'
+    +'<div style="background:linear-gradient(135deg,#8B5CF6,'+purpleDark+');text-align:center;padding:18px 16px 16px">'
+    +'<div style="font-size:13px;font-weight:800;color:#EDE4FF;letter-spacing:.3px">'+(isIn?'المبلغ المدفوع':'المبلغ المصروف')+'</div>'
+    +'<div style="font-size:38px;font-weight:900;color:#fff;margin-top:4px;text-shadow:0 2px 10px rgba(0,0,0,.15)"><bdi style="direction:ltr;unicode-bidi:isolate">'+fmt(tr.amount)+'</bdi> <span style="font-size:20px;font-weight:800;color:#EDE4FF">'+c+'</span></div>'
+    +'</div>'
+    +'<div style="background:'+(remaining>0?'#FDF3F3':'#F3FBF7')+';text-align:center;padding:12px 16px;display:flex;align-items:center;justify-content:center;gap:8px">'
+    +'<span style="font-size:13px;font-weight:800;color:'+(remaining>0?'#B31B1B':'#0E9F5C')+'">المتبقي</span>'
+    +'<bdi style="direction:ltr;unicode-bidi:isolate;font-size:19px;font-weight:900;color:'+(remaining>0?'#B31B1B':'#0E9F5C')+'">'+fmt(remaining)+'</bdi>'
+    +'<span style="font-size:19px;font-weight:900;color:'+(remaining>0?'#B31B1B':'#0E9F5C')+'">'+c+'</span>'
+    +(remaining>0?'':'<span style="font-size:15px">🎉</span>')
     +'</div></div>'
-    +'<div style="display:flex;flex-wrap:wrap;margin:0 16px 18px;border:1px solid #E1E5EC;border-radius:16px;overflow:hidden;box-shadow:0 2px 10px rgba(20,20,40,.05)">'
-    +_finInfoCell('👛','المتبقي',fmt(remaining)+' '+c,remaining>0?'#D62A2A':'#0E9F5C')
-    +_finInfoCell('📅','التاريخ',esc(tr.date||''),purple)
-    +_finInfoCell('🧑','المستلم',esc(tr.receiver||'—'),teal)
-    +_finInfoCell('👤','العميل',esc(tr.accName||'—'),purple)
+    // ===== Info grid: soft colored tiles =====
+    +'<div style="display:flex;flex-wrap:wrap;gap:10px;margin:0 16px 18px">'
+    +_finInfoTile('📅','التاريخ',esc(tr.date||''),'#F6F2FF','linear-gradient(135deg,#8B5CF6,'+purpleDark+')','rgba(109,40,217,.35)')
+    +_finInfoTile('🧑','المستلم',esc(tr.receiver||'—'),'#EAFBF6','linear-gradient(135deg,#2DD4BF,#0F9C8E)','rgba(15,156,142,.35)')
+    +'<div style="flex:1 1 100%;background:#FBF8FF;border:1px solid #EFE7FF;border-radius:16px;padding:12px 14px;display:flex;align-items:center;gap:10px">'
+    +'<div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#8B5CF6,'+purpleDark+');color:#fff;font-size:17px;display:flex;align-items:center;justify-content:center;flex-shrink:0">👤</div>'
+    +'<div><div style="font-size:11px;color:#8A8FA3;font-weight:700">العميل</div>'
+    +'<div style="font-size:15px;font-weight:900;color:#211C36">'+esc(tr.accName||'—')+'</div></div>'
     +'</div>'
+    +'</div>'
+    // ===== Recent payments =====
     +(recentTrs.length?(
       '<div style="margin:0 16px 18px">'
-      +'<div style="text-align:center;margin-bottom:10px;display:flex;align-items:center;gap:8px"><span style="flex:1;height:1px;background:'+purple+'33"></span><span style="font-size:14px;font-weight:800;color:'+purple+';white-space:nowrap">⏱ آخر المدفوعات</span><span style="flex:1;height:1px;background:'+purple+'33"></span></div>'
-      +'<div style="border:1px solid '+purple+'22;border-radius:16px;overflow:hidden">'
+      +'<div style="text-align:center;margin-bottom:10px;display:flex;align-items:center;gap:8px"><span style="flex:1;height:1px;background:linear-gradient(to left,transparent,#DCC9FF)"></span><span style="font-size:13.5px;font-weight:800;color:'+purpleDark+';white-space:nowrap">⏱ آخر المدفوعات</span><span style="flex:1;height:1px;background:linear-gradient(to right,transparent,#DCC9FF)"></span></div>'
+      +'<div style="border:1px solid #EFE7FF;border-radius:16px;overflow:hidden">'
       +recentTrs.map((t,i)=>_finLastPaymentRow(t,i===recentTrs.length-1)).join('')
       +'</div></div>'
     ):'')
-    +'<div style="border-top:1px solid #E1E5EC;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;background:linear-gradient(180deg,#fafafd,#f4f2fb)">'
-    +(li.addr?_finFooterItem('📍',li.addr,'',purple):'')
-    +(li.wa||li.ph2?_finFooterItem('💬',li.wa||li.ph2,'',teal):'')
-    +(li.ph1?_finFooterItem('📞',li.ph1,'الحسابات',purple):'')
-    +'<div style="display:flex;align-items:center;gap:8px">'+logo+'<div style="font-size:15px;font-weight:900;color:#0B2A55">'+esc(li.name||'Perfect Lab')+'</div></div>'
+    // ===== Footer: contact strip =====
+    +'<div style="background:linear-gradient(135deg,#211C36,#3B2A63);padding:16px 18px;display:flex;flex-direction:column;gap:10px">'
+    +(li.addr?_finFooterRow('📍',li.addr,'','rgba(255,255,255,.14)'):'')
+    +(li.wa||li.ph2?_finFooterRow('💬',li.wa||li.ph2,'','rgba(45,212,191,.22)'):'')
+    +(li.ph1?_finFooterRow('📞',li.ph1,'الحسابات','rgba(139,92,246,.28)'):'')
     +'</div>'
     +'</div>';
 }
@@ -11044,7 +11193,7 @@ const PR_TEMPLATES = {
     .pr-meta-row .v{color:#0d1b2a;font-weight:700;text-align:left}
     .pr-table-wrap{margin:0 28px 16px;overflow-x:auto}
     .pr-table{width:100%;min-width:480px;border-collapse:collapse;font-size:12px}
-    .pr-table thead th{background:#0d1b2a;color:#e8c96a;padding:9px 11px;text-align:right;font-size:11px;font-weight:700;white-space:nowrap}
+    .pr-table thead th{background:#0d1b2a;color:#e8c96a;padding:9px 11px;text-align:right;font-size:12.5px;font-weight:900;white-space:nowrap}
     .pr-table thead th:first-child{border-radius:0 7px 7px 0}
     .pr-table thead th:last-child{border-radius:7px 0 0 7px}
     .pr-table tbody td{padding:9px 11px;border-bottom:1px solid #eceff7}
@@ -11060,7 +11209,7 @@ const PR_TEMPLATES = {
   <div class="pr-doc">
     <div class="pr-head">
       <div>
-        <h2>🦷 ${esc(li.name||'Perfect Lab Pro')}</h2>
+        <h2>${esc(li.name||'Perfect Lab Pro')}</h2>
         <div class="sub">${esc(li.addr||'')}</div>
       </div>
       <div class="meta">
@@ -11079,6 +11228,7 @@ const PR_TEMPLATES = {
         <th style="width:32%">المريض / رقم الحالة</th>
         <th>المنتج</th>
         <th style="width:52px;text-align:center">العدد</th>
+        ${showTotalsCol?'<th style="width:80px;text-align:center">السعر</th>':''}
         ${showTotalsCol?'<th style="width:90px">الإجمالي</th>':''}
       </tr></thead>
       <tbody>${itemsRows}</tbody>
@@ -11108,40 +11258,38 @@ const PR_TEMPLATES = {
     *{font-family:'Cairo',sans-serif;box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
     body{background:#fff;color:#222;padding:0}
     .in-doc{max-width:780px;margin:0 auto;padding:34px 36px;border:1px solid #ddd}
-    .in-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #2b3a4a;padding-bottom:16px;margin-bottom:20px}
-    .in-head h1{font-size:22px;font-weight:900;color:#2b3a4a}
+    .in-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #33475c;padding-bottom:16px;margin-bottom:20px}
+    .in-head h1{font-size:22px;font-weight:900;color:#33475c}
     .in-head .sub{font-size:10.5px;color:#888;margin-top:4px}
     .in-head .title{text-align:left}
-    .in-head .title .badge-txt{font-size:20px;font-weight:900;letter-spacing:2px;color:#2b3a4a;text-transform:uppercase}
+    .in-head .title .badge-txt{font-size:20px;font-weight:900;letter-spacing:2px;color:#33475c;text-transform:uppercase}
     .in-head .title .date{font-size:11.5px;color:#666;margin-top:6px}
     .in-billto{margin-bottom:20px}
-    .in-billto .lbl{font-size:9.5px;font-weight:700;color:#555555;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
-    .in-billto .nm{font-size:16px;font-weight:900;color:#222}
+    .in-billto .nm{font-size:17px;font-weight:900;color:#222}
     .in-billto .info{font-size:11.5px;color:#555;margin-top:3px;line-height:1.6}
     .in-table{width:100%;border-collapse:collapse;margin-bottom:18px;font-size:12px}
-    .in-table thead th{border-bottom:2px solid #2b3a4a;padding:9px 8px;text-align:right;font-size:10.5px;font-weight:700;color:#2b3a4a;text-transform:uppercase;letter-spacing:.4px}
+    .in-table thead th{border-bottom:2px solid #33475c;padding:10px 8px;text-align:right;font-size:12.5px;font-weight:900;color:#33475c;letter-spacing:.2px}
     .in-table tbody td{padding:10px 8px;border-bottom:1px solid #e5e5e5}
     .in-totals{margin-right:auto;max-width:280px;margin-left:0}
     .in-tot-row{display:flex;justify-content:space-between;font-size:12.5px;padding:6px 0;color:#555}
-    .in-tot-row.grand{font-size:16px;font-weight:900;color:#2b3a4a;border-top:2px solid #2b3a4a;margin-top:6px;padding-top:10px}
+    .in-tot-row.grand{font-size:16px;font-weight:900;color:#33475c;border-top:2px solid #33475c;margin-top:6px;padding-top:10px}
     .in-foot{margin-top:28px;padding-top:14px;border-top:1px solid #e5e5e5;text-align:center;font-size:10.5px;color:#888}
-    @media print{body{padding:0}.in-doc{border:none;max-width:100%}@page{size:A4;margin:12mm}}
+    @media print{body{padding:0}.in-doc{border:none;max-width:100%}@page{margin:10mm}}
   </style></head><body>
   <div class="in-doc">
     <div class="in-head">
-      <div><h1>🦷 ${esc(li.name||'Perfect Lab Pro')}</h1>
+      <div><h1>${esc(li.name||'Perfect Lab Pro')}</h1>
         <div class="sub">${[li.ph1?'📞 '+li.ph1:'',li.addr?'📍 '+li.addr:''].filter(Boolean).join('   ')}</div>
       </div>
       <div class="title"><div class="badge-txt">${pageBadge.replace(/^[^\u0600-\u06FF]+/,'').trim()}</div><div class="date">📅 ${dateStr}</div></div>
     </div>
     <div class="in-billto">
-      <div class="lbl">Bill To / إلى</div>
       <div class="nm">${esc(clientName)}</div>
       <div class="info">${[addrParts.join('، '),phone].filter(Boolean).join('  •  ')||'—'}</div>
     </div>
     <table class="in-table">
-      <thead><tr><th style="width:28px">#</th><th>المريض / رقم الحالة</th><th>المنتج</th><th style="width:52px;text-align:center">العدد</th>${showTotalsCol?'<th style="width:90px">الإجمالي</th>':''}</tr></thead>
-      <tbody>${itemsRows.replace(/color:#0d1b2a/g,'color:#2b3a4a')}</tbody>
+      <thead><tr><th style="width:28px">#</th><th>المريض / رقم الحالة</th><th>المنتج</th><th style="width:52px;text-align:center">العدد</th>${showTotalsCol?'<th style="width:70px;text-align:center">السعر</th>':''}${showTotalsCol?'<th style="width:90px">الإجمالي</th>':''}</tr></thead>
+      <tbody>${itemsRows.replace(/color:#0d1b2a/g,'color:#33475c')}</tbody>
     </table>
     ${(showTotalsCol||showDebt)?`<div class="in-totals">
       ${showTotalsCol&&discountTotal>0?`<div class="in-tot-row"><span>الإجمالي قبل الخصم</span><span>${fmtAr(grossBeforeDiscount)} ${c}</span></div><div class="in-tot-row" style="color:#c0392b"><span>🏷️ خصم</span><span>-${fmtAr(discountTotal)} ${c}</span></div>`:''}
@@ -11150,6 +11298,19 @@ const PR_TEMPLATES = {
     </div>`:''}
     <div class="in-foot">${esc(getNsText('footer-inv','Thank you for your business'))} — ${[li.ph1,li.wa].filter(Boolean).join(' | ')}</div>
   </div>
+  <script>
+    window.addEventListener('load',function(){
+      try{
+        var doc=document.querySelector('.in-doc');
+        if(!doc)return;
+        var h=doc.getBoundingClientRect().height;
+        var mm=Math.ceil(h/3.7795275591)+20;
+        var st=document.createElement('style');
+        st.textContent='@page{size:210mm '+mm+'mm;margin:10mm}';
+        document.head.appendChild(st);
+      }catch(e){}
+    });
+  <\/script>
   </body></html>`;
     }
   },
@@ -11199,7 +11360,7 @@ const PR_TEMPLATES = {
   </style></head><body>
   <div class="fd-doc">
     <div class="fd-head">
-      <div class="nm">🦷 ${esc(li.name||'Perfect Lab Pro')}</div>
+      <div class="nm">${esc(li.name||'Perfect Lab Pro')}</div>
       ${li.addr?`<div class="sub">${esc(li.addr)}</div>`:''}
     </div>
     <div class="fd-ticket"><span>${pageBadge}</span></div>
@@ -11279,14 +11440,17 @@ function printRowsAsPRInvoice(tbId,page,forceTplId){
   // البروفة: لا تُظهر أي سعر/حساب مالي في الطباعة (نفس منطق الإشعار)
   const showTotalsCol = page!=='proof';
 
-  const itemsRows=rows.map((r,i)=>`
+  const itemsRows=rows.map((r,i)=>{
+    const unitPrice = (r.price!=null && r.price!=='') ? (+r.price||0) : (r.qty ? (+r.total||0)/(+r.qty||1) : (+r.total||0));
+    return `
     <tr>
       <td style="text-align:center;color:#888">${i+1}</td>
       <td><strong style="color:#0d1b2a">${esc(r.noteName||'—')}</strong></td>
-      <td><strong>${esc(r.product||'—')}</strong></td>
+      <td><strong style="font-size:13px">${esc(r.product||'—')}</strong></td>
       <td style="text-align:center">${toAr(r.qty||0)}</td>
+      ${showTotalsCol?`<td style="text-align:center;color:#555">${fmtAr(unitPrice)} ${c}</td>`:''}
       ${showTotalsCol?`<td style="font-weight:700;color:#0d1b2a">${fmtAr(r.total||0)} ${c}</td>`:''}
-    </tr>`).join('');
+    </tr>`;}).join('');
 
   // اختيار القالب: forceTplId (من شاشة الاختيار) أو آخر قالب محفوظ تلقائيًا بدون سؤال
   const tplId = forceTplId || getPRTemplateId();
@@ -21715,26 +21879,26 @@ function _docDateBadgeHTML(){
   const mon=d.toLocaleDateString('en-US',{month:'short'}).toUpperCase();
   return '<div style="background:#fff;border:2px solid #C69A3A;border-radius:8px;text-align:center;overflow:hidden;min-width:44px;flex-shrink:0">'
     +'<div style="background:#C69A3A;color:#fff;font-size:9px;font-weight:800;padding:1px 4px">'+mon+'</div>'
-    +'<div style="color:#0B2A55;font-size:15px;font-weight:900;padding:2px 4px">'+d.getDate()+'</div></div>';
+    +'<div style="color:#123A66;font-size:15px;font-weight:900;padding:2px 4px">'+d.getDate()+'</div></div>';
 }
 function _docRibbonHTML(icon){
-  return '<div style="position:absolute;top:0;left:0;width:92px;height:92px;background:linear-gradient(135deg,#0B2A55,#061E43);clip-path:polygon(0 0,100% 0,0 100%)"></div>'
+  return '<div style="position:absolute;top:0;left:0;width:92px;height:92px;background:linear-gradient(135deg,#123A66,#061E43);clip-path:polygon(0 0,100% 0,0 100%)"></div>'
     +'<div style="position:absolute;top:0;left:34px;width:4px;height:92px;background:linear-gradient(180deg,#C69A3A,#E1B85A);clip-path:polygon(0 0,100% 0,0 58%)"></div>'
     +'<div style="position:absolute;top:14px;left:14px;width:44px;height:44px;border-radius:12px;background:#fff;box-shadow:0 3px 10px rgba(11,42,85,.25);display:flex;align-items:center;justify-content:center;font-size:20px">'+icon+'</div>';
 }
 function _docSmallIconBadgeHTML(icon){
-  return '<div style="width:48px;height:48px;border-radius:12px;background:#0B2A55;border:2px solid #C69A3A;color:#E1B85A;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">'+icon+'</div>';
+  return '<div style="width:48px;height:48px;border-radius:12px;background:#123A66;border:2px solid #C69A3A;color:#E1B85A;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">'+icon+'</div>';
 }
 function _docTitleBlockHTML(titleEn,titleAr){
   return '<div style="text-align:right">'
     +'<div style="font-size:9.5px;font-weight:800;color:#9a8a5a;letter-spacing:2px;text-transform:uppercase">'+titleEn+'</div>'
-    +'<div style="font-size:19px;font-weight:900;color:#0B2A55;margin-top:2px">'+titleAr+'</div>'
+    +'<div style="font-size:19px;font-weight:900;color:#123A66;margin-top:2px">'+titleAr+'</div>'
     +'<div style="height:3px;width:52px;background:linear-gradient(90deg,#C69A3A,#E1B85A);border-radius:2px;margin-top:6px"></div>'
     +'</div>';
 }
 function _docTitleSubtitleHTML(titleAr,subtitleAr){
   return '<div style="text-align:right">'
-    +'<div style="font-size:20px;font-weight:900;color:#0B2A55">'+titleAr+'</div>'
+    +'<div style="font-size:20px;font-weight:900;color:#123A66">'+titleAr+'</div>'
     +'<div style="font-size:12.5px;font-weight:700;color:#6b7280;margin-top:2px">'+subtitleAr+'</div>'
     +'<div style="height:3px;width:52px;background:linear-gradient(90deg,#C69A3A,#E1B85A);border-radius:2px;margin-top:6px"></div>'
     +'</div>';
@@ -21744,12 +21908,12 @@ function _docLogoBlockHTML(li){
   return '<div style="display:flex;align-items:center;gap:14px;flex-shrink:0">'
     +logo
     +'<div style="width:1px;height:38px;background:#D9DEE7;flex-shrink:0"></div>'
-    +'<div style="font-size:24px;font-weight:900;color:#0B2A55;font-family:Georgia,\'Times New Roman\',serif;white-space:nowrap">'+esc(li.name||'Perfect Lab')+'</div>'
+    +'<div style="font-size:24px;font-weight:900;color:#123A66;font-family:Georgia,\'Times New Roman\',serif;white-space:nowrap">'+esc(li.name||'Perfect Lab')+'</div>'
     +'</div>';
 }
 function _statementFooterHTML(li){
   const dateStr=new Date().toLocaleDateString('en-GB').split('/').join('/');
-  const item=(icon,html)=>'<div style="display:flex;align-items:center;gap:6px;font-size:10.5px;color:#666"><span style="width:20px;height:20px;border-radius:50%;background:#F8FAFC;border:1px solid #D9DEE7;color:#0B2A55;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">'+icon+'</span>'+html+'</div>';
+  const item=(icon,html)=>'<div style="display:flex;align-items:center;gap:6px;font-size:10.5px;color:#666"><span style="width:20px;height:20px;border-radius:50%;background:#F8FAFC;border:1px solid #D9DEE7;color:#123A66;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">'+icon+'</span>'+html+'</div>';
   return '<div style="margin:0 22px 14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding-top:10px;border-top:1px solid #D9DEE7">'
     +(li.ph1?item('📞','للاستفسار '+esc(li.ph1)):'<span></span>')
     +item('🛡️','مصدر إلكترونيًا — لا يحتاج إلى توقيع أو ختم')
@@ -21759,28 +21923,28 @@ function _statementFooterHTML(li){
 function _invoiceFooterHTML(li){
   const item=(icon,val,label)=>val?('<div style="display:flex;align-items:center;gap:6px;color:#fff;font-size:11px"><span style="width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.14);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">'+icon+'</span><span>'+esc(val)+(label?' <span style="opacity:.75">'+label+'</span>':'')+'</span></div>'):'';
   return '<div style="height:3px;background:linear-gradient(90deg,#C69A3A,#E1B85A,#C69A3A)"></div>'
-    +'<div style="background:#0B2A55;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">'
+    +'<div style="background:#123A66;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">'
     +item('📍',li.addr,'')
     +((li.wa||li.ph2)?item('💬',li.wa||li.ph2,''):'')
     +(li.ph1?item('📞',li.ph1,'الحسابات'):'')
     +'</div>';
 }
 function _docFooterBarHTML(li){
-  const dateStr=new Date().toLocaleDateString('en-GB').split('/').join('/');
+  const item=(icon,val,label)=>val?('<div style="display:flex;align-items:center;gap:7px;color:#fff;font-size:11px;font-weight:700"><span style="width:22px;height:22px;border-radius:50%;border:1.5px solid #E1B85A;color:#E1B85A;display:inline-flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0">'+icon+'</span><span>'+esc(val)+(label?' <span style="opacity:.7;font-weight:600">'+esc(label)+'</span>':'')+'</span></div>'):'';
   return '<div style="height:3px;background:linear-gradient(90deg,#C69A3A,#E1B85A,#C69A3A)"></div>'
-    +'<div style="background:#0B2A55;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">'
-    +'<div style="display:flex;align-items:center;gap:6px;color:#fff;font-size:10px"><span style="width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.12);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">🛡️</span>مصدر إلكترونيًا — لا يحتاج توقيع أو ختم</div>'
-    +'<div style="display:flex;align-items:center;gap:6px;color:#E1B85A;font-size:10px;font-weight:800"><span style="width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.12);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">📅</span>تاريخ الإصدار: '+dateStr+'</div>'
+    +'<div style="background:#123A66;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">'
+    +item('📞',li.ph1,'الحسابات')
+    +((li.wa||li.ph3)?item('💬',li.wa||li.ph3,''):'')
     +'</div>';
 }
 // صف واحد: أفاتار العميل + اسمه على جانب، وأيقونة تقويم + التاريخ على الجانب الآخر (لإشعار الفاتورة)
 function _docClientDateRowHTML(clientName){
   return '<div style="margin:16px 22px;border:1px solid #D9DEE7;border-radius:14px;overflow:hidden;display:flex;align-items:center;padding:14px 18px;justify-content:space-between">'
-    +'<div style="display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:50%;background:#0B2A55;color:#E1B85A;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">📅</div>'
-    +'<span style="font-size:16px;font-weight:900;color:#0B2A55;white-space:nowrap">'+dateAr()+'</span></div>'
+    +'<div style="display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:50%;background:#123A66;color:#E1B85A;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">📅</div>'
+    +'<span style="font-size:16px;font-weight:900;color:#123A66;white-space:nowrap">'+dateAr()+'</span></div>'
     +'<div style="width:1px;height:26px;background:#D9DEE7"></div>'
-    +'<div style="display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:50%;background:#F8FAFC;border:1px solid #D9DEE7;color:#0B2A55;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">👤</div>'
-    +'<span style="font-size:16px;font-weight:900;color:#0B2A55">'+esc(clientName)+'</span></div>'
+    +'<div style="display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:50%;background:#F8FAFC;border:1px solid #D9DEE7;color:#123A66;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">👤</div>'
+    +'<span style="font-size:16px;font-weight:900;color:#123A66">'+esc(clientName)+'</span></div>'
     +'</div>';
 }
 // صف بيانات "العميل"/"التاريخ" — نفس صندوق كشف الحساب الكريمي
@@ -21788,11 +21952,11 @@ function _docClientInfoBoxHTML(clientName,cl,dateBadge){
   return '<div style="margin:16px 22px;border:1px solid #D9DEE7;border-radius:12px;overflow:hidden">'
     +'<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #D9DEE7">'
     +'<span style="font-size:11.5px;color:#999">العميل</span>'
-    +'<div style="text-align:left"><div style="font-size:16px;font-weight:900;color:#0B2A55">'+esc(clientName)+'</div>'
+    +'<div style="text-align:left"><div style="font-size:16px;font-weight:900;color:#123A66">'+esc(clientName)+'</div>'
     +(cl&&cl.phone?'<div style="font-size:11.5px;color:#666;margin-top:2px">📞 '+_fmtPhoneDisplay(cl.phone)+'</div>':'')+'</div></div>'
     +'<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px">'
     +'<span style="font-size:11.5px;color:#999">التاريخ</span>'
-    +'<div style="display:flex;align-items:center;gap:10px"><span style="font-size:14px;font-weight:800;color:#0B2A55">'+dateAr()+'</span>'+(dateBadge?_docDateBadgeHTML():'')+'</div></div>'
+    +'<div style="display:flex;align-items:center;gap:10px"><span style="font-size:14px;font-weight:800;color:#123A66">'+dateAr()+'</span>'+(dateBadge?_docDateBadgeHTML():'')+'</div></div>'
     +'</div>';
 }
 // تجميع صفوف حسب المنتج لعرض جدولي (صف واحد لكل منتج، بعكس _buildGroupedSection النصية)
@@ -21832,12 +21996,12 @@ function _docGroupedListHTML(rows,withPrice,c){
       const label=(r.noteName&&r.noteName.trim())?r.noteName:(r.product||'—');
       const unitPrice=r.price!=null&&r.price!==''?+r.price:(r.qty?(+r.total/+r.qty):0);
       return '<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:11.5px">'
-        +'<span style="color:#333">'+(cn?'<b style="color:#0B2A55">'+esc(cn)+'</b> ':'')+esc(cn?label.replace(cn,'').replace(/^[\s/]+|[\s/]+$/g,'')||label:label)+'</span>'
-        +'<span style="color:#666;white-space:nowrap">'+(withPrice?('× '+(r.qty||0)+' = '+fmt(r.total||unitPrice*(r.qty||0))+' '+c):('× '+(r.qty||0)))+'</span>'
+        +'<span style="color:#333">'+(cn?'<b style="color:#123A66">'+esc(cn)+'</b> ':'')+esc(cn?label.replace(cn,'').replace(/^[\s/]+|[\s/]+$/g,'')||label:label)+'</span>'
+        +'<span style="color:#666;white-space:nowrap">'+(withPrice?((r.qty||0)+' × '+fmt(unitPrice)+' = '+fmt(r.total||unitPrice*(r.qty||0))+' '+c):('× '+(r.qty||0)))+'</span>'
         +'</div>';
     }).join('');
     return '<div style="margin-bottom:10px">'
-      +'<div style="display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;color:#0B2A55;margin-bottom:3px">'
+      +'<div style="display:flex;align-items:center;gap:6px;font-size:14px;font-weight:900;color:#123A66;margin-bottom:4px">'
       +'<span style="width:9px;height:9px;border-radius:50%;background:'+color+';display:inline-block;flex-shrink:0"></span>'
       +esc(names[key])+' ('+list.length+')</div>'+itemsHtml+'</div>';
   }).join('');
@@ -21847,14 +22011,6 @@ function _docGroupedListHTML(rows,withPrice,c){
 function _proofNoticeDocHTML(clientName,cl,readyRows,li,c){
   const itemRows=_docGroupedTableRows(readyRows);
   const grandTotal=itemRows.reduce((s,r)=>s+r.total,0);
-  const dg=(cl&&cl.delegateId)?(DB.get('delegates')||[]).find(x=>x.id===cl.delegateId):null;
-  const accPhone=li.ph1||'';
-  const dgPhone=(dg&&dg.phone)||li.ph2||'';
-  const waPhone=li.wa||li.ph3||'';
-  const contactRow=(label,phone,icon)=>phone?('<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid #D9DEE7">'
-    +'<span style="font-size:12.5px;font-weight:700;color:#0B2A55">'+label+'</span>'
-    +'<div style="display:flex;align-items:center;gap:8px"><span style="font-size:13.5px;font-weight:800;color:#0B2A55">'+esc(phone)+'</span>'
-    +'<span style="width:24px;height:24px;border-radius:50%;background:#0B2A55;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">'+icon+'</span></div></div>'):'';
   return '<div style="width:620px;background:#fff;font-family:Cairo,sans-serif;overflow:hidden;border-radius:12px;box-shadow:0 2px 14px rgba(13,27,62,.10)">'
     +'<div style="position:relative;padding:20px 22px 14px;border-bottom:1px solid #D9DEE7">'
     +_docRibbonHTML('💰')
@@ -21863,108 +22019,108 @@ function _proofNoticeDocHTML(clientName,cl,readyRows,li,c){
     +_docTitleBlockHTML('STATEMENT / ESTIMATE','إشعار بروفة')
     +'</div></div>'
     +_docClientInfoBoxHTML(clientName,cl,true)
-    +'<div style="margin:0 22px 8px;font-size:13px;font-weight:800;color:#0B2A55;display:flex;align-items:center;gap:6px">📋 بروفات جاهزة للتسليم</div>'
+    +'<div style="margin:0 22px 8px;font-size:13px;font-weight:800;color:#123A66;display:flex;align-items:center;gap:6px">📋 بروفات جاهزة للتسليم</div>'
     +'<div style="margin:0 22px 16px;border-radius:10px;overflow:hidden;border:1px solid #D9DEE7">'
     +'<table style="width:100%;border-collapse:collapse;font-size:12.5px">'
-    +'<thead><tr style="background:#0B2A55;color:#fff"><th style="padding:8px 10px;text-align:right">الصنف</th><th style="padding:8px 10px;text-align:center">العدد</th><th style="padding:8px 10px;text-align:center">السعر/الواحدة</th><th style="padding:8px 10px;text-align:left">الإجمالي</th></tr></thead>'
-    +'<tbody>'+(itemRows.length?itemRows.map((r,i)=>'<tr style="'+(i%2?'background:#f8f9fb':'')+'"><td style="padding:9px 10px;font-weight:700;color:#0B2A55">'+esc(r.name)+'</td><td style="padding:9px 10px;text-align:center">'+r.qty+'</td><td style="padding:9px 10px;text-align:center">'+fmt(r.price)+'</td><td style="padding:9px 10px;text-align:left;font-weight:800;color:#0B2A55">'+fmt(r.total)+'</td></tr>').join(''):'<tr><td colspan="4" style="padding:14px;text-align:center;color:#999">لا توجد بروفات جاهزة حاليًا</td></tr>')+'</tbody>'
-    +(itemRows.length?'<tfoot><tr style="background:#FBF3E1"><td colspan="3" style="padding:10px;font-weight:800;color:#0B2A55">إجمالي بروفات جاهزة للتسليم</td><td style="padding:10px;text-align:left;font-weight:900;color:#9C7A2E;font-size:15px">'+fmt(grandTotal)+' '+c+'</td></tr></tfoot>':'')
+    +'<thead><tr style="background:#123A66;color:#fff"><th style="padding:9px 10px;text-align:right;font-size:13px;font-weight:900">الصنف</th><th style="padding:9px 10px;text-align:center;font-size:13px;font-weight:900">العدد</th><th style="padding:9px 10px;text-align:center;font-size:13px;font-weight:900">السعر/الواحدة</th><th style="padding:9px 10px;text-align:left;font-size:13px;font-weight:900">الإجمالي</th></tr></thead>'
+    +'<tbody>'+(itemRows.length?itemRows.map((r,i)=>'<tr style="'+(i%2?'background:#f8f9fb':'')+'"><td style="padding:9px 10px;font-weight:700;color:#123A66">'+esc(r.name)+'</td><td style="padding:9px 10px;text-align:center">'+r.qty+'</td><td style="padding:9px 10px;text-align:center">'+fmt(r.price)+'</td><td style="padding:9px 10px;text-align:left;font-weight:800;color:#123A66">'+fmt(r.total)+'</td></tr>').join(''):'<tr><td colspan="4" style="padding:14px;text-align:center;color:#999">لا توجد بروفات جاهزة حاليًا</td></tr>')+'</tbody>'
+    +(itemRows.length?'<tfoot><tr style="background:#FBF3E1"><td colspan="3" style="padding:10px;font-weight:800;color:#123A66">إجمالي بروفات جاهزة للتسليم</td><td style="padding:10px;text-align:left;font-weight:900;color:#9C7A2E;font-size:15px">'+fmt(grandTotal)+' '+c+'</td></tr></tfoot>':'')
     +'</table></div>'
-    +'<div style="margin:0 22px 16px;text-align:center;font-size:12px;color:#666;display:flex;align-items:center;justify-content:center;gap:6px"><span style="width:18px;height:18px;border-radius:50%;background:#0B2A55;display:inline-flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0">🕐</span>يرجى التنسيق لتحديد موعد البروفه</div>'
-    +'<div style="margin:0 22px 8px;font-size:12.5px;font-weight:800;color:#0B2A55">للتنسيق والاستفسار</div>'
-    +'<div style="margin:0 22px 16px;border:1px solid #D9DEE7;border-radius:10px;overflow:hidden">'
-    +(contactRow('الحسابات',accPhone,'📞')||contactRow('المندوب',dgPhone,'📞')||contactRow('واتساب',waPhone,'💬')?
-      contactRow('الحسابات',accPhone,'📞')+contactRow('المندوب',dgPhone,'📞')+contactRow('واتساب',waPhone,'💬')
-      :'<div style="padding:12px;text-align:center;color:#999;font-size:12px">لا توجد بيانات تواصل مسجّلة</div>')
-    +'</div>'
+    +'<div style="margin:0 22px 16px;text-align:center;font-size:12px;color:#666;display:flex;align-items:center;justify-content:center;gap:6px"><span style="width:18px;height:18px;border-radius:50%;background:#123A66;display:inline-flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0">🕐</span>يرجى التنسيق لتحديد موعد البروفه</div>'
     +(li.addr?'<div style="margin:0 22px 16px;text-align:center;font-size:11.5px;color:#666">📍 '+esc(li.addr)+'</div>':'')
     +_docFooterBarHTML(li)
     +'</div>';
 }
 
-// ===== إشعار فاتورة (تصميم رأسي مطابق للصورة المرجعية بالكامل — بكسل بكسل) =====
-// رأس بشريط مثلث كحلي/ذهبي + شعار المعمل، شريط عميل/تاريخ، عمودين (فاتورة
-// مبيعات نافي + بروفات أخضر)، صناديق ملخص بأيقونات (قيمة الفاتورة/المديونية/
-// قيد التنفيذ)، شريط شكر ذهبي، وفوتر كحلي بحدود ذهبية للأيقونات — دوال مخصّصة
-// جديدة (بادئة _invNotif_) عشان منلمسش تصميم إشعار البروفة/كشف الحساب.
+// ===== إشعار فاتورة (تصميم "الفاتورة أولاً" رأسي — الدكتور يشوف فلوسه الأول ثم شغله المتبقي) =====
+// رأس كحلي متدرّج + شريط عميل/تاريخ، بطاقة الفاتورة الحالية (بارزة، فوق الكل)،
+// شريط إجمالي المديونية، فاصل "حالات ما زالت نشطة"، بطاقة البروفة (أخضر، قائمة
+// كاملة بدون اختصار)، بطاقة قيد التنفيذ (ذهبي)، شريط شكر، وفوتر كحلي —
+// دوال مخصّصة (بادئة _invNotif_) عشان منلمسش تصميم إشعار البروفة/كشف الحساب.
 function _invNotif_headerHTML(li){
-  const logo=li.logo?'<img src="'+li.logo+'" style="height:26px;object-fit:contain">':'<div style="font-size:20px;line-height:1">🦷</div>';
-  return '<div style="position:relative;background:#fefefc;padding:18px 16px 14px;display:flex;direction:ltr;align-items:flex-start;justify-content:space-between;overflow:hidden;border-bottom:1px solid #D9DEE7">'
-    +'<div style="position:absolute;top:0;left:0;width:0;height:0;border-top:76px solid #E1B85A;border-right:76px solid transparent"></div>'
-    +'<div style="position:absolute;top:0;left:0;width:0;height:0;border-top:70px solid #0B2A55;border-right:70px solid transparent"></div>'
-    +'<div style="position:relative;z-index:2;width:36px;height:36px;background:#fff;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 6px rgba(0,0,0,.18);flex-shrink:0">📄</div>'
-    +'<div style="flex:1;margin:0 12px;text-align:right;direction:rtl;padding-top:1px">'
-    +'<div style="font-size:17px;font-weight:900;color:#0B2A55;white-space:nowrap">إشعار فاتورة</div>'
-    +'<div style="width:52px;height:3px;background:linear-gradient(90deg,#C69A3A,#E1B85A);border-radius:2px;margin:5px 0 6px auto"></div>'
-    +'<div style="font-size:10.5px;font-weight:700;color:#6b7280">فاتورة تفصيلية</div>'
+  const logo=li.logo?'<img src="'+li.logo+'" style="height:22px;object-fit:contain">':'<div style="font-size:16px;line-height:1">🦷</div>';
+  return '<div style="background:linear-gradient(120deg,#0B2A55 0%,#123a72 60%,#0B2A55 100%);padding:14px 16px 13px;position:relative;overflow:hidden">'
+    +'<div style="position:absolute;top:-30px;left:-20px;width:110px;height:110px;border-radius:50%;background:rgba(225,184,90,.10)"></div>'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;gap:10px;flex-wrap:wrap">'
+    +'<div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.10);border-radius:11px;padding:6px 12px">'
+    +'<div style="width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,#E1B85A,#C69A3A);display:flex;align-items:center;justify-content:center;font-size:12px">📄</div>'
+    +'<span style="color:#fff;font-weight:900;font-size:14px;white-space:nowrap">إشعار فاتورة</span>'
     +'</div>'
-    +'<div style="text-align:right;direction:rtl;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:3px">'
-    +'<div style="font-size:18px;font-weight:900;color:#0B2A55;font-family:Georgia,\'Times New Roman\',serif;white-space:nowrap">'+esc(li.name||'Perfect Lab')+'</div>'
-    +logo
+    +'<div style="display:flex;align-items:center;gap:7px">'
+    +logo+'<div style="font-size:17px;font-weight:900;color:#fff;white-space:nowrap">'+esc(li.name||'Perfect Lab')+'</div>'
+    +'</div>'
     +'</div>'
     +'</div>';
 }
 function _invNotif_infoBarHTML(clientName){
-  return '<div style="margin:12px 14px 0;border:1px solid #D9DEE7;border-radius:12px;padding:9px 14px;display:flex;align-items:center;justify-content:space-between">'
-    +'<div style="display:flex;align-items:center;gap:8px;font-weight:900;color:#0B2A55;font-size:12px;white-space:nowrap">'
-    +'<div style="width:24px;height:24px;border-radius:50%;background:#F8FAFC;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">👤</div>'
-    +esc(clientName)+'</div>'
-    +'<div style="width:1px;height:20px;background:#D9DEE7;flex-shrink:0"></div>'
-    +'<div style="display:flex;align-items:center;gap:8px;font-weight:900;color:#0B2A55;font-size:12px;white-space:nowrap">'
-    +'<div style="width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,#C69A3A,#E1B85A);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">📅</div>'
-    +dateAr()+'</div>'
+  return '<div style="display:flex;gap:8px;margin:11px 14px 0;flex-wrap:wrap">'
+    +'<div style="flex:1;min-width:0;background:#F6F2E4;border-radius:12px;padding:8px 10px;display:flex;align-items:center;gap:7px">'
+    +'<div style="width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#E1B85A,#C69A3A);display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0">👤</div>'
+    +'<span style="font-size:12.5px;font-weight:900;color:#0B2A55;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(clientName)+'</span>'
+    +'</div>'
+    +'<div style="background:#EEF3FB;border-radius:12px;padding:8px 12px;display:flex;align-items:center;gap:7px;flex-shrink:0">'
+    +'<div style="width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#3B6FD6,#0B2A55);display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0">📅</div>'
+    +'<span style="font-size:12px;font-weight:800;color:#0B2A55;white-space:nowrap">'+dateAr()+'</span>'
+    +'</div>'
     +'</div>';
 }
-function _invNotif_colHeadHTML(bg,icon,label,count){
-  return '<div style="background:'+bg+';color:#fff;padding:8px 11px;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:space-between">'
-    +'<span>'+label+' ('+count+')</span><span style="font-size:12px;flex-shrink:0">'+icon+'</span></div>';
-}
-function _invNotif_boxHTML(label,value,icon,bg,border,color){
-  return '<div style="margin:10px 14px 0;border-radius:12px;border:1px solid '+border+';background:'+bg+';padding:10px 15px;display:flex;align-items:center;justify-content:space-between">'
-    +'<div><div style="font-size:10.5px;font-weight:700;color:#6b7280">'+label+'</div>'
-    +'<div style="font-size:17px;font-weight:900;color:'+color+';margin-top:3px">'+value+'</div></div>'
-    +'<div style="font-size:20px;flex-shrink:0">'+icon+'</div>'
+function _invNotif_sectionHeadHTML(bg,icon,label,count){
+  return '<div style="background:'+bg+';color:#fff;padding:9px 14px;display:flex;align-items:center;justify-content:space-between">'
+    +'<div style="display:flex;align-items:center;gap:7px"><span style="font-size:13px">'+icon+'</span><span style="font-size:12.5px;font-weight:900">'+label+'</span></div>'
+    +'<span style="background:rgba(255,255,255,.22);border-radius:9px;padding:2px 9px;font-size:11px;font-weight:900">'+count+'</span>'
     +'</div>';
 }
 function _invNotif_footerHTML(li){
-  const item=(icon,label,sub)=>label?('<div style="display:flex;align-items:center;gap:7px;color:#fff;font-size:10.5px;font-weight:700">'
-    +'<div style="width:22px;height:22px;border-radius:50%;border:1.5px solid #E1B85A;display:flex;align-items:center;justify-content:center;font-size:10px;color:#E1B85A;flex-shrink:0">'+icon+'</div>'
-    +'<span>'+esc(label)+(sub?' <span style="opacity:.7;font-weight:600">'+esc(sub)+'</span>':'')+'</span></div>'):'';
-  return '<div style="height:3px;background:linear-gradient(90deg,#C69A3A,#E1B85A,#C69A3A)"></div>'
-    +'<div style="background:#0B2A55;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">'
-    +item('📞',li.ph1,'الحسابات')
-    +((li.wa||li.ph2)?item('💬',li.wa||li.ph2,''):'')
+  const item=(icon,label,sub)=>label?('<div style="display:flex;align-items:center;gap:7px">'
+    +'<div style="width:24px;height:24px;border-radius:50%;border:1.5px solid #E1B85A;color:#E1B85A;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0">'+icon+'</div>'
+    +'<span style="color:#fff;font-size:10.5px;font-weight:700"><bdi style="direction:ltr;unicode-bidi:isolate">'+esc(label)+'</bdi>'+(sub?'<div style="color:#B9C6DC;font-size:9px">'+esc(sub)+'</div>':'')+'</span></div>'):'';
+  return '<div style="margin-top:14px;background:linear-gradient(120deg,#0B2A55,#123a72)">'
+    +'<div style="height:3px;background:linear-gradient(90deg,#C69A3A,#E1B85A,#C69A3A)"></div>'
+    +'<div style="padding:12px 14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">'
     +(li.addr?item('📍',li.addr,''):'')
-    +'</div>';
+    +((li.wa||li.ph2)?item('💬',li.wa||li.ph2,''):'')
+    +(li.ph1?item('📞',li.ph1,'الحسابات'):'')
+    +'</div></div>';
 }
 function _invoiceNoticeDocHTML(clientName,cl,unpaid,clientPf,invoiceTotal,grandDebt,li,c){
   const clientDf=(DB.get('dafter')||[]).filter(r=>_matchClientRecord(r,cl&&cl.id,clientName));
-  return '<div style="width:480px;background:#fefefc;font-family:Cairo,sans-serif;overflow:hidden;border-radius:14px;box-shadow:0 2px 14px rgba(13,27,62,.10)">'
+  return '<div style="width:420px;background:#fefefc;font-family:Cairo,sans-serif;overflow:hidden;border-radius:20px;box-shadow:0 14px 44px rgba(11,42,85,.18),0 2px 10px rgba(0,0,0,.06)">'
     +_invNotif_headerHTML(li)
     +_invNotif_infoBarHTML(clientName)
-    +'<div style="display:flex;gap:10px;margin:12px 14px 0;align-items:flex-start">'
-      // العمود الشمال (يسار الشاشة): البروفات — أخضر
-      +'<div style="flex:1;min-width:0;border:1px solid #cfe8da;border-radius:12px;overflow:hidden">'
-      +_invNotif_colHeadHTML('#168A58','🔬','البروفات',clientPf.length)
-      +'<div style="padding:9px 11px;font-size:10.5px;max-height:520px;overflow:hidden">'+_docGroupedListHTML(clientPf,false,c)+'</div>'
-      +'</div>'
-      // العمود اليمين: فاتورة مبيعات — نافي
-      +'<div style="flex:1;min-width:0;border:1px solid #cfd8e6;border-radius:12px;overflow:hidden">'
-      +_invNotif_colHeadHTML('#0B2A55','🧾','فاتورة مبيعات',unpaid.length)
-      +'<div style="padding:9px 11px;font-size:10.5px">'+_docGroupedListHTML(unpaid,true,c)+'</div>'
-      +'</div>'
+    // ===== 1) الفاتورة أولاً — الأبرز في الكارت =====
+    +'<div style="margin:14px 14px 0;border-radius:16px;overflow:hidden;box-shadow:0 6px 18px rgba(11,42,85,.16)">'
+    +_invNotif_sectionHeadHTML('linear-gradient(120deg,#123a72,#0B2A55)','🧾','فاتورة مبيعات اليوم',unpaid.length)
+    +'<div style="background:#fff;padding:10px 12px 3px;font-size:10.5px">'+_docGroupedListHTML(unpaid,true,c)+'</div>'
+    +'<div style="background:linear-gradient(135deg,#123a72,#0B2A55);text-align:center;padding:12px 14px">'
+    +'<div style="font-size:10.5px;font-weight:800;color:#9FB3D4">قيمة الفاتورة الحالية</div>'
+    +'<div style="font-size:24px;font-weight:900;color:#fff;margin-top:2px"><bdi style="direction:ltr;unicode-bidi:isolate">'+fmt(invoiceTotal)+'</bdi> <span style="font-size:13px;font-weight:800;color:#E1B85A">'+c+'</span></div>'
+    +'</div></div>'
+    // إجمالي المديونية
+    +'<div style="margin:8px 14px 0;background:rgba(179,38,38,.06);border:1px solid rgba(179,38,38,.22);border-radius:11px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between">'
+    +'<span style="font-size:11px;font-weight:800;color:#8C1D1D">📈 إجمالي المديونية الكلي</span>'
+    +'<span style="font-size:13.5px;font-weight:900;color:#8C1D1D"><bdi style="direction:ltr;unicode-bidi:isolate">'+fmt(grandDebt)+'</bdi> '+c+'</span>'
     +'</div>'
-    +_invNotif_boxHTML('قيمة الفاتورة الحالية',fmt(invoiceTotal)+' '+c,'📄','#F8FAFC','#D9DEE7','#0B2A55')
-    +_invNotif_boxHTML('إجمالي المديونية',fmt(grandDebt)+' '+c,'📈','rgba(179,38,38,.06)','rgba(179,38,38,.25)','#8C1D1D')
+    // ===== 2) فاصل =====
+    +'<div style="margin:18px 14px 10px;display:flex;align-items:center;gap:8px">'
+    +'<span style="flex:1;height:1px;background:linear-gradient(to left,transparent,#D9DEE7)"></span>'
+    +'<span style="font-size:12px;font-weight:900;color:#5b6472;white-space:nowrap">📋 حالات ما زالت نشطة</span>'
+    +'<span style="flex:1;height:1px;background:linear-gradient(to right,transparent,#D9DEE7)"></span>'
+    +'</div>'
+    // البروفة — قائمة كاملة
+    +'<div style="margin:0 14px 10px;border-radius:14px;overflow:hidden;box-shadow:0 4px 14px rgba(15,110,80,.10)">'
+    +_invNotif_sectionHeadHTML('linear-gradient(120deg,#0F9C6E,#0B7A56)','🔬','البروفة',clientPf.length)
+    +'<div style="background:#F4FBF8;padding:9px 11px;font-size:10.5px">'+_docGroupedListHTML(clientPf,false,c)+'</div>'
+    +'</div>'
+    // قيد التنفيذ
     +(clientDf.length?(
-      '<div style="margin:10px 14px 0;border-radius:12px;border:1px solid #E1B85A;background:#FBF3E1;padding:10px 15px">'
-      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">'
-      +'<span style="font-size:11px;font-weight:900;color:#9C7A2E">قيد التنفيذ</span><span style="font-size:17px">📂</span></div>'
-      +clientDf.map(r=>'<div style="font-size:10.5px;color:#0B2A55;font-weight:700;padding:2px 0;text-align:center">'+esc(r.product||'—')+' × '+(r.qty||0)+'  —  '+esc(r.noteName||r.caseId||'—')+'</div>').join('')
-      +'</div>'
+      '<div style="margin:0 14px 14px;border-radius:14px;overflow:hidden;box-shadow:0 4px 14px rgba(156,122,46,.10)">'
+      +_invNotif_sectionHeadHTML('linear-gradient(120deg,#E1B85A,#C69A3A)','📂','قيد التنفيذ في الدفتر',clientDf.length)
+      +'<div style="background:#FBF3E1;padding:9px 11px;display:flex;flex-direction:column;gap:5px">'
+      +clientDf.map(r=>'<div style="background:#fff;border-radius:8px;padding:7px 9px;display:flex;justify-content:space-between;font-size:11px;font-weight:800;color:#0B2A55"><span>'+esc(r.product||'—')+' <bdi style="direction:ltr;unicode-bidi:isolate">× '+(r.qty||0)+'</bdi></span><span style="color:#9C7A2E">'+esc(r.noteName||r.caseId||'—')+'</span></div>').join('')
+      +'</div></div>'
       ):'')
-    +'<div style="margin:14px 14px 0;text-align:center;padding:10px;background:#FBF3E1;border-top:1px solid #E1B85A;border-bottom:1px solid #E1B85A;font-size:12px;font-weight:900;color:#9C7A2E">✨ شكراً لثقتكم ✨</div>'
-    +'<div style="height:14px"></div>'
+    // شكراً
+    +'<div style="margin:0 14px 0;text-align:center;padding:9px;background:linear-gradient(120deg,#FBF3E1,#F6E4B8,#FBF3E1);border-radius:11px;border:1px solid #E1B85A;font-size:12px;font-weight:900;color:#9C7A2E">✨ شكراً لثقتكم ✨</div>'
     +_invNotif_footerHTML(li)
     +'</div>';
 }
@@ -22413,11 +22569,23 @@ function downloadClientCardDetailedPDF(){
       // #FEAT-STATEMENT-A4: عرض بطاقة الكشف بقى عرض A4 حقيقي (210mm) بدل عرض الموبايل الثابت
       holder.innerHTML='<style>.cc-pdf-wrap *{margin:0;padding:0;box-sizing:border-box;font-family:"Cairo",sans-serif}.cc-pdf-wrap .pp{margin:0 auto 24px;overflow:hidden}</style>'
         +'<div class="cc-pdf-wrap" style="background:#e8edf5;padding:20px">'+data.pages+'</div>';
+      // FIX #STATEMENT-PDF-MOBILE-CLIP: الصفحة كلها فيها overflow-x:hidden على html/body
+      // (عشان تمنع سكرول جانبي في الاستخدام العادي) — والمتصفحات بتطبّق الـ overflow ده
+      // على الـ viewport نفسه، فأي عنصر position:fixed أعرض من الشاشة (زي كارت الكشف
+      // بعرض A4 الحقيقي 210mm) بيتقص فعليًا على حدود الشاشة، مش بس بصريًا — وده اللي كان
+      // بيطلع صورة/PDF مقصوصة على الموبايل (أعمدة الجدول ناقصة). بنشيل القص مؤقتًا وقت
+      // التصوير بس ونرجّعه زي ما كان فورًا بعد كل صفحة.
+      const _ovHtml=document.documentElement.style.overflowX;
+      const _ovBody=document.body.style.overflowX;
+      document.documentElement.style.overflowX='visible';
+      document.body.style.overflowX='visible';
       document.body.appendChild(holder);
       document.body.appendChild(overlay);
       const finish=function(){
         if(holder.parentNode)holder.remove();
         if(overlay.parentNode)overlay.remove();
+        document.documentElement.style.overflowX=_ovHtml;
+        document.body.style.overflowX=_ovBody;
         if(btn){btn.disabled=false;btn.textContent=btnOldTxt||'📄 تحميل PDF تفصيلي';}
       };
       setTimeout(function(){
@@ -22435,7 +22603,9 @@ function downloadClientCardDetailedPDF(){
             return;
           }
           overlay.textContent='⏳ جارِ إنشاء ملف PDF... (صفحة '+(idx+1)+' من '+pageEls.length+')';
-          window.htmlToImage.toCanvas(pageEls[idx],{pixelRatio:2,backgroundColor:'#ffffff'}).then(function(canvas){
+          // width/height صريحة (مش الافتراضي) — طبقة أمان إضافية عشان نضمن إن الالتقاط
+          // ياخد أبعاد الصفحة الحقيقية (scrollWidth/scrollHeight) مهما كان عرض الشاشة.
+          window.htmlToImage.toCanvas(pageEls[idx],{pixelRatio:2,backgroundColor:'#ffffff',width:pageEls[idx].scrollWidth,height:pageEls[idx].scrollHeight}).then(function(canvas){
             const imgData=canvas.toDataURL('image/jpeg',0.92);
             // كل صفحة بتاخد بالظبط مقاس بطاقة الموبايل (px) بدل ما تتحط جوه صفحة A4 عريضة
             // وتسيح فيها الخط — كده لما تتفتح على الموبايل بتملا الشاشة والخط يبان كبير وواضح.

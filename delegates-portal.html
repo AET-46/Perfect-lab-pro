@@ -471,7 +471,8 @@ const FB_CONFIG={
 // ═══════════════════════════════════════
 let _db=null,_user=null,_curTab='clients';
 let _searchQuery='';
-let _myClients=[],_dafter=[],_proof=[],_archive=[],_myVisits=[],_myProspects=[],_treasury=[],_mySettlements=[],_myDelegateClientMap={},_deliveryLog=[],_lateReasons=[],_neglectAlerts=[];
+let _myClients=[],_dafter=[],_proof=[],_archive=[],_myVisits=[],_myProspects=[],_treasury=[],_mySettlements=[],_myDelegateClientMap={},_deliveryLog=[],_lateReasons=[],_neglectAlerts=[],_myDelRecord=null;
+let _submittingVisit=false,_submittingProspect=false,_submittingNeglect=new Set(); // FIX: حراس منع تسجيل نفس العملية مرتين بسبب الضغط المزدوج
 
 // ═══════════════════════════════════════
 // 🔌 FIREBASE — اتصال حقيقي بنفس قاعدة بيانات السيستم الكبير
@@ -593,6 +594,16 @@ function cycleTheme(){
 
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function fmt(n){return Number(n||0).toLocaleString('ar-EG');}
+// تنسيق تاريخ ووقت مقروء (يوم/شهر/سنة - hh:mm بنظام ١٢ ساعة) — مستخدمة لعرض
+// لحظة نزول التسليم فعليًا من السيستم الكبير (بروفة/أرشيف)، مش تاريخ الحالة نفسها
+function _fmtDateTime(ts){
+  if(!ts)return '-';
+  const d=new Date(+ts);
+  const dd=String(d.getDate()).padStart(2,'0'),mm=String(d.getMonth()+1).padStart(2,'0'),yy=d.getFullYear();
+  let h=d.getHours();const min=String(d.getMinutes()).padStart(2,'0');
+  const ap=h>=12?'م':'ص';h=h%12;if(h===0)h=12;
+  return `${dd}/${mm}/${yy} - ${h}:${min} ${ap}`;
+}
 // يوم شغل المندوب: من ٣ العصر لـ٣ الفجر — أي وقت قبل الساعة ٣ فجرًا لسه بيتحسب على يوم الشغل اللي فات
 function shiftToday(ts){
   const d=new Date((ts||Date.now())-3*3600*1000);
@@ -816,6 +827,7 @@ async function _loadSharedData(){
   // نسب العمولة المخصصة لكل عميل — متسجّلة جوه سجل المندوب نفسه (data/shared/delegates → clients[])
   // زي صفحة "ربط العملاء بالمناديب" بالسيستم الكبير بالظبط
   const myDel=toArr(delegates).find(d=>d.name===_user.name||d.id===_user.id);
+  _myDelRecord=myDel||null;
   _myDelegateClientMap={};
   (myDel&&myDel.clients||[]).forEach(cc=>{if(cc&&cc.clientId)_myDelegateClientMap[cc.clientId]=cc;});
 }
@@ -1419,8 +1431,8 @@ function renderNeglectAlertsHtml(){
         <div style="font-size:11px;color:var(--red)">⏰ من غير تواصل من ${daysSince} يوم</div>
       </div>
       <div style="display:flex;gap:6px">
-        <button class="btn btn-sm btn-gold" onclick="decideNeglectAlert('${esc(cl.id)}','follow')">📅 هتابع</button>
-        <button class="btn btn-sm btn-ghost" onclick="decideNeglectAlert('${esc(cl.id)}','dismissed')">🚫 مش دلوقتي</button>
+        <button class="btn btn-sm btn-gold" onclick="decideNeglectAlert('${esc(cl.id)}','follow',this)">📅 هتابع</button>
+        <button class="btn btn-sm btn-ghost" onclick="decideNeglectAlert('${esc(cl.id)}','dismissed',this)">🚫 مش دلوقتي</button>
       </div>
     </div>`).join('');
   return `<div style="border:1.5px solid var(--red);border-radius:12px;padding:10px 12px;margin-bottom:12px">
@@ -1428,9 +1440,14 @@ function renderNeglectAlertsHtml(){
     ${rows}
   </div>`;
 }
-async function decideNeglectAlert(clientId,decision){
+async function decideNeglectAlert(clientId,decision,btnEl){
+  if(_submittingNeglect.has(String(clientId)))return; // FIX: منع دبل-تاب من تسجيل نفس القرار مرتين
   const cl=_myClients.find(c=>String(c.id)===String(clientId));
   if(!cl)return;
+  _submittingNeglect.add(String(clientId));
+  const row=btnEl?btnEl.closest('div[style*="display:flex"]'):null;
+  const btns=row?[...row.querySelectorAll('button')]:[];
+  btns.forEach(b=>{b.disabled=true;b.style.opacity='.6';});
   const entry={
     clientId:cl.id||null,
     client:cl.name||'-',
@@ -1445,35 +1462,77 @@ async function decideNeglectAlert(clientId,decision){
     _neglectAlerts=[..._neglectAlerts,entry];
     toast(decision==='follow'?'✅ اتسجل إنك هتتابع العميل ده':'تم — مش هيظهر تاني دلوقتي');
     renderDeliveries();
-  }catch(e){toast('خطأ أثناء التسجيل','err');}
+  }catch(e){
+    toast('خطأ أثناء التسجيل','err');
+    btns.forEach(b=>{b.disabled=false;b.style.opacity='1';});
+  }
+  finally{_submittingNeglect.delete(String(clientId));}
 }
 
 // ═══════════════════════════════════════
-// 📊 لوحة تحليل الأداء — تسليم كل عميل أسبوعيًا وشهريًا جنب بعض للمقارنة.
-// المصدر هنا delegateHandoverLog بس (توثيقي)، من غير أي حساب رسمي أو لمس لأي بيانات
-// حقيقية — دلوقتي جوه درج جانبي منفصل تمامًا عن قائمة التسليمات (مش فوقها).
+// 📊 لوحة تحليل الأداء — شغل كل عميل (شغّال بالفعل معانا) أسبوعيًا وشهريًا جنب بعض.
+// تعديل ٢٠٢٦-٠٧-٢٩ (مرحلة ٣): التحليل بطبيعته لازم يكون على مستوى العميل "الشغال"
+// فقط — أي عميل محتمل (prospect) أو زيارة (visit) مش عميل بنتعامل معاه فعليًا ولا
+// حتى بنستهدف تشغيله بالضرورة، فمفيش داعي لأي تحليل عليه خالص. اتشال قمع التحويل
+// ومتوسط وقت التعاقد بالكامل (كانوا مبنيين على _myVisits/_myProspects).
+// المصدر بقى الأرشيف (_archive) — الشغل المنتهي فعليًا في السيستم الكبير — بدل
+// delegateHandoverLog اللي كان توثيقي بس ومحدود بتأكيدات المندوب نفسه. المطابقة
+// بتحصل بنفس منطق _matchClRec المستخدم في تاب العميل نفسه (عملاؤك من data/shared/clients).
 // ═══════════════════════════════════════
 function computeClientAnalytics(){
   const now=Date.now(),oneDay=86400000,oneWeek=7*oneDay,oneMonth=30*oneDay;
   const thisWeekStart=now-oneWeek,lastWeekStart=now-2*oneWeek;
   const thisMonthStart=now-oneMonth,lastMonthStart=now-2*oneMonth;
-  const delivered=_deliveryLog.filter(h=>h.handoverStatus==='delivered');
-  const byClient={};
-  delivered.forEach(h=>{
-    const key=h.clientId||h.client||'—';
-    if(!byClient[key])byClient[key]={name:h.client||'-',thisWeek:0,lastWeek:0,thisMonth:0,lastMonth:0};
-    const t=h.createdAt||0;
-    if(t>=thisWeekStart)byClient[key].thisWeek++;
-    else if(t>=lastWeekStart&&t<thisWeekStart)byClient[key].lastWeek++;
-    if(t>=thisMonthStart)byClient[key].thisMonth++;
-    else if(t>=lastMonthStart&&t<thisMonthStart)byClient[key].lastMonth++;
-  });
-  return Object.values(byClient)
-    .filter(x=>x.thisWeek||x.lastWeek||x.thisMonth||x.lastMonth)
-    .sort((a,b)=>(b.thisMonth-a.thisMonth)||(b.thisWeek-a.thisWeek));
+  // FEAT #ROLLING-BASELINE: مقارنة أسبوع واحد سابق بس بتتقلب بسهولة مع أي عميل صغير.
+  // نضيف كمان متوسط آخر 4 أسابيع (مش الأسبوع الحالي) كخط أساس أكتر استقرارًا وواقعية.
+  const avg4wStart=now-5*oneWeek;
+  const dOf=r=>+(r.archivedAt||0)||(r.date?new Date(r.date).getTime():0);
+  return _myClients.map(cl=>{
+    const cArchive=_archive.filter(r=>_matchClRec(r,cl));
+    const x={name:cl.name||'-',thisWeek:0,lastWeek:0,thisMonth:0,lastMonth:0,avg4wSum:0};
+    cArchive.forEach(r=>{
+      const t=dOf(r);
+      if(!t)return;
+      if(t>=thisWeekStart)x.thisWeek++;
+      else if(t>=lastWeekStart&&t<thisWeekStart)x.lastWeek++;
+      if(t>=thisMonthStart)x.thisMonth++;
+      else if(t>=lastMonthStart&&t<thisMonthStart)x.lastMonth++;
+      if(t>=avg4wStart&&t<thisWeekStart)x.avg4wSum++;
+    });
+    return {...x,avg4w:Math.round((x.avg4wSum/4)*10)/10};
+  })
+  .filter(x=>x.thisWeek||x.lastWeek||x.thisMonth||x.lastMonth)
+  .sort((a,b)=>(b.thisMonth-a.thisMonth)||(b.thisWeek-a.thisWeek));
+}
+// FEAT #MONTHLY-QUOTA: كوتة شهرية اختيارية — لو حقل monthlyTarget متسجّل في بيانات
+// المندوب (data/shared/delegates)، بنقارن التسليم الفعلي الشهر ده بيها. لو مش متسجّل
+// (النظام الأساسي لسه مفيهوش واجهة لضبطها) الكارت بيختفي تلقائيًا من غير أي خطأ.
+function _quotaCard(monthTotal){
+  const target=+(_myDelRecord&&(_myDelRecord.monthlyTarget||_myDelRecord.target))||0;
+  if(!target)return '';
+  const pct=Math.min(100,Math.round((monthTotal/target)*100));
+  const now=new Date();
+  const daysInMonth=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  const dayOfMonth=now.getDate();
+  const expectedPct=Math.round((dayOfMonth/daysInMonth)*100);
+  const status=pct>=expectedPct?`<span style="color:var(--green)">✅ في المسار الصح</span>`:`<span style="color:var(--red)">⚠️ متأخر عن المتوقع (${expectedPct}%)</span>`;
+  return `<div class="an-card">
+    <div class="an-card-name">🎯 الكوتة الشهرية</div>
+    <div class="an-bar-track" style="height:18px"><div class="an-bar-fill cur" style="width:${Math.max(pct,monthTotal?6:0)}%"></div><span class="an-bar-val">${monthTotal} / ${target}</span></div>
+    <div class="an-tip">${pct}% من الهدف — ${status}</div>
+  </div>`;
 }
 function _anTrendBadge(cur,prev){
   if(cur===0&&prev>0)return `<span class="an-trend down">▼ متوقف</span>`;
+  // FEAT #REALISTIC-TREND: مع أرقام صغيرة (أقل من 5) النسبة المئوية بتضلل — من 0 لـ 1 يطلع
+  // "100%▲" وده مش فرق حقيقي. في العينات الصغيرة نعرض الفرق المطلق بدل النسبة.
+  const small=cur<5&&prev<5;
+  if(small){
+    const d=cur-prev;
+    if(d>0)return `<span class="an-trend up">▲ +${d}</span>`;
+    if(d<0)return `<span class="an-trend down">▼ ${d}</span>`;
+    return `<span class="an-trend flat">➖ ثابت</span>`;
+  }
   if(cur>prev)return `<span class="an-trend up">▲ ${prev?Math.round(((cur-prev)/prev)*100):100}%</span>`;
   if(cur<prev)return `<span class="an-trend down">▼ ${Math.round(((prev-cur)/prev)*100)}%</span>`;
   return `<span class="an-trend flat">➖ ثابت</span>`;
@@ -1495,9 +1554,17 @@ function renderAnalyticsDrawer(){
   const fab=document.getElementById('analytics-fab');
   const badge=document.getElementById('analytics-fab-badge');
   if(!summaryEl||!bodyEl)return;
+  // FEAT #NEGLECT-IN-ANALYTICS: نفس قائمة العملاء المهملين اللي بتظهر في تبويب العملاء،
+  // بندمج ملخصها هنا كمان عشان تبقى لوحة الأداء مكان واحد شامل بدل ما تتوه بين تبويبات.
+  const neglectList=_neglectedClientsList();
+  const neglectHtml=neglectList.length?`<div class="an-card" style="border-color:var(--red)">
+    <div class="an-card-name" style="color:var(--red)">⚠️ عملاء محتاجين متابعة (${neglectList.length})</div>
+    ${neglectList.slice(0,5).map(({cl,daysSince})=>`<div class="an-row-lbl" style="margin-bottom:6px"><span>${esc(cl.name)}</span><span style="color:var(--red);font-weight:700">${daysSince} يوم</span></div>`).join('')}
+    ${neglectList.length>5?`<div class="an-tip">و${neglectList.length-5} عميل تاني — التفاصيل والإجراءات في تبويب العملاء</div>`:''}
+  </div>`:'';
   if(!rows.length){
     summaryEl.innerHTML='';
-    bodyEl.innerHTML=`<div class="an-empty">📊 لسه مفيش بيانات تسليم كفاية لعرض تحليل</div>`;
+    bodyEl.innerHTML=neglectHtml+_quotaCard(0)||`<div class="an-empty">📊 لسه مفيش بيانات كفاية لعرض تحليل</div>`;
     if(badge)badge.classList.add('hidden');
     return;
   }
@@ -1505,22 +1572,24 @@ function renderAnalyticsDrawer(){
   const monthTotal=rows.reduce((s,r)=>s+r.thisMonth,0);
   const dropping=rows.filter(r=>r.thisWeek<r.lastWeek).length;
   summaryEl.innerHTML=`
-    <div class="an-sum-box"><div class="n">${weekTotal}</div><div class="l">تسليم / أسبوع</div></div>
-    <div class="an-sum-box"><div class="n">${monthTotal}</div><div class="l">تسليم / شهر</div></div>
+    <div class="an-sum-box"><div class="n">${weekTotal}</div><div class="l">حالة مؤرشفة / أسبوع</div></div>
+    <div class="an-sum-box"><div class="n">${monthTotal}</div><div class="l">حالة مؤرشفة / شهر</div></div>
     <div class="an-sum-box"><div class="n">${dropping}</div><div class="l">في نقصان</div></div>`;
-  bodyEl.innerHTML=rows.map(r=>{
+  const cardsHtml=rows.map(r=>{
     let tip;
-    if(r.thisWeek===0&&r.lastWeek>0)tip=`📉 مفيش تسليم لـ<strong>${esc(r.name)}</strong> الأسبوع ده بعد ${r.lastWeek} الأسبوع اللي فات — يستاهل تواصل`;
+    if(r.thisWeek===0&&r.lastWeek>0)tip=`📉 مفيش شغل مؤرشف لـ<strong>${esc(r.name)}</strong> الأسبوع ده بعد ${r.lastWeek} الأسبوع اللي فات — يستاهل تواصل`;
     else if(r.thisWeek>r.lastWeek)tip=`📈 نشاط <strong>${esc(r.name)}</strong> في زيادة أسبوعيًا`;
     else if(r.thisWeek<r.lastWeek)tip=`📉 نشاط <strong>${esc(r.name)}</strong> في نقصان أسبوعيًا — تابع السبب`;
     else tip=`➖ <strong>${esc(r.name)}</strong> مستقر أسبوعيًا`;
     return `<div class="an-card">
       <div class="an-card-name">${esc(r.name)}</div>
       ${_anBarRow('📅 أسبوع (الحالي / السابق)',r.thisWeek,r.lastWeek)}
+      ${_anBarRow('📊 أسبوع (الحالي / متوسط 4 أسابيع)',r.thisWeek,r.avg4w)}
       ${_anBarRow('🗓️ شهر (الحالي / السابق)',r.thisMonth,r.lastMonth)}
       <div class="an-tip">${tip}</div>
     </div>`;
   }).join('');
+  bodyEl.innerHTML=_quotaCard(monthTotal)+neglectHtml+cardsHtml;
   if(badge){
     if(dropping>0){badge.textContent=dropping;badge.classList.remove('hidden');}
     else badge.classList.add('hidden');
@@ -1614,6 +1683,7 @@ function renderDeliveries(){
               ${r.noteName?`<div style="font-size:13px;color:var(--teal)">👤 ${esc(r.noteName)}</div>`:''}
               <div class="deliv-meta">#${esc(String(r.caseId||'-'))} · ${esc(r.date||'-')}</div>
               <div class="deliv-product">🦷 ${esc(r.product||'-')} ${r.qty>1?`× ${r.qty}`:''}</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">📥 نزلت ${r.delivType==='بروفة'?'بروفة':'أرشيف'} من السيستم: ${esc(_fmtDateTime(enteredAt))}</div>
             </div>
             <span class="case-src ${r.delivType==='بروفة'?'src-proof':'src-dafter'}">${esc(r.delivType)}</span>
           </div>
@@ -2054,7 +2124,8 @@ const RESULT_LABELS={interested:'✅ مهتم',not_interested:'❌ غير مهت
 function renderVisits(){
   const c=document.getElementById('tab-content');
   c.innerHTML=`<button class="btn btn-gold btn-sm" style="margin-bottom:12px" onclick="openVisitModal()">➕ تسجيل متابعة زيارة</button>
-  <button class="btn btn-ghost btn-sm" style="margin-bottom:12px;width:100%" onclick="backfillOldVisits()">🔁 تعبئة رجعية للأطباء بدون زيارة (كل المناديب)</button>`;
+  <button class="btn btn-ghost btn-sm" style="margin-bottom:12px;width:100%" onclick="backfillOldVisits()">🔁 تعبئة رجعية للأطباء بدون زيارة (كل المناديب)</button>
+  <button class="btn btn-ghost btn-sm" style="margin-bottom:12px;width:100%" onclick="cleanupDuplicateVisits()">🧹 حذف الزيارات المكررة (كل المناديب)</button>`;
   if(!_myProspects.length){
     c.innerHTML+=`<div class="empty"><div class="empty-icon">🔄</div><p>لسه معندكش زيارات مسجّلة — ضيفي واحدة من تاب "زيارة جديدة"</p></div>`;return;
   }
@@ -2116,6 +2187,44 @@ async function backfillOldVisits(){
     toast(`✅ تم إنشاء ${missing.length} زيارة أولى لكل المناديب`);
     loadTab(_curTab);
   }catch(e){console.error(e);toast('خطأ أثناء التعبئة الرجعية','err');}
+}
+
+// أداة تنظيف: بتلمّ الزيارات المكررة اللي اتسجّلت بسبب باج الضغط المزدوج (نفس
+// العميل + نفس الدكتور + نفس النتيجة + نفس اليوم، واتسجّلوا خلال أقل من دقيقتين
+// من بعض) وبتسيب واحدة بس (الأقدم) وتشيل الباقي. الأداة عامة لكل المناديب —
+// بتقرأ prospect_visits كله وبتشتغل على أي تكرار موجود بغض النظر مين سجّله.
+async function cleanupDuplicateVisits(){
+  if(!confirm('هيتم فحص كل الزيارات (لكل المناديب) وحذف أي زيارة مكررة اتسجلت غلط بسبب ضغط مزدوج على زرار الحفظ، وهيسيب زيارة واحدة بس من كل مجموعة مكررة. متأكد إنك عايز تكمل؟'))return;
+  try{
+    toast('⏳ جارِ فحص الزيارات المكررة...');
+    const visitsSnap=await fbGet('data/shared/prospect_visits');
+    const allVisits=toArr(visitsSnap);
+    // تجميع حسب مفتاح التطابق: نفس العميل + الدكتور + النتيجة + اليوم
+    const groups={};
+    allVisits.forEach(v=>{
+      const key=[v.prospectId,v.doctor||'',v.result||'',v.date||''].join('|');
+      (groups[key]=groups[key]||[]).push(v);
+    });
+    const toDelete=[];
+    Object.values(groups).forEach(list=>{
+      if(list.length<2)return;
+      list.sort((a,b)=>(a.createdAt||0)-(b.createdAt||0)); // الأقدم الأول
+      for(let i=1;i<list.length;i++){
+        // نعتبرها تكرار بسبب الباج بس لو الفرق بينها وبين اللي قبلها أقل من دقيقتين
+        if((list[i].createdAt||0)-(list[i-1].createdAt||0)<120000){
+          toDelete.push(list[i]);
+        }
+      }
+    });
+    if(!toDelete.length){toast('✅ مفيش زيارات مكررة');return;}
+    const updates={};
+    toDelete.forEach(v=>{updates[v.id]=null;}); // null في fbUpdate بيحذف المفتاح
+    await fbUpdate('data/shared/prospect_visits',updates);
+    const deletedIds=new Set(toDelete.map(v=>String(v.id)));
+    _myVisits=_myVisits.filter(v=>!deletedIds.has(String(v.id)));
+    toast(`✅ اتحذفت ${toDelete.length} زيارة مكررة`);
+    loadTab(_curTab);
+  }catch(e){console.error(e);toast('خطأ أثناء تنظيف الزيارات المكررة','err');}
 }
 
 // أداة تشخيص تانية: بتحاكي بالظبط نفس المنطق اللي renderClients بيستخدمه (بما فيه
@@ -2348,8 +2457,12 @@ function captureNcGeo(){
 }
 
 async function submitNewProspect(){
+  if(_submittingProspect)return; // FIX: منع دبل-تاب من تسجيل الزيارة مرتين
   const doctor=document.getElementById('nc-doctor').value.trim();
   if(!doctor){toast('اسم الدكتور مطلوب','err');return;}
+  _submittingProspect=true;
+  const btn=document.querySelector('button[onclick="submitNewProspect()"]');
+  if(btn){btn.disabled=true;btn.style.opacity='.6';}
   try{
     const id=Date.now();
     const rec={
@@ -2377,6 +2490,7 @@ async function submitNewProspect(){
     toast('✅ تم حفظ الزيارة');
     renderAddClient();
   }catch(e){console.error(e);toast('خطأ في الحفظ','err');}
+  finally{_submittingProspect=false;if(btn){btn.disabled=false;btn.style.opacity='1';}}
 }
 
 // ═══════════════════════════════════════
@@ -2437,15 +2551,19 @@ function onVmActGovChange(){
   const cities=EGY_CITIES[gov]||[];
   citySel.innerHTML='<option value="">-- اختر المدينة --</option>'+cities.map(ct=>`<option value="${esc(ct)}">${esc(ct)}</option>`).join('');
 }
-function closeVisitModal(){document.getElementById('visit-modal').classList.add('hidden');}
+function closeVisitModal(){document.getElementById('visit-modal').classList.add('hidden');_submittingVisit=false;}
 
 async function saveVisit(){
+  if(_submittingVisit)return; // FIX: منع دبل-تاب من تسجيل الزيارة مرتين
   const prospectId=+document.getElementById('vm-prospect').value;
   const doctor=document.getElementById('vm-doctor').value;
   const result=document.getElementById('vm-result').value;
   const notes=document.getElementById('vm-notes').value.trim();
   const date=document.getElementById('vm-date').value||shiftToday();
   if(!prospectId||!doctor||!result){toast('العميل والدكتور والنتيجة مطلوبين','err');return;}
+  _submittingVisit=true;
+  const btn=document.querySelector('#visit-modal button[onclick="saveVisit()"]');
+  if(btn){btn.disabled=true;btn.style.opacity='.6';}
   const idx=_myProspects.findIndex(p=>p.id===prospectId);
   let prospectDraft=idx>=0?{..._myProspects[idx]}:null;
 
@@ -2461,6 +2579,8 @@ async function saveVisit(){
     if(missing.length){
       toast('استكمل البيانات الأساسية الأول: '+missing.join('، '),'err');
       document.getElementById('vm-activate-box').classList.remove('hidden');
+      _submittingVisit=false;
+      if(btn){btn.disabled=false;btn.style.opacity='1';}
       return;
     }
   }
@@ -2490,6 +2610,7 @@ async function saveVisit(){
     toast(result==='contracted'?'✅ تم حفظ الزيارة وتفعيل العميل تلقائيًا':'✅ تم حفظ الزيارة');
     loadTab(_curTab);
   }catch(e){console.error(e);toast('خطأ في الحفظ','err');}
+  finally{_submittingVisit=false;if(btn){btn.disabled=false;btn.style.opacity='1';}}
 }
 
 // ═══════════════════════════════════════
